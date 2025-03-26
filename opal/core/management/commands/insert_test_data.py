@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from dateutil.relativedelta import relativedelta
 
-from opal.caregivers.models import CaregiverProfile
+from opal.caregivers.models import CaregiverProfile, SecurityAnswer
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType
 from opal.users.models import Caregiver
@@ -46,6 +46,7 @@ class Command(BaseCommand):
             Patient.objects.all().exists(),
             Caregiver.objects.all().exists(),
             Institution.objects.all().exists(),
+            SecurityAnswer.objects.all().exists(),
         ]):
             confirm = input(
                 'Database already contains data.\n'
@@ -70,6 +71,7 @@ def _delete_existing_data() -> None:
     """Delete all the existing test data."""
     Relationship.objects.all().delete()
     Patient.objects.all().delete()
+    # also deletes security answers
     CaregiverProfile.objects.all().delete()
     Caregiver.objects.all().delete()
     # also deletes Sites
@@ -182,7 +184,7 @@ def _create_test_data() -> None:
         ],
     )
 
-    _create_patient(
+    mona = _create_patient(
         first_name='Mona',
         last_name='Simpson',
         date_of_birth=date(1940, 3, 15),
@@ -200,7 +202,7 @@ def _create_test_data() -> None:
         first_name=marge.first_name,
         last_name=marge.last_name,
         username='QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2',
-        email='muhc.app.mobile@gmail.com',
+        email='marge@opalmedapps.ca',
         language='en',
         phone_number='+15551234567',
         legacy_id=1,
@@ -209,21 +211,34 @@ def _create_test_data() -> None:
     user_homer = _create_caregiver(
         first_name=homer.first_name,
         last_name=homer.last_name,
-        username='homer_username_undefined',
-        email='homer@opaldevapps.ca',
+        username='PyKlcbRpMLVm8lVnuopFnFOHO4B3',
+        email='homer@opalmedapps.ca',
         language='fr',
         phone_number='+15557654321',
         legacy_id=2,
+        # homer is blocked: he lost access due to him being unstable
+        is_active=False,
     )
 
     user_bart = _create_caregiver(
         first_name=bart.first_name,
         last_name=bart.last_name,
-        username='bart_username_undefined',
-        email='bart@opaldevapps.ca',
-        language='en',
+        username='SipDLZCcOyTYj7O3C8HnWLalb4G3',
+        email='bart@opalmedapps.ca',
+        language='fr',
         phone_number='+498999998123',
         legacy_id=3,
+    )
+
+    user_mona = _create_caregiver(
+        first_name=mona.first_name,
+        last_name=mona.last_name,
+        username='61DXBRwLCmPxlaUoX6M1MP9DiEl1',
+        email='mona@opalmedapps.ca',
+        language='fr',
+        phone_number='+15144758941',
+        legacy_id=4,
+        is_active=False,
     )
 
     # get relationship types
@@ -308,6 +323,35 @@ def _create_test_data() -> None:
         request_date=date_bart_fourteen,
         start_date=date_bart_fourteen,
     )
+
+    # Marge --> Mona: Mandatary
+    _create_relationship(
+        patient=mona,
+        caregiver=user_marge,
+        relationship_type=type_mandatary,
+        status=RelationshipStatus.EXPIRED,
+        request_date=_relative_date(today, -5),
+        start_date=_relative_date(today, -3),
+        end_date=_relative_date(today, -2),
+        reason='Patient deceased.',
+    )
+
+    # Mona --> Mona: Self
+    _create_relationship(
+        patient=mona,
+        caregiver=user_mona,
+        relationship_type=type_self,
+        status=RelationshipStatus.EXPIRED,
+        request_date=_relative_date(today, -5),
+        start_date=_relative_date(today, -4),
+        end_date=_relative_date(today, -2),
+        reason='Patient deceased.',
+    )
+    # create the same security question and answers for the caregivers
+    _create_security_answers(user_marge)
+    _create_security_answers(user_homer)
+    _create_security_answers(user_bart)
+    _create_security_answers(user_mona)
 
 
 def _create_institution() -> Institution:
@@ -534,6 +578,50 @@ def _create_relationship(
 
     relationship.full_clean()
     relationship.save()
+
+
+def _create_security_answer(caregiver: CaregiverProfile, question: str, answer: str) -> None:
+    security_answer = SecurityAnswer.objects.create(user=caregiver, question=question, answer=answer)
+    security_answer.full_clean()
+    security_answer.save()
+
+
+def _create_security_answers(caregiver: CaregiverProfile) -> None:
+    language = caregiver.user.language
+
+    question1 = (
+        'What is the name of your first pet?'
+        if language == 'en'
+        else
+        'Quel est le nom de votre premier animal de compagnie?'
+    )
+    question2 = (
+        'What was the name of your favorite superhero as a child?'
+        if language == 'en'
+        else
+        'Quel était le nom de votre super-héros préféré durant votre enfance?'
+    )
+    question3 = (
+        'What was the color of your first car'
+        if language == 'en'
+        else
+        'Quelle était la couleur de votre première voiture?'
+    )
+    _create_security_answer(
+        caregiver,
+        question1,
+        '5ed4c7167f059c5b864fd775f527c5a88794f9f823fea73c6284756b31a08faf6f9f950473c5aa7cdb99c56bc7807517fe4c4a0bd67318bcaec508592dd6d917',  # noqa: E501
+    )
+    _create_security_answer(
+        caregiver,
+        question2,
+        'f3b49c229cc474b3334dd4a3bbe827a866cbf6d6775cde7a5c42da24b4f15db8c0e564c4ff20754841c2baa9dafffc2caa02341010456157b1de9b927f24a1e6',  # noqa: E501
+    )
+    _create_security_answer(
+        caregiver,
+        question3,
+        'a7dbabba9a0371fbdb92724a5ca66401e02069089b1f3a100374e61f934fe9e959215ae0327de2bc064a9dfc351c4d64ef89bd47e95be0198a1f466c3518cc1d',  # noqa: E501
+    )
 
 
 def _create_date(relative_years: int, month: int, day: int) -> date:

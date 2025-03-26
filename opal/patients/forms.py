@@ -62,6 +62,22 @@ class AccessRequestManagementForm(forms.Form):
     current_step = forms.CharField(widget=forms.HiddenInput())
 
 
+def _is_not_mrn_or_single_site(form: forms.Form) -> bool:
+    """
+    Check whether the form's `card_type` has not MRN selected or there is only one site.
+
+    Args:
+        form: django form object expected to have a card type field
+
+    Returns:
+        True if there is only one site or the selected `card_type` is MRN, False otherwise
+    """
+    site_count = Site.objects.all().count()
+    card_type = form['card_type'].value()
+
+    return card_type != constants.MedicalCard.mrn.name or site_count == 1
+
+
 class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
     """Access request form that allows a user to search for a patient."""
 
@@ -73,15 +89,9 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
     site = DynamicField(
         forms.ModelChoiceField,
         queryset=Site.objects.all(),
-        # TODO: initialize to first site if there is only one
-        # check if initial can be a callable to accomplish this
         label=_('Hospital'),
-        # TODO: required when MRN but only if there is more than one site
-        # might be better to move it into a function
         required=lambda form: form['card_type'].value() == constants.MedicalCard.mrn.name,
-        # TODO: disabled when not MRN or when MRN and there is only one site
-        # might be better to move it into a function
-        disabled=lambda form: form['card_type'].value() != constants.MedicalCard.mrn.name,
+        disabled=_is_not_mrn_or_single_site,
     )
     medical_number = forms.CharField(label=_('Identification Number'))
 
@@ -97,6 +107,15 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
 
         # store response for patient searched in hospital
         self.patient: Union[OIEPatientData, Patient, None] = None
+
+        # initialize site with a site object when there is a single site and card type is mrn
+        site_field: DynamicField = self.fields['site']
+        cardtype_initial_value = self.initial.get('card_type')
+
+        if site_field.queryset.count() == 1 and cardtype_initial_value == constants.MedicalCard.mrn.name:
+            self.fields['site'].initial = site_field.queryset.first()
+        else:
+            self.fields['site'].initial = None
 
         # TODO: potential improvement: make a mixin for all access request forms
         # that initializes the form helper and sets these two properties
@@ -155,7 +174,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             # TODO: look in the Patient model first, only if not found search via OIE
             # TODO: ensure that the patient is only retrieved once when doing the search (should already be handled)
             if card_type == constants.MedicalCard.ramq.name:
-                self.patient = Patient.objects.filter(first_name='Marge').first()
+                self.patient = Patient.objects.filter(ramq=medical_number).first()
             else:
                 # TODO: handle connection errors here, i.e., raise helpful validation error
                 self.patient = self._fake_oie_response()
@@ -346,6 +365,11 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 ),
             ))
 
+        # TODO: filter out self if there is already a self relationship
+        # at this point there would be a Patient instance if it exists
+        # then use utils.valid_relationship_types(patient)
+        # otherwise search_relationship_types_by_patient_age
+        # see old access request form
         available_choices = utils.search_relationship_types_by_patient_age(date_of_birth).values_list('id', flat=True)
         self.fields['relationship_type'].widget.available_choices = available_choices
 
@@ -1008,7 +1032,15 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 self.instance.type,
             ),
         })
+
         available_choices = utils.valid_relationship_types(self.instance.patient)
+
+        # get the RelationshipType record that corresponds to the instance
+        existing_choice = RelationshipType.objects.filter(pk=self.instance.type.pk)
+
+        # combine the instance value and with the valid relationshiptypes
+        available_choices |= existing_choice
+
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
 
         # setting the value of caregiver first and last names
@@ -1016,6 +1048,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         self.fields['first_name'].initial = self.instance.caregiver.user.first_name
 
         self.helper = FormHelper(self)
+        self.helper.attrs = {'novalidate': ''}
         self.helper.layout = Layout(
             Row(
                 CrispyField('first_name', wrapper_class='col-md-6'),

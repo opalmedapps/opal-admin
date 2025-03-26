@@ -331,6 +331,17 @@ def test_relationship_end_date_beyond_boundary() -> None:
         relationship.clean()
 
 
+def test_relationship_pending_not_apply_self_role() -> None:
+    """Ensure that the relationship Pending status does not apply for the Self relationship."""
+    self_type = RelationshipType.objects.self_type()
+    relationship = factories.Relationship(type=self_type)
+    relationship.status = RelationshipStatus.PENDING
+
+    expected_message = '"Pending" status does not apply for the Self relationship.'
+    with assertRaisesMessage(ValidationError, expected_message):
+        relationship.clean()
+
+
 def test_relationship_invalid_dates_constraint() -> None:
     """Ensure that the date cannot be saved if start date is later than end date."""
     relationship = factories.Relationship()
@@ -372,7 +383,7 @@ def test_relationship_can_update_existing_self() -> None:
     self_type = RelationshipType.objects.self_type()
 
     relationship = factories.Relationship(type=self_type)
-
+    relationship.status = RelationshipStatus.CONFIRMED
     relationship.end_date = None  # type: ignore[assignment]
     relationship.full_clean()
 
@@ -384,6 +395,7 @@ def test_relationship_clean_unsaved_instance() -> None:
     patient = factories.Patient()
     caregiver = factories.CaregiverProfile()
     relationship = factories.Relationship.build(patient=patient, caregiver=caregiver, type=self_type)
+    relationship.status = RelationshipStatus.CONFIRMED
 
     relationship.full_clean()
 

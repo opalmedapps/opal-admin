@@ -29,16 +29,17 @@ from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
 
 from opal.caregivers.models import RegistrationCode
-from opal.core.utils import generate_random_registration_code, generate_random_uuid
+from opal.core.utils import generate_random_registration_code, generate_random_uuid, qr_code
 from opal.core.views import CreateUpdateView, UpdateView
 from opal.patients import forms, tables
-from opal.services.hospital.hospital_data import OIEPatientData
+from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.models import Caregiver
 
 from . import constants
 from .filters import ManageCaregiverAccessFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .utils import create_access_request
 
 _StorageValue = str | dict[str, Any]
 
@@ -96,7 +97,8 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
     """
 
     template_name = 'patients/access_request/new_access_request.html'
-    template_name_confirm = 'patients/access_request/access_request_confirm.html'
+    template_name_confirmation_code = 'patients/access_request/confirmation_code.html'
+    template_name_confirmation = 'patients/access_request/confirmation.html'
     prefix = 'search'
 
     forms = OrderedDict({
@@ -171,11 +173,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                     next_form_class = self.forms[next_step]
                     current_forms.append(next_form_class(**self._get_form_kwargs(next_step)))
                 else:
-                    # TODO: avoid resubmit via Post/Redirect/Get pattern: https://stackoverflow.com/a/6320124
-                    # TODO: create relationship, patient (if new) etc.
-                    return render(self.request, 'patients/access_request/qr_code.html', {
-                        'qrcode': base64.b64encode(self._generate_qr_code('').getvalue()).decode(),
-                    })
+                    return self._done(current_forms)
             else:
                 print("some forms are invalid (or the next button wasn't clicked)")
                 for form in current_forms:
@@ -219,6 +217,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
 
         if len(current_forms) >= 2 and current_forms[0].is_valid():
             patient_form = current_forms[1]
+
             if patient_form.patient:
                 patients = [patient_form.patient]
             else:
@@ -241,9 +240,8 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
         if current_step == 'confirm' or next_step == 'confirm':
             # populate relationship type (in case it is just the ID)
             relationship_form.full_clean()
-            # TODO: convert to correct user type to have the user-facing name for it (via constants.TYPE_USERS)
-            # might be helpful to use an enum like done with MedicalCard
             user_type = relationship_form.cleaned_data['user_type']
+            # might be helpful to use an enum like done with MedicalCard
             is_existing_user = user_type == '1'
 
             if is_existing_user:
@@ -254,26 +252,44 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
 
         return context_data
 
-    def _generate_qr_code(self, registration_code: str) -> io.BytesIO:
-        """
-        Generate a QR code for Opal registration system.
+    def _done(self, current_forms: list[Form]) -> HttpResponse:  # noqa: WPS210 (too many local variables)
+        patient_form: forms.AccessRequestConfirmPatientForm = current_forms[1]  # type: ignore[assignment]
+        # at this point the patient cannot be None
+        patient: Patient | OIEPatientData = patient_form.patient  # type: ignore[assignment]
 
-        Args:
-            registration_code: registration code
+        relationship_form: forms.AccessRequestRequestorForm = current_forms[2]  # type: ignore[assignment]
+        # populate relationship type (in case it is just the ID)
+        relationship_form.full_clean()
 
-        Returns:
-            a stream of in-memory bytes for a QR-code image
-        """
-        factory = svg.SvgImage
-        img = qrcode.make(
-            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            image_factory=factory,
-            box_size=constants.QR_CODE_BOX_SIZE,
+        caregiver = (
+            relationship_form.existing_user
+            or (relationship_form.cleaned_data['first_name'], relationship_form.cleaned_data['last_name'])
         )
-        stream = io.BytesIO()
-        img.save(stream)
 
-        return stream
+        relationship, registration_code = create_access_request(
+            patient=patient,
+            caregiver=caregiver,
+            relationship_type=relationship_form.cleaned_data['relationship_type'],
+        )
+
+        context: dict[str, Any] = {
+            'relationship': relationship,
+            'patient': relationship.patient,
+            'requestor': relationship.caregiver,
+        }
+        template_name = self.template_name_confirmation
+
+        if registration_code:
+            code_url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!code={registration_code.code}'
+            context.update({
+                'registration_url': settings.OPAL_USER_REGISTRATION_URL,
+                'registration_code': registration_code.code,
+                'qr_code': base64.b64encode(qr_code(code_url)).decode(),
+            })
+            template_name = self.template_name_confirmation_code
+
+        # TODO: avoid resubmit via Post/Redirect/Get pattern: https://stackoverflow.com/a/6320124
+        return render(self.request, template_name, context)
 
     def _get_prefix(self, form_class: Type[Form]) -> Optional[str]:
         """
@@ -359,7 +375,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
 
         self.request.session.modified = True
 
-    def _get_form_kwargs(self, step: str) -> dict[str, Any]:
+    def _get_form_kwargs(self, step: str) -> dict[str, Any]:  # noqa: WPS210 (too many local variables)
         """
         Return the kwargs for the form of the given step.
 
@@ -383,8 +399,15 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                 patient = Patient.objects.get(pk=patient_data)
                 date_of_birth = patient.date_of_birth
             else:
-                patient = json.loads(patient_data)
-                date_of_birth = date.fromisoformat(patient['date_of_birth'])
+                patient_json = json.loads(patient_data)
+                date_of_birth = date.fromisoformat(patient_json['date_of_birth'])
+                # convert JSON back to OIEPatientData for consistency (so it is either Patient or OIEPatientData)
+                patient_json['mrns'] = [
+                    OIEMRNData(**mrn)
+                    for mrn in patient_json['mrns']
+                ]
+                patient_json['date_of_birth'] = date_of_birth
+                patient = OIEPatientData(**patient_json)
 
             if step == 'patient':
                 kwargs.update({
@@ -659,14 +682,14 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         # create the registration code instance for the relationship and validate the registration code
         registration_code = RegistrationCode(
             relationship=relationship,
-            code=generate_random_registration_code(settings.INSTITUTION_CODE, constants.REGISTRATION_CODE_LENGTH),
+            code=generate_random_registration_code(settings.INSTITUTION_CODE, 10),
         )
         registration_code.full_clean()
         registration_code.save()
         # generate QR code for Opal registration system
         stream = self._generate_qr_code(registration_code.code)
 
-        return render(self.request, 'patients/access_request/qr_code.html', {
+        return render(self.request, 'patients/access_request/confirmation_code.html', {
             'qrcode': base64.b64encode(stream.getvalue()).decode(),
             'patient': relationship.patient,
             'hospital': new_form_data['sites'],

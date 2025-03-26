@@ -11,4 +11,4 @@
   {% endif %}
 {% endfragment %}
 
-<input type="submit" class="btn btn-{{ type|match:"save:primary,delete:danger" }}" value="{% translate button_text|strip %}">
+<input type="submit" class="btn btn-{{ type|match:"save:primary,delete:danger" }}" value="{{ button_text|strip }}">
