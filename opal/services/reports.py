@@ -70,7 +70,7 @@ class ReportService():
         self.logger.error('The generated questionnaire PDF report is not in the base64 format.')
         return None
 
-    def _request_base64_report(  # noqa: C901
+    def _request_base64_report(
         self,
         report_data: QuestionnaireReportRequestData,
     ) -> Optional[str]:

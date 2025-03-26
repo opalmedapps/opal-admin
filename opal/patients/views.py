@@ -133,7 +133,7 @@ class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many 
             search_form=forms.AccessRequestSearchPatientForm(prefix=self.prefix),
         ))
 
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:  # noqa: C901, WPS210, WPS231
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:  # noqa: WPS210
         """
         Handle POST requests: instantiate a form instance with the passed POST variables and then check if it's valid.
 
@@ -629,7 +629,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
 
         return super().get(request, *args, **kwargs)
 
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:  # noqa: WPS210
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         """
         Save updates for the `first_name` and `last_name` fields that are related to the caregiver/user module.
 
