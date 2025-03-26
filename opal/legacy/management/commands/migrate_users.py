@@ -13,9 +13,10 @@ from opal.users.models import ClinicalStaff
 class Access(Enum):
     """An enumeration of supported access rights."""
 
-    # Legacy has 0-7 access privileges, I only added write with an assumption it is '3'
+    # Legacy has 0-7 access privileges
+    READ = 1  # noqa: WPS115
     WRITE = 3  # noqa: WPS115
-    READ = 0  # noqa: WPS115
+    DELETE = 7  # noqa: WPS115
 
 
 class Command(BaseCommand):
