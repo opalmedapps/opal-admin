@@ -1051,7 +1051,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         label=_('Access End'),
     )
     reason = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': '2'}),
+        widget=forms.Textarea(attrs={'rows': '4'}),
         label=_('Explanation for Change(s)'),
         required=False,
     )
