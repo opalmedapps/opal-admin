@@ -9,6 +9,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from rest_framework import exceptions
 from rest_framework import serializers as drf_serializers
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView, get_object_or_404
@@ -107,19 +108,24 @@ class GetCaregiverPatientsList(APIView):
         Args:
             request: Http request made by the listener needed to retrive `Appuserid`.
 
+        Raises:
+            ParseError: If the caregiver username was not provided.
+
         Returns:
             Http response with the list of patients for a given caregiver.
         """
         user_id = request.headers.get('Appuserid')
-        if user_id:
-            relationships = Relationship.objects.get_patient_list_for_caregiver(user_id)
-            response = Response(
-                CaregiverPatientSerializer(relationships, many=True).data,
-            )
-        else:
-            response = Response([], status=status.HTTP_400_BAD_REQUEST)
 
-        return response
+        if not user_id:
+            raise exceptions.ParseError(
+                'Requests to APIs using CaregiverPatientPermissions must provide a string'
+                + " 'Appuserid' header representing the current user.",
+            )
+
+        relationships = Relationship.objects.get_patient_list_for_caregiver(user_id)
+        return Response(
+            CaregiverPatientSerializer(relationships, many=True).data,
+        )
 
 
 class RetrieveRegistrationCodeMixin(APIView):

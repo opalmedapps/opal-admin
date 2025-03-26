@@ -17,6 +17,12 @@ from opal.patients import factories as patient_factory
 from opal.users.models import Caregiver, User
 
 
+def test_get_caregiver_patient_list_missing_user_id_header(user_client: APIClient) -> None:
+    """Test patient list endpoint to return a bad request if the `Appuserid` header is missing."""
+    response = user_client.get(reverse('api:caregivers-patient-list'))
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
 def test_get_caregiver_patient_list_no_patient(api_client: APIClient, admin_user: User) -> None:
     """Test patient list endpoint to return an empty list if there is no relationship."""
     api_client.force_login(user=admin_user)
