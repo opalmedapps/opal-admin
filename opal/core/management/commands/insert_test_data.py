@@ -96,6 +96,16 @@ def _create_test_data() -> None:
         Decimal('45.473343'),
         Decimal('-73.600802'),
     )
+    _create_site(
+        institution,
+        'Lachine Hospital',
+        'Hôpital de Lachine',
+        'LAC',
+        PARKING_URLS,
+        ('https://muhc.ca/how-get-lachine-hospital', 'https://cusm.ca/se-rendre-lhopital-de-lachine'),
+        Decimal('45.44121'),
+        Decimal('-73.676791'),
+    )
 
     # patients
     marge = _create_patient(
