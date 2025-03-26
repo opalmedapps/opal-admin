@@ -1,18 +1,9 @@
 """Table definitions for models of the hospital settings app."""
-from types import MappingProxyType
-
 from django.utils.translation import gettext_lazy as _
 
 import django_tables2 as tables
 
 from .models import Institution, Site
-
-TABLE_ATTRS = MappingProxyType({
-    'class': 'table table-bordered table-hover',
-    'thead': {
-        'class': 'thead-light',
-    },
-})
 
 
 class InstitutionTable(tables.Table):
@@ -36,7 +27,12 @@ class InstitutionTable(tables.Table):
         model = Institution
         fields = ['code', 'name', 'actions']
         empty_text = _('No institutions defined.')
-        attrs = TABLE_ATTRS
+        attrs = {
+            'class': 'table table-bordered table-hover',
+            'thead': {
+                'class': 'thead-light',
+            },
+        }
 
 
 class SiteTable(tables.Table):
@@ -60,4 +56,9 @@ class SiteTable(tables.Table):
         model = Site
         fields = ['code', 'name', 'actions']
         empty_text = _('No sites defined.')
-        attrs = TABLE_ATTRS
+        attrs = {
+            'class': 'table table-bordered table-hover',
+            'thead': {
+                'class': 'thead-light',
+            },
+        }
