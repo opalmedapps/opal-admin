@@ -5,20 +5,20 @@ from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.patients.models import HospitalPatient, Patient, Relationship
 
 
-class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):
-    """Hospital patient serializer used to get encryption values for registration web site."""
-
-    class Meta:
-        model = HospitalPatient
-        fields = ['mrn', 'is_active']
-
-
 class PatientSerializer(DynamicFieldsSerializer):
     """Patient serializer used to get patient information."""
 
     class Meta:
         model = Patient
         fields = ['first_name', 'last_name', 'date_of_birth', 'sex', 'ramq']
+
+
+class HospitalPatientSerializer(DynamicFieldsSerializer):
+    """Hospital patient serializer used to get Hospital patient information."""
+
+    class Meta:
+        model = HospitalPatient
+        fields = ['mrn', 'is_active']
 
 
 class HospitalPatientAndSiteSerializer(serializers.ModelSerializer):
