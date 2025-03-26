@@ -598,7 +598,7 @@ class ManageSearchUpdateView(ManageRelationshipUpdateMixin):
         url_renderer = self.request.META.get('HTTP_REFERER')
         # provide previous link with parameters to update on clicking cancel button
         if url_renderer and 'search=' in url_renderer:
-            context['cancel_url'] = self.request.META.get('HTTP_REFERER')
+            context['cancel_url'] = url_renderer
         # to maintain the value of `cancel_url` when there is a validation error
         else:
             try:
