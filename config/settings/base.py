@@ -405,9 +405,6 @@ LOGGING = {
 # base URL to old OpalAdmin (no trailing slash)
 OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
 
-# Legacy URL for generating questionnaires report
-LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').geturl()
-
 # Source System/Integration Engine
 SOURCE_SYSTEM_HOST = env.url('SOURCE_SYSTEM_HOST').geturl()
 SOURCE_SYSTEM_USER = env('SOURCE_SYSTEM_USER')
