@@ -99,11 +99,10 @@ markdownlint:
   # this is not a Python script so we don't need to do all this extra stuff
   before_script:
     - markdownlint-cli2 --version
-    - npm install markdownlint-cli2-formatter-pretty
-    # install our custom GitLab formatter
-    # to convert output to code quality artefact
+    # install our custom GitLab formatter to convert output to code quality artefact
     - npm install .gitlab/markdownlint/markdownlint-cli2-formatter-gitlab
   script:
+    # use the config file that is stored outside the root
     - markdownlint-cli2-config .gitlab/markdownlint/.markdownlint-cli2.yaml "**/*.md" "#.venv" "#node_modules"
   artifacts:
     when: always
