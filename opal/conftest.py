@@ -86,3 +86,14 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
         settings (LazySettings): All the configurations of the `opalAdmin backend` service
     """
     settings.MEDIA_ROOT = str(tmp_path.joinpath('media/'))
+
+
+@pytest.fixture(autouse=True)
+def _set_email_backend_service(tmp_path: Path, settings: LazySettings) -> None:
+    """Fixture changing the `EMAIL_BACKEND` value of the `settings.py`.
+
+    Args:
+        tmp_path (Path): Object to a temporary directory which is unique to each test function
+        settings (LazySettings): All the configurations of the `opalAdmin backend` service
+    """
+    settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'

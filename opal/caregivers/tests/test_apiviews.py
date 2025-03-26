@@ -154,7 +154,6 @@ class TestApiEmailVerification:
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email = 'test@muhc.mcgill.ca'
-        settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
         response = api_client.post(
             reverse(
                 'api:verify-email',
