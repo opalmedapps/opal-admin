@@ -20,6 +20,11 @@ def test_institution_form_with_missing_code(incomplete_institution_form: Institu
     assert not incomplete_institution_form.is_valid()
 
 
+def test_institution_form_with_missing_delay_fields(institution_form_no_delay_fields: InstitutionForm) -> None:
+    """Ensure that the institution form checks for the missing delay fields."""
+    assert not institution_form_no_delay_fields.is_valid()
+
+
 def test_institution_update(institution_form: InstitutionForm) -> None:
     """Ensure that a valid institution form can be saved."""
     institution_form.save()
@@ -32,6 +37,16 @@ def test_institution_update_with_missing_field(incomplete_institution_form: Inst
         incomplete_institution_form.save()
     except ValueError:
         assert not incomplete_institution_form.is_valid()
+
+    assert Institution.objects.count() == 0
+
+
+def test_institution_update_with_missing_delay_fields(institution_form_no_delay_fields: InstitutionForm) -> None:
+    """Ensure that the institution form checks for missing delay fields when creating/updating an institution."""
+    try:
+        institution_form_no_delay_fields.save()
+    except ValueError:
+        assert not institution_form_no_delay_fields.is_valid()
 
     assert Institution.objects.count() == 0
 
