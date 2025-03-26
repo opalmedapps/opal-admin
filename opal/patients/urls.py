@@ -3,17 +3,11 @@ URL configuration for patients.
 
 Provides URLs for regular views.
 """
-from django.urls import path, re_path
+from django.urls import path
 
 from . import views
 
 app_name = 'patients'
-
-form_wizard = views.AccessRequestView.as_view(
-    views.AccessRequestView.form_list,
-    url_name='patients:access-request-step',
-    done_step_name='finished',
-)
 
 urlpatterns = [
     # Relationship Types Pages
@@ -38,14 +32,14 @@ urlpatterns = [
         name='relationshiptype-delete',
     ),
     # Patients pages
-    re_path(
-        '^access-request/(?P<step>.+)/$',
-        form_wizard,
-        name='access-request-step',
-    ),
     path(
         'access-request/',
-        form_wizard,
+        views.AccessRequestView.as_view(views.AccessRequestView.form_list),
         name='access-request',
+    ),
+    path(
+        'generate-qr-code/',
+        views.QrCode.as_view(),
+        name='generate-qr-code',
     ),
 ]

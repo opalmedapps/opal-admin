@@ -8,6 +8,8 @@ from django.urls import reverse
 import pytest
 from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 
+from opal.patients.forms import SelectSiteForm
+
 from .. import factories, models, tables
 
 
@@ -113,7 +115,7 @@ def test_relationshiptype_delete(user_client: Client) -> None:
 
 # tuple with patients wizard form templates and corresponding url names
 test_patient_multiform_url_template_data: list[Tuple] = [
-    ('patients:access-request-step', 'patients/access_request/access_request.html'),
+    ('patients:access-request', 'patients/access_request/access_request.html'),
 ]
 
 
@@ -124,7 +126,7 @@ def test_patient_wizard_urls_exist(
     template: str,
 ) -> None:
     """Ensure that each step pages exists at desired URL address."""
-    url = reverse(url_name, kwargs={'step': 'site'})
+    url = reverse(url_name)
     response = user_client.get(url)
 
     assert response.status_code == HTTPStatus.OK
@@ -137,7 +139,7 @@ def test_patient_wizard_urls_use_correct_template(
     template: str,
 ) -> None:
     """Ensure that each step pages exist at desired URL address."""
-    url = reverse(url_name, kwargs={'step': 'site'})
+    url = reverse(url_name)
     response = user_client.get(url)
 
     assertTemplateUsed(response, template)
@@ -150,8 +152,22 @@ def test_patient_wizard_current_step(
     template: str,
 ) -> None:
     """Ensure that each step pages exist at desired URL address."""
-    url = reverse(url_name, kwargs={'step': 'site'})
+    url = reverse(url_name)
     response = user_client.get(url)
     management_form = response.context['wizard']['management_form']
 
     assertQuerysetEqual(management_form['current_step'].value(), 'site')
+
+
+def test_access_request_done_redirects(user_client: Client) -> None:
+    """Ensure that the form is valid, the page is submitted and redirectted to a qr code page."""
+    url = reverse('patients:generate-qr-code')
+    response = user_client.get(url)
+    site = factories.Site(name='Montreal General Hospital', code='MGH')
+    form_data = {
+        'sites': site,
+    }
+    form = SelectSiteForm(data=form_data)
+
+    if form.is_valid():
+        assert response.status_code == HTTPStatus.OK
