@@ -3,20 +3,20 @@
 # Testing
 #
 mypy==0.942  # https://github.com/python/mypy
-django-stubs==1.10.1  # https://github.com/typeddjango/django-stubs
-pytest==7.1.2  # https://github.com/pytest-dev/pytest
+pytest==7.1.3  # https://github.com/pytest-dev/pytest
 pytest-mock==3.8.2  # https://github.com/pytest-dev/pytest-mock/
 pytest-socket==0.5.1  # https://github.com/miketheman/pytest-socket
-pytest-sugar==0.9.4  # https://github.com/Frozenball/pytest-sugar
+pytest-sugar==0.9.5  # https://github.com/Frozenball/pytest-sugar
 pytest-randomly==3.12.0  # https://github.com/pytest-dev/pytest-randomly
 django-test-migrations==1.2.0  # https://github.com/wemake-services/django-test-migrations
-djangorestframework-stubs==1.5.0  # https://github.com/typeddjango/djangorestframework-stubs
-coverage==6.4.1  # https://github.com/nedbat/coveragepy
+coverage==6.4.4  # https://github.com/nedbat/coveragepy
 factory-boy==3.2.1  # https://github.com/FactoryBoy/factory_boy
 
 # mypy library stubs
 # see: https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
-types-requests==2.27.16
+django-stubs==1.10.1  # https://github.com/typeddjango/django-stubs
+djangorestframework-stubs==1.5.0  # https://github.com/typeddjango/djangorestframework-stubs
+types-requests==2.28.9
 
 # Code quality
 #
@@ -43,9 +43,8 @@ wemake-python-styleguide==0.16.1
 
 # Additional flake8 plugins
 flake8-builtins==1.5.3  # https://github.com/gforcada/flake8-builtins
-# Use specific commit until new release available that supports flake8 4.x
-git+https://github.com/rocioar/flake8-django@000b0f70eeb84797ffca9cb3fe85bffe6251cbf1  # https://github.com/rocioar/flake8-django
-flake8-pytest==1.3  # https://github.com/vikingco/flake8-pytest
+flake8-django==1.1.5  # https://github.com/rocioar/flake8-django
+flake8-pytest==1.4  # https://github.com/vikingco/flake8-pytest
 flake8-pytest-style==1.6.0  # https://github.com/m-burst/flake8-pytest-style
 
 
@@ -56,7 +55,7 @@ pytest-django==4.5.2  # https://github.com/pytest-dev/pytest-django
 
 # Pre-commit
 #
-pre-commit==2.19.0  # https://github.com/pre-commit/pre-commit
+pre-commit==2.20.0  # https://github.com/pre-commit/pre-commit
 
 # Beautiful Soup parser for unit tests
 #

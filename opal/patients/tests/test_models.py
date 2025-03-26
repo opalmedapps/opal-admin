@@ -127,16 +127,58 @@ def test_patient_invalid_sex() -> None:
         factories.Patient(sex='I')
 
 
-def test_patient_health_insurance_number_unique() -> None:
+def test_patient_ramq_unique() -> None:
     """Ensure that the health insurance number is unique."""
-    factories.Patient(health_insurance_number='TEST')
-    patient = factories.Patient(health_insurance_number='TEST2')
+    factories.Patient(ramq='TEST12345678')
+    patient = factories.Patient(ramq='TEST21234567')
 
-    message = "Duplicate entry 'TEST' for key 'health_insurance_number'"
+    message = "Duplicate entry 'TEST12345678' for key 'ramq'"
 
     with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
-        patient.health_insurance_number = 'TEST'
+        patient.ramq = 'TEST12345678'
         patient.save()
+
+
+def test_patient_ramq_max() -> None:
+    """Ensure the length of patient ramq is not greater than 12."""
+    patient = factories.Patient()
+    patient.ramq = 'ABCD5678901234'
+    expected_message = '{0}, {1}'.format(
+        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits'",
+        "'Ensure this value has at most 12 characters (it has 14).']",
+    )
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        patient.clean_fields()
+
+
+def test_patient_ramq_min() -> None:
+    """Ensure the length of patient ramq is not less than 12."""
+    patient = factories.Patient(ramq='ABCD56')
+    expected_message = '{0}'.format(
+        "'ramq': ['Ensure this value has at least 12 characters (it has 6).'",
+    )
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        patient.clean_fields()
+
+
+def test_patient_ramq_format() -> None:
+    """Ensure the first 4 chars of patient ramq are alphabetic and last 8 chars are numeric."""
+    patient = factories.Patient(ramq='ABC123456789')
+    expected_message = '{0}'.format(
+        "'ramq': ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']",
+    )
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        patient.clean_fields()
+
+
+def test_patient_ramq_default_value() -> None:
+    """Ensure patient ramq default value is NULL."""
+    patient = Patient(
+        date_of_birth='2022-09-02',
+        sex='m',
+    )
+    patient.save()
+    assert patient.ramq is None
 
 
 def test_relationship_str() -> None:
@@ -265,7 +307,6 @@ def test_hospitalpatient_many_patients_one_site() -> None:
     patient2 = factories.Patient(
         first_name='bbb',
         last_name='222',
-        health_insurance_number='TEST',
     )
     site = factories.Site(name="Montreal Children's Hospital")
 

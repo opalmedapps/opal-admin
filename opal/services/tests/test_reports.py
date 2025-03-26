@@ -148,7 +148,7 @@ def test_request_base64_report_error(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
-    assert base64_report == ''
+    assert base64_report is None
 
 
 def test_request_base64_report_bad_request(mocker: MockerFixture) -> None:
@@ -167,7 +167,7 @@ def test_request_base64_report_bad_request(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
-    assert base64_report == ''
+    assert base64_report is None
 
 
 def test_request_base64_report_json_key_error(mocker: MockerFixture) -> None:
@@ -185,7 +185,7 @@ def test_request_base64_report_json_key_error(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
-    assert base64_report == ''
+    assert base64_report is None
 
 
 def test_request_base64_report_json_decode_error(mocker: MockerFixture) -> None:
@@ -203,7 +203,7 @@ def test_request_base64_report_json_decode_error(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
-    assert base64_report == ''
+    assert base64_report is None
 
 
 def test_request_base64_report_is_string(mocker: MockerFixture) -> None:
@@ -240,7 +240,7 @@ def test_request_base64_report_not_string(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
-    assert base64_report == ''
+    assert base64_report is None
 
 
 def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: SettingsWrapper) -> None:
@@ -310,7 +310,7 @@ def test_questionnaire_report_error(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
-    assert base64_report == ''
+    assert base64_report is None
 
 
 def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
@@ -327,7 +327,7 @@ def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
-    assert base64_report == ''
+    assert base64_report is None
 
 
 def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
@@ -344,7 +344,7 @@ def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
-    assert base64_report == ''
+    assert base64_report is None
 
 
 def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
@@ -361,4 +361,4 @@ def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
-    assert base64_report == ''
+    assert base64_report is None

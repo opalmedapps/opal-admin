@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-13 15:28-0400\n"
+"POT-Creation-Date: 2022-09-06 12:01-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,6 +21,11 @@ msgstr ""
 #: opal/hospital_settings/apps.py
 msgid "Hospital Settings"
 msgstr "Paramètres Hospitalier"
+
+#: opal/hospital_settings/forms.py
+#: opal/hospital_settings/templates/hospital_settings/site/site_form.html
+msgid "Save"
+msgstr "Enregistrer"
 
 #: opal/hospital_settings/models.py
 msgid "Name"
@@ -111,16 +116,6 @@ msgstr "Mettre à jour"
 msgid "Create"
 msgstr "Créer"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_form.html
-msgid "Cancel"
-msgstr "Annuler"
-
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_form.html
-msgid "Save"
-msgstr "Enregistrer"
-
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_list.html
 msgid "New Institution"
 msgstr "Nouvel établissement"
@@ -133,6 +128,10 @@ msgstr "Supprimer le site"
 #, python-format
 msgid "Are you sure you want to delete the following site: %(object)s?"
 msgstr "Voulez-vous vraiment supprimer le site suivant: %(object)s ?"
+
+#: opal/hospital_settings/templates/hospital_settings/site/site_form.html
+msgid "Cancel"
+msgstr "Annuler"
 
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html
 msgid "New Site"
