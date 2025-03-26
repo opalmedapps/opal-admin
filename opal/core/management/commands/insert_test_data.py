@@ -738,7 +738,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             legacy_document_id=16,
         )
         # Create a fake pathology for laurie as well to complete her dataset
-        # Wednesday received her pathology 15 days ago
+        # Laurie received her pathology 15 days ago
         _create_pathology_result(
             patient=laurie,
             site=sites['RVH'],
@@ -752,6 +752,21 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
                 datetime.now() - relativedelta(years=6, months=0, days=15),
             ),
             legacy_document_id=31,
+        )
+        # Rory pathology 12 days ago
+        _create_pathology_result(
+            patient=rory,
+            site=sites['RVH'],
+            collected_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=12),
+            ),
+            received_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=12),
+            ),
+            reported_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=12),
+            ),
+            legacy_document_id=32,
         )
 
 

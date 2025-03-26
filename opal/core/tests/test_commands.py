@@ -42,9 +42,9 @@ class TestInsertTestData(CommandTestMixin):
         assert CaregiverProfile.objects.count() == 7
         assert Relationship.objects.count() == 12
         assert SecurityAnswer.objects.count() == 18
-        assert GeneralTest.objects.count() == 8
-        assert PathologyObservation.objects.count() == 8
-        assert Note.objects.count() == 8
+        assert GeneralTest.objects.count() == 9
+        assert PathologyObservation.objects.count() == 9
+        assert Note.objects.count() == 9
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_ohigph(self) -> None:
