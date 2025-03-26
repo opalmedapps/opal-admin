@@ -745,18 +745,9 @@ def patient_mock(mocker: MockerFixture) -> Any:
 
 
 @pytest.fixture
-def mock_institution(mocker: MockerFixture) -> Any:
-    """Fixture to mock the Instituion."""
-    institution_mock = mocker.MagicMock()
-    institution_mock.logo.path = Path('opal/tests/fixtures/test_logo.png')  # Set mock path
-    mocker.patch('opal.hospital_settings.models.Institution.objects.get', return_value=institution_mock)
-    return institution_mock
-
-
-@pytest.fixture
-def questionnaire_data_mock(mocker: MockerFixture) -> Any:
+def questionnaire_data_mock() -> list[QuestionnaireData]:
     """Fixture to create a mock questionnaire data list."""
-    question_mock = mocker.MagicMock(
+    question = Question(
         question_text='Sample question',
         question_label='Sample label',
         question_type_id=1,
@@ -772,13 +763,22 @@ def questionnaire_data_mock(mocker: MockerFixture) -> Any:
         ],
     )
     return [
-        mocker.MagicMock(
+        QuestionnaireData(
             questionnaire_id=1,
             questionnaire_title='Test Questionnaire',
             last_updated=dt.datetime(2024, 11, 25, 10, 0, 0),
-            questions=[question_mock],
+            questions=[question],
         ),
     ]
+
+
+@pytest.fixture
+def mock_institution(mocker: MockerFixture) -> Any:
+    """Fixture to mock the Instituion."""
+    institution_mock = mocker.MagicMock()
+    institution_mock.logo.path = Path('opal/tests/fixtures/test_logo.png')  # Set mock path
+    mocker.patch('opal.hospital_settings.models.Institution.objects.get', return_value=institution_mock)
+    return institution_mock
 
 
 @pytest.fixture
