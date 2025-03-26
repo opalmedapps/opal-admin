@@ -86,7 +86,7 @@ class RelationshipPendingAccessForm(forms.ModelForm):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
-        self.fields['status'].choices = [  # type: ignore[arg-type]
+        self.fields['status'].choices = [  # type: ignore[attr-defined]
             (choice.value, choice.label) for choice in Relationship.valid_statuses(
                 RelationshipStatus(self.instance.status),
             )
