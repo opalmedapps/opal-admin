@@ -72,7 +72,7 @@ class RelationshipManager(models.Manager['Relationship']):
         )
 
         # filter out legacy_id=None to avoid typing problems when doing at the DB-level
-        # the result type is otherwise ValuesQuerySet[Relationship, Optional[int]]
+        # the result type is otherwise QuerySet[Relationship, int | None]
         return [
             legacy_id
             for legacy_id in relationships.values_list('patient__legacy_id', flat=True)

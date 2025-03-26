@@ -9,7 +9,7 @@ exclude: |
 
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v5.0.0
   hooks:
   - id: check-added-large-files
   - id: check-merge-conflict
@@ -31,14 +31,14 @@ repos:
   hooks:
   - id: markdownlint-cli2
 - repo: https://github.com/asottile/pyupgrade
-  rev: v3.17.0
+  rev: v3.18.0
   hooks:
   - id: pyupgrade
     # desired Python version needs to be set explicitly
     # see: https://github.com/asottile/pyupgrade/issues/768
     args: ['--py311-plus']
 - repo: https://github.com/adamchainz/django-upgrade
-  rev: 1.21.0
+  rev: 1.22.1
   hooks:
   - id: django-upgrade
     args: [--target-version, "4.2"]
