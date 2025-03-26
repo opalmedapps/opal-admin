@@ -376,7 +376,7 @@ def test_accessrequestsearchform_mrn_fail_oie(mocker: MockerFixture) -> None:
         return_value={
             'status': 'error',
             'data': {
-                'message': 'connection_error',
+                'message': ['connection_error'],
             },
         },
     )
@@ -390,6 +390,7 @@ def test_accessrequestsearchform_mrn_fail_oie(mocker: MockerFixture) -> None:
     form.fields['site'].initial = site
 
     assert not form.is_valid()
+    assert len(form.non_field_errors()) == 1
     assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
 
 
@@ -449,7 +450,7 @@ def test_accessrequestsearchform_ramq_fail_oie(mocker: MockerFixture) -> None:
         return_value={
             'status': 'error',
             'data': {
-                'message': 'connection_error',
+                'message': ['connection_error'],
             },
         },
     )
@@ -461,6 +462,7 @@ def test_accessrequestsearchform_ramq_fail_oie(mocker: MockerFixture) -> None:
     form = forms.AccessRequestSearchPatientForm(data=form_data)
 
     assert not form.is_valid()
+    assert len(form.non_field_errors()) == 1
     assert form.non_field_errors()[0] == 'Could not establish a connection to the hospital interface.'
 
 
@@ -496,7 +498,7 @@ def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
             'status': 'error',
-            'data': {'message': 'not_found'},
+            'data': {'message': ['not_found']},
         },
     )
 
@@ -508,7 +510,30 @@ def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None
 
     assert not form.is_valid()
     assert form.patient is None
+    assert len(form.non_field_errors()) == 1
     assert form.non_field_errors()[0] == 'No patient could be found.'
+
+
+def test_accessrequestsearchform_no_test_patient(mocker: MockerFixture) -> None:
+    """Ensure that the validation fails if the patient is not a test patient."""
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'error',
+            'data': {'message': ['no_test_patient']},
+        },
+    )
+
+    data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'medical_number': 'TESS53510111',
+    }
+    form = forms.AccessRequestSearchPatientForm(data=data)
+
+    assert not form.is_valid()
+    assert form.patient is None
+    assert len(form.non_field_errors()) == 1
+    assert form.non_field_errors()[0] == 'Patient is not a test patient.'
 
 
 def test_accessrequestrequestorform_form_filled_default() -> None:

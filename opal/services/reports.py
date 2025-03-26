@@ -1,6 +1,7 @@
 """Module providing business logic for generating PDF reports using legacy PHP endpoints."""
 
 import json
+import logging
 from pathlib import Path
 from typing import NamedTuple, Optional
 
@@ -37,6 +38,7 @@ class ReportService():
     """Service that provides functionality for generating questionnaire pdf reports."""
 
     content_type = 'application/json'
+    logger = logging.getLogger(__name__)
 
     def generate_questionnaire_report(
         self,
@@ -50,13 +52,23 @@ class ReportService():
         Returns:
             str: encoded base64 string of the generated PDF report
         """
-        # return a `None` if questionnaire report request data is not valid
+        # return a `None` if questionnaire report request data are not valid
         if not self._is_questionnaire_report_request_data_valid(report_data):
+            self.logger.error(
+                '{0} {1}'.format(
+                    'The questionnaire report request data are not valid.',
+                    'Please check the data that are being passed to the legacy PHP report service.',
+                ),
+            )
             return None
 
         base64_report = self._request_base64_report(report_data)
 
-        return base64_report if Base64Util().is_base64(base64_report) is True else None
+        if Base64Util().is_base64(base64_report) is True:
+            return base64_report
+
+        self.logger.error('The generated questionnaire PDF report is not in the base64 format.')
+        return None
 
     def _request_base64_report(
         self,
@@ -89,20 +101,37 @@ class ReportService():
                 timeout=60,
             )
         except RequestException:
+            self.logger.exception('An error occurred while requesting the legacy PHP report service.')
             return None
 
-        # Return a `None` if response status code is not success (e.g, different than 2**)
+        # Return a `None` if response status code is not success (e.g., different than 2**)
         if status.is_success(response.status_code) is False:
+            self.logger.error(
+                'The status code of the response from the PHP report service should be "200".\n{0}\n{1}'.format(
+                    response.reason,
+                    response.text,
+                ),
+            )
             return None
 
         # Return a `None` string if cannot read encoded pdf report
         try:
             base64_report = response.json()['data']['base64EncodedReport']
         except (KeyError, JSONDecodeError):
+            self.logger.exception(
+                '{0} {1}'.format(
+                    'Cannot read "base64EncodedReport" key in the JSON response received from PHP report service.\n',
+                    response.text,
+                ),
+            )
             return None
 
         # Check if ['data']['base64EncodedReport'] is a string and return its value. If not a string, return `None`.
-        return base64_report if isinstance(base64_report, str) else None
+        if isinstance(base64_report, str):
+            return base64_report
+
+        self.logger.error('The "base64EncodedReport" value received from the PHP report service is not a string.')
+        return None
 
     def _is_questionnaire_report_request_data_valid(
         self,

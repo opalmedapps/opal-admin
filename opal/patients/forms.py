@@ -1,5 +1,5 @@
 """This module provides forms for the `patients` app."""
-from datetime import date, timedelta
+from datetime import timedelta
 from typing import Any, Optional, Union, cast
 
 from django import forms
@@ -20,7 +20,7 @@ from opal.core import validators
 from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
-from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver, User
 
 from . import constants, utils
@@ -87,7 +87,7 @@ class DisableFieldsMixin(forms.Form):
             args: additional arguments
             kwargs: additional keyword arguments
         """
-        super().__init__(*args, **kwargs)  # noqa: WPS204 (overused expression; move to setup.cfg?)
+        super().__init__(*args, **kwargs)
 
         self.has_existing_data = False
 
@@ -109,7 +109,7 @@ class AccessRequestManagementForm(forms.Form):
     current_step = forms.CharField(widget=forms.HiddenInput())
 
 
-class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):  # noqa: WPS214
+class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
     """Access request form that allows a user to search for a patient."""
 
     card_type = forms.ChoiceField(
@@ -124,7 +124,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         label=_('Hospital'),
         required=is_mrn_selected,
         disabled=is_not_mrn_or_single_site,
-        empty_label=get_site_empty_label,  # noqa: WPS506
+        empty_label=get_site_empty_label,
     )
     medical_number = forms.CharField(label=_('Identification Number'))
 
@@ -237,7 +237,11 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             if not self.patient:
                 response = self.oie_service.find_patient_by_mrn(medical_number, site.code)
 
-        self._handle_response(response)
+        if response:
+            self._handle_response(response)
+
+        if not self.patient and not self._errors:
+            self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
     def _handle_response(self, response: dict[str, Any]) -> None:
         """Handle the response from OIE service.
@@ -245,36 +249,15 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         Args:
             response: OIE service response
         """
-        if response:
-            if response['status'] == 'success':
-                self.patient = response['data']
-            else:
-                message = response['data'].get('message')
+        if response['status'] == 'success':
+            self.patient = response['data']
+        else:
+            messages = response['data'].get('message')
 
-                if message == 'connection_error':
-                    self.add_error(NON_FIELD_ERRORS, _('Could not establish a connection to the hospital interface.'))
-                elif message == 'no_test_patient':
-                    self.add_error(NON_FIELD_ERRORS, _('Patient is not a test patient.'))
-
-            if not self.patient:
-                self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
-
-    def _fake_oie_response(self) -> OIEPatientData:
-        return OIEPatientData(
-            date_of_birth=date.fromisoformat('2018-01-01'),
-            first_name='Lisa',
-            last_name='Simpson',
-            sex='F',
-            alias='',
-            ramq='SIML86531906',
-            ramq_expiration=None,
-            deceased=False,
-            death_date_time=None,
-            mrns=[
-                OIEMRNData(site='MGH', mrn='9999993', active=True),
-                OIEMRNData(site='RVH', mrn='9999993', active=True),
-            ],
-        )
+            if 'connection_error' in messages:
+                self.add_error(NON_FIELD_ERRORS, _('Could not establish a connection to the hospital interface.'))
+            elif 'no_test_patient' in messages:
+                self.add_error(NON_FIELD_ERRORS, _('Patient is not a test patient.'))
 
 
 class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
@@ -397,12 +380,19 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form.is_existing_user_selected(),
     )
 
-    def __init__(self, patient: Patient | OIEPatientData, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        patient: Patient | OIEPatientData,
+        existing_user: Optional[CaregiverProfile] = None,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize the layout for card type select box and card number input box.
 
         Args:
             patient: a `Patient` or `OIEPatientData` instance
+            existing_user: a `CaregiverProfile` if it a user was previously found, None otherwise
             args: additional arguments
             kwargs: additional keyword arguments
         """
@@ -425,7 +415,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         super().__init__(*args, **kwargs)
 
-        self.existing_user: Optional[CaregiverProfile] = None
+        self.existing_user: Optional[CaregiverProfile] = existing_user
 
         self.helper = FormHelper()
         self.helper.form_tag = False
