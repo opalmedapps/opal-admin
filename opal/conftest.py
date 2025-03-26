@@ -175,3 +175,15 @@ def django_db_setup(django_db_setup: None, django_db_blocker: _DatabaseBlocker) 
         with connections['questionnaire'].cursor() as conn:
             conn.execute(sql_content)
             conn.close()
+
+
+@pytest.fixture(autouse=True)
+def _set_twilio_info(settings: LazySettings) -> None:
+    """Fixture changing the `TWILIO` setting to the in-memory backend.
+
+    Args:
+        settings: the Django settings
+    """
+    settings.TWILIO_ACCOUNT_SID = 'ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+    settings.TWILIO_AUTH_TOKEN = str('your_auth_token')
+    settings.TWILIO_FROM = '+15145551234'
