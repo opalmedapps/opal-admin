@@ -11,7 +11,7 @@ from opal.caregivers.factories import CaregiverProfile
 from opal.users.factories import Caregiver
 from opal.users.models import User
 
-from .. import constants, factories, forms
+from .. import factories, forms
 from ..models import Relationship, RelationshipStatus, RelationshipType, RoleType
 
 pytestmark = pytest.mark.django_db
@@ -42,11 +42,6 @@ def test_relationshippending_form_is_valid() -> None:
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
-        date_of_birth=datetime.date.today() - relativedelta(
-            years=14,
-        ),
-        relationship_type=factories.RelationshipType(),
-        request_date=datetime.date.today(),
     )
     assert relationshippending_form.is_valid()
 
@@ -55,7 +50,11 @@ def test_relationshippending_missing_startdate() -> None:
     """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship.build(
-        patient=factories.Patient(),
+        patient=factories.Patient(
+            date_of_birth=datetime.date.today() - relativedelta(
+                years=14,
+            ),
+        ),
         type=relationship_type,
     )
     form_data = model_to_dict(relationship_info, exclude=[
@@ -66,11 +65,6 @@ def test_relationshippending_missing_startdate() -> None:
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
-        date_of_birth=datetime.date.today() - relativedelta(
-            years=14,
-        ),
-        relationship_type=relationship_type,
-        request_date=datetime.date.today(),
     )
 
     assert not relationshippending_form.is_valid()
@@ -84,11 +78,6 @@ def test_relationshippending_update() -> None:
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
-        date_of_birth=datetime.date.today() - relativedelta(
-            years=14,
-        ),
-        relationship_type=factories.RelationshipType(),
-        request_date=datetime.date.today(),
     )
 
     relationshippending_form.save()
@@ -100,7 +89,11 @@ def test_relationshippending_update_fail() -> None:
     """Ensure that the `RelationshipPendingAccess` form checks for a missing start date field."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship.build(
-        patient=factories.Patient(),
+        patient=factories.Patient(
+            date_of_birth=datetime.date.today() - relativedelta(
+                years=14,
+            ),
+        ),
         type=relationship_type,
     )
     form_data = model_to_dict(relationship_info, exclude=[
@@ -112,11 +105,6 @@ def test_relationshippending_update_fail() -> None:
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
-        date_of_birth=datetime.date.today() - relativedelta(
-            years=14,
-        ),
-        relationship_type=relationship_type,
-        request_date=datetime.date.today(),
     )
 
     assert not relationshippending_form.is_valid()
@@ -127,7 +115,11 @@ def test_relationshippending_form_date_validated() -> None:
     """Ensure that the `RelationshipPendingAccess` form is validated for startdate>enddate."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship.build(
-        patient=factories.Patient(),
+        patient=factories.Patient(
+            date_of_birth=datetime.date.today() - relativedelta(
+                years=14,
+            ),
+        ),
         caregiver=factories.CaregiverProfile(),
         type=relationship_type,
         start_date=datetime.date(2022, 6, 1),  # noqa: WPS432
@@ -139,13 +131,6 @@ def test_relationshippending_form_date_validated() -> None:
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
-        date_of_birth=datetime.date.today() - relativedelta(
-            years=14,
-        ),
-        relationship_type=relationship_type,
-        request_date=relationship_info.start_date + relativedelta(
-            years=constants.RELATIVE_YEAR_VALUE,
-        ),
     )
 
     assert not relationshippending_form.is_valid()
@@ -156,7 +141,11 @@ def test_relationship_pending_status_reason() -> None:
     """Ensure that the `RelationshipPendingAccess` form is validated for reason is not empty when status is denied."""
     relationship_type = RelationshipType.objects.guardian_caregiver()
     relationship_info = factories.Relationship.build(
-        patient=factories.Patient(),
+        patient=factories.Patient(
+            date_of_birth=datetime.date.today() - relativedelta(
+                years=14,
+            ),
+        ),
         caregiver=factories.CaregiverProfile(),
         type=relationship_type,
         status=RelationshipStatus.DENIED,
@@ -165,23 +154,14 @@ def test_relationship_pending_status_reason() -> None:
         reason='',
     )
     form_data = model_to_dict(relationship_info)
-    print(form_data)
 
     message = 'Reason is mandatory when status is denied or revoked.'
     pending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
-        date_of_birth=datetime.date.today() - relativedelta(
-            years=14,
-        ),
-        relationship_type=relationship_type,
-        request_date=relationship_info.start_date + relativedelta(
-            years=constants.RELATIVE_YEAR_VALUE,
-        ),
     )
 
     assert not pending_form.is_valid()
-    print(pending_form.errors)
     assert pending_form.errors['reason'][0] == message
 
 
