@@ -1,9 +1,11 @@
 """App core util functions."""
+import csv
 import io
 import random
 import secrets
 import string
 import uuid
+from typing import Any
 
 import qrcode
 from qrcode.image import svg
@@ -78,3 +80,34 @@ def qr_code(text: str) -> bytes:
     image.save(stream)
 
     return stream.getvalue()
+
+
+def dict_to_csv_bytesio(input_dict: dict[str | int, Any]) -> io.BytesIO:
+    """Convert a flat dictionary to a CSV file.
+
+    The CSV file is returned in a BytesIO object format.
+
+    Args:
+        input_dict: flat dictionary with string keys and values of any type
+
+    Returns:
+        `BytesIO` object containing the CSV data
+    """
+    output = io.BytesIO()
+    # Wrap the BytesIO object with TextIOWrapper to write text data
+    text_output = io.TextIOWrapper(output, encoding='utf-8', newline='')
+    writer = csv.writer(text_output)
+
+    # Write the header row (keys of the dictionary)
+    writer.writerow(input_dict.keys())
+    # Write the data row (values of the dictionary)
+    writer.writerow(input_dict.values())
+
+    # Flush the write buffers of the stream if applicable
+    text_output.flush()
+    # Detach the underlying buffer (BytesIO object) from the TextIOWrapper
+    # After detaching, the TextIOWrapper is closed, but the buffer remains open and can be used.
+    text_output.detach()
+    # Rewind the buffer to the beginning
+    output.seek(0)
+    return output
