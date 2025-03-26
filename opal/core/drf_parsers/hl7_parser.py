@@ -30,7 +30,7 @@ class HL7Parser(BaseParser):
             'NTE': self._parse_nte_segment,
         }
 
-    def parse(
+    def parse(  # noqa: WPS210, WPS234
         self,
         stream: IO[Any],
         media_type: str | None = None,
@@ -76,7 +76,7 @@ class HL7Parser(BaseParser):
             # Find the appropriate parsing function based on the segment name
             parse_function = self.segment_parsers.get(segment_name)
             # If a parsing function is defined, use it to parse the segment
-            if parse_function and segment_name=='PID':
+            if parse_function and segment_name == 'PID':
                 # Only 1 PID segment is ever expected
                 message_dict[segment_name] = parse_function(segment)  # type: ignore[operator]
             elif parse_function:
@@ -103,7 +103,9 @@ class HL7Parser(BaseParser):
             'date_of_birth': datetime.strptime(segment.pid_7.to_er7(), '%Y%m%d').date(),
             'sex': segment.pid_8.to_er7(),
             'ramq': segment.pid_2.pid_2_1.to_er7(),
-            'mrn_sites': self._remove_invalid_sites([(mrn_site.pid_3_1.to_er7(), mrn_site.pid_3_4.to_er7()) for mrn_site in segment.pid_3]),
+            'mrn_sites': self._remove_invalid_sites(
+                [(mrn_site.pid_3_1.to_er7(), mrn_site.pid_3_4.to_er7()) for mrn_site in segment.pid_3],
+            ),
             'address_street': segment.pid_11.pid_11_1.to_er7(),
             'address_city': segment.pid_11.pid_11_3.to_er7(),
             'address_province': segment.pid_11.pid_11_4.to_er7(),
@@ -282,17 +284,17 @@ class HL7Parser(BaseParser):
             'note_comment_text': segment.nte_3.nte_3_1.to_er7(),
         }
 
-    def _format_datetime_from_er7(self, field: str, format: str) -> datetime:
+    def _format_datetime_from_er7(self, field: str, isoformat: str) -> datetime:
         """Convert HL7-er7 format to timezone-aware datetime.
 
         Args:
             field: Extracted HL7 field from the message
-            format: Isoformat for the datetime function
+            isoformat: Isoformat for the datetime function
 
         Returns:
             Formatted datetime object
         """
-        return timezone.make_aware(datetime.strptime(field, format))
+        return timezone.make_aware(datetime.strptime(field, isoformat))
 
     def _fix_breaking_characters(self, field: str) -> str:
         """Replace incorrectly encoded or interpretted characters with linebreaks.
@@ -303,9 +305,12 @@ class HL7Parser(BaseParser):
         Returns:
             replaced string
         """
-        return field.replace('\\E\\.br\\E\\', '\n')
+        return field.replace('\\E\\.br\\E\\', '\n')  # noqa: WPS342
 
-    def _remove_invalid_sites(self, mrn_site_list: list[tuple[str, str]]) -> list[tuple[str, str]] | None:
+    def _remove_invalid_sites(
+        self,
+        mrn_site_list: list[tuple[str, str]],
+    ) -> list[tuple[str, str]] | None:
         """Remove any identifiers using an invalid hospital site.
 
         Example before and after:
