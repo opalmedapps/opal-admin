@@ -61,7 +61,7 @@ SITE_DATA = MappingProxyType({
             ('https://muhc.ca/getting-glen-site', 'https://cusm.ca/se-rendre-au-site-glen'),
             Decimal('45.473435'),
             Decimal('-73.601611'),
-            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montreal', 'QC', '5149341934', ''),
+            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5149341934', ''),
         ),
         (
             'Montreal General Hospital',
@@ -74,7 +74,7 @@ SITE_DATA = MappingProxyType({
             ),
             Decimal('45.496828'),
             Decimal('-73.588782'),
-            ('Cedar Avenue', '1650', 'H3G1A4', 'Montreal', 'QC', '5149341934', ''),
+            ('Cedar Avenue', '1650', 'H3G1A4', 'Montréal', 'QC', '5149341934', ''),
         ),
         (
             "Montreal Children's Hospital",
@@ -84,7 +84,7 @@ SITE_DATA = MappingProxyType({
             ('https://www.thechildren.com/getting-hospital', 'https://www.hopitalpourenfants.com/se-rendre-lhopital'),
             Decimal('45.473343'),
             Decimal('-73.600802'),
-            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montreal', 'QC', '5144124400', ''),
+            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5144124400', ''),
         ),
         (
             'Lachine Hospital',

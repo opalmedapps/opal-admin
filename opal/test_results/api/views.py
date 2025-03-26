@@ -68,12 +68,12 @@ class CreatePathologyView(generics.CreateAPIView):
         self.report_service.generate_pathology_report(
             pathology_data=PathologyData(
                 site_logo_path=Path(Institution.objects.get().logo.path),
-                site_name='Decarie Boulevard',
-                site_building_address='1001',
-                site_city='Montreal',
-                site_province='QC',
-                site_postal_code='H4A3J1',
-                site_phone='5149341934',
+                site_name='',  # TODO: decide what site name we should include (QSCCD-1438)
+                site_building_address='',  # TODO: decide what site name we should include (QSCCD-1438)
+                site_city='',  # TODO: decide what site name we should include (QSCCD-1438)
+                site_province='',  # TODO: decide what site name we should include (QSCCD-1438)
+                site_postal_code='',  # TODO: decide what site name we should include (QSCCD-1438)
+                site_phone='',  # TODO: decide what site name we should include (QSCCD-1438)
                 patient_first_name=patient.first_name,
                 patient_last_name=patient.last_name,
                 patient_date_of_birth=patient.date_of_birth,
