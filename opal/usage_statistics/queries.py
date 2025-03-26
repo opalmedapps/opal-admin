@@ -10,6 +10,8 @@ from opal.legacy import models as legacy_models
 from opal.patients import models as patients_models
 from opal.users import models as users_models
 
+from .models import DailyPatientDataReceived
+
 # GROUP REPORTING - POPULATION-LEVEL AGGREGATE STATISTICS
 
 
@@ -131,4 +133,52 @@ def fetch_devices_summary(
             'patient_device_identifier_ser_num',
             filter=models.Q(device_type=3),
         ),
+    )
+
+
+def fetch_patients_received_data_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+) -> dict[str, Any]:
+    """Fetch grouped patients received data summary from the `DailyPatientDataReceived` model.
+
+    Args:
+        start_date: the beginning of the time period of the patients received data summary (inclusive)
+        end_date: the end of the time period of the patients received data summary (inclusive)
+
+    Returns:
+        patients received data summary for a given time period
+    """
+    self_relationships = patients_models.Relationship.objects.select_related(
+        'patient',
+        'caregiver__user',
+    ).filter(
+        type__role_type=patients_models.RoleType.SELF,
+    )
+    patients_with_logins = [rel.patient.id for rel in self_relationships.exclude(caregiver__user__last_login=None)]
+    patients_with_no_logins = [rel.patient.id for rel in self_relationships.filter(caregiver__user__last_login=None)]
+
+    aggregated_patients_received_data = {
+        'no_appointment_labs_notes': models.Count(
+            'id',
+            filter=models.Q(
+                last_appointment_received=None,
+                last_lab_received=None,
+                last_document_received=None,
+                patient_id__in=patients_with_logins,
+            ),
+        ),
+        # 'has_appointment_only': {},
+        # 'has_labs_only': {},
+        # 'has_clinical_notes_only': {},
+        # 'using_app_after_receiving_new_data': {},
+        # 'not_using_app_after_receiving_new_data': {},
+        # 'not_using_app_and_no_data': {},
+    }
+
+    return DailyPatientDataReceived.objects.filter(
+        action_date__gte=start_date,
+        action_date__lte=end_date,
+    ).aggregate(
+        **aggregated_patients_received_data,
     )
