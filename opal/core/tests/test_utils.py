@@ -122,7 +122,7 @@ def test_dict_to_csv_single_dict_success() -> None:
     input_dict = [{'name': 'Alice', 'age': '30', 'city': 'New York'}]
     expected_csv = 'name,age,city\r\nAlice,30,New York\r\n'
     csv_bytes = utils.dict_to_csv(input_dict)
-    csv_content = csv_bytes.decode('utf-8')
+    csv_content = csv_bytes.decode()
     assert csv_content == expected_csv
 
 
@@ -140,7 +140,7 @@ def test_dict_to_csv_multiple_dicts_success() -> None:
         + 'Charlie,35,Chicago\r\n'
     )
     csv_bytes = utils.dict_to_csv(input_list)
-    csv_content = csv_bytes.decode('utf-8')
+    csv_content = csv_bytes.decode()
     assert csv_content == expected_csv
 
 
@@ -149,7 +149,7 @@ def test_dict_to_csv_empty() -> None:
     input_list: list[dict[str, Any]] = []
     expected_csv = '\r\n'
     csv_bytes = utils.dict_to_csv(input_list)
-    csv_content = csv_bytes.decode('utf-8')
+    csv_content = csv_bytes.decode()
     assert csv_content == expected_csv
 
 
@@ -161,7 +161,7 @@ def test_dict_to_csv_mixed_value_types() -> None:
     ]
     expected_csv = 'name,age,is_active\r\nAlice,30,True\r\nBob,,False\r\n'
     csv_bytes = utils.dict_to_csv(input_list)
-    csv_content = csv_bytes.decode('utf-8')
+    csv_content = csv_bytes.decode()
     assert csv_content == expected_csv
 
 
@@ -177,7 +177,7 @@ def test_dict_to_csv_special_chars() -> None:
         + '"value1, with comma","value\nwith newline","value ""with quotes"""\r\n'
     )
     csv_bytes = utils.dict_to_csv(input_dict)
-    csv_content = csv_bytes.decode('utf-8')
+    csv_content = csv_bytes.decode()
     assert csv_content == expected_csv
 
 
@@ -186,7 +186,7 @@ def test_dict_to_csv_numbers() -> None:
     input_dict = [{'integer': 123, 'float': 0.5, 'none': None}]
     expected_csv = 'integer,float,none\r\n123,0.5,\r\n'
     csv_bytes = utils.dict_to_csv(input_dict)
-    csv_content = csv_bytes.decode('utf-8')
+    csv_content = csv_bytes.decode()
     assert csv_content == expected_csv
 
 
@@ -195,7 +195,7 @@ def test_dict_to_csv_boolean_values() -> None:
     input_dict = [{'is_active': True, 'is_admin': False}]
     expected_csv = 'is_active,is_admin\r\nTrue,False\r\n'
     csv_bytes = utils.dict_to_csv(input_dict)
-    csv_content = csv_bytes.decode('utf-8')
+    csv_content = csv_bytes.decode()
     assert csv_content == expected_csv
 
 
@@ -204,7 +204,7 @@ def test_dict_to_csv_order_preservation() -> None:
     input_dict = [{'first': 1, 'second': 2, 'third': 3}]
     expected_csv = 'first,second,third\r\n1,2,3\r\n'
     csv_bytes = utils.dict_to_csv(input_dict)
-    csv_content = csv_bytes.decode('utf-8')
+    csv_content = csv_bytes.decode()
     assert csv_content == expected_csv
 
 
@@ -213,7 +213,7 @@ def test_dict_to_csv_unicode_characters() -> None:
     input_dict = [{'montreal': 'Montréal', 'greeting': 'こんにちは', 'farewell': 'さようなら'}]
     expected_csv = 'montreal,greeting,farewell\r\nMontréal,こんにちは,さようなら\r\n'
     csv_bytes = utils.dict_to_csv(input_dict)
-    csv_content = csv_bytes.decode('utf-8')
+    csv_content = csv_bytes.decode()
     assert csv_content == expected_csv
 
 
@@ -229,7 +229,7 @@ def test_dict_to_csv_large_numbers() -> None:
         + '98765432109876543210,9.876543210987654\r\n'
     )
     csv_bytes = utils.dict_to_csv(input_dict)
-    csv_content = csv_bytes.decode('utf-8')
+    csv_content = csv_bytes.decode()
     # Adjust expected output for floating-point precision
     assert csv_content == expected_csv
 
@@ -242,5 +242,5 @@ def test_dict_to_csv_none_values() -> None:
     ]
     expected_csv = 'key1,key2\r\n,value2\r\nvalue1,\r\n'
     csv_bytes = utils.dict_to_csv(input_dict)
-    csv_content = csv_bytes.decode('utf-8')
+    csv_content = csv_bytes.decode()
     assert csv_content == expected_csv

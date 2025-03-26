@@ -126,4 +126,4 @@ def dict_to_csv(dicts: list[dict[str, Any]]) -> bytes:
 
     csv_string = buffer.getvalue()
     # Encode the string to bytes
-    return csv_string.encode('utf-8')
+    return csv_string.encode()
