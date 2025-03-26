@@ -29,7 +29,6 @@ msgid "Opal Verification Code"
 msgstr "Code de vérification Opal"
 
 #: opal/caregivers/api/views.py
-#| msgid "Registered"
 msgid "Registered Confirmation"
 msgstr "Confirmation enregistrée"
 
