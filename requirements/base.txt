@@ -45,7 +45,7 @@ openpyxl==3.1.5  # https://pypi.org/project/openpyxl/
 
 # Interactive data visualization
 #
-plotly==5.24.0  # https://pypi.org/project/plotly/
+plotly==5.24.1  # https://pypi.org/project/plotly/
 
 # twilio for sending SMS
 #
