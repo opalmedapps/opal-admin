@@ -421,3 +421,29 @@ class LegacyPatientTestResultFactory(DjangoModelFactory):
     result_date_time = timezone.make_aware(datetime(2018, 1, 1))
     unit_description = 'mmol'
     read_by = ''
+
+
+class LegacyOARoleFactory(DjangoModelFactory):
+    """LegacyOARole factory."""
+
+    class Meta:
+        model = models.LegacyOARole
+
+    name_en = Faker('name')
+    name_fr = Faker('name')
+    deletedby = Faker('name')
+    creationdate = timezone.make_aware(datetime(2018, 1, 1))
+    createdby = Faker('name')
+    updatedby = Faker('name')
+
+
+class LegacyOAUserFactory(DjangoModelFactory):
+    """LegacyOAUser factory."""
+
+    class Meta:
+        model = models.LegacyOAUser
+
+    username = Faker('name')
+    password = Faker('name')
+    onroleid = SubFactory(LegacyOARoleFactory)
+    date_added = timezone.make_aware(datetime(2018, 1, 1))
