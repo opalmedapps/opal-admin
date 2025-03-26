@@ -15,6 +15,20 @@ from ..models import CaregiverProfile
 pytestmark = pytest.mark.django_db
 
 
+def test_caregiverprofile_factory() -> None:
+    """The Caregiver Profile factory is building a valid model."""
+    profile = factories.CaregiverProfile()
+    profile.full_clean()
+
+
+def test_caregiverprofile_factory_multiple() -> None:
+    """The Caregiver Profile factory can build multiple default model instances."""
+    profile = factories.CaregiverProfile()
+    profile2 = factories.CaregiverProfile()
+
+    assert profile.user != profile2.user
+
+
 def test_caregiverprofile_str() -> None:
     """The `str` method returns the name of the associated user."""
     caregiver = user_factories.Caregiver(first_name='John', last_name='Wayne')
@@ -70,6 +84,57 @@ def test_caregiverprofile_legacy_id() -> None:
     profile.full_clean()
 
 
+def test_security_question_str() -> None:
+    """The `str` method returns the name of the security_question."""
+    question = factories.SecurityQuestion()
+    assert str(question) == 'Apple'
+
+
+def test_security_question_factory() -> None:
+    """Ensure the SecurityQuestion factory is building properly."""
+    question = factories.SecurityQuestion()
+    question.full_clean()
+
+
+def test_security_question_factory_multiple() -> None:
+    """Ensure the SecurityQuestion factory can build multiple default model instances."""
+    question = factories.SecurityQuestion()
+    question2 = factories.SecurityQuestion()
+
+    assert question != question2
+
+
+def test_security_question_active() -> None:
+    """Security Question is active as default."""
+    question = factories.SecurityQuestion()
+    assert question.is_active
+
+
+def test_security_answer_str() -> None:
+    """The `str` method returns the name of the user and the answer of security answer."""
+    answer = factories.SecurityAnswer()
+    caregiver = user_factories.Caregiver(first_name='first_name', last_name='last_name')
+    profile = CaregiverProfile()
+    profile.user = caregiver
+    answer.user = profile
+    assert str(answer) == 'Apple'
+
+
+def test_security_answer_factory() -> None:
+    """Ensure the SecurityAnswer factory is building properly."""
+    answer = factories.SecurityAnswer()
+    answer.full_clean()
+
+
+def test_security_answer_factory_multiple() -> None:
+    """Ensure the SecurityAnswer factory can build multiple default model instances."""
+    answer = factories.SecurityAnswer()
+    answer2 = factories.SecurityAnswer()
+
+    assert answer != answer2
+    assert answer.user != answer2.user
+
+
 def test_registrationcode_str() -> None:  # pylint: disable-msg=too-many-locals
     """The `str` method returns the registration code and status."""
     registration_code = factories.RegistrationCode()
@@ -80,6 +145,15 @@ def test_registrationcode_factory() -> None:
     """Ensure the Regtistrationcode factory is building properly."""
     registration_code = factories.RegistrationCode()
     registration_code.full_clean()
+
+
+def test_registrationcode_factory_multiple() -> None:
+    """Ensure the Regtistrationcode factory can build multiple default model instances."""
+    code = factories.RegistrationCode()
+    code2 = factories.RegistrationCode(code='test')
+
+    assert code != code2
+    assert code.relationship != code2.relationship
 
 
 def test_registrationcode_code_unique() -> None:

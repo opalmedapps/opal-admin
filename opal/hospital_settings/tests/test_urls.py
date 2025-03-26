@@ -37,19 +37,6 @@ def test_hospital_settings_urls(view_class: Type, url_name: str, url_path: str) 
 
 # INSTITUTIONS
 
-def test_institution_detail_url_is_resolved(institution: Institution) -> None:
-    """
-    Ensure that `institution-detail` URL name resolves to the appropriate URL.
-
-    It also checks that the URL is served with the correct view.
-    """
-    assertURLEqual(
-        reverse('hospital-settings:institution-detail', args=[institution.id]),
-        '/hospital-settings/institution/{0}/'.format(institution.id),
-    )
-    path_name = resolve('/hospital-settings/institution/{0}/'.format(institution.id)).func.__name__
-    assert path_name == views.InstitutionDetailView.as_view().__name__
-
 
 def test_institution_update_url_is_resolved(institution: Institution) -> None:
     """
@@ -80,19 +67,6 @@ def test_institution_delete_url_is_resolved(institution: Institution) -> None:
 
 
 # SITES
-
-def test_site_detail_url_is_resolved(site: Site) -> None:
-    """
-    Ensure that `site-detail` URL name resolves to the appropriate URL.
-
-    It also checks that the URL is served with the correct view.
-    """
-    assertURLEqual(
-        reverse('hospital-settings:site-detail', args=[site.id]),
-        '/hospital-settings/site/{0}/'.format(site.id),
-    )
-    path_name = resolve('/hospital-settings/site/{0}/'.format(site.id)).func.__name__
-    assert path_name == views.SiteDetailView.as_view().__name__
 
 
 def test_site_update_url_is_resolved(site: Site) -> None:

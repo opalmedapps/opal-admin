@@ -15,6 +15,20 @@ from ..models import HospitalPatient, RelationshipStatus, RelationshipType
 pytestmark = pytest.mark.django_db
 
 
+def test_relationshiptype_factory() -> None:
+    """Ensure the RelationshipType factory is building properly."""
+    relationship_type = factories.RelationshipType()
+    relationship_type.full_clean()
+
+
+def test_relationshiptype_factory_multiple() -> None:
+    """Ensure the RelationshipType factory can build multiple default model instances."""
+    relationship_type = factories.RelationshipType()
+    relationship_type2 = factories.RelationshipType()
+
+    assert relationship_type == relationship_type2
+
+
 def test_relationshiptype_str() -> None:
     """Ensure the `__str__` method is defined for the `RelationshipType` model."""
     relationship_type = RelationshipType(name='Test User Patient Relationship Type')
@@ -26,7 +40,8 @@ def test_relationshiptype_duplicate_names() -> None:
     factories.RelationshipType(name='Self')
 
     with assertRaisesMessage(IntegrityError, "Duplicate entry 'Self' for key 'name'"):  # type: ignore[arg-type]
-        factories.RelationshipType(name='Self')
+        relationship_type = factories.RelationshipType.build(name='Self')
+        relationship_type.save()
 
 
 def test_relationshiptype_min_age_lowerbound() -> None:
@@ -97,6 +112,14 @@ def test_patient_factory() -> None:
     patient.full_clean()
 
 
+def test_patient_factory_multiple() -> None:
+    """Ensure the Patient factory can build multiple default model instances."""
+    patient = factories.Patient()
+    patient2 = factories.Patient()
+
+    assert patient != patient2
+
+
 def test_relationship_str() -> None:
     """Ensure the `__str__` method is defined for the `Relationship` model."""
     patient = factories.Patient(first_name='Kobe', last_name='Briant')
@@ -119,6 +142,17 @@ def test_relationship_factory() -> None:
     """Ensure the Relationship factory is building properly."""
     relationship = factories.Relationship()
     relationship.full_clean()
+
+
+def test_relationship_factory_multiple() -> None:
+    """Ensure the Relationship factory can build multiple default model instances."""
+    relationship = factories.Relationship()
+    relationship2 = factories.Relationship()
+
+    assert relationship != relationship2
+    assert relationship.patient != relationship2.patient
+    assert relationship.caregiver != relationship2.caregiver
+    assert relationship.type == relationship2.type
 
 
 def test_relationship_default_status() -> None:
@@ -178,6 +212,16 @@ def test_hospitalpatient_factory() -> None:
     """Ensure the Patient factory is building properly."""
     hospital_patient = factories.HospitalPatient()
     hospital_patient.full_clean()
+
+
+def test_hospitalpatient_factory_multiple() -> None:
+    """Ensure the Patient factory can build multiple default model instances."""
+    hospital_patient = factories.HospitalPatient()
+    hospital_patient2 = factories.HospitalPatient()
+
+    assert hospital_patient != hospital_patient2
+    assert hospital_patient.patient != hospital_patient2.patient
+    assert hospital_patient.site != hospital_patient2.site
 
 
 def test_hospitalpatient_str() -> None:
