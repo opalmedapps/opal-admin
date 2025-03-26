@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any
 from django.db import models
 from django.db.models.functions import Coalesce
 
+from opal.patients import models as patient_models
+
 from . import constants
 
 if TYPE_CHECKING:
@@ -33,6 +35,7 @@ class RelationshipManager(models.Manager['Relationship']):
             'type',
         ).filter(
             caregiver__user__username=user_name,
+            status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
     def get_patient_id_list_for_caregiver(self, user_name: str) -> list[int]:
