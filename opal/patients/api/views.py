@@ -26,20 +26,8 @@ from ..utils import insert_security_answers, update_caregiver, update_patient_le
 class RetrieveRegistrationDetailsView(RetrieveAPIView):
     """Class handling GET requests for registration code values."""
 
-    lookup_url_kwarg = 'code'
-    lookup_field = 'code'
-
-    def get_queryset(self) -> QuerySet[caregiver_models.RegistrationCode]:
-        """
-        Override get_queryset to filter RegistrationCode by registration code.
-
-        Raises:
-            PermissionDenied: return forbbiden error for deceased patients.
-
-        Returns:
-            The queryset of RegistrationCode
-        """
-        queryset = caregiver_models.RegistrationCode.objects.select_related(
+    queryset = (
+        caregiver_models.RegistrationCode.objects.select_related(
             'relationship',
             'relationship__patient',
         ).prefetch_related(
@@ -47,10 +35,25 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
         ).filter(
             status=caregiver_models.RegistrationCodeStatus.NEW,
         )
-        patient = queryset.get().relationship.patient
-        if patient.date_of_death:
+    )
+
+    lookup_url_kwarg = 'code'
+    lookup_field = 'code'
+
+    def get_object(self) -> caregiver_models.RegistrationCode:
+        """
+        Override get_object to filter RegistrationCode by patient date_of_death.
+
+        Raises:
+            PermissionDenied: return forbidden error for deceased patients.
+
+        Returns:
+            The object of RegistrationCode
+        """
+        registration_code = self.get_queryset().get()
+        if registration_code.relationship.patient.date_of_death:
             raise PermissionDenied()
-        return queryset
+        return registration_code
 
     def get_serializer_class(self, *args: Any, **kwargs: Any) -> Type[serializers.BaseSerializer]:
         """Override 'get_serializer_class' to switch the serializer based on the GET parameter `detailed`.
