@@ -4,7 +4,6 @@ import datetime as dt
 from collections import UserDict
 from typing import Any, Union
 
-from django.conf import settings
 from django.db import models
 
 import pandas as pd
@@ -294,9 +293,9 @@ def export_data(    # noqa: WPS234
     # Generate the file in the required path and format
     match file_name.split('.')[-1]:
         case 'csv':
-            dataframe.to_csv(settings.USAGE_STATS_PATH / file_name, index=False)
+            dataframe.to_csv(file_name, index=False)
         case 'xlsx':
-            dataframe.to_excel(settings.USAGE_STATS_PATH / file_name, index=False)
+            dataframe.to_excel(file_name, index=False)
         case _:
             raise ValueError('Invalid file format, please use either csv or xlsx')
 

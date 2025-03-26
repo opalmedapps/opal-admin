@@ -440,10 +440,6 @@ SMS_FROM = env.str('SMS_FROM')
 # Path to the pathology reports folder
 PATHOLOGY_REPORTS_PATH = Path(env.str('PATHOLOGY_REPORTS_PATH'))
 
-# USAGE STATS SETTINGS
-# Path to the output folder for usage statistics data files
-USAGE_STATS_PATH = Path(env.str('USAGE_STATS_PATH'))
-
 # Third party apps settings
 # ------------------------------------------------------------------------------
 #

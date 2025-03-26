@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 from typing import Any
 
-from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -970,20 +969,16 @@ def _fetch_annotated_relationships() -> ValuesQuerySet[patient_models.Relationsh
 
 def test_export_data_empty_data(tmp_path: Path) -> None:
     """Ensure the export function handle the empty list."""
-    settings.USAGE_STATS_PATH = tmp_path
-
     expected_message = 'Invalid input, unable to export empty data'
     with assertRaisesMessage(
         ValueError,
         expected_message,
     ):
-        stats_utils.export_data([], '{0}test.random'.format(settings.USAGE_STATS_PATH))
+        stats_utils.export_data([], str(tmp_path / 'test.random'))
 
 
 def test_export_data_simple_dictionnary(tmp_path: Path) -> None:
     """Ensure the export function handle the input in form of dictionnary."""
-    settings.USAGE_STATS_PATH = tmp_path
-
     stats_factories.DailyUserPatientActivity(
         action_by_user=caregiver_factories.Caregiver(username='marge'),
     )
@@ -991,18 +986,16 @@ def test_export_data_simple_dictionnary(tmp_path: Path) -> None:
     model_name = query.model
     model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
     data_set = list(query.values(*model_fields))
-    assert not os.path.isfile(settings.USAGE_STATS_PATH / 'test_dict.csv')
-    stats_utils.export_data(dict(data_set[0]), 'test_dict.csv')
-    assert os.path.isfile(settings.USAGE_STATS_PATH / 'test_dict.csv')
+    assert not os.path.isfile(tmp_path / 'test_dict.csv')
+    stats_utils.export_data(dict(data_set[0]), str(tmp_path / 'test_dict.csv'))
+    assert os.path.isfile(tmp_path / 'test_dict.csv')
     assert model_fields == list(
-        pd.read_csv(settings.USAGE_STATS_PATH / 'test_dict.csv').head(),
+        pd.read_csv(tmp_path / 'test_dict.csv').head(),
     )
 
 
 def test_export_data_csv(tmp_path: Path) -> None:
     """Ensure the export function generate csv file with model queryset."""
-    settings.USAGE_STATS_PATH = tmp_path
-
     stats_factories.DailyUserPatientActivity(
         action_by_user=caregiver_factories.Caregiver(username='marge'),
     )
@@ -1010,18 +1003,16 @@ def test_export_data_csv(tmp_path: Path) -> None:
     model_name = query.model
     model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
     data_set = query.values(*model_fields)
-    assert not os.path.isfile(settings.USAGE_STATS_PATH / 'test.csv')
-    stats_utils.export_data(list(data_set), 'test.csv')
-    assert os.path.isfile(settings.USAGE_STATS_PATH / 'test.csv')
+    assert not os.path.isfile(tmp_path / 'test.csv')
+    stats_utils.export_data(list(data_set), str(tmp_path / 'test.csv'))
+    assert os.path.isfile(tmp_path / 'test.csv')
     assert model_fields == list(
-        pd.read_csv(settings.USAGE_STATS_PATH / 'test.csv').head(),
+        pd.read_csv(tmp_path / 'test.csv').head(),
     )
 
 
 def test_export_data_xlsx(tmp_path: Path) -> None:
     """Ensure the export_data generate excel file with model queryset."""
-    settings.USAGE_STATS_PATH = tmp_path
-
     stats_factories.DailyPatientDataReceived(
         patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
         last_appointment_received=None,
@@ -1033,18 +1024,16 @@ def test_export_data_xlsx(tmp_path: Path) -> None:
     model_name = query.model
     model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
     data_set = query.values(*model_fields)
-    assert not os.path.isfile(settings.USAGE_STATS_PATH / 'test.xlsx')
-    stats_utils.export_data(list(data_set), 'test.xlsx')
-    assert os.path.isfile(settings.USAGE_STATS_PATH / 'test.xlsx')
+    assert not os.path.isfile(tmp_path / 'test.xlsx')
+    stats_utils.export_data(list(data_set), str(tmp_path / 'test.xlsx'))
+    assert os.path.isfile(tmp_path / 'test.xlsx')
     assert model_fields == list(
-        pd.read_excel(settings.USAGE_STATS_PATH / 'test.xlsx', nrows=1, engine='openpyxl').columns,
+        pd.read_excel(tmp_path / 'test.xlsx', nrows=1, engine='openpyxl').columns,
     )
 
 
 def test_export_data_invalid_file_name(tmp_path: Path) -> None:
     """Ensure the export_data handle the invalid file format."""
-    settings.USAGE_STATS_PATH = tmp_path
-
     stats_factories.DailyUserPatientActivity(
         action_by_user=caregiver_factories.Caregiver(username='marge'),
     )
@@ -1057,7 +1046,7 @@ def test_export_data_invalid_file_name(tmp_path: Path) -> None:
         ValueError,
         expected_message,
     ):
-        stats_utils.export_data(list(data_set), 'test.random')
+        stats_utils.export_data(list(data_set), str(tmp_path / 'test.random'))
 
 
 def test_convert_to_naive() -> None:
