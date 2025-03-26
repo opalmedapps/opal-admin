@@ -87,14 +87,16 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
 
     def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet['LegacyAppointment']:
         """
-        Get the queryset of uncompleted appointments for a given user.
+        Get the queryset of unread appointments for a given user.
+
+        The appointments might contain any statuses and states (e.g., deleted, cancelled, completed, etc.).
 
         Args:
             patient_sernum: User sernum used to retrieve uncompleted appointments queryset.
             username: Firebase username making the request.
 
         Returns:
-            Queryset of uncompleted appointments.
+            Queryset of unread appointments with all status/states (e.g., deleted, cancelled, etc.).
         """
         return self.filter(
             patientsernum=patient_sernum,
