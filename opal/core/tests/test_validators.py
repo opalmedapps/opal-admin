@@ -12,7 +12,7 @@ def test_ramq_validator_raise_exception_fail_shorter_than_accepted() -> None:
 
     expected_message = ramq_validator.message
     with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
-        assert ramq_validator("AAAA")
+        assert ramq_validator('AAAA')
 
 
 def test_ramq_validator_raise_exception_fail_wrong_format() -> None:
@@ -20,7 +20,7 @@ def test_ramq_validator_raise_exception_fail_wrong_format() -> None:
 
     expected_message = ramq_validator.message
     with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
-        assert ramq_validator("AAAA1234434A")
+        assert ramq_validator('AAAA1234434A')
 
 
 def test_ramq_validator_raise_exception_fail_starts_digits() -> None:
@@ -28,18 +28,18 @@ def test_ramq_validator_raise_exception_fail_starts_digits() -> None:
 
     expected_message = ramq_validator.message
     with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
-        assert ramq_validator("12345678AAAA")
+        assert ramq_validator('12345678AAAA')
 
 
 def test_ramq_validator_raise_exception_longer_than_accepted() -> None:
-    """Ensure that exception error for wrong format `start with digits` """
+    """Ensure that exception error for wrong format `longer than supposed` """
 
     expected_message = ramq_validator.message
     with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
-        assert ramq_validator("12345678AAAA")
+        assert ramq_validator('AAAA12345678AAAA')
 
 
 def test_ramq_validator_pass_case() -> None:
     """Ensure that exception is not thrown in the correct case"""
 
-    assert ramq_validator("AAAA12345678") is None
+    assert ramq_validator('AAAA12345678') is None
