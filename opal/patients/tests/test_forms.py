@@ -1731,13 +1731,37 @@ def test_accessrequestrequestorform_existing_relationship_diff_patients() -> Non
             'user_type': constants.UserType.NEW.name,
             'relationship_type': RelationshipType.objects.mandatary().pk,
             'id_checked': True,
-            'first_name': 'Test',
+            'form_filled': True,
+            'first_name': 'Test111',
+            'last_name': 'Caregiver111',
+            'user_email': 'test2@opalmedapps.ca',
+            'user_phone': '+1514123456',
+        },
+    )
+
+    assert form.is_valid()
+    assert not form.non_field_errors()
+
+
+def test_validate_existing_relationship_missing_first_name() -> None:
+    """Ensure be able to add duplicated user name for 2 different patients."""
+    patient = factories.Patient(
+        first_name='Test',
+        last_name='Simpson',
+        ramq=OIE_PATIENT_DATA.ramq,
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=patient,
+        data={
+            'user_type': constants.UserType.NEW.name,
+            'relationship_type': RelationshipType.objects.mandatary().pk,
+            'id_checked': True,
             'last_name': 'Caregiver',
         },
     )
 
     assert not form.is_valid()
-    assert not form.non_field_errors()
 
 
 def test_accessrequestrequestorform_existing_relationship_no_data() -> None:
