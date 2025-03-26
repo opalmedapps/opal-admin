@@ -42,7 +42,7 @@ class CreateDatabankConsentView(generics.CreateAPIView[DatabankConsent]):
         guid = OpenScienceIdentity(osi_identifiers).to_signature()
 
         # Remove non model field before saving and after validating Consent response
-        serializer.validated_data.pop('health_data_authorization', None)
+        serializer.validated_data.pop('has_health_data_consent', None)
 
         serializer.save(
             patient=patient,
