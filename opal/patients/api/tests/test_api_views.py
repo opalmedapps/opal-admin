@@ -136,8 +136,28 @@ def test_registration_code_detailed(api_client: APIClient, admin_user: AbstractU
     }
 
 
-class TestApiRegistrationRegister:
+class TestApiRegistrationCompletion:
     """Test class tests the api registration/<str: code>/register."""
+
+    valid_input_data = dict({
+        'patient': {
+            'legacy_id': 1,
+        },
+        'caregiver': {
+            'language': 'fr',
+            'phone_number': '+15141112222',
+        },
+        'security_answers': [
+            {
+                'question': 'correct?',
+                'answer': 'yes',
+            },
+            {
+                'question': 'correct?',
+                'answer': 'maybe',
+            },
+        ],
+    })
 
     def test_register_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test api registration register success."""
@@ -148,26 +168,7 @@ class TestApiRegistrationRegister:
         caregiver = CaregiverProfile(user=user)
         relationship = Relationship(patient=patient, caregiver=caregiver)
         registration_code = RegistrationCode(relationship=relationship)
-        valid_input_data = {
-            'patient': {
-                'legacy_id': 1,
-            },
-            'caregiver': {
-                'language': 'fr',
-                'phone_number': '+15141112222',
-            },
-            'security_answers': [
-                {
-                    'question': 'correct?',
-                    'answer': 'yes',
-                },
-                {
-                    'question': 'correct?',
-                    'answer': 'maybe',
-                },
-            ],
-        }
-
+        valid_input_data = self.valid_input_data.copy()
         response = api_client.post(
             reverse(
                 'api:registration-register',
@@ -176,7 +177,7 @@ class TestApiRegistrationRegister:
             data=valid_input_data,
             format='json',
         )
-
+        print(response)
         registration_code.refresh_from_db()
         security_answers = SecurityAnswer.objects.all()
         assert response.status_code == HTTPStatus.OK
@@ -192,25 +193,7 @@ class TestApiRegistrationRegister:
         caregiver = CaregiverProfile(user=user)
         relationship = Relationship(patient=patient, caregiver=caregiver)
         RegistrationCode(relationship=relationship)
-        valid_input_data = {
-            'patient': {
-                'legacy_id': 1,
-            },
-            'caregiver': {
-                'language': 'fr',
-                'phone_number': '+15141112222',
-            },
-            'security_answers': [
-                {
-                    'question': 'correct?',
-                    'answer': 'yes',
-                },
-                {
-                    'question': 'correct?',
-                    'answer': 'maybe',
-                },
-            ],
-        }
+        valid_input_data = self.valid_input_data.copy()
         expected_message = 'RegistrationCode matching query does not exist.'
         with assertRaisesMessage(RegistrationCodeModel.DoesNotExist, expected_message):  # type: ignore[arg-type]
             api_client.post(
@@ -234,26 +217,7 @@ class TestApiRegistrationRegister:
             relationship=relationship,
             status=RegistrationCodeStatus.REGISTERED,
         )
-        valid_input_data = {
-            'patient': {
-                'legacy_id': 1,
-            },
-            'caregiver': {
-                'language': 'fr',
-                'phone_number': '+15141112222',
-            },
-            'security_answers': [
-                {
-                    'question': 'correct?',
-                    'answer': 'yes',
-                },
-                {
-                    'question': 'correct?',
-                    'answer': 'maybe',
-                },
-            ],
-        }
-
+        valid_input_data = self.valid_input_data.copy()
         expected_message = 'RegistrationCode matching query does not exist.'
         with assertRaisesMessage(RegistrationCodeModel.DoesNotExist, expected_message):  # type: ignore[arg-type]
             api_client.post(
@@ -274,32 +238,15 @@ class TestApiRegistrationRegister:
         caregiver = CaregiverProfile(user=user)
         relationship = Relationship(patient=patient, caregiver=caregiver)
         registration_code = RegistrationCode(relationship=relationship)
-        valid_input_data = {
-            'patient': {
-                'legacy_id': 0,
-            },
-            'caregiver': {
-                'language': 'fr',
-                'phone_number': '+15141112222',
-            },
-            'security_answers': [
-                {
-                    'question': 'correct?',
-                    'answer': 'yes',
-                },
-                {
-                    'question': 'correct?',
-                    'answer': 'maybe',
-                },
-            ],
-        }
+        invalid_data: dict = self.valid_input_data.copy()
+        invalid_data['patient']['legacy_id'] = 0
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=valid_input_data,
+            data=invalid_data,
             format='json',
         )
 
@@ -321,32 +268,15 @@ class TestApiRegistrationRegister:
         caregiver = CaregiverProfile(user=user)
         relationship = Relationship(patient=patient, caregiver=caregiver)
         registration_code = RegistrationCode(relationship=relationship)
-        valid_input_data = {
-            'patient': {
-                'legacy_id': 1,
-            },
-            'caregiver': {
-                'language': 'fr',
-                'phone_number': '1234567890',
-            },
-            'security_answers': [
-                {
-                    'question': 'correct?',
-                    'answer': 'yes',
-                },
-                {
-                    'question': 'correct?',
-                    'answer': 'maybe',
-                },
-            ],
-        }
+        invalid_data: dict = self.valid_input_data.copy()
+        invalid_data['caregiver']['phone_number'] = '1234567890'
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
                 kwargs={'code': registration_code.code},
             ),
-            data=valid_input_data,
+            data=invalid_data,
             format='json',
         )
 

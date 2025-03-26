@@ -17,7 +17,7 @@ class PatientSerializer(DynamicFieldsSerializer):
 
     class Meta:
         model = Patient
-        fields = ['first_name', 'last_name', 'legacy_id', 'date_of_birth', 'sex', 'ramq']
+        fields = ['legacy_id', 'first_name', 'last_name', 'date_of_birth', 'sex', 'ramq']
 
 
 class HospitalPatientSerializer(DynamicFieldsSerializer):

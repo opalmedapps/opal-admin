@@ -54,11 +54,12 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
         return caregiver_serializers.RegistrationCodePatientSerializer
 
 
-class RegistrationRegisterView(APIView):
+class RegistrationCompletionView(APIView):
     """Registration-register `APIView` class for handling "registration-completed" requests."""
 
     serializer_class = caregiver_serializers.RegistrationRegisterSerializer
 
+    # TODO
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -134,6 +135,7 @@ class RegistrationRegisterView(APIView):
             'relationship__caregiver__user',
         ).filter(code=code, status=caregiver_models.RegistrationCodeStatus.NEW).get()
         registration_code.status = caregiver_models.RegistrationCodeStatus.REGISTERED
+        registration_code.full_clean()
         registration_code.save()
         return registration_code
 
@@ -146,7 +148,7 @@ class RegistrationRegisterView(APIView):
             legacy_id: number or None.
         """
         patient.legacy_id = legacy_id
-        Patient.full_clean(patient)
+        patient.full_clean()
         patient.save()
 
     def _update_caregiver(self, user: User, info: dict) -> None:
@@ -161,7 +163,7 @@ class RegistrationRegisterView(APIView):
         user.phone_number = info['user']['phone_number']
         user.date_joined = timezone.now()
         user.is_active = True
-        User.full_clean(user)
+        user.full_clean()
         user.save()
 
     def _insert_security_answers(
@@ -176,16 +178,8 @@ class RegistrationRegisterView(APIView):
             caregiver_profile: CaregiverProfile object
             security_answers: list of security answer data
         """
-        object_list = []
-        for answer in security_answers:
-            object_list.append(
-                caregiver_models.SecurityAnswer(
-                    user=caregiver_profile,
-                    question=answer['question'],
-                    answer=answer['answer'],
-                ),
-            )
-        caregiver_models.SecurityAnswer.objects.bulk_create(object_list)
+        answers = [caregiver_models.SecurityAnswer(**answer, user=caregiver_profile) for answer in security_answers]
+        caregiver_models.SecurityAnswer.objects.bulk_create(answers)
 
 
 class CaregiverRelationshipView(ListAPIView):

@@ -146,7 +146,6 @@ class CaregiverSerializer(DynamicFieldsSerializer):
     class Meta:
         model = CaregiverProfile
         fields = [
-            'id',
             'uuid',
             'language',
             'phone_number',

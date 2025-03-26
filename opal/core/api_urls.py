@@ -18,7 +18,7 @@ from opal.legacy.api.views.app_general import AppGeneralView
 from opal.legacy.api.views.app_home import AppHomeView
 from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
-from opal.patients.api.views import CaregiverRelationshipView, RegistrationRegisterView, RetrieveRegistrationDetailsView
+from opal.patients.api import views as patient_views
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
@@ -49,7 +49,7 @@ urlpatterns = [
     ),
     path(
         'patients/legacy/<int:legacy_id>/caregivers/',
-        CaregiverRelationshipView.as_view(),
+        patient_views.CaregiverRelationshipView.as_view(),
         name='caregivers-list',
     ),
     path(
@@ -59,10 +59,10 @@ urlpatterns = [
     ),
     path('questionnaires/reviewed/', QuestionnairesReportView.as_view(), name='questionnaires-reviewed'),
     path('app/general/', AppGeneralView.as_view(), name='app-general'),
-    path('registration/<str:code>/', RetrieveRegistrationDetailsView.as_view(), name='registration-code'),
+    path('registration/<str:code>/', patient_views.RetrieveRegistrationDetailsView.as_view(), name='registration-code'),
     path(
         'registration/<str:code>/register/',
-        RegistrationRegisterView.as_view(),
+        patient_views.RegistrationCompletionView.as_view(),
         name='registration-register',
     ),
     path(
