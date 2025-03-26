@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-06 12:01-0400\n"
+"POT-Creation-Date: 2022-09-15 16:23-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,91 +18,100 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: opal/core/form_layouts.py
+#: .\opal\core\form_layouts.py:23
 msgid "Cancel"
 msgstr "Annuler"
 
-#: opal/core/validators.py
+#: .\opal\core\validators.py:7
 msgid "Enter a valid RAMQ number consisting of 4 letters followed by 8 digits"
 msgstr ""
 "Entrez un numéro RAMQ valide composé de 4 lettres suivies de 8 chiffres"
 
-#: opal/core/views.py opal/templates/base_generic.html
+#: .\opal\core\views.py:20 .\opal\core\views.py:21
+#: .\opal\templates\base_generic.html:12
 msgid "OpalAdmin v2"
 msgstr "OpalAdmin v2"
 
-#: opal/settings.py
+#: .\opal\settings.py:244
 msgid "English"
 msgstr "Anglais"
 
-#: opal/settings.py
+#: .\opal\settings.py:245
 msgid "French"
 msgstr "Français"
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:61
 msgid "opal ADMIN"
 msgstr "opal ADMIN"
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:78
 msgid "Hospital Settings"
 msgstr "Paramètres Hospitalier"
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:86
 msgid "Institutions"
 msgstr "Établissements"
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:92
 msgid "Sites"
 msgstr "Sites"
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:101
 msgid "Patients"
-msgstr ""
+msgstr "Patients"
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:109
 msgid "Relationship Types"
-msgstr ""
+msgstr "Types de Relations"
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:118
+msgid "Questionnaires"
+msgstr "Questionnaires"
+
+#: .\opal\templates\layouts\base.html:127
+msgid "Export Reports"
+msgstr "Exportation de Rapports"
+
+#: .\opal\templates\layouts\base.html:137
 msgid "Profile"
 msgstr "Profil"
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:145
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:190
 msgid "Copyright"
 msgstr "Copyright"
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:190
 msgid "All rights reserved."
 msgstr "Tous droits réservés."
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:191
 msgid "2022 Opal Health Informatics Group."
 msgstr "2022 Le Groupe Informatique Opal Santé."
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:191
 msgid "Privacy"
 msgstr "Politique de confidentialité"
 
-#: opal/templates/layouts/base.html
+#: .\opal\templates\layouts\base.html:191
 msgid "Terms"
 msgstr "Conditions d'utilisation"
 
-#: opal/templates/tables/action_column.html
+#: .\opal\templates\tables\action_column.html:4
 msgid "Edit"
 msgstr "Modifier"
 
-#: opal/templates/tables/action_column.html
+#: .\opal\templates\tables\action_column.html:7
 msgid "Delete"
 msgstr "Supprimer"
 
-#: opal/urls.py
+#: .\opal\urls.py:60
 msgid "Opal Management"
 msgstr "Administration d'Opal"
 
-#: opal/urls.py
+#: .\opal\urls.py:61
 msgid "Opal Backend Admin"
 msgstr "Administrateur principal d'Opal"
