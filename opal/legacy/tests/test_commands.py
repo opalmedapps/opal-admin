@@ -898,7 +898,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         module = legacy_factories.LegacyModuleFactory(name_en='Patient')
         admingroup = user_factories.GroupFactory(name='System Administrators')
         user_factories.GroupFactory(name='Registrants')
-        role = legacy_factories.LegacyOARoleFactory(name_en='Administration')
+        role = legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
 
         legacy_factories.LegacyOAUserFactory(oaroleid=role)
         legacy_factories.LegacyOAUserFactory(oaroleid=role)
@@ -919,7 +919,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         # Creating needed groups
         user_factories.GroupFactory(name='System Administrators')
         registrant_group = user_factories.GroupFactory(name='Registrants')
-        legacy_factories.LegacyOARoleFactory(name_en='Administration')
+        legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
         role = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
 
         legacy_factories.LegacyOAUserFactory(oaroleid=role)
@@ -939,7 +939,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         # Creating needed groups
         user_factories.GroupFactory(name='System Administrators')
         user_factories.GroupFactory(name='Registrants')
-        legacy_factories.LegacyOARoleFactory(name_en='Administration')
+        legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
         role = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
 
         legacy_factories.LegacyOAUserFactory(oaroleid=role)
@@ -956,7 +956,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         module = legacy_factories.LegacyModuleFactory(name_en='Patient')
         user_factories.GroupFactory(name='System Administrators')
         user_factories.GroupFactory(name='Registrants')
-        role = legacy_factories.LegacyOARoleFactory(name_en='Administration')
+        role = legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
 
         user = legacy_factories.LegacyOAUserFactory(oaroleid=role)
 
@@ -983,7 +983,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         # Creating needed groups
         user_factories.GroupFactory(name='System Administrators')
         user_factories.GroupFactory(name='Registrants')
-        adminrole = legacy_factories.LegacyOARoleFactory(name_en='Administration')
+        adminrole = legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
         nonadminrole_patient = legacy_factories.LegacyOARoleFactory(name_en='PatientRole')
         nonadminrole_nonpatient = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
 
@@ -1008,6 +1008,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
     def test_migrate_users_duplicate_registrants_legacyoauser_fail(self) -> None:
         """Test import fail for re-entering same OAUser of type registrant."""
         module = legacy_factories.LegacyModuleFactory(name_en='Patient')
+        legacy_factories.LegacyOARoleFactory(name_en='System Administrator')
         role = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
         user = legacy_factories.LegacyOAUserFactory(oaroleid=role)
         legacy_factories.LegacyOARoleModuleFactory(oaroleid=role, moduleid=module, access=3)
