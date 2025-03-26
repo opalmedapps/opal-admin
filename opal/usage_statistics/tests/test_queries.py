@@ -2732,7 +2732,7 @@ def test_fetch_users_latest_login_year_summary_empty() -> None:
     user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
         dt.date.min,
         dt.date.max,
-    )
+    )[0]
     assert not user_last_login_year_summary
 
 
@@ -2762,7 +2762,8 @@ def test_fetch_users_latest_login_year_summary_success() -> None:
     user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
         dt.date.min,
         dt.date.max,
-    )
+    )[0]
+
     assert len(user_last_login_year_summary) == 2
     assert user_last_login_year_summary['2023'] == 1
     assert user_last_login_year_summary['2024'] == 2
@@ -2795,7 +2796,8 @@ def test_fetch_users_latest_login_year_summary_user_multiple_records() -> None:
     user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
         dt.date.min,
         dt.date.max,
-    )
+    )[0]
+
     assert len(user_last_login_year_summary) == 1
     assert user_last_login_year_summary['2024'] == 1
 
@@ -2829,7 +2831,8 @@ def test_fetch_users_latest_login_year_summary_multiple_annual_records() -> None
     user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
         dt.date.min,
         dt.date.max,
-    )
+    )[0]
+
     assert len(user_last_login_year_summary) == 1
     assert user_last_login_year_summary['2024'] == 3
 

@@ -531,7 +531,7 @@ def fetch_received_questionnaires_summary(
 def fetch_users_latest_login_year_summary(
     start_date: dt.date,
     end_date: dt.date,
-) -> dict[str, int]:
+) -> list[dict[str, int]]:
     """Fetch users' latest login statistics grouped by year.
 
     The goal of the query is to find in a given date range how many users stopped using the app in each year.
@@ -553,7 +553,7 @@ def fetch_users_latest_login_year_summary(
     )
 
     latest_logins_by_year = Counter(str(item['year']) for item in latest_logins)
-    return dict(latest_logins_by_year)
+    return [dict(latest_logins_by_year)]
 
 
 # INDIVIDUAL REPORTS
