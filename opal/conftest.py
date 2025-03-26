@@ -461,3 +461,13 @@ def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEd
         name_fr="Fiche d'information sur l'information et le consentement - Banque de données du CQSI",
     )
     return (consent_questionnaire, info_sheet)
+
+
+@pytest.fixture
+def set_databank_disabled(settings: LazySettings) -> None:  # noqa: PT004
+    """Fixture disables the databank for the unit test.
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.DATABANK_ENABLED = False

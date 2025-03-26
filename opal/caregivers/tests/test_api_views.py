@@ -7,10 +7,12 @@ from http import HTTPStatus
 from typing import Any
 
 from django.core import mail
+from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.utils import timezone
 
 import pytest
+from pytest_django.asserts import assertRaisesMessage
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock import MockerFixture
 from rest_framework.exceptions import ErrorDetail
@@ -24,16 +26,22 @@ from opal.hospital_settings import factories as hospital_factories
 from opal.hospital_settings.factories import Institution
 from opal.legacy import factories as legacy_factories
 from opal.legacy import utils as legacy_utils
-from opal.legacy.models import (
+from opal.legacy.models import (  # noqa: WPS235
     LegacyAccessLevel,
+    LegacyEducationalMaterial,
+    LegacyEducationalMaterialControl,
     LegacyLanguage,
     LegacyPatient,
     LegacyPatientControl,
     LegacyPatientHospitalIdentifier,
+    LegacyQuestionnaire,
     LegacySexType,
     LegacyUsers,
     LegacyUserType,
 )
+from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
+from opal.legacy_questionnaires.models import LegacyPatient as qdb_LegacyPatient
+from opal.legacy_questionnaires.models import LegacyQuestionnaire as qdb_LegacyQuestionnaire
 from opal.patients import factories as patient_factories
 from opal.patients import utils
 from opal.patients.factories import Relationship
@@ -1266,7 +1274,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert legacy_patient.email == 'opal@muhc.mcgill.ca'
         assert legacy_patient.language == LegacyLanguage.FRENCH
 
-    @pytest.mark.django_db(databases=['default', 'legacy'])
+    @pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
     def test_register_new_legacy_patient(
         self,
         api_client: APIClient,
@@ -1312,7 +1320,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             {'hospital': 'MCH', 'mrn': '9999996', 'is_active': False},
         ]
 
-    @pytest.mark.django_db(databases=['default', 'legacy'])
+    @pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
     def test_register_new_caregiver_and_patient_self(
         self,
         api_client: APIClient,
@@ -1676,7 +1684,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         caregiver_user.refresh_from_db()
         assert caregiver_user.email == 'foo@bar.com'
 
-    @pytest.mark.django_db(databases=['default', 'legacy'])
+    @pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
     def test_confirmation_email_new_caregiver(
         self,
         api_client: APIClient,
@@ -1737,3 +1745,111 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert 'Thank you for registering for the Opal app.' in body
         assert 'support@testhospital.com' in body
         assert mail.outbox[0].subject == 'Thank you for registering for Opal!'
+
+    @pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
+    def test_insert_databank_consent_form_for_new_patient(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        databank_consent_questionnaire_data: tuple[qdb_LegacyQuestionnaire, LegacyEducationalMaterialControl],
+    ) -> None:
+        """Ensure the databank consent form is created if a new patient is registered."""
+        api_client.force_login(user=admin_user)
+        registration_code, _ = self._build_access_request(new_patient=True, email_verified=True, self_relationship=True)
+        consent_form = databank_consent_questionnaire_data[0]
+        info_sheet = databank_consent_questionnaire_data[1]
+        patient = registration_code.relationship.patient
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.data_new_caregiver,
+        )
+        assert response.status_code == HTTPStatus.OK
+        patient.refresh_from_db()
+
+        # Search for the expected databank records
+        qdb_patient = qdb_LegacyPatient.objects.get(  # type: ignore[misc]
+            external_id=patient.legacy_id,
+        )
+        inserted_answer_questionnaire = LegacyAnswerQuestionnaire.objects.get(
+            questionnaire_id=consent_form.id,
+            patient_id=qdb_patient.id,
+        )
+        inserted_sheet = LegacyEducationalMaterial.objects.get(
+            educationalmaterialcontrolsernum=info_sheet,
+            patientsernum=patient.legacy_id,
+        )
+        inserted_questionnaire = LegacyQuestionnaire.objects.get(
+            patientsernum=patient.legacy_id,
+            patient_questionnaire_db_ser_num=inserted_answer_questionnaire.id,
+        )
+
+        assert inserted_questionnaire.completedflag == 0
+        assert inserted_questionnaire.patientsernum.patientsernum == patient.legacy_id
+        assert inserted_questionnaire.patient_questionnaire_db_ser_num == inserted_answer_questionnaire.id
+
+        assert inserted_sheet.readstatus == 0
+        assert inserted_sheet.patientsernum.patientsernum == patient.legacy_id
+        assert inserted_sheet.educationalmaterialcontrolsernum == info_sheet
+
+        assert inserted_answer_questionnaire.status == 0
+        assert inserted_answer_questionnaire.patient_id == qdb_patient.id
+        assert inserted_answer_questionnaire.questionnaire_id == consent_form.id
+
+        # actual patient is still created as expected
+        assert LegacyPatient.objects.count() == 1
+        legacy_patient = LegacyPatient.objects.get(first_name='Marge')
+        assert patient.legacy_id == legacy_patient.patientsernum
+        assert legacy_patient.email == 'opal@muhc.mcgill.ca'
+        assert legacy_patient.language == LegacyLanguage.FRENCH
+
+    @pytest.mark.usefixtures('set_databank_disabled')
+    @pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
+    def test_self_registration_success_databank_disabled(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        databank_consent_questionnaire_data: tuple[qdb_LegacyQuestionnaire, LegacyEducationalMaterialControl],
+    ) -> None:
+        """Ensure the databank consent form if not created is databank is disabled."""
+        api_client.force_login(user=admin_user)
+        registration_code, _ = self._build_access_request(new_patient=True, email_verified=True, self_relationship=True)
+        info_sheet = databank_consent_questionnaire_data[1]
+        patient = registration_code.relationship.patient
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.data_new_caregiver,
+        )
+        assert response.status_code == HTTPStatus.OK
+        patient.refresh_from_db()
+
+        # Ensure records are not created
+        message = 'LegacyPatient matching query does not exist.'
+        with assertRaisesMessage(ObjectDoesNotExist, message):
+            qdb_LegacyPatient.objects.get(  # type: ignore[misc]
+                external_id=patient.legacy_id,
+            )
+        message = 'LegacyEducationalMaterial matching query does not exist.'
+        with assertRaisesMessage(ObjectDoesNotExist, message):
+            LegacyEducationalMaterial.objects.get(
+                educationalmaterialcontrolsernum=info_sheet,
+                patientsernum=patient.legacy_id,
+            )
+        # We cant search for the specific answer questionnaire instance without the qdb_patient instance, so check all
+        answer_questionnaires = LegacyAnswerQuestionnaire.objects.all()
+        for qst in answer_questionnaires:
+            assert qst.created_by != 'DJANGO_AUTO_CREATE_DATABANK_CONSENT'
+
+        # actual patient is still created as expected
+        assert LegacyPatient.objects.count() == 1
+        legacy_patient = LegacyPatient.objects.get(first_name='Marge')
+        assert patient.legacy_id == legacy_patient.patientsernum
+        assert legacy_patient.email == 'opal@muhc.mcgill.ca'
+        assert legacy_patient.language == LegacyLanguage.FRENCH

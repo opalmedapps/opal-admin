@@ -417,7 +417,9 @@ class RegistrationCompletionView(APIView):
             if relationship.patient.legacy_id is None:
                 # also creates the legacy patient and sets patient.legacy_id
                 utils.initialize_new_opal_patient(patient, mrns, patient.uuid, self_caregiver)
-
+                # Send databank consent and infosheet automatically for new patients, if enabled
+                if settings.DATABANK_ENABLED:
+                    legacy_utils.create_databank_patient_consent_data(patient)
             if existing_caregiver:
                 email = existing_caregiver.email
                 utils.replace_caregiver(existing_caregiver, relationship)
@@ -434,9 +436,6 @@ class RegistrationCompletionView(APIView):
 
             utils.update_registration_code_status(registration_code)
             self._send_confirmation_email(email, caregiver_data['user']['language'])
-            # Send databank consent and infosheet automatically, if enabled
-            if settings.DATABANK_ENABLED:
-                legacy_utils.create_databank_patient_consent_data(patient)
         except ValidationError as exception:
             transaction.set_rollback(True)
             raise serializers.ValidationError({'detail': str(exception.args)})
