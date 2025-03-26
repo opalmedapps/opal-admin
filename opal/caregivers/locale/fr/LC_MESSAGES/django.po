@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-13 09:07-0400\n"
+"POT-Creation-Date: 2022-06-13 17:59-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,3 +37,59 @@ msgstr "Profil de proche aidant"
 #: opal/caregivers/models.py
 msgid "Caregiver Profiles"
 msgstr "Profils des proches aidants"
+
+#: opal/caregivers/models.py
+msgid "New"
+msgstr "Nouveau (Nouvelle)"
+
+#: opal/caregivers/models.py
+msgid "Registered"
+msgstr "Inscrit (Inscrite)"
+
+#: opal/caregivers/models.py
+msgid "Expired"
+msgstr "Expiré"
+
+#: opal/caregivers/models.py
+msgid "Blocked"
+msgstr "Bloqué (Bloquée)"
+
+#: opal/caregivers/models.py
+msgid "Relationship"
+msgstr "Relation"
+
+#: opal/caregivers/models.py
+msgid "Registration Code Value"
+msgstr "Valeur du code d'enregistrement"
+
+#: opal/caregivers/models.py
+msgid "Relationship Code Status"
+msgstr "État du code de relation"
+
+#: opal/caregivers/models.py
+msgid "Registration Code Creation Date"
+msgstr "Date de création du code d'enregistrement"
+
+#: opal/caregivers/models.py
+msgid "Registration Code Attemps"
+msgstr "Tentatives de code d'enregistrement"
+
+#: opal/caregivers/models.py
+msgid "Email Verification Code"
+msgstr "Code de vérification de courrier électronique"
+
+#: opal/caregivers/models.py
+msgid "Registration Code"
+msgstr "Code d'enregistrement"
+
+#: opal/caregivers/models.py
+msgid "Registration Codes"
+msgstr "Codes d'enregistrement"
+
+#: opal/caregivers/models.py
+msgid "Code length should be equal to 10."
+msgstr "La longueur du code doit être égale à 10"
+
+#: opal/caregivers/models.py
+msgid "Code length should be equal to 6."
+msgstr "La longueur du code doit être égale à 6"
