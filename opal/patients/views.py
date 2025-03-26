@@ -6,8 +6,8 @@ from django_tables2 import SingleTableView
 
 from opal.core.views import CreateUpdateView
 
-from .models import RelationshipType
-from .tables import RelationshipTypeTable
+from .models import Relationship, RelationshipStatus, RelationshipType
+from .tables import PendingRelationshipTable, RelationshipTypeTable
 
 
 class RelationshipTypeListView(SingleTableView):
@@ -52,3 +52,13 @@ class RelationshipTypeDeleteView(DeleteView):
     model = RelationshipType
     template_name = 'patients/relationship_type/confirm_delete.html'
     success_url = reverse_lazy('patients:relationshiptype-list')
+
+
+class PendingRelationshipListView(SingleTableView):
+    """This view provides a page that displays a list of `RelationshipType` objects."""
+
+    model = Relationship
+    table_class = PendingRelationshipTable
+    ordering = ['request_date']
+    template_name = 'patients/relationships/pending/list.html'
+    queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)

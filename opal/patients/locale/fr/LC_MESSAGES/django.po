@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-09 15:02-0400\n"
+"POT-Creation-Date: 2022-11-09 14:27+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -107,10 +107,8 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
-#, fuzzy
-#| msgid "Patients"
 msgid "Patient"
-msgstr "Patients"
+msgstr "Patient"
 
 #: opal/patients/models.py
 msgid "Pending"
@@ -161,7 +159,7 @@ msgstr "Date de début de la relation"
 msgid "Relationship End Date"
 msgstr "Date de fin de relation"
 
-#: opal/patients/models.py
+#: opal/patients/models.py opal/patients/tables.py
 msgid "Relationship"
 msgstr "Relation"
 
@@ -205,6 +203,14 @@ msgstr ""
 msgid "No relationship types defined."
 msgstr ""
 
+#: opal/patients/tables.py
+msgid "Pending Since"
+msgstr "En attendant"
+
+#: opal/patients/tables.py
+msgid "No caregiver pending access requests."
+msgstr ""
+
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
 msgstr ""
@@ -246,4 +252,8 @@ msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/list.html
 msgid "New Relationship Type"
+msgstr ""
+
+#: opal/patients/templates/patients/relationships/pending/list.html
+msgid "Pending Caregiver Access Requests"
 msgstr ""

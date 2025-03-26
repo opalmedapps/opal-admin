@@ -1,0 +1,20 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+{% block content-header-page-name %}{% translate "Pending Caregiver Access Requests" %}{% endblock %}
+
+{% block content %}
+    {% comment %} Main content {% endcomment %}
+    <section class="content">
+
+        {% comment %} Default box {% endcomment %}
+        <div class="container-fluid">
+            <div class="table-responsive">
+              {% render_table table %}
+            </div>
+        </div>
+
+    </section>
+{% endblock %}

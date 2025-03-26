@@ -107,6 +107,14 @@ msgid "Trusted Device"
 msgstr "Appareil de confiance"
 
 #: opal/caregivers/models.py
+msgid "Push Token"
+msgstr "Jeton de notification directe"
+
+#: opal/caregivers/models.py
+msgid "Last Modified"
+msgstr "Dernière modification"
+
+#: opal/caregivers/models.py
 msgid "Device"
 msgstr "Appareil"
 

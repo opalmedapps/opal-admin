@@ -23,10 +23,8 @@ msgid "Questionnaires"
 msgstr "Questionnaires"
 
 #: opal/questionnaires/models.py
-#, fuzzy
-#| msgid "Export Reports"
 msgid "Export Report"
-msgstr "Exportation de Rapports"
+msgstr "Exportation de Rapport"
 
 #: opal/questionnaires/models.py
 #: opal/questionnaires/templates/questionnaires/export_reports/exportreports.html

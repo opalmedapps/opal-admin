@@ -28,6 +28,15 @@ class LegacyPatientFactory(DjangoModelFactory):
         django_get_or_create = ('patientsernum',)
 
     patientsernum = 51
+    firstname = 'TEST'
+    lastname = 'LEGACY'
+    telnum = '5149995555'
+    dateofbirth = timezone.make_aware(datetime(2018, 1, 1))
+    sex = 'Male'
+    ssn = '123456'
+    registrationdate = timezone.make_aware(datetime(2018, 1, 1))
+    language = 'EN'
+    email = 'test@test.com'
 
 
 class LegacyNotificationFactory(DjangoModelFactory):
@@ -114,6 +123,13 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     completedflag = 0
 
 
+class LegacyPostcontrolFactory(DjangoModelFactory):
+    """Post Controle factory for announcement from the legacy database."""
+
+    class Meta:
+        model = models.LegacyPostcontrol
+
+
 class LegacyAnnouncementFactory(DjangoModelFactory):
     """Announcement factory from the legacy database."""
 
@@ -121,6 +137,7 @@ class LegacyAnnouncementFactory(DjangoModelFactory):
         model = models.LegacyAnnouncement
 
     patientsernum = SubFactory(LegacyPatientFactory)
+    postcontrolsernum = SubFactory(LegacyPostcontrolFactory)
     readstatus = 0
 
 
@@ -150,3 +167,24 @@ class LegacySecurityAnswerFactory(DjangoModelFactory):
     answertext = 'bird'
     creationdate = timezone.make_aware(datetime(2022, 9, 27))
     lastupdated = timezone.make_aware(datetime(2022, 9, 27))
+
+
+class LegacyHospitalIdentifierTypeFactory(DjangoModelFactory):
+    """Hospital_Identifier_Type factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyHospitalIdentifierType
+
+    code = 'RVH'
+
+
+class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory):
+    """Patient_Hospital_Identifier factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyPatientHospitalIdentifier
+
+    patientsernum = SubFactory(LegacyPatientFactory)
+    hospitalidentifiertypecode = SubFactory(LegacyHospitalIdentifierTypeFactory)
+    mrn = '9999996'
+    isactive = True

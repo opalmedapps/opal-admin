@@ -3,6 +3,7 @@ import datetime
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models.deletion import ProtectedError
+from django.db.utils import DataError
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
@@ -194,6 +195,22 @@ def test_device_same_caregiver_diff_devices() -> None:
     caregiver = factories.CaregiverProfile()
     factories.Device(caregiver=caregiver, device_id='1a2b3c')
     factories.Device(caregiver=caregiver, device_id='a1b2c3')
+
+
+def test_device_push_token_length() -> None:
+    """Ensure a device push token can't be greater than 256 characters long."""
+    caregiver = factories.CaregiverProfile(id=1)
+    device = factories.Device(caregiver=caregiver)
+    device.push_token = ''.join('a' for _ in range(260))
+    with assertRaisesMessage(DataError, "Data too long for column 'push_token' at row 1"):  # type: ignore[arg-type]
+        device.save()
+
+
+def test_device_modified_datatype() -> None:
+    """Ensure the device modified field is automatically generated and is of the correct type."""
+    caregiver = factories.CaregiverProfile(id=1)
+    device = factories.Device(caregiver=caregiver, device_id='1a2b3c')
+    assert isinstance(device.modified, datetime.datetime)
 
 
 def test_registrationcode_str() -> None:  # pylint: disable-msg=too-many-locals

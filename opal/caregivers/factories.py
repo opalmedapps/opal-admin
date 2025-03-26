@@ -58,6 +58,17 @@ class DeviceProvider(BaseProvider):
         chars = [random.choice(char_choices) for _ in range(length)]
         return ''.join(chars)
 
+    def push_token(self) -> str:
+        """Generate a random push_token.
+
+        Returns:
+            A random push_token value between 0 and 256 characters in length.
+        """
+        length = random.randint(16, 100)
+        char_choices = [str(digit) for digit in range(9)] + ['a', 'b', 'c', 'd', 'e', 'f']  # 0-9 digits and letters up to 'f' # noqa: WPS221, E501
+        chars = [random.choice(char_choices) for _ in range(length)]
+        return ''.join(chars)
+
 
 Faker.add_provider(DeviceProvider)
 
@@ -71,6 +82,8 @@ class Device(DjangoModelFactory):
     caregiver = SubFactory(CaregiverProfile)
     type = models.DeviceType.IOS  # noqa: A003
     device_id = Faker('device_id')
+    push_token = Faker('push_token')
+    is_trusted = Faker('pybool')
 
 
 class RegistrationCode(DjangoModelFactory):
