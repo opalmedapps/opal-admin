@@ -42,9 +42,9 @@ class RegisterApiValidator:
         except (KeyError):
             errors.append('Register data does not have the attribute caregiver')
 
-        language = None
-        email = None
-        phone = None
+        language = ''
+        email = ''
+        phone = ''
         security_answers = []
         security_answer_data = None
         if caregiver_data:
