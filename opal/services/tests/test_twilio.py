@@ -4,6 +4,7 @@ import pytest
 from pytest_django.asserts import assertRaisesMessage
 from pytest_django.fixtures import SettingsWrapper
 from twilio.rest.api import MessageList
+from twilio.rest import Client
 
 from opal.services.twilio import TwilioService, TwilioServiceException
 
@@ -48,6 +49,7 @@ class TestTwilioService:
             from_,
         )
 
+        service.client = Client()
         service.send_sms(
             to,
             message,
