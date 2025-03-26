@@ -292,22 +292,30 @@ class Command(BaseCommand):
         self.stdout.write(f'{legacy_backend.username} token: {token_legacy_backend}')
 
         if settings.ORMS_ENABLED:
-            # ORMS Users and Group
-            orms_users = Group.objects.create(name=settings.ORMS_GROUP_NAME)
-            orms_users.permissions.set([
-                _find_permission('health_data', 'view_quantitysample'),
-                _find_permission('health_data', 'change_quantitysample'),
-            ])
-            # ORMS System User/Token for API auth
-            orms, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_ORMS)
-            orms.set_unusable_password()
-            orms.save()
-            predefined_token = options['orms_token']
-            token_orms, _ = Token.objects.get_or_create(
-                user=orms,
-                defaults={'key': predefined_token},
-            )
-            self.stdout.write(f'{orms.username} token: {token_orms}')
+            self._create_orms_data(**options)
+
+    def _create_orms_data(self, **options: Any) -> None:
+        """Create ORMS users, group, and system user token if ORMs is enabled.
+
+        Args:
+            options: the options keyword arguments passed to the function
+        """
+        # ORMS Users and Group
+        orms_users = Group.objects.create(name=settings.ORMS_GROUP_NAME)
+        orms_users.permissions.set([
+            _find_permission('health_data', 'view_quantitysample'),
+            _find_permission('health_data', 'change_quantitysample'),
+        ])
+        # ORMS System User/Token for API auth
+        orms, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_ORMS)
+        orms.set_unusable_password()
+        orms.save()
+        predefined_token = options['orms_token']
+        token_orms, _ = Token.objects.get_or_create(
+            user=orms,
+            defaults={'key': predefined_token},
+        )
+        self.stdout.write(f'{orms.username} token: {token_orms}')
 
     def _create_legacy_data(self, **options: Any) -> None:
         # create a legacy admin user with the system administrator role
