@@ -3,10 +3,12 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import DeleteView
 
 from django_tables2 import SingleTableView
+from formtools.wizard.views import NamedUrlSessionWizardView
 
 from opal.core.views import CreateUpdateView
+from opal.patients.forms import SelectSiteForm
 
-from .models import RelationshipType
+from .models import RelationshipType, Site
 from .tables import RelationshipTypeTable
 
 
@@ -52,3 +54,23 @@ class RelationshipTypeDeleteView(DeleteView):
     model = RelationshipType
     template_name = 'patients/relationship_type/confirm_delete.html'
     success_url = reverse_lazy('patients:relationshiptype-list')
+
+
+class UrlWizardViews(NamedUrlSessionWizardView):
+    """
+    This class inherits named url session wizard, which each step has a url link to it.
+
+    Using named url is good for api-framework to link it to a specific step
+    """
+
+    model = Site
+    form_list = [('site', SelectSiteForm)]
+
+    def get_template_names(self) -> str:
+        """
+        Return a template url.
+
+        Returns:
+            the url of the template
+        """
+        return 'patients/wizard_forms/wizard_forms.html'

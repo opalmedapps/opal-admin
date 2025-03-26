@@ -53,6 +53,8 @@ flake8-pytest-style==1.6.0  # https://github.com/m-burst/flake8-pytest-style
 #
 django-coverage-plugin==2.0.3  # https://github.com/nedbat/django_coverage_plugin
 pytest-django==4.5.2  # https://github.com/pytest-dev/pytest-django
+django-tables2==2.4.1 #https://pypi.org/project/django-tables2/
+django-formtools==2.3 # https://github.com/jazzband/django-formtools/blob/master/docs/wizard.rst
 
 # Pre-commit
 #

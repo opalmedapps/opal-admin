@@ -1,0 +1,62 @@
+{% extends "layouts/base.html" %}
+{% load i18n %}
+
+{% load crispy_forms_tags %}
+{% load render_table from django_tables2 %}
+
+{% block content-header-page-name %}
+  {% if object %}{% translate "Update" %}{% else %}{% translate "New Patient Data Access Request" %}{% endif %}
+{% endblock %}
+
+
+{% block content %}
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <!--div class="col"><hr></div-->
+      <div class="col-auto">{% translate "Hospital Information" %}</div>
+      <div class="col"><hr></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="row">
+          <div class="col-sm-6 text-left">Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</div>
+          <div class="col-sm-6 text-right">{% translate "Incomplete" %}</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <form action="" method="post">
+          {% csrf_token %}
+          {% if table %}
+            {%  include "hospital_settings/wizard_forms/search_results.html" %}
+          {%  endif %}
+          <table>
+            {{ wizard.management_form }}
+            {% if wizard.form.forms %}
+              {{ wizard.form.management_form }}
+              {% for form in wizard.form.forms %}
+                {% crispy wizard.form %}
+              {% endfor %}
+            {% else %}
+              {%  crispy wizard.form %}
+            {% endif %}
+          </table>
+
+          {%  if tryme %}
+            {{ tryme }}
+          {% endif %}
+          {% if wizard.steps.prev %}
+            <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}">{% translate "first step" %}</button>
+            <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">{% translate "prev step" %}</button>
+          {% endif %}
+          {%  if wizard.steps.current == "finished" %}
+            <input type="submit" value="{% trans "Generate QR Code" %}"/>
+          {% else %}
+            <input type="submit" value="{% trans "Submit" %}"/>
+          {%  endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
