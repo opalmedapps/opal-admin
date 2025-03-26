@@ -47,7 +47,7 @@ def _create_empty_parsed_notes() -> dict[str, Any]:
 
 def test_find_doctor_name_success() -> None:
     """Ensure find_doctor() successfully finds doctor name in a string."""
-    note_text = r'Electronically signed on 18-OCT-2023 02:29 pm\\.br\\By Gertruda Evaristo, MD, FRCPC'
+    note_text = r'Electronically signed on 18-OCT-2023 02:29 pm\.br\By Gertruda Evaristo, MD, FRCPC'
     assert _find_doctor_name(note_text) == 'Gertruda Evaristo, MD, FRCPC'
 
 
