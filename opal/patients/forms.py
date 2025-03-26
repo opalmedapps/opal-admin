@@ -17,6 +17,7 @@ from crispy_forms.layout import Field as CrispyField
 from crispy_forms.layout import Fieldset, Hidden, Layout, Row, Submit
 from dynamic_forms import DynamicField, DynamicFormMixin
 
+from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
 from opal.core.forms.layouts import CancelButton, FormActions, InlineSubmit
 from opal.core.forms.widgets import AvailableRadioSelect
@@ -163,6 +164,10 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
 
         if card_type and medical_number:
             self._search_patient(card_type, medical_number, site)
+
+        if not self.patient:
+            self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
+
         return self.cleaned_data
 
     def is_mrn_selected(self) -> bool:
@@ -257,14 +262,14 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
     # make form continue when clicking checkbox
     # "The correct patient was found and the patient data is correct"
 
-    def __init__(self, patient: Union[Patient, OIEPatientData, None], *args: Any, **kwargs: Any) -> None:
+    def __init__(self, patient: Patient | OIEPatientData, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the form with the patient search result.
 
         The patient can either be an existing patient or a search result from the hospital.
 
         Args:
-            patient: a `Patient` or `OIEPatientData` instance, `None` if no patient was found
+            patient: a `Patient` or `OIEPatientData` instance
             args: additional arguments
             kwargs: additional keyword arguments
         """
@@ -294,26 +299,22 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
         super().clean()
         cleaned_data = self.cleaned_data
 
-        # TODO: this should be done in AccessRequestSearchPatientForm
-        if not self.patient:  # noqa: WPS504
-            self.add_error(NON_FIELD_ERRORS, _('There is no patient to confirm'))
-        else:
-            if is_deceased(self.patient):
-                self.add_error(
-                    NON_FIELD_ERRORS,
-                    _('Unable to complete action with this patient. Please contact Medical Records.'),
-                )
+        if is_deceased(self.patient):
+            self.add_error(
+                NON_FIELD_ERRORS,
+                _('Unable to complete action with this patient. Please contact Medical Records.'),
+            )
 
-            if isinstance(self.patient, OIEPatientData) and has_multiple_mrns_with_same_site_code(self.patient):
-                self.add_error(
-                    NON_FIELD_ERRORS,
-                    _('Patient has more than one active MRN at the same hospital, please contact Medical Records.'),
-                )
+        if isinstance(self.patient, OIEPatientData) and has_multiple_mrns_with_same_site_code(self.patient):
+            self.add_error(
+                NON_FIELD_ERRORS,
+                _('Patient has more than one active MRN at the same hospital, please contact Medical Records.'),
+            )
 
         return cleaned_data
 
 
-class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
+class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):  # noqa: WPS214
     """This form provides a radio button to choose the relationship to the patient."""
 
     relationship_type = forms.ModelChoiceField(
@@ -342,39 +343,60 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
     first_name = DynamicField(
         forms.CharField,
         label=_('First Name'),
-        required=lambda form: not form.existing_user_selected(),
+        required=lambda form: not form.is_existing_user_selected(),
+        disabled=lambda form: form.is_patient_requestor(),
+        initial=lambda form: form.patient.first_name if form.is_patient_requestor() else None,
     )
     last_name = DynamicField(
         forms.CharField,
         label=_('Last Name'),
-        required=lambda form: not form.existing_user_selected(),
+        required=lambda form: not form.is_existing_user_selected(),
+        disabled=lambda form: form.is_patient_requestor(),
+        initial=lambda form: form.patient.last_name if form.is_patient_requestor() else None,
     )
 
     user_email = DynamicField(
-        forms.CharField,
+        forms.EmailField,
         label=_('Email Address'),
-        required=lambda form: form.existing_user_selected(),
+        required=lambda form: form.is_existing_user_selected(),
     )
     user_phone = DynamicField(
         forms.CharField,
         label=_('Phone Number'),
         initial='+1',
         validators=[validators.validate_phone_number],
-        required=lambda form: form.existing_user_selected(),
+        required=lambda form: form.is_existing_user_selected(),
     )
 
-    def __init__(self, date_of_birth: date, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, patient: Patient | OIEPatientData, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the layout for card type select box and card number input box.
 
         Args:
-            date_of_birth: patient's date of birth
+            patient: a `Patient` or `OIEPatientData` instance
             args: additional arguments
             kwargs: additional keyword arguments
         """
+        # dynamic fields require the patient to be set
+        self.patient = patient
+
+        initial = kwargs.pop('initial', None)
+
+        # remove empty first and last name if present in initial data
+        # this allows us to provide the first and last name of the patient as initial data in the dynamic form field
+        # this can happen when switching to "Self" and receiving an "up-validate" request
+        # where we pass the existing data as initial to avoid form validation
+        if initial:
+            if 'first_name' in initial and not initial.get('first_name'):
+                initial.pop('first_name')
+            if 'last_name' in initial and not initial.get('last_name'):
+                initial.pop('last_name')
+
+        kwargs['initial'] = initial
+
         super().__init__(*args, **kwargs)
 
-        self.existing_user: Optional[Caregiver] = None
+        self.existing_user: Optional[CaregiverProfile] = None
 
         self.helper = FormHelper()
         self.helper.form_tag = False
@@ -398,7 +420,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             Div(css_class='mb-4 p-3 border-start border-end border-bottom'),
         )
 
-        if self.existing_user_selected():
+        if self.is_existing_user_selected():
             self.helper.layout[2].append(Layout(
                 Row(
                     Column('user_email', css_class='col-4'),
@@ -416,15 +438,32 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 ),
             ))
 
-        # TODO: filter out self if there is already a self relationship
-        # at this point there would be a Patient instance if it exists
-        # then use utils.valid_relationship_types(patient)
-        # otherwise search_relationship_types_by_patient_age
-        # see old access request form
-        available_choices = utils.search_relationship_types_by_patient_age(date_of_birth).values_list('id', flat=True)
-        self.fields['relationship_type'].widget.available_choices = available_choices
+        if isinstance(patient, Patient):
+            relationship_types = utils.valid_relationship_types(patient)
+        else:
+            relationship_types = utils.search_relationship_types_by_patient_age(patient.date_of_birth)
 
-    def existing_user_selected(self, cleaned_data: Optional[dict[str, Any]] = None) -> bool:
+        available_choices = relationship_types.values_list('id', flat=True)
+        self.fields['relationship_type'].widget.available_choices = list(available_choices)
+
+    def is_patient_requestor(self) -> bool:
+        """
+        Return whether the patient is also the requestor.
+
+        This is the case when a self relationship is selected.
+        In the case of no selection, False is returned.
+
+        Returns:
+            True, if the selected relationship type is Self, False otherwise
+        """
+        relationship_type = self['relationship_type'].value()
+
+        if relationship_type:
+            return RelationshipType.objects.get(pk=relationship_type).role_type == RoleType.SELF
+
+        return False
+
+    def is_existing_user_selected(self, cleaned_data: Optional[dict[str, Any]] = None) -> bool:
         """
         Return whether the existing user option is selected.
 
@@ -442,7 +481,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         return user_type == constants.UserType.EXISTING.name
 
-    def clean(self) -> dict[str, Any]:
+    def clean(self) -> dict[str, Any]:  # noqa: WPS231
         """
         Validate the form.
 
@@ -454,17 +493,32 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         super().clean()
         cleaned_data = self.cleaned_data
 
-        if self.existing_user_selected(cleaned_data):
-            self._validate_existing_user()
+        if self.is_existing_user_selected(cleaned_data):
+            self._validate_existing_user_fields(cleaned_data)
+
+            existing_user = self.existing_user
+            patient = self.patient
+            relationship_type = cleaned_data.get('relationship_type')
+
+            if existing_user:
+                if self.is_patient_requestor() and isinstance(patient, OIEPatientData):
+                    self._validate_patient_requestor(patient, existing_user)
+
+                if relationship_type:
+                    patient_instance = patient if isinstance(patient, Patient) else None
+                    self._validate_relationship(patient_instance, existing_user, relationship_type)
 
         return cleaned_data
 
-    def _validate_existing_user(self) -> None:
+    def _validate_existing_user_fields(self, cleaned_data: dict[str, Any]) -> None:
         """
         Validate the existing user selection by looking up the caregiver.
 
         Look up the caregiver by email **and** phone number.
         Add an error to the form if no user was found.
+
+        Args:
+            cleaned_data: the form's cleaned data, None if not available
         """
         cleaned_data = self.cleaned_data
 
@@ -474,18 +528,42 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             user_phone = cleaned_data['user_phone']
 
             if user_email and user_phone:
-                # ensure that we are only looking among Caregivers
-                self.existing_user = Caregiver.objects.filter(  # type: ignore[assignment]
-                    phone_number=user_phone,
-                    email=user_email,
+                self.existing_user = CaregiverProfile.objects.filter(
+                    user__email=user_email,
+                    user__phone_number=user_phone,
                 ).first()
 
-                # prevent continuing when no user was found
-                if not self.existing_user:
-                    self.add_error(
-                        NON_FIELD_ERRORS,
-                        _('No existing user found. Choose "New User" if the user cannot be found.'),
-                    )
+            # prevent continuing when no user was found
+            if not self.existing_user:
+                self.add_error(
+                    NON_FIELD_ERRORS,
+                    _('No existing user could be found.'),
+                )
+
+    def _validate_patient_requestor(self, patient: OIEPatientData, caregiver: CaregiverProfile) -> None:
+        if patient.first_name != caregiver.user.first_name or patient.last_name != caregiver.user.last_name:
+            self.add_error(
+                NON_FIELD_ERRORS,
+                _('A self-relationship was selected but the caregiver appears to be someone other than the patient.'),
+            )
+
+    def _validate_relationship(
+        self, patient: Patient | None,
+        caregiver: CaregiverProfile,
+        relationship_type: RelationshipType,
+    ) -> None:
+        relationship = Relationship(
+            patient=patient,
+            caregiver=caregiver,
+            type=relationship_type,
+            status=RelationshipStatus.CONFIRMED,
+        )
+        # reuse the model's existing validation
+        try:
+            relationship.clean()
+        except ValidationError as exc:
+            for error in exc.error_dict.get(NON_FIELD_ERRORS, []):
+                self.add_error(NON_FIELD_ERRORS, error)
 
     def _form_required(self) -> bool:
         # at form initialization the selected value is only the primary key

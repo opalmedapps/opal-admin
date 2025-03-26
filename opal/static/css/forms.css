@@ -5,10 +5,5 @@
 */
 
 .form-label {
-  font-weight: bold;
-}
-
-.form-select, .form-control, .form-check-input {
-  border-color: var(--field-border-color);
-  background-color: var(--field-background);
+  font-weight: 600;
 }

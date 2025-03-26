@@ -10,7 +10,7 @@ class CaregiverProfileAdmin(admin.ModelAdmin):
     """Admin options for the `CaregiverProfile` model."""
 
     list_display = ['__str__', 'uuid', 'legacy_id', 'user']
-    readonly_fields = ['uuid', 'user']
+    readonly_fields = ['uuid']
     # select_related for the actual user with first and last name
     list_select_related = ['user']
 
