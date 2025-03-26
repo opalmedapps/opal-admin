@@ -1,6 +1,7 @@
 """Test module for the `users` app REST API views endpoints."""
 from http import HTTPStatus
 
+from django.contrib.auth.models import Permission
 from django.urls import reverse
 
 import pytest
@@ -21,12 +22,13 @@ def test_groups_list_pass(api_client: APIClient, admin_user: User) -> None:
     response = api_client.get(reverse(
         'api:groups-list',
     ))
+
     assert response.status_code == HTTPStatus.OK
     assert len(response.data) == 2
     assert response.data[0]['pk'] == group.pk
 
 
-def test_groups_list_fail(api_client: APIClient, django_user_model: User) -> None:
+def test_groups_list_nopermission_fail(api_client: APIClient, django_user_model: User) -> None:
     """Test the failure of the retrieving list of groups due to wrong permissions."""
     user = django_user_model.objects.create(username='test_user')
     api_client.force_login(user=user)
@@ -35,5 +37,23 @@ def test_groups_list_fail(api_client: APIClient, django_user_model: User) -> Non
     response = api_client.get(reverse(
         'api:groups-list',
     ))
+
     assert response.status_code == HTTPStatus.FORBIDDEN
     assert response.data['detail'] == 'You do not have permission to perform this action.'
+
+
+def test_groups_list_permission_pass(api_client: APIClient, django_user_model: User) -> None:
+    """Test the failure of the retrieving list of groups due to wrong permissions."""
+    user = django_user_model.objects.create(username='test_user')
+    group_view_perm = Permission.objects.get(codename='view_group')
+    user.user_permissions.add(group_view_perm)
+    api_client.force_login(user=user)
+
+    group = user_factories.GroupFactory(name='group1')
+    response = api_client.get(reverse(
+        'api:groups-list',
+    ))
+
+    assert response.status_code == HTTPStatus.OK
+    assert len(response.data) == 1
+    assert response.data[0]['pk'] == group.pk
