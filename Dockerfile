@@ -20,9 +20,8 @@ RUN python -m pip install --no-cache-dir --upgrade pip \
 
 FROM python:3.11.8-alpine3.19
 
-RUN apk upgrade --no-cache \
+RUN apk add --no-cache mariadb-dev \
   # mysqlclient runtime dependencies
-  && apk add --no-cache mariadb-dev \
   # Translations dependencies
   && apk add --no-cache gettext
 
