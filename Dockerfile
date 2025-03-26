@@ -55,12 +55,12 @@ COPY docker/start.sh ./start.sh
 # Compile messages so translations are baked into the image
 RUN cp .env.sample .env \
   && DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages \
-  && rm .env
+  && rm .env \
+  # ensure the uploads directory exists with appuser as the owner
+  && mkdir -p ./opal/media/uploads \
+  && chown appuser:appuser ./opal/media/uploads
 
 USER appuser
-
-# ensure the uploads directory exists with appuser as the owner
-RUN mkdir -p ./opal/media/uploads
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 CMD [ "./start.sh" ]
