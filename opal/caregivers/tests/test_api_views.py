@@ -1097,7 +1097,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
     data_existing_caregiver = {
         'caregiver': {
             'language': 'en',
-            'email': 'marge@opalmedapps.ca',
             'username': 'test-username',
         },
     }
