@@ -568,7 +568,7 @@ def _create_site(
         name: the English name of the site
         name_fr: the French name of the site
         acronym: the acronym of the institution
-        acronym_fr: the acronym_fr of the institution
+        acronym_fr: the French acronym of the institution
         parking_urls: a tuple of URLs to the English and French parking information
         direction_urls: a tuple of URLs to the English and French direction to the hospital information
         latitude: the latitude of the GPS location of the site
