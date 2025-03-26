@@ -12,7 +12,6 @@ from pytest_django.asserts import assertContains, assertJSONEqual, assertRaisesM
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock import MockerFixture
 from rest_framework import status
-from rest_framework.exceptions import NotFound
 from rest_framework.test import APIClient
 
 from opal.hospital_settings.factories import Institution
@@ -175,7 +174,7 @@ class TestCreatePathologyView:
         )
 
         assertRaisesMessage(
-            expected_exception=NotFound,
+            expected_exception=Site.DoesNotExist,
             expected_message='Site matching query does not exist.',
         )
 
