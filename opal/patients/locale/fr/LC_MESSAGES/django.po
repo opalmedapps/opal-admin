@@ -290,7 +290,7 @@ msgid ""
 "being accessed."
 msgstr ""
 "Les types de rôle permettent de suivre la catégorie de relation entre un "
-"proche aidantet et un patient. Un rôle de type “Self” indique que le patient "
+"proche aidant et un patient. Un rôle de type “Self” indique que le patient "
 "est le propriétaire des données demandées."
 
 #: opal/patients/models.py
@@ -520,6 +520,16 @@ msgstr "Nouvelle demande d'accès aux données patient"
 msgid "Opal Registration"
 msgstr ""
 
+#: opal/patients/templates/patients/access_request/new_access_request.html
+#: opal/patients/views.py
+msgid "Patient Details"
+msgstr "Détails du patient"
+
+#: opal/patients/templates/patients/access_request/new_access_request.html
+#: opal/patients/views.py
+msgid "Requestor Details"
+msgstr "Détails du demandeur"
+
 #: opal/patients/templates/patients/access_request/qr_code.html
 msgid "Opal Registration: Confirmation"
 msgstr ""
@@ -646,14 +656,6 @@ msgstr ""
 #: opal/patients/views.py
 msgid "Hospital Information"
 msgstr "Patient de l'hôpital"
-
-#: opal/patients/views.py
-msgid "Patient Details"
-msgstr "Détails du patient"
-
-#: opal/patients/views.py
-msgid "Requestor Details"
-msgstr "Détails du demandeur"
 
 #: opal/patients/views.py
 msgid "Confirm access to patient data"

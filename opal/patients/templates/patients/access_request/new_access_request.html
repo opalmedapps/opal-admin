@@ -16,20 +16,18 @@
 
     {% block content_form %}
       <fieldset class="mb-3">
-        <legend>Patient Details</legend>
+        <legend>{% translate "Patient Details" %}</legend>
         {% crispy search_form %}
       </fieldset>
 
       {% if patient_form %}
-      {% comment %} {{ patient_table }} {% endcomment %}
         {% render_table patient_table %}
         {% crispy patient_form %}
       {% endif %}
 
       {% if relationship_form %}
         <fieldset class="mt-3">
-          <legend>Requestor Details</legend>
-          {% comment %} {{ relationship_form.as_div }} {% endcomment %}
+          <legend>{% translate "Requestor Details" %}</legend>
           {% crispy relationship_form %}
         </fieldset>
       {% endif %}
@@ -39,7 +37,7 @@
       {% endif %}
     {% endblock %}
 
-    <a href="/{{ request.resolver_match.route }}" class="btn btn-secondary">Cancel</a>
+    {% form_cancel href=request.resolver_match.route %}
     <input type="submit" name="next" class="btn btn-primary" value="{{ next_button_text }}"{% if next_button_disabled %} disabled{% endif %} />
   </form>
 {% endblock %}

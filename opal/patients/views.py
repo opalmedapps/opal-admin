@@ -241,9 +241,8 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
         if current_step == 'confirm' or next_step == 'confirm':
             # populate relationship type (in case it is just the ID)
             relationship_form.full_clean()
-            # TODO: convert to correct user type to have the user-facing name for it (via constants.TYPE_USERS)
-            # might be helpful to use an enum like done with MedicalCard
             user_type = relationship_form.cleaned_data['user_type']
+            # might be helpful to use an enum like done with MedicalCard
             is_existing_user = user_type == '1'
 
             if is_existing_user:
