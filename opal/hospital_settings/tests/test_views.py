@@ -26,14 +26,14 @@ test_url_template_data: List[Tuple] = [
 
 
 @pytest.mark.parametrize(('url', 'template'), test_url_template_data)
-def test_hospital_settings_urls_exisit(client: Client, url, template) -> None:
+def test_hospital_settings_urls_exist(client: Client, url, template) -> None:
     """This test ensures that a page exists at desired URL address."""
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
 
 @pytest.mark.parametrize(('url', 'template'), test_url_template_data)
-def test_hs_uses_correct_template(client: Client, url, template) -> None:
+def test_views_use_correct_template(client: Client, url, template) -> None:
     """This test ensures that a page uses appropriate templates."""
     response = client.get(url)
     assertTemplateUsed(response, template)
@@ -50,7 +50,7 @@ test_institution_url_template_data: List[Tuple] = [
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_institution_url_template_data)
-def test_hs_institution_urls_exisit(
+def test_institution_urls_exist(
     client: Client,
     institution: Institution,
     url_name,
@@ -63,7 +63,7 @@ def test_hs_institution_urls_exisit(
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_institution_url_template_data)
-def test_hs_institution_uses_correct_template(
+def test_institution_urls_use_correct_template(
     client: Client,
     institution: Institution,
     url_name,
@@ -109,7 +109,7 @@ test_site_url_template_data: List[Tuple] = [
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_site_url_template_data)
-def test_hs_site_urls_exisit(
+def test_site_urls_exist(
     client: Client,
     site: Site,
     url_name,
@@ -122,7 +122,7 @@ def test_hs_site_urls_exisit(
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_site_url_template_data)
-def test_hs_site_uses_correct_template(
+def test_site_urls_use_correct_template(
     client: Client,
     site: Site,
     url_name,
