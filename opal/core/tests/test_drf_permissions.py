@@ -16,7 +16,7 @@ from ..drf_permissions import CaregiverPatientPermissions, CaregiverSelfPermissi
 pytestmark = pytest.mark.django_db(databases=['default'])
 
 
-# See similar tests in opal/legacy/tests/test_views.py > TestCaregiverPermissionsView
+# See similar tests in opal/legacy/api/views/tests/test_caregiver_permissions.py > TestCaregiverPermissionsView
 class TestCaregiverPatientPermissions:
     """Class wrapper for CaregiverPatientPermissions tests."""
 
