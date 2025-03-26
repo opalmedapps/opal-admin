@@ -423,11 +423,6 @@ TWILIO_ACCOUNT_SID = env.str('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = env.str('TWILIO_AUTH_TOKEN')
 SMS_FROM = env.str('SMS_FROM')
 
-# TODO: move to production?
-# Redirect after logout to legacy OpalAdmin's logout page
-# https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
-LOGOUT_REDIRECT_URL = '{base_url}/user/logout'.format(base_url=OPAL_ADMIN_URL)
-
 # Third party apps settings
 # ------------------------------------------------------------------------------
 #
