@@ -12,11 +12,11 @@ from opal.users.models import CaregiverProfile
 class RelationshipStatus(models.TextChoices):
     """Choice of relationship status."""
 
-    PENDING = 'PEN', _('PENDING')
-    CONFIRMED = 'CON', _('CONFIRMED')
-    DENIED = 'DEN', _('DENIED')
-    EXPIRED = 'EXP', _('EXPIRED')
-    REVOKED = 'REP', _('EXPIRED')
+    PENDING = 'PEN', _('Pending')
+    CONFIRMED = 'CON', _('Confirmed')
+    DENIED = 'DEN', _('Denied')
+    EXPIRED = 'EXP', _('Expired')
+    REVOKED = 'REV', _('Revoked')
 
 
 class Patient(models.Model):
@@ -32,7 +32,7 @@ class Patient(models.Model):
         max_length=150,
         blank=True,
     )
-    birth_day = models.DateField()
+    day_of_birth = models.DateField()
     caregivers = models.ManyToManyField(
         verbose_name=_('Caregivers'),
         related_name='patients',
