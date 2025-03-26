@@ -60,10 +60,3 @@ pre-commit==2.20.0  # https://github.com/pre-commit/pre-commit
 # Beautiful Soup parser for unit tests
 #
 beautifulsoup4==4.11.1  # https://www.crummy.com/software/BeautifulSoup/bs4/doc/
-
-
-# Export Report functionality
-#
-pandas==1.4.3
-numpy==1.23.1
-openpyxl==3.0.10

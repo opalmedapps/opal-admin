@@ -333,9 +333,6 @@ OIE_HOST = env.url('OIE_HOST').geturl()
 OIE_USER = env('OIE_USER')
 OIE_PASSWORD = env('OIE_PASSWORD')
 
-# ePRO Data Extractions tool URL
-EPRO_DATA_EXTRACTIONS_URL = env.url('EPRO_URL').geturl()
-
 # Third party apps settings
 # ------------------------------------------------------------------------------
 #
@@ -384,13 +381,10 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'
 
 
-######################################################################
-# Settings for export reports module
-######################################################################
-
-# List of accounts to be discluded from questionnaires list when not in debug
+# QUESTIONNAIRES/EXPORT REPORTS
+# ------------------------------------------------------------------------------
+# List of accounts to be excluded from the questionnaires list when not in debug mode
 if DEBUG:
-    TEST_ACCOUNTS = []  # if in debug mode, include test data in output
+    TEST_PATIENTS = []  # if in debug mode, include test data in output
 else:
-    TEST_ACCOUNTS = [981, 601, 18, 1281, 1282, 68, 79, 21, 23, 24, 27, 28, 144, 146, 602, 3, 600, 596, 9]  # noqa: WPS221, E501
-# TODO: Verify  test account list in latest questionnairedb
+    TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS')

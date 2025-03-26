@@ -13,7 +13,7 @@ from django.http.request import QueryDict
 # Logger instance declared at the module level
 logger = logging.getLogger(__name__)
 
-test_accounts = settings.TEST_ACCOUNTS
+test_accounts = settings.TEST_PATIENTS
 
 
 def _getdescription(qid: int, langId: int) -> Any:
