@@ -1,10 +1,13 @@
+import datetime as dt
 import urllib
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from django.test import Client
 from django.urls import reverse
+from django.utils import timezone
 
 import pytest
+from pytest_mock import MockerFixture
 
 from opal.services.hospital.hospital_data import OIEMRNData
 
@@ -68,8 +71,18 @@ def test_patienttable_render_mrns_dict() -> None:
     assert site_mrn == 'RVH: 9999996, MGH: 1234567'
 
 
-def test_relationshiptable_pending_status_render_singular() -> None:
+def _mock_datetime(mocker: MockerFixture) -> None:
+    # mock the current timezone to avoid flaky tests
+    current_time = datetime(2022, 6, 2, 2, 0, tzinfo=dt.timezone.utc)
+    current_date = date(2022, 6, 2)
+    mocker.patch.object(timezone, 'now', return_value=current_time)
+    mocker.patch.object(date, 'today', return_value=current_date)
+
+
+def test_relationshiptable_pending_status_render_singular(mocker: MockerFixture) -> None:
     """Ensure that pending status is rendered in the form `STATUS (number of days)` in singular form."""
+    _mock_datetime(mocker)
+
     # in case of `zero` number of days
     today_date = date.today()
     relationship_record = factories.Relationship(request_date=today_date)
@@ -91,8 +104,10 @@ def test_relationshiptable_pending_status_render_singular() -> None:
     assert status_format == 'Pending (1 day)'
 
 
-def test_relationshiptable_pending_status_render_plural() -> None:
+def test_relationshiptable_pending_status_render_plural(mocker: MockerFixture) -> None:
     """Ensure that pending status is rendered in the form `STATUS (number of days)` in plural form."""
+    _mock_datetime(mocker)
+
     today_date = date.today() - timedelta(days=5)
     relationship_record = factories.Relationship(request_date=today_date)
     relationships = models.Relationship.objects.filter()
