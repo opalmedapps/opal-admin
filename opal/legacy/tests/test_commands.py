@@ -739,7 +739,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
     def test_orms_patients_update_with_request_exception(self, mocker: MockerFixture) -> None:
         """Ensure the command handles exceptions during POST requests to the ORMS."""
         # Create test data
-        self._call_command('insert_test_data')
+        self._call_command('insert_test_data', 'CHUSJ', '--force-delete')
         # Create mock POST request
         mock_post = RequestMockerTest._mock_requests_post(mocker, {})
         mock_post.side_effect = requests.RequestException('request failed')
@@ -748,12 +748,12 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         message, error = self._call_command('update_orms_patients')
 
         number_of_patients = Patient.objects.all().count()
-        assert error.count("An error occurred during patients' UUID update!") == number_of_patients
+        assert error.count("An error occurred during patient's UUID update!") == number_of_patients
 
     def test_orms_patients_update_unsuccessful_response(self, mocker: MockerFixture) -> None:
         """Ensure the command handles unsuccessful responses during POST requests to the ORMS."""
         # Create test data
-        self._call_command('insert_test_data')
+        self._call_command('insert_test_data', 'CHUSJ', '--force-delete')
         # Create mock POST request
         mock_post = RequestMockerTest._mock_requests_post(mocker, {})
         mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
@@ -767,7 +767,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
     def test_orms_patients_successful_update(self, mocker: MockerFixture) -> None:
         """Ensure the command does not have any errors during successful ORMS patients update."""
         # Create test data
-        self._call_command('insert_test_data')
+        self._call_command('insert_test_data', 'CHUSJ', '--force-delete')
         # Create mock POST request
         mock_post = RequestMockerTest._mock_requests_post(mocker, {})
         mock_post.return_value.status_code = HTTPStatus.OK
