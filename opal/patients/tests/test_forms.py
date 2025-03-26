@@ -286,6 +286,25 @@ def test_accessrequestsearchform_ramq() -> None:
     assert site_field.empty_label == 'Not required'  # type: ignore[attr-defined]
 
 
+def test_accessrequestrequestorform_patient_search_initials_single_site() -> None:
+    """Ensure the `Site` field is initialized as expected without setting any value."""
+    factories.Site()
+    form = forms.AccessRequestSearchPatientForm()
+
+    assert form.fields['site'].disabled
+    assert isinstance(form.fields['site'].widget, HiddenInput)
+
+
+def test_accessrequestrequestorform_patient_search_initials() -> None:
+    """Ensure the `Site` field is initialized as expected without setting any value."""
+    factories.Site()
+    factories.Site()
+    form = forms.AccessRequestSearchPatientForm()
+
+    assert not form.fields['site'].disabled
+    assert not isinstance(form.fields['site'].widget, HiddenInput)
+
+
 def test_accessrequestsearchform_single_site_mrn() -> None:
     """Ensure that site field is disabled and hidden when there is only one site."""
     site = factories.Site()
@@ -997,3 +1016,15 @@ def test_accessrequestrequestorform_self_names_prefilled_other_initial() -> None
     assert form['first_name'].value() == 'Hans'
     assert form.fields['last_name'].initial == OIE_PATIENT_DATA.last_name
     assert form['last_name'].value() == 'Wurst'
+
+
+def test_accessrequestrequestorform_disable_fields() -> None:
+    """Ensure the `disable_fields` disables all fields in a form."""
+    form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA)
+
+    # disable all fields for the form
+    form.disable_fields()
+
+    # assert all fields are disabled
+    for _field_name, field in form.fields.items():
+        assert field.disabled
