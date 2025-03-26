@@ -5,7 +5,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Column, Layout, Row
+from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
 
 from .models import Site
 
@@ -33,5 +33,8 @@ class SelectSiteForm(forms.Form):
             Row(
                 Column('sites', css_class='form-group col-md-12 mb-0'),
                 css_class='form-row',
+            ),
+            ButtonHolder(
+                Submit('wizard_goto_step', _('Generate QR Code')),
             ),
         )

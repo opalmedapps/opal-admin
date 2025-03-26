@@ -2,6 +2,20 @@
 {% load static %}
 {% load i18n %}
 
+{% load crispy_forms_tags %}
+
 {% block content %}
-<img class="align-right card-img-top float-right img-responsive" src="{% static qrcode %}"  style="width:300px;margin-top:1cm;" alt="Card image cap">
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-auto">{% translate "Hospital Information" %}</div>
+      <div class="col"><hr></div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+          {{ svg|safe }}
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}

@@ -1,13 +1,17 @@
 """This module provides views for patient settings."""
+import io
 from typing import Any, List, Tuple
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
 
+import qrcode
 from coreapi import Object
 from django_tables2 import SingleTableView
 from formtools.wizard.views import SessionWizardView
+from qrcode.image import svg
 
 from opal.core.views import CreateUpdateView
 from opal.patients.forms import SelectSiteForm
@@ -62,9 +66,10 @@ class RelationshipTypeDeleteView(generic.edit.DeleteView):
 
 class AccessRequestView(SessionWizardView):
     """
-    This class inherits 'NamedUrlSessionWizardView', which each step has a url link to it.
+    Form wizard view providing the steps for a caregiver's patient access request.
 
-    Using class 'NamedUrlSessionWizardView' preselects the backend used for storing information.
+    The collected information is stored in the server-side session. Once all information is collected,
+    a confirmation page with a QR code is displayed.
     """
 
     model = Site
@@ -93,7 +98,7 @@ class AccessRequestView(SessionWizardView):
         """
         return super().get_context_data(form=form, **kwargs)
 
-    def done(self, form_list: Tuple, **kwargs: Any) -> HttpResponseRedirect:
+    def done(self, form_list: Tuple, **kwargs: Any) -> HttpResponse:
         """
         Redirect to a test qr code page.
 
@@ -102,25 +107,14 @@ class AccessRequestView(SessionWizardView):
             kwargs: additional keyword arguments
 
         Returns:
-            the object of HttpResponseRedirect
+            the object of HttpResponse
         """
-        return HttpResponseRedirect(reverse_lazy('patients:generate-qr-code'))
+        form_data = [form.cleaned_data for form in form_list]
+        factory = svg.SvgImage
+        img = qrcode.make(form_data[0]['sites'], image_factory=factory, box_size=10)
+        stream = io.BytesIO()
+        img.save(stream)
 
-
-class QrCode(generic.list.ListView):
-    """Create qrcode using `qrcode` library not `django-qrcode`."""
-
-    model = Site
-    template_name = 'patients/access_request/test_qr_code.html'
-
-    def get_context_data(self, **kwargs: Any) -> Object:
-        """
-        Redirect to a test qr code page.
-
-        Args:
-            kwargs: additional keyword arguments
-
-        Returns:
-            the object of HttpResponseRedirect
-        """
-        return {'qrcode': 'qr_image/testqr.svg'}
+        return render(self.request, 'patients/access_request/test_qr_code.html', {
+            'svg': stream.getvalue().decode(),
+        })

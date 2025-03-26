@@ -8,8 +8,6 @@ from django.urls import reverse
 import pytest
 from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 
-from opal.patients.forms import SelectSiteForm
-
 from .. import factories, models, tables
 
 
@@ -160,14 +158,15 @@ def test_patient_wizard_current_step(
 
 
 def test_access_request_done_redirects(user_client: Client) -> None:
-    """Ensure that the form is valid, the page is submitted and redirectted to a qr code page."""
-    url = reverse('patients:generate-qr-code')
-    response = user_client.get(url)
-    site = factories.Site(name='Montreal General Hospital', code='MGH')
+    """Ensure that when the page is submitted it redirects to the final page."""
+    url = reverse('patients:access-request')
+    site = factories.Site()
     form_data = {
-        'sites': site,
+        'site-sites': site.pk,
+        'access_request_view-current_step': 'site',
     }
-    form = SelectSiteForm(data=form_data)
 
-    if form.is_valid():
-        assert response.status_code == HTTPStatus.OK
+    response = user_client.post(url, data=form_data)
+
+    assert response.status_code == HTTPStatus.OK
+    assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')

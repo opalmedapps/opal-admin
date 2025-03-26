@@ -37,9 +37,4 @@ urlpatterns = [
         views.AccessRequestView.as_view(views.AccessRequestView.form_list),
         name='access-request',
     ),
-    path(
-        'generate-qr-code/',
-        views.QrCode.as_view(),
-        name='generate-qr-code',
-    ),
 ]
