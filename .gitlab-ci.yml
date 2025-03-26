@@ -1,4 +1,4 @@
-image: python:3.9.13-slim-bullseye
+image: python:3.9.14-slim-bullseye
 
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
@@ -23,7 +23,7 @@ before_script:
   - source .venv/bin/activate || true
   # set up env file for DB service
   # use sample env file
-  - mv .env.sample .env
+  - cp .env.sample .env
   - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=mariadb/" .env
   - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
   - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
@@ -41,6 +41,7 @@ before_script:
 
 stages:
   - Static Analysis
+  - Checks
   - Test
   - Build
   - Documentation
@@ -122,6 +123,33 @@ coverage:
       coverage_report:
         coverage_format: cobertura
         path: coverage.xml
+
+django:
+  stage: Checks
+  script:
+    # install dependencies for makemessages and git diff
+    - apt update && apt-get install -y gettext git
+    # Missing migrations
+    - echo "Checking that there are no model changes for which there is no migration..."
+    - python manage.py makemigrations --dry-run --check
+    # Missing translation file updates
+    - echo "Checking that translation files have been updated ..."
+    - python manage.py makemessages --add-location file -l fr
+    - git diff --ignore-matching-lines=POT-Creation-Date --exit-code
+    # Prevent auto-named migrations
+    - echo "Checking that migrations are not auto-named ..."
+    # See: https://adamj.eu/tech/2020/02/24/how-to-disallow-auto-named-django-migrations/
+    # Return exit code of 1 if results found, 0 otherwise
+    # See: https://serverfault.com/q/225798 and https://stackoverflow.com/a/53753605
+    - (! find ./opal -regex '.*/migrations/.*_auto_.*\.py$' | grep -q .)
+    # Run checks to be sure we follow all django's best practices:
+    - echo "Checking that all Django checks pass ..."
+    - python manage.py check --fail-level WARNING
+    # Check templates
+    - echo "Validating templates ..."
+    - python manage.py validate_templates
+  needs:
+    - job: setup
 
 # Try building the documentation site to ensure there are no issues
 build docs:

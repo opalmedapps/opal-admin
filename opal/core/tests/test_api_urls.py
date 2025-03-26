@@ -71,3 +71,11 @@ def test_api_check_permissions_defined(settings: SettingsWrapper) -> None:
     )
     assert reverse('api:caregiver-permissions', kwargs={'legacy_id': 1}) == check_permissions_path
     assert resolve(check_permissions_path).view_name == 'api:caregiver-permissions'
+
+
+# questionnaire report generation API endpoint: questionnaires/reviewed/
+
+def test_questionnaires_reviewed() -> None:
+    """Ensure `questionnaires/reviewed/` endpoint is defined."""
+    assert reverse('api:questionnaires-reviewed') == '/api/questionnaires/reviewed/'
+    assert resolve('/api/questionnaires/reviewed/').view_name == 'api:questionnaires-reviewed'
