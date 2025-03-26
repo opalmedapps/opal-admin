@@ -2,10 +2,10 @@
 
 from typing import Any
 
-from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from opal.legacy.utils import get_patient_sernum
 
@@ -13,18 +13,16 @@ from .. import models
 from .serializers import LegacyAppointmentSerializer, UnreadCountSerializer
 
 
-class AppHomeView(RetrieveAPIView):
+class AppHomeView(APIView):
     """Class to return home page required data."""
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    def get(self, request: Request) -> Response:
         """
         Handle GET requests from `api/app/home`.
 
         Args:
-            args: additional arguments
-            kwargs: additional keyword arguments
             request: Http request made by the listener.
 
         Returns:
@@ -40,7 +38,7 @@ class AppHomeView(RetrieveAPIView):
         })
 
 
-class AppChartView(ListAPIView):
+class AppChartView(APIView):
     """Class to return chart page required data."""
 
     permission_classes = [IsAuthenticated]
