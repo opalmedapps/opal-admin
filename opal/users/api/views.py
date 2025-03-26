@@ -1,5 +1,4 @@
 """This module provides `UpdateAPIViews` for the `users` app REST APIs."""
-
 from django.db.models.query import QuerySet
 
 from rest_framework.generics import UpdateAPIView, get_object_or_404
