@@ -316,7 +316,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> Any:
+    ) -> ValuesQuerySet['LegacyPatient', dict[str, Any]]:
         """
         Retrieve the latest de-identified demographics data for a consenting DataBank patient.
 
@@ -356,7 +356,7 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> Any:
+    ) -> ValuesQuerySet['LegacyDiagnosis', dict[str, Any]]:
         """
         Retrieve the latest de-identified diagnosis data for a consenting DataBank patient.
 
@@ -407,7 +407,7 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> Any:
+    ) -> ValuesQuerySet['LegacyPatientTestResult', dict[str, Any]]:
         """
         Retrieve the latest de-identified labs data for a consenting DataBank patient.
 
