@@ -398,16 +398,17 @@ LOGGING = {
     'root': {'level': 'INFO', 'handlers': ['console']},
 }
 
-# Set email SMTP server
+# Configure email settings
 # See https://docs.djangoproject.com/en/dev/topics/email/
+# See https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-else:  # pragma: no cover
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_BACKEND = env('EMAIL_BACKEND', default=EMAIL_BACKEND)
 EMAIL_HOST = env('EMAIL_HOST')
-EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS')
-EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL')
 EMAIL_PORT = env.int('EMAIL_PORT')
+EMAIL_USE_TLS = EMAIL_PORT == 587  # noqa: WPS432
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
