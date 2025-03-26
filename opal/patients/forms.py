@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Union
 
 from django import forms
 from django.contrib.auth import authenticate
-from django.core.exceptions import ValidationError
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.urls import reverse_lazy
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
@@ -18,7 +18,8 @@ from ..core.form_layouts import CancelButton
 from ..services.hospital.hospital import OIEService
 from ..users.models import Caregiver, User
 from . import constants
-from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .models import Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .utils import search_valid_relationship_types
 
 
 class SelectSiteForm(forms.Form):
@@ -131,7 +132,7 @@ class SearchForm(forms.Form):
         """
         # add error message to the template
         if response and response['status'] == 'error':
-            self.add_error(None, response['data']['message'])
+            self.add_error(NON_FIELD_ERRORS, response['data']['message'])
         # save patient data to the JSONfield
         elif response and response['status'] == 'success':
             self.cleaned_data['patient_record'] = response['data']
@@ -275,10 +276,7 @@ class RequestorDetailsForm(forms.Form):
                 Submit('wizard_goto_step', _('Next')),
             ),
         )
-        self.age = Patient.calculate_age(date_of_birth=date_of_birth)
-        available_choices = RelationshipType.objects.filter_by_patient_age(
-            patient_age=self.age,
-        ).values_list('id', flat=True)
+        available_choices = search_valid_relationship_types(date_of_birth)
         self.fields['relationship_type'].widget.available_choices = available_choices
 
     def clean(self) -> None:
@@ -576,11 +574,21 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'cancel_url',
         )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(   # noqa: WPS211
+        self,
+        date_of_birth: date,
+        relationship_type: RelationshipType,
+        request_date: date,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """
         Set the layout.
 
         Args:
+            request_date: the date when the requestor submit the access request
+            date_of_birth: patient's date of birth
+            relationship_type: user selection for relationship type
             args: varied amount of non-keyworded arguments
             kwargs: varied amount of keyworded arguments
         """
@@ -590,6 +598,28 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 RelationshipStatus(self.instance.status),
             )
         ]
+        self.fields['start_date'].widget.attrs.update({   # noqa: WPS219
+            'min': Relationship.set_relationship_start_date(
+                request_date,
+                date_of_birth,
+                relationship_type,
+            ),
+            'max': Relationship.set_relationship_end_date(
+                date_of_birth,
+                relationship_type,
+            ),
+        })
+        self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
+            'min': Relationship.set_relationship_start_date(
+                request_date,
+                date_of_birth,
+                relationship_type,
+            ),
+            'max': Relationship.set_relationship_end_date(
+                date_of_birth,
+                relationship_type,
+            ),
+        })
 
         self.helper = FormHelper()
         self.helper.attrs = {'novalidate': ''}

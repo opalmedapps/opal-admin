@@ -9,11 +9,13 @@ reference from:
 
 import datetime
 
+from dateutil.relativedelta import relativedelta
 from factory import RelatedFactory, Sequence, SubFactory, lazy_attribute
 from factory.django import DjangoModelFactory
 
 from opal.caregivers.factories import CaregiverProfile
 from opal.hospital_settings.factories import Site
+from opal.patients import constants
 
 from . import models
 
@@ -59,8 +61,8 @@ class Relationship(DjangoModelFactory):
     caregiver = SubFactory(CaregiverProfile)
     type = SubFactory(RelationshipType)  # noqa: A003
     request_date = datetime.date.today()
-    start_date = datetime.date(2020, 1, 1)
-    end_date = datetime.date(2020, 5, 1)
+    start_date = datetime.date.today() - relativedelta(years=constants.RELATIVE_YEAR_VALUE)
+    end_date = datetime.date.today() + relativedelta(years=constants.RELATIVE_YEAR_VALUE)
     reason = ''
 
 
