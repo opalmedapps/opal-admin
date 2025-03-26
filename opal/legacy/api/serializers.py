@@ -73,6 +73,7 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer[LegacyAppo
         source='aliasexpressionsernum.aliassernum.appointmentcheckin.checkininstruction_fr',
     )
 
+    # Testing
     educational_material_url_en = serializers.CharField(
         source='aliasexpressionsernum.aliassernum.educational_material_control_ser_num.url_en',
         required=False,
