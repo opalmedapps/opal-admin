@@ -137,7 +137,9 @@
         </div>
 
       </div>
-      {% form_back href=cancel_url %}
+      {% #form_actions %}
+        {% form_cancel href=cancel_url type="back" %}
+      {% /form_actions %}
     </div>
   </div>
 {% endblock %}

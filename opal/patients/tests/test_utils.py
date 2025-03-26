@@ -335,7 +335,16 @@ def test_create_caregiver_profile() -> None:
     assert caregiver.first_name == 'Hans'
     assert caregiver.last_name == 'Wurst'
     assert not caregiver.is_active
-    assert caregiver.username == ''
+    assert caregiver.username != ''
+    assert len(caregiver.username) == utils.RANDOM_USERNAME_LENGTH
+
+
+def test_create_caregiver_profile_multiple() -> None:
+    """Ensure that multiple caregiver profiles can be created."""
+    caregiver_profile = utils.create_caregiver_profile('Hans', 'Wurst')
+    caregiver_profile2 = utils.create_caregiver_profile('Hans', 'Wurst')
+
+    assert caregiver_profile.user.username != caregiver_profile2.user.username
 
 
 def test_create_relationship() -> None:

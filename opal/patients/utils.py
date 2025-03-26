@@ -8,7 +8,7 @@ from django.db.models import QuerySet
 from django.utils import timezone
 
 from opal.caregivers import models as caregiver_models
-from opal.core.utils import generate_random_registration_code
+from opal.core.utils import generate_random_registration_code, generate_random_uuid
 from opal.hospital_settings.models import Site
 from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver, User
@@ -17,6 +17,8 @@ from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, 
 
 #: The indicator of the female sex within the RAMQ number (added to the month)
 RAMQ_FEMALE_INDICATOR: Final = 50
+#: Length of the random username
+RANDOM_USERNAME_LENGTH: Final = 16
 #: Length for the registration code excluding the two character prefix.
 REGISTRATION_CODE_LENGTH: Final = 10
 
@@ -170,8 +172,9 @@ def create_caregiver_profile(first_name: str, last_name: str) -> caregiver_model
     Create new caregiver and caregiver profile instances.
 
     The caregiver profile is associated to the caregiver.
-    The caregiver is not active and only has a first and last name.
-    No email, username or password.
+    The caregiver has a randomly generated username and is not active by default to require registration first.
+    The caregiver also only has a first and last name.
+    No email or password.
 
     Args:
         first_name: the first name of the caregiver
@@ -181,10 +184,13 @@ def create_caregiver_profile(first_name: str, last_name: str) -> caregiver_model
         the caregiver profile instance, access the caregiver via the `user` property
     """
     caregiver = Caregiver.objects.create(
+        # define a random username since an empty username can only exist once
+        username=generate_random_uuid(RANDOM_USERNAME_LENGTH),
         first_name=first_name,
         last_name=last_name,
         is_active=False,
     )
+    caregiver.full_clean(exclude=['password'])
 
     return caregiver_models.CaregiverProfile.objects.create(user=caregiver)
 
@@ -362,6 +368,7 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
     )
 
     new_user = not isinstance(caregiver, Caregiver)
+    # TODO: check whether we want to default start_date to patient's date of birth here
     relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
     registration_code = create_registration_code(relationship) if new_user else None
 
