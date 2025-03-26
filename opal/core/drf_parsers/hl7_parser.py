@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from hl7apy.core import Segment
 from hl7apy.parser import parse_message
+from rest_framework import exceptions
 from rest_framework.parsers import BaseParser
 
 from opal.hospital_settings.models import Site
@@ -42,6 +43,9 @@ class HL7Parser(BaseParser):
             media_type: Acceptable data/media type
             parser_context: Additional request metadata to specify parsing functionality
 
+        Raises:
+            ParseError: If the data passed is not a StringIO stream
+
         Returns:
             dictionary object containing the parsed HL7v2 message
         """
@@ -49,7 +53,11 @@ class HL7Parser(BaseParser):
         message_dict = defaultdict(list)
 
         # Read the incoming stream into a string
-        raw_data = stream.read()
+        try:
+            raw_data = stream.read()
+        except AttributeError:
+            raise exceptions.ParseError('Request data must be application/hl7v2+er7 string stream')
+
         # Normalize line endings to CR
         hl7_message = raw_data.replace('\r\n', '\r').replace('\n', '\r')
 

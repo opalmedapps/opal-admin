@@ -1,10 +1,13 @@
 from collections import defaultdict
 from io import StringIO
 from pathlib import Path
+from typing import Any
 
 import pytest
+from rest_framework import exceptions
 
 from opal.core.drf_parsers.hl7_parser import HL7Parser
+from opal.hospital_settings import factories as institution_factories
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 FIXTURES_DIR = Path(__file__).resolve().parent.joinpath('fixtures')
@@ -18,13 +21,7 @@ def parser() -> HL7Parser:
 class TestHL7Parser:
     """Class wrapper for HL7Parser tests."""
 
-    # parse repeatable segments into a list
-    # apply parser context to limit parsed segments
-    # handled malformed hl7 gracefully
-    # removes invalid sites
-    # removes invalid breaking characters
-
-    def _assert_segment_data(self, segment_data, expected_values, segment_name):
+    def _assert_segment_data(self, segment_data: defaultdict[Any, list[dict[str, Any]]], expected_values: dict[str, str], segment_name: str) -> None:
         """Utility method to assert that the segment data matches the expected values."""
         # Assert correct values for each key in the segment, which also implicitly checks for their presence
         for key, expected_value in expected_values.items():
@@ -36,12 +33,12 @@ class TestHL7Parser:
         assert not unexpected_keys, f"Unexpected keys present in {segment_name} segment: {unexpected_keys}"
 
 
-    def _load_hl7_fixture(self, filename):
+    def _load_hl7_fixture(self, filename: str) -> StringIO:
         """Utility function to load an HL7 fixture file into a bytestream."""
         with (FIXTURES_DIR / filename).open('r') as file:
             return StringIO(file.read())
 
-    def test_parse_pid_segment(self, parser):
+    def test_parse_pid_segment(self, parser: HL7Parser):
         """Test parsing a PID segment."""
         stream = self._load_hl7_fixture('marge_PID.hl7v2')
         parsed_data = parser.parse(stream)
@@ -66,7 +63,7 @@ class TestHL7Parser:
         # Use the utility method to assert the PID segment data
         self._assert_segment_data(parsed_data['PID'], expected_values, "PID")
 
-    def test_parse_pv1_segment(self, parser) -> None:
+    def test_parse_pv1_segment(self, parser: HL7Parser) -> None:
         """Test parsing a PV1 segment."""
         stream = self._load_hl7_fixture('marge_PV1.hl7v2')
         parsed_data = parser.parse(stream)
@@ -85,7 +82,7 @@ class TestHL7Parser:
         self._assert_segment_data(pv1_data, expected_values, "PV1")
 
 
-    def test_parse_orc_segment(self, parser) -> None:
+    def test_parse_orc_segment(self, parser: HL7Parser) -> None:
         """Test parsing a ORC segment."""
         stream = self._load_hl7_fixture('marge_ORC.hl7v2')
         parsed_data = parser.parse(stream)
@@ -120,7 +117,7 @@ class TestHL7Parser:
         self._assert_segment_data(orc_data, expected_values, "ORC")
 
 
-    def test_parse_rxe_segment(self, parser) -> None:
+    def test_parse_rxe_segment(self, parser: HL7Parser) -> None:
         """Test parsing a RXE segment."""
         stream = self._load_hl7_fixture('marge_RXE.hl7v2')
         parsed_data = parser.parse(stream)
@@ -165,7 +162,7 @@ class TestHL7Parser:
         self._assert_segment_data(rxe_data, expected_values, "RXE")
 
 
-    def test_parse_rxr_segment(self, parser) -> None:
+    def test_parse_rxr_segment(self, parser: HL7Parser) -> None:
         """Test parsing a RXR segment."""
         stream = self._load_hl7_fixture('marge_RXR.hl7v2')
         parsed_data = parser.parse(stream)
@@ -192,7 +189,7 @@ class TestHL7Parser:
         self._assert_segment_data(rxr_data, expected_values, "RXR")
 
 
-    def test_parse_rxc_segment(self, parser) -> None:
+    def test_parse_rxc_segment(self, parser: HL7Parser) -> None:
         """Test parsing a RXC segment."""
         stream = self._load_hl7_fixture('marge_RXC.hl7v2')
         parsed_data = parser.parse(stream)
@@ -213,7 +210,7 @@ class TestHL7Parser:
         # Use the utility method to assert the segment data
         self._assert_segment_data(rxc_data, expected_values, "RXC")
 
-    def test_parse_nte_segment(self, parser) -> None:
+    def test_parse_nte_segment(self, parser: HL7Parser) -> None:
         """Test parsing a NTE segment."""
         stream = self._load_hl7_fixture('marge_NTE.hl7v2')
         parsed_data = parser.parse(stream)
@@ -227,3 +224,64 @@ class TestHL7Parser:
         }
         # Use the utility method to assert the segment data
         self._assert_segment_data(nte_data, expected_values, "NTE")
+
+
+    def test_full_pharmacy_message(self, parser: HL7Parser) -> None:
+        """Test parsing a full pharmacy message."""
+        stream = self._load_hl7_fixture('marge_pharmacy.hl7v2')
+        parsed_data = parser.parse(stream)
+        assert isinstance(parsed_data, defaultdict), "Data should be a defaultdict"
+        assert 'NTE' in parsed_data, "NTE segment should be present in parsed data"
+        assert 'RXC' in parsed_data, "RXC segment should be present in parsed data"
+        assert 'RXR' in parsed_data, "RXR segment should be present in parsed data"
+        assert 'RXE' in parsed_data, "RXE segment should be present in parsed data"
+        assert 'ORC' in parsed_data, "ORC segment should be present in parsed data"
+        assert 'PV1' in parsed_data, "PV1 segment should be present in parsed data"
+        assert 'PID' in parsed_data, "PID segment should be present in parsed data"
+        assert len(parsed_data['RXC']) == 7, "Multiple RXC segments should be present in parsed data"
+
+
+    def test_parser_context_segments_to_parse(self, parser: HL7Parser) -> None:
+        """Test passing a parser context to limit segments parsed."""
+        stream = self._load_hl7_fixture('marge_pharmacy.hl7v2')
+        parsed_data = parser.parse(
+            stream=stream,
+            parser_context={'segments_to_parse': ['ORC', 'PID']}
+        )
+        assert isinstance(parsed_data, defaultdict), "Data should be a defaultdict"
+        assert 'NTE' not in parsed_data, "NTE segment should not be present in parsed data"
+        assert 'RXC' not in parsed_data, "RXC segment should not be present in parsed data"
+        assert 'RXR' not in parsed_data, "RXR segment should not be present in parsed data"
+        assert 'RXE' not in parsed_data, "RXE segment should not be present in parsed data"
+        assert 'ORC' in parsed_data, "ORC segment should be present in parsed data"
+        assert 'PV1' not in parsed_data, "PV1 segment should not be present in parsed data"
+        assert 'PID' in parsed_data, "PID segment should be present in parsed data"
+
+
+    def test_improper_request_data(self, parser: HL7Parser) -> None:
+        """Test parsing a message with improper request data."""
+        stream = {'PID': {'first_name': 'marge', 'last_name': 'simpson'}, 'MSH': {'header': 1}}
+        with pytest.raises(exceptions.ParseError):
+            parser.parse(stream)  # type: ignore[arg-type]
+
+
+    def test_remove_invalid_sites(self, parser: HL7Parser) -> None:
+        """Test parsing a message with invalid sites."""
+        stream = self._load_hl7_fixture('marge_PID.hl7v2')
+        institution_factories.Site(acronym='RVH')
+        institution_factories.Site(acronym='MGH')
+        parsed_data = parser.parse(stream)
+        parsed_sites = {mrn_site[1] for mrn_site in parsed_data['PID']['mrn_sites']}
+        assert 'RVH' in parsed_sites, "RVH should be present in parsed data"
+        assert 'MGH' in parsed_sites, "MGH should be present in parsed data"
+        assert 'MCH' not in parsed_sites, "MCH should not be present in parsed data"
+        assert 'HNAM_ORDERID' not in parsed_sites, "HNAM_ORDERID should not be present in parsed data"
+
+
+    def test_fix_breaking_characters(self, parser: HL7Parser) -> None:
+        """Test parsing a message with breaking characters."""
+        stream = self._load_hl7_fixture('marge_RXE.hl7v2')
+        parsed_data = parser.parse(stream)
+        provider_administration_instruction = parsed_data['RXE'][0]['provider_administration_instruction']
+        assert '\\E\\.br\\E\\' not in provider_administration_instruction
+        assert provider_administration_instruction.count('\n') == 2, "There should be two line breaks in marge's RXE provider_administration_instruction"
