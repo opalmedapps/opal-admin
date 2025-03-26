@@ -139,6 +139,7 @@ class UnreadCountSerializer(serializers.Serializer[dict[str, Any]]):
     unread_txteammessage_count = serializers.IntegerField()
     unread_educationalmaterial_count = serializers.IntegerField()
     unread_questionnaire_count = serializers.IntegerField()
+    unread_research_reference_count = serializers.IntegerField()
     unread_research_questionnaire_count = serializers.IntegerField()
     unread_consent_questionnaire_count = serializers.IntegerField()
 
