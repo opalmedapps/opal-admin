@@ -117,7 +117,7 @@ def parse_rxe_segment(segment: Segment) -> dict[str, Any]:
     """
     return {
         'pharmacy_quantity': segment.rxe_1.rxe_1_1.to_er7(),
-        'pharmacy_quantity_unit': segment.rxe_1.rxe_1_2.to_er7(),
+        'pharmacy_quantity_unit': segment.rxe_1.rxe_1_1_2.to_er7(),
         'pharmacy_interval_pattern': segment.rxe_1.rxe_1_2_1.to_er7(),
         'pharmacy_interval_duration': segment.rxe_1.rxe_1_2_2.to_er7(),
         'pharmacy_duration': segment.rxe_1.rxe_1_3.to_er7(),
@@ -130,8 +130,8 @@ def parse_rxe_segment(segment: Segment) -> dict[str, Any]:
         'give_alt_identifier': segment.rxe_2.rxe_2_4.to_er7(),
         'give_alt_text': segment.rxe_2.rxe_2_5.to_er7(),
         'give_alt_coding_system': segment.rxe_2.rxe_2_6.to_er7(),
-        'give_amount_maximum': segment.rxe_3.rxe_3_1.to_er7(),
-        'give_amount_minimum': segment.rxe_4.rxe_4_1.to_er7(),
+        'give_amount_minimum': segment.rxe_3.rxe_3_1.to_er7(),
+        'give_amount_maximum': segment.rxe_4.rxe_4_1.to_er7(),
         'give_units': segment.rxe_5.rxe_5_1.to_er7(),
         'give_dosage_identifier': segment.rxe_6.rxe_6_1.to_er7(),
         'give_dosage_text': segment.rxe_6.rxe_6_2.to_er7(),
@@ -260,7 +260,7 @@ class HL7Parser(BaseParser):
         'NTE': parse_nte_segment,
     }
 
-    def parse(  # noqa: WPS210, WPS234
+    def parse(  # noqa: WPS210, WPS234, C901
         self,
         stream: IO[Any],
         media_type: str | None = None,
@@ -284,13 +284,18 @@ class HL7Parser(BaseParser):
 
         # Read the incoming stream into a string
         try:
-            raw_data = stream.read()
+            raw_data_bytes = stream.read()
         except AttributeError:
             raise exceptions.ParseError('Request data must be application/hl7v2+er7 string stream')
 
-        # Normalize line endings to CR
-        hl7_message = raw_data.replace('\r\n', '\r').replace('\n', '\r')
+        # Decode the bytes object to a string for further processing
+        try:
+            raw_data_str = raw_data_bytes.decode('utf-8')
+        except AttributeError as err:
+            raise exceptions.ParseError(f'Error decoding HL7 message: {str(err)}')
 
+        # Normalize line endings to CR
+        hl7_message = raw_data_str.replace('\r\n', '\r').replace('\n', '\r')
         # Check for a parser context which defines specific segments to be parsed
         segments_to_parse = parser_context.get('segments_to_parse') if parser_context else None
 

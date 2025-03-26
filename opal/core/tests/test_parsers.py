@@ -1,5 +1,6 @@
+import re
 from collections import defaultdict
-from io import StringIO
+from io import BytesIO, StringIO
 from pathlib import Path
 from typing import Any
 
@@ -106,7 +107,7 @@ class TestHL7Parser:  # noqa: WPS338
         rxe_data = parsed_data['RXE'][0]
         expected_values = {
             'pharmacy_quantity': '0.17',
-            'pharmacy_quantity_unit': 'Q24&1000',
+            'pharmacy_quantity_unit': '',
             'pharmacy_interval_pattern': 'Q24',
             'pharmacy_interval_duration': '1000',
             'pharmacy_duration': 'INDEF',
@@ -119,8 +120,8 @@ class TestHL7Parser:  # noqa: WPS338
             'give_alt_identifier': '20:12.04',
             'give_alt_text': 'ANTICOAGULANTS',
             'give_alt_coding_system': 'AHFS',
-            'give_amount_maximum': '50',
-            'give_amount_minimum': '',
+            'give_amount_maximum': '',
+            'give_amount_minimum': '50',
             'give_units': 'MG',
             'give_dosage_identifier': 'INJVIAL',
             'give_dosage_text': 'VIAL INJ',
@@ -236,8 +237,18 @@ class TestHL7Parser:  # noqa: WPS338
     def test_improper_request_data(self) -> None:
         """Test parsing a message with improper request data."""
         stream = {'PID': {'first_name': 'marge', 'last_name': 'simpson'}, 'MSH': {'header': 1}}
-        with pytest.raises(exceptions.ParseError):
+        with pytest.raises(
+            exceptions.ParseError,
+            match=re.escape('Request data must be application/hl7v2+er7 string stream'),
+        ):
             self.parser.parse(stream)  # type: ignore[arg-type]
+
+    def test_wrong_stream_type(self) -> None:
+        """Test passing the wrong stream type."""
+        with (FIXTURES_DIR / 'marge_pharmacy.hl7v2').open('r') as file:
+            stream = StringIO(file.read())
+            with pytest.raises(exceptions.ParseError, match='Error decoding HL7 message'):
+                self.parser.parse(stream)
 
     def test_fix_breaking_characters(self) -> None:
         """Test parsing a message with breaking characters."""
@@ -263,11 +274,11 @@ class TestHL7Parser:  # noqa: WPS338
         unexpected_keys = set(segment_data.keys()) - set(expected_values.keys())
         assert not unexpected_keys, f'Unexpected keys present in {segment_name} segment: {unexpected_keys}'
 
-    def _load_hl7_fixture(self, filename: str) -> StringIO:
-        """Load a HL7 fixture.
+    def _load_hl7_fixture(self, filename: str) -> BytesIO:
+        """Load a HL7 fixture as a byte stream.
 
         Returns:
             bytestream of the fixture data
         """
-        with (FIXTURES_DIR / filename).open('r') as file:
-            return StringIO(file.read())
+        with (FIXTURES_DIR / filename).open('rb') as file:
+            return BytesIO(file.read())
