@@ -98,18 +98,18 @@ def test_caregiverprofile_legacy_id() -> None:
 
 def test_caregiverprofile_legacy_id_unique() -> None:
     """Ensure that creating a second `CaregiverProfile` with an existing `legacy_id` raises an `IntegrityError`."""
-    factories.CaregiverProfile(id=1, legacy_id=1)
+    factories.CaregiverProfile(legacy_id=1)
 
     message = "Duplicate entry '1' for key"
 
     with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
-        factories.CaregiverProfile(id=2, legacy_id=1)
+        factories.CaregiverProfile(legacy_id=1)
 
 
 def test_caregiverprofile_non_existing_legacy_id() -> None:
     """Ensure that multiple `CaregiverProfiles` with a non-existing legacy_id does not raise a `ValidationError`."""
-    factories.CaregiverProfile(id=1, legacy_id=None)
-    factories.CaregiverProfile(id=2, legacy_id=None)
+    factories.CaregiverProfile(legacy_id=None)
+    factories.CaregiverProfile(legacy_id=None)
 
     assert CaregiverProfile.objects.count() == 2
 
