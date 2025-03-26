@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-08 16:28-0400\n"
+"POT-Creation-Date: 2023-08-16 11:20-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60,7 +60,8 @@ msgstr "Reçu à"
 
 #: opal/test_results/models.py
 msgid "When the test result was entered into the source system."
-msgstr "Date à laquelle le résultat du test a été saisi dans le système source."
+msgstr ""
+"Date à laquelle le résultat du test a été saisi dans le système source."
 
 #: opal/test_results/models.py
 msgid "Message Type"
@@ -94,7 +95,17 @@ msgstr "ID du document hérité"
 msgid ""
 "OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to "
 "patients."
-msgstr "OpalDB.Document.DocumentSerNum, utilisé pour afficher les pdf de pathologie aux patients"
+msgstr ""
+"OpalDB.Document.DocumentSerNum, utilisé pour afficher les pdf de pathologie "
+"aux patients"
+
+#: opal/test_results/models.py
+msgid "Filler Field 1"
+msgstr "Entrée de remplissage"
+
+#: opal/test_results/models.py
+msgid "Reported At"
+msgstr "Rapporté à"
 
 #: opal/test_results/models.py
 msgid "General Test"
@@ -159,7 +170,9 @@ msgstr "Observé à"
 #: opal/test_results/models.py
 msgid ""
 "When this specific observation segment was entered into the source system."
-msgstr "Date à laquelle ce segment d'observation spécifique a été saisi dans le système source."
+msgstr ""
+"Date à laquelle ce segment d'observation spécifique a été saisi dans le "
+"système source."
 
 #: opal/test_results/models.py
 msgid "Updated At"
