@@ -114,13 +114,13 @@ class Command(BaseCommand):
             default=None,
             help='token for the opaladmin backend user to be used instead of generating a random one (length: 40)',
         )
-        # TODO: Make dependent on `ORMS_ENABLED`
-        parser.add_argument(
-            '--orms-token',
-            type=token,
-            default=None,
-            help='token for the orms system user to be used instead of generating a random one (length: 40)',
-        )
+        if settings.ORMS_ENABLED:
+            parser.add_argument(
+                '--orms-token',
+                type=token,
+                default=None,
+                help='token for the orms system user to be used instead of generating a random one (length: 40)',
+            )
 
     @transaction.atomic
     def handle(self, *args: Any, **options: Any) -> None:
@@ -198,7 +198,6 @@ class Command(BaseCommand):
         hospital_managers = Group.objects.create(name='Hospital Settings Managers')
         data_exporters = Group.objects.create(name='Questionnaire Data Exporters')
         user_managers = Group.objects.create(name=settings.USER_MANAGER_GROUP_NAME)
-        orms_users = Group.objects.create(name=settings.ORMS_GROUP_NAME)
         Group.objects.create(name=settings.ADMIN_GROUP_NAME)
 
         # users
@@ -217,9 +216,6 @@ class Command(BaseCommand):
         legacy_backend, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_BACKEND_LEGACY)
         legacy_backend.set_unusable_password()
         legacy_backend.save()
-        orms, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_ORMS)
-        orms.set_unusable_password()
-        orms.save()
 
         # permissions
         view_institution = _find_permission('hospital_settings', 'view_institution')
@@ -268,12 +264,6 @@ class Command(BaseCommand):
             _find_permission('users', 'change_clinicalstaff'),
         ])
 
-        # ORMS User
-        orms_users.permissions.set([
-            _find_permission('health_data', 'view_quantitysample'),
-            _find_permission('health_data', 'change_quantitysample'),
-        ])
-
         # get existing or create new tokens for the API users
         predefined_token = options['listener_token']
         token_listener, _ = Token.objects.get_or_create(user=listener, defaults={'key': predefined_token})  # noqa: WPS204, E501
@@ -296,17 +286,35 @@ class Command(BaseCommand):
             defaults={'key': predefined_token},
         )
 
-        # TODO: Make dependent on `ORMS_ENABLED`
+        self.stdout.write(f'{listener.username} token: {token_listener}')
+        self.stdout.write(f'{listener_registration.username} token: {token_listener_registration}')
+        self.stdout.write(f'{interface_engine.username} token: {token_interface_engine}')
+        self.stdout.write(f'{legacy_backend.username} token: {token_legacy_backend}')
+
+        if settings.ORMS_ENABLED:
+            self._create_orms_data(**options)
+
+    def _create_orms_data(self, **options: Any) -> None:
+        """Create ORMS users, group, and system user token if ORMs is enabled.
+
+        Args:
+            options: the options keyword arguments passed to the function
+        """
+        # ORMS Users and Group
+        orms_users = Group.objects.create(name=settings.ORMS_GROUP_NAME)
+        orms_users.permissions.set([
+            _find_permission('health_data', 'view_quantitysample'),
+            _find_permission('health_data', 'change_quantitysample'),
+        ])
+        # ORMS System User/Token for API auth
+        orms, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_ORMS)
+        orms.set_unusable_password()
+        orms.save()
         predefined_token = options['orms_token']
         token_orms, _ = Token.objects.get_or_create(
             user=orms,
             defaults={'key': predefined_token},
         )
-
-        self.stdout.write(f'{listener.username} token: {token_listener}')
-        self.stdout.write(f'{listener_registration.username} token: {token_listener_registration}')
-        self.stdout.write(f'{interface_engine.username} token: {token_interface_engine}')
-        self.stdout.write(f'{legacy_backend.username} token: {token_legacy_backend}')
         self.stdout.write(f'{orms.username} token: {token_orms}')
 
     def _create_legacy_data(self, **options: Any) -> None:

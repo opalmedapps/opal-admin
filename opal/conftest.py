@@ -248,6 +248,26 @@ def orms_system_user(django_user_model: User) -> User:
     return django_user_model.objects.create_user(username=constants.USERNAME_ORMS)
 
 
+@pytest.fixture(autouse=True)
+def set_orms_enabled(settings: LazySettings) -> None:  # noqa: PT004
+    """Fixture enables ORMS by default for all unit tests.
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.ORMS_ENABLED = True
+
+
+@pytest.fixture
+def set_orms_disabled(settings: LazySettings) -> None:  # noqa: PT004
+    """Fixture disables ORMS for the unit test.
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.ORMS_ENABLED = False
+
+
 @pytest.fixture
 def user_client(client: Client, user: User) -> Client:
     """

@@ -2,9 +2,11 @@ import secrets
 from datetime import date
 
 from django.contrib.auth.models import Group
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import CommandError
 
 import pytest
+from pytest_django.asserts import assertRaisesMessage
 from pytest_mock import MockerFixture
 from rest_framework.authtoken.models import Token
 
@@ -208,6 +210,36 @@ class TestInitializeData(CommandTestMixin):  # noqa: WPS338
         assert f'opaladmin-backend-legacy token: {legacy_backend_token.key}' in stdout
         assert f'orms token: {orms_token.key}' in stdout
 
+    @pytest.mark.usefixtures('set_orms_disabled')
+    def test_insert_orms_disabled(self) -> None:
+        """Ensure that orms specific data is not inserted if ORMS disabled."""
+        stdout, _stderr = self._call_command('initialize_data')
+
+        assert Group.objects.count() == 6
+        assert User.objects.count() == 5
+        assert Token.objects.count() == 4
+        assert SecurityQuestion.objects.count() == 6
+
+        for group in Group.objects.all():
+            group.full_clean()
+        for user in User.objects.all():
+            user.full_clean()
+        for token in Token.objects.all():
+            token.full_clean()
+        for security_question in SecurityQuestion.objects.all():
+            security_question.full_clean()
+
+        listener_token = Token.objects.get(user__username='listener')
+        registration_listener_token = Token.objects.get(user__username='listener-registration')
+        interface_engine_token = Token.objects.get(user__username='interface-engine')
+        legacy_backend_token = Token.objects.get(user__username='opaladmin-backend-legacy')
+
+        assert 'Data successfully created\n' in stdout
+        assert f'listener token: {listener_token.key}' in stdout
+        assert f'listener-registration token: {registration_listener_token.key}' in stdout
+        assert f'interface-engine token: {interface_engine_token.key}' in stdout
+        assert f'opaladmin-backend-legacy token: {legacy_backend_token.key}' in stdout
+
     def test_insert_tokens(self) -> None:
         """Ensure that initial data is inserted with existing system users and their existing tokens are returned."""
         listener = User.objects.create(username='listener')
@@ -244,6 +276,43 @@ class TestInitializeData(CommandTestMixin):  # noqa: WPS338
         assert f'interface-engine token: {interface_engine_token.key}' in stdout
         assert f'opaladmin-backend-legacy token: {legacy_backend_token.key}' in stdout
         assert f'orms token: {orms_token.key}' in stdout
+
+    @pytest.mark.usefixtures('set_orms_disabled')
+    def test_insert_tokens_orms_disabled(self) -> None:
+        """Ensure that initial data is inserted except orms data if ORMS disabled."""
+        listener = User.objects.create(username='listener')
+        registration_listener = User.objects.create(username='listener-registration')
+        interface_engine = User.objects.create(username='interface-engine')
+        legacy_backend = User.objects.create(username='opaladmin-backend-legacy')
+
+        token_listener = Token.objects.create(user=listener)
+        token_registration_listener = Token.objects.create(user=registration_listener)
+        token_interface_engine = Token.objects.create(user=interface_engine)
+        token_legacy_backend = Token.objects.create(user=legacy_backend)
+
+        stdout, _stderr = self._call_command('initialize_data')
+
+        assert Token.objects.count() == 4
+
+        listener_token = Token.objects.get(user__username='listener')
+        registration_listener_token = Token.objects.get(user__username='listener-registration')
+        interface_engine_token = Token.objects.get(user__username='interface-engine')
+        legacy_backend_token = Token.objects.get(user__username='opaladmin-backend-legacy')
+
+        assert 'Data successfully created\n' in stdout
+        assert token_listener == listener_token
+        assert token_registration_listener == registration_listener_token
+        assert token_interface_engine == interface_engine_token
+        assert token_legacy_backend == legacy_backend_token
+
+        assert f'listener token: {listener_token.key}' in stdout
+        assert f'listener-registration token: {registration_listener_token.key}' in stdout
+        assert f'interface-engine token: {interface_engine_token.key}' in stdout
+        assert f'opaladmin-backend-legacy token: {legacy_backend_token.key}' in stdout
+
+        message = 'Token matching query does not exist.'
+        with assertRaisesMessage(ObjectDoesNotExist, message):
+            Token.objects.get(user__username='orms')
 
     def test_insert_existing_data_group(self) -> None:
         """An error is shown if a group already exists."""
@@ -296,6 +365,41 @@ class TestInitializeData(CommandTestMixin):  # noqa: WPS338
         token_interface_engine.refresh_from_db()
         token_legacy_backend.refresh_from_db()
         token_orms.refresh_from_db()
+
+    @pytest.mark.usefixtures('set_orms_disabled')
+    def test_insert_existing_data_force_delete_orms_disabled(self) -> None:
+        """Existing data with the exception of system users is deleted before inserted and skips ORMS data."""
+        stdout, stderr = self._call_command('initialize_data')
+
+        listener = User.objects.get(username='listener')
+        registration_listener = User.objects.get(username='listener-registration')
+        interface_engine = User.objects.get(username='interface-engine')
+        legacy_backend = User.objects.get(username='opaladmin-backend-legacy')
+
+        token_listener = Token.objects.get(user=listener)
+        token_registration_listener = Token.objects.get(user=registration_listener)
+        token_interface_engine = Token.objects.get(user=interface_engine)
+        token_legacy_backend = Token.objects.get(user=legacy_backend)
+
+        stdout, stderr = self._call_command('initialize_data', '--force-delete')
+
+        assert Group.objects.count() == 6
+        assert User.objects.count() == 5
+        assert Token.objects.count() == 4
+        assert SecurityQuestion.objects.count() == 6
+
+        assert 'Deleting existing data\n' in stdout
+        assert 'Data successfully deleted\n' in stdout
+        assert 'Data successfully created\n' in stdout
+
+        message = 'User matching query does not exist.'
+        with assertRaisesMessage(ObjectDoesNotExist, message):
+            User.objects.get(username='orms')
+
+        token_listener.refresh_from_db()
+        token_registration_listener.refresh_from_db()
+        token_interface_engine.refresh_from_db()
+        token_legacy_backend.refresh_from_db()
 
     def test_delete_clinicalstaff_only(self) -> None:
         """Only existing clinical staff users are deleted, not caregivers."""

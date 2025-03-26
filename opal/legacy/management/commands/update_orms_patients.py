@@ -32,6 +32,10 @@ class Command(BaseCommand):
             args: input arguments.
             kwargs: input arguments.
         """
+        if not settings.ORMS_ENABLED:
+            self.stdout.write('ORMS System not enabled, exiting command')
+            return
+
         patients = Patient.objects.prefetch_related(
             'hospital_patients__site',
         )

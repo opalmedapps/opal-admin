@@ -371,7 +371,7 @@ def create_registration_code(relationship: Relationship) -> caregiver_models.Reg
     return registration_code
 
 
-def initialize_new_opal_patient(  # noqa: WPS210
+def initialize_new_opal_patient(  # noqa: WPS210, WPS213
     patient: Patient,
     mrn_list: list[tuple[Site, str, bool]],
     patient_uuid: UUID,
@@ -407,17 +407,19 @@ def initialize_new_opal_patient(  # noqa: WPS210
         logger.error(
             f'MRNs = {mrn_list}, patient_uuid = {patient_uuid}, OIE response = {oie_response}',
         )
+    if settings.ORMS_ENABLED:
+        # Call ORMS to notify it of the existence of the new patient
+        orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
 
-    # Call ORMS to notify it of the existence of the new patient
-    orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
-
-    if orms_response['status'] == 'success':
-        logger.info(f'Successfully initialized patient via ORMS; patient_uuid = {patient_uuid}')
+        if orms_response['status'] == 'success':
+            logger.info(f'Successfully initialized patient via ORMS; patient_uuid = {patient_uuid}')
+        else:
+            logger.error('Failed to initialize patient via ORMS')
+            logger.error(
+                f'MRNs = {mrn_list}, patient_uuid = {patient_uuid}, ORMS response = {orms_response}',
+            )
     else:
-        logger.error('Failed to initialize patient via ORMS')
-        logger.error(
-            f'MRNs = {mrn_list}, patient_uuid = {patient_uuid}, ORMS response = {orms_response}',
-        )
+        logger.info(f'ORMS System not enabled, skipping notification of new patient; patient_uuid {patient_uuid}')
 
 
 @transaction.atomic
