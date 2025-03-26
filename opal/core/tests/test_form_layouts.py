@@ -65,7 +65,7 @@ def test_inlinesubmit_default_css() -> None:
 
     html = render_crispy_form(form)
 
-    assert f'class="{layouts.InlineSubmit.default_css_class} btn-primary"' in html
+    assert f'class="{layouts.InlineSubmit.default_css_class} btn-selected"' in html
 
 
 def test_inlinesubmit_extra_css() -> None:
