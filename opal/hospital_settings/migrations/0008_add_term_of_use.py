@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     """Update `Institution` model: add term of use file(pdf) fields."""
 
     dependencies = [
-        ('hospital_settings', '0006_add_gps_location'),
+        ('hospital_settings', '0007_add_institution_logo'),
     ]
 
     operations = [
