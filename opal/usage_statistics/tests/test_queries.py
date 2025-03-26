@@ -270,10 +270,10 @@ def test_empty_fetch_devices_summary() -> None:
         end_date=timezone.now().today(),
     )
     assert devices_summary == {
-        'total': 0,
-        'ios': 0,
-        'android': 0,
-        'browser': 0,
+        'device_total': 0,
+        'device_ios': 0,
+        'device_android': 0,
+        'device_browser': 0,
     }
 
 
@@ -298,8 +298,8 @@ def test_fetch_devices_summary(mocker: MockerFixture) -> None:
         end_date=timezone.now().today(),
     )
     assert devices_summary == {
-        'total': 6,
-        'ios': 2,
-        'android': 2,
-        'browser': 2,
+        'device_total': 6,
+        'device_ios': 2,
+        'device_android': 2,
+        'device_browser': 2,
     }

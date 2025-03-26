@@ -109,16 +109,16 @@ def fetch_devices_summary(
         last_updated__date__gte=start_date,
         last_updated__date__lte=end_date,
     ).aggregate(
-        total=models.Count('patient_device_identifier_ser_num'),
-        ios=models.Count(
+        device_total=models.Count('patient_device_identifier_ser_num'),
+        device_ios=models.Count(
             'patient_device_identifier_ser_num',
             filter=models.Q(device_type=0),
         ),
-        android=models.Count(
+        device_android=models.Count(
             'patient_device_identifier_ser_num',
             filter=models.Q(device_type=1),
         ),
-        browser=models.Count(
+        device_browser=models.Count(
             'patient_device_identifier_ser_num',
             filter=models.Q(device_type=3),
         ),
