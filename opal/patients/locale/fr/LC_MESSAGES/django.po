@@ -623,7 +623,7 @@ msgid "View Caregiver Access"
 msgstr "Générer une demande d'accès"
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
-msgid "No explanation provided."
+msgid "No explanation provided"
 msgstr ""
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
