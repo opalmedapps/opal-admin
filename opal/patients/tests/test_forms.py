@@ -36,6 +36,9 @@ def test_relationshippending_form_is_valid() -> None:
     """Ensure that the `RelationshipPendingAccess` form is valid."""
     relationship_info = factories.Relationship.create(reason='REASON')
     form_data = model_to_dict(relationship_info)
+    # add first_name and last_name as they are not part of the relationship form
+    form_data['first_name'] = 'test_firstname'
+    form_data['last_name'] = 'test_lastname'
 
     relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
 
@@ -58,6 +61,9 @@ def test_relationshippending_update() -> None:
     """Ensure that a valid `RelationshipPendingAccess` form can be saved."""
     relationship_info = factories.Relationship.create(reason='REASON')
     form_data = model_to_dict(relationship_info)
+    # add first_name and last_name as they are not part of the relationship form
+    form_data['first_name'] = 'test_firstname'
+    form_data['last_name'] = 'test_lastname'
 
     relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
     relationshippending_form.save()
