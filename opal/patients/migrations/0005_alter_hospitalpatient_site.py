@@ -5,6 +5,7 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
+    """Migration for hospital setting."""
 
     dependencies = [
         ('hospital_settings', '0006_add_gps_location'),
