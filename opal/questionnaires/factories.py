@@ -15,4 +15,4 @@ class QuestionnaireProfile(DjangoModelFactory):
         model = models.QuestionnaireProfile
 
     user = SubFactory(User)
-    questionnaires = {'19': {'title': 'Opal Feedback Questionnaire', 'lastviewed': '2022-11-17'}}
+    questionnaire_list = {'19': {'title': 'Opal Feedback Questionnaire', 'lastviewed': '2022-11-17'}}

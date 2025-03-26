@@ -52,7 +52,7 @@ class QuestionnaireReportDashboardTemplateView(PermissionRequiredMixin, Template
         )
 
         if questionnaires_following:
-            context['questionnaires_following'] = questionnaires_following.questionnaires
+            context['questionnaires_following'] = questionnaires_following.questionnaire_list
         return context
 
 
@@ -121,7 +121,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
 
             # Finally check if this questionnaire is currently being followed
             questionnaires_following = QuestionnaireProfile.objects.get(user=requestor)
-            if str(qid) in questionnaires_following.questionnaires:
+            if str(qid) in questionnaires_following.questionnaire_list:
                 context.update({'following': True})
             else:
                 context.update({'following': False})
@@ -216,13 +216,13 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         )
 
         if (toggle):
-            questionnaires_following.questionnaires[qid] = {
+            questionnaires_following.questionnaire_list[qid] = {
                 'title': qname,
                 'lastviewed': datetime.now().strftime('%Y-%m-%d'),
             }
             questionnaires_following.save()
-        elif qid in questionnaires_following.questionnaires:
-            questionnaires_following.questionnaires.pop(qid)
+        elif qid in questionnaires_following.questionnaire_list:
+            questionnaires_following.questionnaire_list.pop(qid)
             questionnaires_following.save()
 
 

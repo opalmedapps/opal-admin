@@ -1,6 +1,4 @@
 """This module provides models for questionnaires."""
-from uuid import uuid4
-
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -23,19 +21,17 @@ class ExportReportPermission(models.Model):  # noqa: DJ08
 class QuestionnaireProfile(models.Model):
     """Model used for tracking a list of saved questionnaires per-user."""
 
-    uuid = models.UUIDField(
-        verbose_name=_('UUID'),
-        unique=True,
-        default=uuid4,
-        editable=False,
-    )
-
     user = models.OneToOneField(
         verbose_name=_('User'),
         to=User,
         on_delete=models.PROTECT,
     )
-    questionnaires = models.JSONField(blank=True, null=True, default=dict)
+    questionnaire_list = models.JSONField(
+        verbose_name=_('Questionnaire List'),
+        blank=True,
+        null=True,
+        default=dict,
+    )
 
     class Meta:
         verbose_name = _('Questionnaire Profile')
@@ -45,6 +41,6 @@ class QuestionnaireProfile(models.Model):
         """Questionnaire profile to string.
 
         Returns:
-            username
+            username with the following questionnaire list
         """
-        return f'{self.user.username}__follows__{self.questionnaires}'  # noqa: WPS237
+        return '{user}__follows__{qstList}'.format(user=self.user.username, qstList=self.questionnaire_list)
