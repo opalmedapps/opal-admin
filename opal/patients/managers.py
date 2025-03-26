@@ -1,7 +1,7 @@
 """Collection of managers for the caregiver app."""
 import operator
 from functools import reduce
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.db import models
 from django.db.models.functions import Coalesce
@@ -9,11 +9,14 @@ from django.db.models.functions import Coalesce
 from . import constants
 from . import models as patient_models
 
+if TYPE_CHECKING:
+    from opal.patients.models import Relationship, RelationshipType
 
-class RelationshipManager(models.Manager):
+
+class RelationshipManager(models.Manager['Relationship']):
     """Manager class for the `Relationship` model."""
 
-    def get_patient_list_for_caregiver(self, user_name: str) -> models.QuerySet:
+    def get_patient_list_for_caregiver(self, user_name: str) -> models.QuerySet['Relationship']:
         """
         Query manager to get a list of patients for a given caregiver.
 
@@ -44,14 +47,18 @@ class RelationshipManager(models.Manager):
             Return list of patient legacy IDs
         """
         relationships = self.get_patient_list_for_caregiver(user_name=user_name)
-        return list(relationships.values_list('patient__legacy_id', flat=True))
+        return [
+            legacy_id
+            for legacy_id in relationships.values_list('patient__legacy_id', flat=True)
+            if legacy_id is not None
+        ]
 
     def get_relationship_by_patient_caregiver(  # noqa: WPS211
         self,
         relationship_type: str,
         user_id: int,
         ramq: str,
-    ) -> models.QuerySet:
+    ) -> models.QuerySet['Relationship']:
         """
         Query manager to get a `Relationship` record filtered by given parameters.
 
@@ -75,10 +82,10 @@ class RelationshipManager(models.Manager):
         )
 
 
-class RelationshipTypeManager(models.Manager):
+class RelationshipTypeManager(models.Manager['RelationshipType']):
     """Manager class for the `RelationshipType` model."""
 
-    def filter_by_patient_age(self, patient_age: int) -> models.QuerySet:
+    def filter_by_patient_age(self, patient_age: int) -> models.QuerySet['RelationshipType']:
         """Return a new QuerySet filtered by the patient age between start_age and end_age.
 
         Args:
@@ -87,7 +94,7 @@ class RelationshipTypeManager(models.Manager):
         Returns:
             a queryset of the relationship type.
         """
-        return self.annotate(  # type: ignore[no-any-return]
+        return self.annotate(
             end_age_number=Coalesce('end_age', constants.RELATIONSHIP_MAX_AGE),
         ).filter(start_age__lte=patient_age, end_age_number__gt=patient_age)
 
@@ -114,7 +121,8 @@ class PatientQueryset(models.QuerySet['patient_models.Patient']):
             models.Q(
                 hospital_patients__mrn=item.get('mrn'),
                 hospital_patients__site__code=item['site']['code'],
-            ) for item in site_mrn_list
+            )
+            for item in site_mrn_list
         ]
 
         # Use 'reduce' operation with 'operator.or_' to combine the Q objects
