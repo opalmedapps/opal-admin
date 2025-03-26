@@ -73,33 +73,36 @@ class Command(BaseCommand):
 
         Return None.
         """
-        legacy_patient_identifier = LegacyPatientHospitalIdentifier.objects.filter(
+        legacy_patient_identifiers = LegacyPatientHospitalIdentifier.objects.filter(
             patientsernum=legacy_patient.patientsernum,
-        ).first()
-        if legacy_patient_identifier:
-            # Check if new backend model HospitalPatient already has a record for the added patient
-            hospital_patient = HospitalPatient.objects.filter(patient=migrated_patient).first()
-            if hospital_patient:
-                # when HospitalPatient record already has been migrated
-                self.stdout.write(
-                    'Patient identifier for patient with legacy_id: {patientsernum} already exists, skipping'.format(
-                        patientsernum=legacy_patient.patientsernum,
-                    ),
-                )
-            else:
-                HospitalPatient.objects.create(
-                    patient=migrated_patient,
-                    site=Site.objects.get(
-                        code=legacy_patient_identifier.hospitalidentifiertypecode.code,
-                    ),
-                    mrn=legacy_patient_identifier.mrn,
-                    is_active=legacy_patient_identifier.isactive,
-                )
-                self.stdout.write(
-                    'Imported patient_identifier, legacy_id: {patientsernum}'.format(
-                        patientsernum=legacy_patient.patientsernum,
-                    ),
-                )
+        )
+        if legacy_patient_identifiers:
+            for legacy_patient_identifier in legacy_patient_identifiers:
+                # Check if new backend model HospitalPatient already has a record for the added patient
+                hospital_patient = HospitalPatient.objects.filter(mrn=legacy_patient_identifier.mrn).first()
+                if hospital_patient:
+                    # when HospitalPatient record already has been migrated
+                    self.stdout.write(
+                        'Patient identifier legacy_id: {patientsernum}, mrn:{mrn} already exists, skipping'.format(
+                            patientsernum=legacy_patient.patientsernum,
+                            mrn=legacy_patient_identifier.mrn,
+                        ),
+                    )
+                else:
+                    HospitalPatient.objects.create(
+                        patient=migrated_patient,
+                        site=Site.objects.get(
+                            code=legacy_patient_identifier.hospitalidentifiertypecode.code,
+                        ),
+                        mrn=legacy_patient_identifier.mrn,
+                        is_active=legacy_patient_identifier.isactive,
+                    )
+                    self.stdout.write(
+                        'Imported patient_identifier, legacy_id: {patientsernum}, mrn: {mrn}'.format(
+                            patientsernum=legacy_patient.patientsernum,
+                            mrn=legacy_patient_identifier.mrn,
+                        ),
+                    )
         else:
             self.stdout.write(
                 'Patient identifier for patient with legacy_id: {patientsernum} does not exist, skipping'.format(

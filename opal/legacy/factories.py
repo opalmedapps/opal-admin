@@ -179,8 +179,7 @@ class LegacyHospitalIdentifierTypeFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyHospitalIdentifierType
 
-    hospitalidentifiertypeid = 1
-    code = 'TEST'
+    code = 'RVH'
 
 
 class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory):
@@ -189,7 +188,6 @@ class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyPatientHospitalIdentifier
 
-    patienthospitalidentifierid = 1
     patientsernum = SubFactory(LegacyPatientFactory)
     hospitalidentifiertypecode = SubFactory(LegacyHospitalIdentifierTypeFactory)
     mrn = '9999996'

@@ -227,11 +227,11 @@ class TestPatientAndPatientIdentifierMigration(TestBasicClass):
         legacy_factories.LegacyPatientFactory()
         legacy_factories.LegacyPatientHospitalIdentifierFactory()
         patient_factories.Patient()
-        hospital_settings_factories.Site(pk=1, code=1)
+        hospital_settings_factories.Site(code='RVH')
 
         message, error = self._call_command('migrate_patients')
         assert 'Imported patients, legacy_id: 51\n' in message
-        assert 'Imported patient_identifier, legacy_id: 51\n' in message
+        assert 'Imported patient_identifier, legacy_id: 51, mrn: 9999996\n' in message
         assert 'Number of imported patients is: 1\n' in message
 
     def test_import_pass_patientidentifier_only(self) -> None:
@@ -239,9 +239,32 @@ class TestPatientAndPatientIdentifierMigration(TestBasicClass):
         legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=10)
         patient_factories.Patient(legacy_id=10)
         legacy_factories.LegacyPatientHospitalIdentifierFactory(patientsernum=legacy_patient)
-        hospital_settings_factories.Site(pk=1, code=1)
+        hospital_settings_factories.Site(code='RVH')
 
         message, error = self._call_command('migrate_patients')
         assert 'Patient with legacy_id: 10 already exists, skipping\n' in message
-        assert 'Imported patient_identifier, legacy_id: 10\n' in message
+        assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999996\n' in message
+        assert 'Number of imported patients is: 0\n' in message
+
+    def test_import_pass_multiple_patientidentifiers(self) -> None:
+        """Test import fail for patient and pass patient identifier."""
+        legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=10)
+        patient_factories.Patient(legacy_id=10)
+        code = legacy_factories.LegacyHospitalIdentifierTypeFactory(code='TEST')
+        legacy_factories.LegacyPatientHospitalIdentifierFactory(
+            hospitalidentifiertypecode=code,
+            patientsernum=legacy_patient,
+            mrn='9999996',
+        )
+        legacy_factories.LegacyPatientHospitalIdentifierFactory(
+            hospitalidentifiertypecode=code,
+            patientsernum=legacy_patient,
+            mrn='9999997',
+        )
+        hospital_settings_factories.Site(code='TEST')
+
+        message, error = self._call_command('migrate_patients')
+        assert 'Patient with legacy_id: 10 already exists, skipping\n' in message
+        assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999996\n' in message
+        assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999997\n' in message
         assert 'Number of imported patients is: 0\n' in message
