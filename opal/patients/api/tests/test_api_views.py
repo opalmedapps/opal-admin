@@ -20,6 +20,7 @@ from opal.patients import models as patient_models
 from opal.patients.factories import HospitalPatient, Patient, Relationship, RelationshipType
 from opal.users import factories as caregiver_factories
 from opal.users.models import User
+from opal.patients.api.views import CaregiverRelationshipView
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
@@ -104,6 +105,17 @@ def test_my_caregiver_list_failure(api_client: APIClient, admin_user: User) -> N
     ))
     assert response.data['detail'] == 'Caregiver does not have a relationship with the patient.'
     assert response.status_code == HTTPStatus.FORBIDDEN
+
+
+def test_caregiver_list_swagger_fake_view(api_client: APIClient, admin_user: User) -> None:
+    """Test the response when swagger_fake_view is True."""
+    api_client.force_login(user=admin_user)
+    view = CaregiverRelationshipView()
+    view.swagger_fake_view = True  # type: ignore[attr-defined]
+    view.kwargs = {'legacy_id': 1}
+    queryset = view.get_queryset()
+
+    assert queryset.count() == 0, "The queryset should be empty when swagger_fake_view is True."
 
 
 class TestRetrieveRegistrationDetailsView:
