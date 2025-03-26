@@ -739,7 +739,7 @@ def test_generate_questionnaire_report(mocker: MockerFixture) -> None:
     patient_factories.HospitalPatient(patient=patient)
     institution = Institution.objects.get()
 
-    mock_generate_pdf = mocker.patch('opal.legacy.utils.generate_pdf', autospec=True)
+    mock_generate_pdf = mocker.patch('opal.services.reports.questionnaire.generate_pdf', autospec=True)
     mock_generate_pdf.return_value = bytearray(b'fake-pdf-bytearray')
     result = legacy_utils.generate_questionnaire_report(
         patient,
