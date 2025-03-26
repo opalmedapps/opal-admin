@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.utils import timezone
 
-from factory import Faker, Sequence, SubFactory
+from factory import Faker, Sequence, SubFactory, lazy_attribute
 from factory.django import DjangoModelFactory
 
 from . import models
@@ -264,22 +264,6 @@ class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory):
     isactive = True
 
 
-class LegacyDiagnosisFactory(DjangoModelFactory):
-    """Diagnosis factory from the legacy database OpalDB."""
-
-    class Meta:
-        model = models.LegacyDiagnosis
-
-    patient_ser_num = SubFactory(LegacyPatientFactory)
-    source_database = 1
-    diagnosis_aria_ser = '22234'
-    diagnosis_code = 'C71.1'
-    last_updated = timezone.make_aware(datetime(2018, 1, 1))
-    stage = 'IIIB'
-    stage_criteria = 'T2, pN1a, M0'
-    creation_date = timezone.make_aware(datetime(2018, 1, 1))
-
-
 class LegacyDiagnosisTranslationFactory(DjangoModelFactory):
     """DiagnosisTranslation factory from the legacy database OpalDB."""
 
@@ -302,31 +286,21 @@ class LegacyDiagnosisCodeFactory(DjangoModelFactory):
     diagnosis_translation_ser_num = SubFactory(LegacyDiagnosisTranslationFactory)
 
 
-class LegacyTestResultFactory(DjangoModelFactory):
-    """TestResultControl factory from the legacy database OpalDB."""
+class LegacyDiagnosisFactory(DjangoModelFactory):
+    """Diagnosis factory from the legacy database OpalDB."""
 
     class Meta:
-        model = models.LegacyTestResult
+        model = models.LegacyDiagnosis
 
-    test_result_group_ser_num = Sequence(lambda number: number + 1)
-    test_result_control_ser_num = Sequence(lambda number: number + 1)
-    test_result_expression_ser_num = Sequence(lambda number: number + 1)
     patient_ser_num = SubFactory(LegacyPatientFactory)
-    source_database = 1
-    test_result_aria_ser = Faker('word')
-    component_name = Faker('word')
-    fac_component_name = Faker('word')
-    abnormal_flag = 'N'
-    test_date = timezone.make_aware(datetime(2018, 1, 1))
-    max_norm = Faker('pyfloat', positive=True)
-    min_norm = Faker('pyfloat', positive=True)
-    approved_flag = 'Y'
-    test_value = Faker('pyfloat', positive=True)
-    test_value_string = Faker('sentence')
-    unit_description = Faker('word')
-    valid_entry = 'Y'
-    date_added = timezone.make_aware(datetime(2018, 1, 1))
-    read_status = Faker('random_int', min=0, max=1)
+    source_database = SubFactory(LegacySourceDatabaseFactory)
+    diagnosis_aria_ser = '22234'
+    diagnosis_code = 'C12.3'
+    description_en = 'Breast Cancer'
+    last_updated = timezone.make_aware(datetime(2018, 1, 1))
+    stage = 'IIIB'
+    stage_criteria = 'T2, pN1a, M0'
+    creation_date = timezone.make_aware(datetime(2018, 1, 1))
 
 
 class LegacyTestResultControlFactory(DjangoModelFactory):
@@ -349,3 +323,99 @@ class LegacyTestResultControlFactory(DjangoModelFactory):
     last_updated = datetime.now()
     url_en = Faker('url')
     url_fr = Faker('url')
+
+
+class LegacyTestResultFactory(DjangoModelFactory):
+    """TestResultControl factory from the legacy database OpalDB."""
+
+    class Meta:
+        model = models.LegacyTestResult
+
+    test_result_group_ser_num = Sequence(lambda number: number + 1)
+    test_result_control_ser_num = SubFactory(LegacyTestResultControlFactory)
+    test_result_expression_ser_num = Sequence(lambda number: number + 1)
+    patient_ser_num = SubFactory(LegacyPatientFactory)
+    source_database = SubFactory(LegacySourceDatabaseFactory)
+    test_result_aria_ser = Faker('word')
+    component_name = Faker('word')
+    fac_component_name = Faker('word')
+    abnormal_flag = 'N'
+    test_date = timezone.make_aware(datetime(2018, 1, 1))
+    max_norm = Faker('pyfloat', positive=True)
+    min_norm = Faker('pyfloat', positive=True)
+    approved_flag = 'Y'
+    test_value = Faker('pyfloat', positive=True)
+    test_value_string = lazy_attribute(lambda legacytestresult: str(legacytestresult.test_value))
+    unit_description = Faker('word')
+    valid_entry = 'Y'
+    date_added = timezone.make_aware(datetime(2018, 1, 1))
+    read_status = Faker('random_int', min=0, max=1)
+
+
+class LegacyTestControlFactory(DjangoModelFactory):
+    """LegacyTestControl factory."""
+
+    class Meta:
+        model = models.LegacyTestControl
+
+    name_en = Faker('name')
+    name_fr = Faker('name')
+    group_en = Faker('name')
+    group_fr = Faker('name')
+    description_en = Faker('name')
+    description_fr = Faker('name')
+    source_database = SubFactory(LegacySourceDatabaseFactory)
+    educational_material_control_ser_num = SubFactory(LegacyEducationalMaterialControlFactory)
+    publish_flag = 1
+    url_en = Faker('url')
+    url_fr = Faker('url')
+
+
+class LegacyTestExpressionFactory(DjangoModelFactory):
+    """LegacyTestExpression factory."""
+
+    class Meta:
+        model = models.LegacyTestExpression
+
+    test_code = Faker('random_int')
+    test_control_ser_num = SubFactory(LegacyTestControlFactory)
+    source_database = SubFactory(LegacySourceDatabaseFactory)
+    expression_name = Faker('word')
+
+
+class LegacyTestGroupExpressionFactory(DjangoModelFactory):
+    """LegacyTestGroupExpression factory."""
+
+    class Meta:
+        model = models.LegacyTestGroupExpression
+
+    test_code = Faker('random_int')
+    source_database = SubFactory(LegacySourceDatabaseFactory)
+    expression_name = Faker('word')
+
+
+class LegacyPatientTestResultFactory(DjangoModelFactory):
+    """LegacyPatientTestResult factory."""
+
+    class Meta:
+        model = models.LegacyPatientTestResult
+
+    patient_ser_num = SubFactory(LegacyPatientFactory)
+    test_group_expression_ser_num = SubFactory(LegacyTestGroupExpressionFactory)
+    test_expression_ser_num = SubFactory(LegacyTestExpressionFactory)
+    abnormal_flag = Faker('random_int')
+    sequence_num = Faker('random_int')
+    normal_range_min = Faker('random_int')
+    normal_range_max = Faker('random_int')
+    normal_range = lazy_attribute(
+        lambda legacypatienttestresult:
+        str(legacypatienttestresult.normal_range_min)
+        + '-'
+        + str(legacypatienttestresult.normal_range_max),
+    )
+    test_value_numeric = Faker('pyfloat', positive=True)
+    test_value_string = lazy_attribute(lambda legacypatienttestresult: str(legacypatienttestresult.test_value_numeric))
+    collected_date_time = timezone.make_aware(datetime(2018, 1, 1))
+    result_date_time = timezone.make_aware(datetime(2018, 1, 1))
+    unit_description = 'mmol'
+    read_by = ''

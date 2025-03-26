@@ -113,3 +113,27 @@ def test_legacy_test_result_control_factory() -> None:
     """Test whether the factory creates a valid legacy TestResultControl model instance."""
     test_test_result_control = factories.LegacyTestResultControlFactory()
     test_test_result_control.full_clean()
+
+
+def test_legacy_patient_test_result_factory() -> None:
+    """Test whether the factory creates a valid legacy PatientTestResult model instance."""
+    test_test_patient_result = factories.LegacyPatientTestResultFactory()
+    test_test_patient_result.full_clean()
+
+
+def test_legacy_test_group_expression() -> None:
+    """Test whether the factory creates a valid legacy TestGroupExpression model instance."""
+    test_test_group_expression = factories.LegacyTestGroupExpressionFactory()
+    test_test_group_expression.full_clean()
+
+
+def test_legacy_test_expression() -> None:
+    """Test whether the factory creates a valid legacy TestExpression model instance."""
+    test_test_expression = factories.LegacyTestExpressionFactory()
+    test_test_expression.full_clean()
+
+
+def test_legacy_test_control() -> None:
+    """Test whether the factory creates a valid legacy TestControl model instance."""
+    test_test_control = factories.LegacyTestControlFactory()
+    test_test_control.full_clean()
