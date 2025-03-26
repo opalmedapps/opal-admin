@@ -78,11 +78,9 @@ class QuestionnaireReportRequestData(NamedTuple):
 
 
 class PathologyData(NamedTuple):
-
     """Typed `NamedTuple` that describes data fields needed for generating a pathology PDF report.
 
     Attributes:
-
         test_number: the report number (e.g., AS-2021-62605)
         test_collected_at: date and time when the specimen was collected (e.g., 2021-Nov-25 09:55)
         test_reported_at: date and time when the specimen was reported (e.g., 2021-Nov-28 11:52)
@@ -105,11 +103,9 @@ class PathologyData(NamedTuple):
 
 
 class SiteData(NamedTuple):
-
-    """`Typed NamedTuple` that describes data fields needed for generating a pathology PDF report.
+    """Information about a hospital site from which a report was received.
 
     Attributes:
-
         site_logo_path: file path of the site's logo image
         site_name: the name of the site (e.g., Royal Victoria Hospital)
         site_building_address: the building address of the site (e.g., 1001, boulevard Décarie)
@@ -128,11 +124,9 @@ class SiteData(NamedTuple):
 
 
 class PatientData(NamedTuple):
-
-    """Typed `NamedTuple` that describes data fields needed for generating a pathology PDF report.
+    """Information about a patient for whom a report was received.
 
     Attributes:
-
         patient_first_name: patient's first name (e.g., Marge)
         patient_last_name: patient's last name (e.g., Simpson)
         patient_date_of_birth: patient's birth date (e.g., 03/19/1986)
@@ -155,9 +149,9 @@ class PathologyPDF(FPDF):  # noqa: WPS214
 
     def __init__(
         self,
-        pathology_data: PathologyData,
         patient_data: PatientData,
         site_data: SiteData,
+        pathology_data: PathologyData,
     ) -> None:
         """Initialize a `PathologyPDF` instance for generating pathology reports.
 
@@ -1205,7 +1199,7 @@ class ReportService():
             date=generated_at,
         )
         report_path = settings.PATHOLOGY_REPORTS_PATH / f'{report_file_name}.pdf'
-        pathology_pdf = PathologyPDF(pathology_data, patient_data, site_data)
+        pathology_pdf = PathologyPDF(patient_data, site_data, pathology_data)
         pathology_pdf.output(name=str(report_path))
 
         return report_path

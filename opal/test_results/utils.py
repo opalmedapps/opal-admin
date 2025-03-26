@@ -169,7 +169,8 @@ def _get_site_instance(receiving_facility: str) -> Site:
         )
 
         return Site(
-            name='',
+            name=f'''Receiving facility "{receiving_facility}" not found/
+            L'établissement de réception "{receiving_facility}" n'a pas été trouvé.''',
             street_name='',
             city='',
             province_code='',
