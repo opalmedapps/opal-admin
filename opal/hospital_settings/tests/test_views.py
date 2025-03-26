@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from typing import Tuple
 
 from django.contrib.auth.models import Permission
 from django.core.exceptions import PermissionDenied
@@ -24,7 +23,7 @@ pytestmark = pytest.mark.django_db
 # INDEX PAGE
 
 # tuple with general hospital-settings templates and corresponding url names
-test_url_template_data: list[Tuple] = [
+test_url_template_data: list[tuple[str, str]] = [
     (reverse('hospital-settings:index'), 'hospital_settings/index.html'),
     (reverse('hospital-settings:institution-list'), 'hospital_settings/institution/institution_list.html'),
     (reverse('hospital-settings:institution-create'), 'hospital_settings/institution/institution_form.html'),
@@ -52,7 +51,7 @@ def test_views_use_correct_template(admin_client: Client, url: str, template: st
 # INSTITUTION
 
 # tuple with `Institution` templates and corresponding url names
-test_institution_url_template_data: list[Tuple] = [
+test_institution_url_template_data: list[tuple[str, str]] = [
     ('hospital-settings:institution-update', 'hospital_settings/institution/institution_form.html'),
     ('hospital-settings:institution-delete', 'hospital_settings/institution/institution_confirm_delete.html'),
 ]
@@ -99,7 +98,7 @@ def test_institution_list_displays_all(client: Client, institution_user: User) -
 
     # determine how many institutions are displayed
     soup = BeautifulSoup(response.content, 'html.parser')
-    returned_institutions = soup.find('tbody').find_all('tr')
+    returned_institutions = soup.select('tbody tr')
     assert len(returned_institutions) == Institution.objects.count()
 
 
@@ -141,7 +140,7 @@ def test_institution_update_object_displayed(client: Client, institution_user: U
 # SITE
 
 # tuple with `Site` templates and corresponding url names
-test_site_url_template_data: list[Tuple] = [
+test_site_url_template_data: list[tuple[str, str]] = [
     ('hospital-settings:site-update', 'hospital_settings/site/site_form.html'),
     ('hospital-settings:site-delete', 'hospital_settings/site/site_confirm_delete.html'),
 ]
@@ -185,7 +184,7 @@ def test_list_all_sites(site_user: Client) -> None:
 
     # determine how many sites are displayed
     soup = BeautifulSoup(response.content, 'html.parser')
-    returned_sites = soup.find('tbody').find_all('tr')
+    returned_sites = soup.select('tbody tr')
     assert len(returned_sites) == Site.objects.count()
 
 
