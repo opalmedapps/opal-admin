@@ -1,7 +1,9 @@
+from datetime import datetime
 from io import StringIO
 from typing import Any
 
 from django.core.management import call_command
+from django.utils import timezone
 
 import pytest
 
@@ -10,7 +12,7 @@ from opal.caregivers.models import SecurityAnswer, SecurityQuestion
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
-from opal.patients.models import RelationshipStatus
+from opal.patients.models import Patient, RelationshipStatus
 from opal.users import factories as user_factories
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -378,5 +380,125 @@ class TestPatientsDeviationsCommand(TestBasicClass):
 
     def test_deviations_no_patients(self) -> None:
         """Ensure the command does not fail if there are no patient records."""
+        message, error = self._call_command('find_patients_deviations')
+        assert 'No deviations has been found in the "Patient" tables/models.' in message
+
+    def test_deviations_uneven_patient_records(self) -> None:
+        """Ensure the command handles the cases when "Patient" model/tables have uneven number of records."""
+        patient_factories.Patient(legacy_id=99, first_name='Test_1', ramq='RAMQ12345678')
+        legacy_factories.LegacyPatientFactory(patientsernum=99)
+        legacy_factories.LegacyPatientFactory(patientsernum=100)
+        message, error = self._call_command('find_patients_deviations')
+        assert 'found deviations in the "Patient" tables/models!!!' in error
+        assert 'The number of records in "opal.patients_patient" and "OpalDB.Patient" tables does not match!' in error
+        assert '"opal.patients_patient": 1' in error
+        assert '"OpalDB.Patient": 2' in error
+
+    def test_patient_records_deviations(self) -> None:
+        """Ensure the command detects the deviations in the "Patient" model and tables."""
+        legacy_factories.LegacyPatientFactory()
+        patient_factories.Patient()
+        message, error = self._call_command('find_patients_deviations')
+        assert 'found deviations in the "Patient" tables/models!!!' in error
+        assert "(1, '', 'Patient First Name', 'Patient Last Name', '1999-01-01', 'M', None, None, None)" in error
+        assert "(51, '123456', 'TEST', 'LEGACY', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en')" in error
+
+    def test_hospital_patient_records_deviations(self) -> None:
+        """Ensure the command detects the deviations in the "HospitalPatient" model and tables."""
+        legacy_factories.LegacyPatientHospitalIdentifierFactory()
+        patient_factories.HospitalPatient(
+            site=hospital_settings_factories.Site(code='TST'),
+        )
+        message, error = self._call_command('find_patients_deviations')
+        assert 'found deviations in the "Patient" tables/models!!!' in error
+        assert "(51, 'RVH', '9999996', 1)" in error
+        assert "(1, 'TST', '9999996', 1)" in error
+
+    def test_no_patient_records_deviations(self) -> None:
+        """Ensure the command does not return an error if there are no deviations in "Patient" records."""
+        # create legacy patient
+        legacy_patient = legacy_factories.LegacyPatientFactory(
+            patientsernum=99,
+            ssn='RAMQ12345678',
+            firstname='First Name',
+            lastname='Last Name',
+            dateofbirth=timezone.make_aware(datetime(2018, 1, 1)),
+            sex='Male',
+            telnum='5149995555',
+            email='opal@example.com',
+            language='en',
+        )
+        # create legacy HospitalPatient identifier
+        legacy_factories.LegacyPatientHospitalIdentifierFactory(patientsernum=legacy_patient)
+        caregiver_factories.CaregiverProfile(
+            user=user_factories.Caregiver(
+                email='opal@example.com',
+                language='en',
+                phone_number='5149995555',
+            ),
+            legacy_id=99,
+        )
+        # create patient
+        patient = patient_factories.Patient(
+            legacy_id=99,
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+        )
+        # create hospital patient
+        patient_factories.HospitalPatient(
+            patient=patient,
+            site=hospital_settings_factories.Site(code='RVH'),
+        )
+
+        # create another patient record
+
+        # create a second legacy patient
+        second_legacy_patient = legacy_factories.LegacyPatientFactory(
+            patientsernum=98,
+            ssn='RAMQ87654321',
+            firstname='Second First Name',
+            lastname='Second Last Name',
+            dateofbirth=timezone.make_aware(datetime(1950, 2, 3)),
+            sex='Female',
+            telnum='5149991111',
+            email='second.opal@example.com',
+            language='fr',
+        )
+        # create second legacy HospitalPatient identifier
+        legacy_factories.LegacyPatientHospitalIdentifierFactory(
+            patientsernum=second_legacy_patient,
+            mrn='9999997',
+            hospitalidentifiertypecode=legacy_factories.LegacyHospitalIdentifierTypeFactory(code='MGH'),
+        )
+
+        # create second CaregiverProfile record
+        caregiver_factories.CaregiverProfile(
+            user=user_factories.Caregiver(
+                email='second.opal@example.com',
+                phone_number='5149991111',
+                language='fr',
+            ),
+            legacy_id=98,
+        )
+
+        # create second `Patient` record
+        patient = patient_factories.Patient(
+            legacy_id=98,
+            ramq='RAMQ87654321',
+            first_name='Second First Name',
+            last_name='Second Last Name',
+            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            sex=Patient.SexType.FEMALE,
+        )
+
+        # create second `HospitalPatient` record
+        patient_factories.HospitalPatient(
+            patient=patient,
+            mrn='9999997',
+            site=hospital_settings_factories.Site(code='MGH'),
+        )
+
         message, error = self._call_command('find_patients_deviations')
         assert 'No deviations has been found in the "Patient" tables/models.' in message
