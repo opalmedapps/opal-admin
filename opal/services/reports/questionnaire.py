@@ -329,7 +329,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         for question in questions:
             if question.question_type_id == 2:
                 self._draw_charts_for_questions(question)
-                self.ln(4)
             else:
                 self._draw_questions_tables(question)
 
@@ -375,6 +374,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
         image = io.BytesIO(chart_trace.to_image(format='PNG', engine='kaleido'))
         self.image(image, w=self.epw, x=Align.R)
+        self.ln(4)
 
     def _prepare_questions_charts(self, question: Any) -> pd.DataFrame:
         """Logic regarding the preparation for the charts.
