@@ -90,7 +90,7 @@ class Command(BaseCommand):
                 HospitalPatient.objects.create(
                     patient=migrated_patient,
                     site=Site.objects.get(
-                        code=legacy_patient_identifier.hospitalidentifiertypecode.hospitalidentifiertypeid,
+                        code=legacy_patient_identifier.hospitalidentifiertypecode.code,
                     ),
                     mrn=legacy_patient_identifier.mrn,
                     is_active=legacy_patient_identifier.isactive,
