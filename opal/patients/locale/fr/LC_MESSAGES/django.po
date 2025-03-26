@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-15 14:57-0400\n"
+"POT-Creation-Date: 2023-03-17 16:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -104,6 +104,10 @@ msgstr ""
 "s'agir d'un compte hors hôpital. Veuillez procéder à la génération d'un "
 "nouveau code QR. Informez l'utilisateur qu'il doit s'inscrire sur le site "
 "Web d'inscription."
+
+#: opal/patients/forms.py
+msgid "This opal user already has a self-relationship with the patient."
+msgstr "Cet utilisateur d'Opal a déjà une relation à soi avec le patient."
 
 #: opal/patients/forms.py
 msgid "ID Checked?"

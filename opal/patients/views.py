@@ -245,6 +245,9 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         if step == 'relationship':
             patient_record = self.get_cleaned_data_for_step('search')['patient_record']
             kwargs['date_of_birth'] = patient_record.date_of_birth
+        elif step == 'requestor':
+            relationship_type = self.get_cleaned_data_for_step('relationship')['relationship_type']
+            kwargs['relationship_type'] = relationship_type
         elif step == 'password':
             kwargs['authorized_user'] = self.request.user
         return kwargs

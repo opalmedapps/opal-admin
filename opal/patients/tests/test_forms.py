@@ -373,7 +373,10 @@ def test_existing_user_form_phone_field_error() -> None:
         'user_phone': '5141111111',
     }
 
-    form = forms.ExistingUserForm(data=form_data)
+    form = forms.ExistingUserForm(
+        data=form_data,
+        relationship_type=factories.RelationshipType(name='Self', start_age=1, form_required=True),
+    )
 
     assert not form.is_valid()
     assert form.errors['user_phone'] == [
@@ -390,7 +393,10 @@ def test_existing_user_form_email_field_error() -> None:
         'user_phone': '5141111111',
     }
 
-    form = forms.ExistingUserForm(data=form_data)
+    form = forms.ExistingUserForm(
+        data=form_data,
+        relationship_type=factories.RelationshipType(name='Self', start_age=1, form_required=True),
+    )
 
     assert not form.is_valid()
     assert form.errors['user_email'] == ['Enter a valid email address.']
@@ -404,7 +410,11 @@ def test_existing_user_form_user_not_found() -> None:
     }
     Caregiver(email='marge.simpson@gmail.com', phone_number='+15141111111')
 
-    form = forms.ExistingUserForm(data=form_data)
+    form = forms.ExistingUserForm(
+        data=form_data,
+        relationship_type=factories.RelationshipType(name='Self', start_age=1, form_required=True),
+    )
+
     error_message = (
         'Opal user was not found in your database. '
         + 'This may be an out-of-hospital account. '
