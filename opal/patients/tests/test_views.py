@@ -1275,7 +1275,8 @@ def test_relationships_pending_form_response(relationship_user: Client) -> None:
     response.content.decode('utf-8')
 
     assertContains(response, patient)
-    assertContains(response, caregiver)
+    assertContains(response, relationship.caregiver.user.first_name)
+    assertContains(response, relationship.caregiver.user.last_name)
     assertContains(response, relationship.patient.ramq)
 
 
