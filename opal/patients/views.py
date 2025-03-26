@@ -394,7 +394,6 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
             patient_data: str = storage.get('patient', '[]')  # type: ignore[assignment]
             if isinstance(patient_data, int):
                 patient = Patient.objects.get(pk=patient_data)
-                date_of_birth = patient.date_of_birth
             else:
                 patient_json = json.loads(patient_data)
                 date_of_birth = date.fromisoformat(patient_json['date_of_birth'])
@@ -406,14 +405,9 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                 patient_json['date_of_birth'] = date_of_birth
                 patient = OIEPatientData(**patient_json)
 
-            if step == 'patient':
-                kwargs.update({
-                    'patient': patient,
-                })
-            else:
-                kwargs.update({
-                    'date_of_birth': date_of_birth,
-                })
+            kwargs.update({
+                'patient': patient,
+            })
         elif step == 'confirm':
             kwargs.update({
                 'username': self.request.user.username,
