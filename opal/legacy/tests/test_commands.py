@@ -364,7 +364,7 @@ class TestUsersCaregiversMigration(TestBasicClass):
         legacy_factories.LegacyUserFactory(usersernum=56, usertypesernum=100, usertype='Patient', username='test2')
         patient_factories.Patient(legacy_id=99, first_name='Test_1', ramq='RAMQ12345678')
         patient_factories.Patient(legacy_id=100, first_name='Test_2')
-        patient_factories.RelationshipType(name='self')
+        patient_factories.RelationshipType(role_type=RoleType.SELF)
         message, error = self._call_command('migrate_users')
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
         assert 'Legacy user with sernum: 56 has been migrated\n' in message
