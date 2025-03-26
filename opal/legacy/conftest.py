@@ -1,14 +1,13 @@
 """This module is used to provide configuration, fixtures, and plugins for pytest in the legacy app."""
-from typing import Any
-
 from django.db import connections
 
 import pytest
+from _pytest.fixtures import SubRequest
 from pytest_django.plugin import _DatabaseBlocker
 
 
 @pytest.fixture()
-def clear_questionnairedb(request: Any, django_db_blocker: _DatabaseBlocker) -> None:  # noqa: PT004
+def clear_questionnairedb(request: SubRequest, django_db_blocker: _DatabaseBlocker) -> None:  # noqa: PT004
     """Remove specified test data from test_QuestionnaireDB.
 
     Args:
