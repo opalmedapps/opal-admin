@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from dateutil.relativedelta import relativedelta
 
@@ -19,7 +19,7 @@ def test_report_data_type() -> None:
 def test_patient_data_type() -> None:
     """Ensure `OIEPatientData` NamedTuple and `OIEMRNData` NamedTuple can be instantiated."""
     assert OIEPatientData(
-        date_of_birth=datetime.now(),
+        date_of_birth=date.today(),
         first_name='aaa',
         last_name='bbb',
         sex='M',

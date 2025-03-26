@@ -110,7 +110,7 @@ class OIEService:
                     date_of_birth=datetime.strptime(
                         str(patient_data['dateOfBirth']),
                         '%Y-%m-%d %H:%M:%S',
-                    ),
+                    ).date(),
                     first_name=str(patient_data['firstName']),
                     last_name=str(patient_data['lastName']),
                     sex=str(patient_data['sex']),
@@ -179,7 +179,7 @@ class OIEService:
                     date_of_birth=datetime.strptime(
                         str(patient_data['dateOfBirth']),
                         '%Y-%m-%d %H:%M:%S',
-                    ),
+                    ).date(),
                     first_name=str(patient_data['firstName']),
                     last_name=str(patient_data['lastName']),
                     sex=str(patient_data['sex']),
