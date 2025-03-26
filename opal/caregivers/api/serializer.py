@@ -1,5 +1,5 @@
 """This module provides Django REST framework serializers for GetRegistrationEncryptionInfoView api return value."""
-from typing import Any, Dict
+from typing import Dict
 
 from rest_framework import serializers
 
@@ -44,15 +44,15 @@ class RegistrationCodePatientSerializer(serializers.ModelSerializer):
     )
     institution = serializers.SerializerMethodField()
 
-    def get_institution(self, obj: Any) -> Dict:  # noqa: WPS615
+    def get_institution(self, obj: RegistrationCode) -> Dict:  # noqa: WPS615
         """
         Get a single institution data.
 
         Args:
-            obj (Any): Any.
+            obj (RegistrationCode): Object of RegistrationCode.
 
         Returns:
-            return institution data with Dict.
+            `Institution` information where the patient is being registered at.
         """
         return InstitutionSerializer(Institution.objects.get(), fields=('id', 'name')).data
 
