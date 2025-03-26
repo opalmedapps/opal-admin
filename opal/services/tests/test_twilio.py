@@ -49,7 +49,7 @@ class TestTwilioService:
             from_,
         )
 
-        service.client = Client()
+        service.client = Client('ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', 'your_auth_token')
         service.send_sms(
             to,
             message,
