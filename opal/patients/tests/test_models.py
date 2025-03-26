@@ -208,7 +208,7 @@ def test_relationship_str() -> None:
 
     relationship = factories.Relationship.build(patient=patient, caregiver=profile)
 
-    assert str(relationship) == 'Kobe Briant <--> John Wayne [Self]'
+    assert str(relationship) == 'Kobe Briant <--> John Wayne [Caregiver]'
 
 
 def test_relationship_factory() -> None:
