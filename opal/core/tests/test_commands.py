@@ -42,9 +42,9 @@ class TestInsertTestData(CommandTestMixin):
         assert CaregiverProfile.objects.count() == 5
         assert Relationship.objects.count() == 11
         assert SecurityAnswer.objects.count() == 12
-        assert GeneralTest.objects.count() == 5
-        assert PathologyObservation.objects.count() == 5
-        assert Note.objects.count() == 5
+        assert GeneralTest.objects.count() == 6
+        assert PathologyObservation.objects.count() == 6
+        assert Note.objects.count() == 6
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_chusj(self) -> None:
