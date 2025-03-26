@@ -478,7 +478,7 @@ class ExistingUserForm(forms.Form):
             error_message,
         )
 
-    def _set_requestor_relationship(    # noqa: WPS211 WPS231
+    def _set_requestor_relationship(    # noqa: WPS211
         self,
         is_email_valid: bool,
         is_phone_valid: bool,
@@ -509,34 +509,35 @@ class ExistingUserForm(forms.Form):
             except Caregiver.DoesNotExist:
                 raise ValidationError(error_message)
 
-            # Check if there is no 'Self' relationship related to this requestor himself/herself
-            # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done.
-            relationships = Relationship.objects.get_relationship_by_patient_caregiver(
-                'Self',
-                user.first_name,
-                user.last_name,
-                user.id,
-                self.patient_record.ramq,
+        # Check if there is no 'Self' relationship related to this requestor himself/herself
+        # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done.
+        relationships = Relationship.objects.get_relationship_by_patient_caregiver(
+            'Self',
+            user.first_name,
+            user.last_name,
+            user.id,
+            self.patient_record.ramq,
+        )
+        # If no, create the relationship record with the value 'Self'
+        # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done
+        # TODO: I'll refactor this part based on new mockup to make it happens after generating access request
+        if not relationships and str(self.relationship_type) == 'Self':
+            Relationship.objects.create(
+                patient=Patient.objects.get(ramq=self.patient_record.ramq),
+                caregiver=CaregiverProfile.objects.get(user_id=user.id),
+                type=self.relationship_type,
+                reason=_('Create self relationship for patient'),
+                request_date=date.today(),
+                start_date=date.today(),
             )
-            # If no, create the relationship record with the value 'Self'
-            # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done
-            if not relationships and str(self.relationship_type) == 'Self':
-                Relationship.objects.create(
-                    patient=Patient.objects.get(ramq=self.patient_record.ramq),
-                    caregiver=CaregiverProfile.objects.get(user_id=user.id),
-                    type=self.relationship_type,
-                    reason=_('Create self relationship for patient'),
-                    request_date=date.today(),
-                    start_date=date.today(),
-                )
-            # If yes, show user details
-            elif relationships:
-                self.cleaned_data['user_record'] = {  # type: ignore[index]
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
-                    'email': user.email,
-                    'phone_number': user.phone_number,
-                }
+        # If yes, show user details
+        elif relationships:
+            self.cleaned_data['user_record'] = {  # type: ignore[index]
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'phone_number': user.phone_number,
+            }
 
 
 class ConfirmExistingUserForm(forms.Form):
