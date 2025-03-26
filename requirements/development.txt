@@ -11,7 +11,7 @@ django-test-migrations==1.2.0  # https://github.com/wemake-services/django-test-
 
 # mypy library stubs
 # see: https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
-# Add here if necessary
+types-requests==2.27.7
 
 # Code quality
 #

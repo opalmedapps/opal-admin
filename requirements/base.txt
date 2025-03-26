@@ -18,3 +18,4 @@ psycopg2-binary==2.9.3 # https://github.com/psycopg/psycopg2
 #
 # secure password hashes using argon2
 argon2-cffi==21.3.0  # https://github.com/hynek/argon2_cffi
+requests==2.27.1  # https://github.com/psf/requests
