@@ -23,8 +23,10 @@ def test_relationshiptype_factory() -> None:
 
 def test_relationshiptype_factory_multiple() -> None:
     """Ensure the RelationshipType factory can build multiple default model instances."""
-    factories.RelationshipType()
-    factories.RelationshipType()
+    relationship_type = factories.RelationshipType()
+    relationship_type2 = factories.RelationshipType()
+
+    assert relationship_type == relationship_type2
 
 
 def test_relationshiptype_str() -> None:
@@ -110,6 +112,14 @@ def test_patient_factory() -> None:
     patient.full_clean()
 
 
+def test_patient_factory_multiple() -> None:
+    """Ensure the Patient factory can build multiple default model instances."""
+    patient = factories.Patient()
+    patient2 = factories.Patient()
+
+    assert patient != patient2
+
+
 def test_patient_invalid_sex() -> None:
     """Ensure that a patient cannot be saved with an invalid sex type."""
     message = 'CONSTRAINT `patients_patient_sex_valid` failed'
@@ -143,6 +153,17 @@ def test_relationship_factory() -> None:
     """Ensure the Relationship factory is building properly."""
     relationship = factories.Relationship()
     relationship.full_clean()
+
+
+def test_relationship_factory_multiple() -> None:
+    """Ensure the Relationship factory can build multiple default model instances."""
+    relationship = factories.Relationship()
+    relationship2 = factories.Relationship()
+
+    assert relationship != relationship2
+    assert relationship.patient != relationship2.patient
+    assert relationship.caregiver != relationship2.caregiver
+    assert relationship.type == relationship2.type
 
 
 def test_relationship_default_status() -> None:
@@ -202,6 +223,16 @@ def test_hospitalpatient_factory() -> None:
     """Ensure the Patient factory is building properly."""
     hospital_patient = factories.HospitalPatient()
     hospital_patient.full_clean()
+
+
+def test_hospitalpatient_factory_multiple() -> None:
+    """Ensure the Patient factory can build multiple default model instances."""
+    hospital_patient = factories.HospitalPatient()
+    hospital_patient2 = factories.HospitalPatient()
+
+    assert hospital_patient != hospital_patient2
+    assert hospital_patient.patient != hospital_patient2.patient
+    assert hospital_patient.site != hospital_patient2.site
 
 
 def test_hospitalpatient_str() -> None:
