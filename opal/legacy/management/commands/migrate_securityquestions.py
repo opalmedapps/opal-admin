@@ -8,19 +8,19 @@ from opal.legacy.models import LegacySecurityQuestion
 
 
 class Command(BaseCommand):
-    """Command to migrate Security Question from legacy DB to backend DB."""
+    """Command to migrate Security Question from legacy DB to the new backend."""
 
-    help = 'migrate Security Question from legacy DB to backend DB'  # noqa: A003
+    help = 'migrate Security Question from legacy DB to the new backend'  # noqa: A003
 
     def handle(self, *args: Any, **kwargs: Any) -> None:
         """
-        Handle migrate Security Question from legacy DB to backend DB.
+        Handle migrate Security Question from legacy DB to the new backend.
 
         Return 'None'.
 
         Args:
-            args: input arguments.
-            kwargs: input arguments.
+            args: non-keyward input arguments.
+            kwargs:  variable keyword input arguments.
         """
         legacy_questions = LegacySecurityQuestion.objects.all()
         for legacy_question in legacy_questions:
