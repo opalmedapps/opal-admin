@@ -6,7 +6,7 @@
   {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
 
   {% block content %}
-    {% if perms.questionnaires.view_report %}
+    {% if perms.questionnaires.export_report %}
       <section class="content">
           <div class="container-fluid">
             <div class="btn-toolbar mb-4">

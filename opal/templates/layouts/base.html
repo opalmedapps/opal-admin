@@ -108,7 +108,7 @@
                 <i class="right fas fa-angle-left"></i>
               </p>
             </a>
-            {% if perms.questionnaires.view_report %}
+            {% if perms.questionnaires.export_report %}
             <ul class="nav nav-treeview">
               <li class="nav-item">
                 <a href="{% url 'questionnaires:exportreports' %}" class="nav-link">
