@@ -2,16 +2,13 @@ from django.urls import resolve, reverse
 
 import pytest
 
-from opal.users.factories import User as User_Factory
-
 pytestmark = pytest.mark.django_db
 
 
 def test_reports_list() -> None:
     """Ensure export URL is defined."""
-    user = User_Factory()
-    path = f'/questionnaires/reports/{user.username}'
-    assert reverse('questionnaires:reports-list', kwargs={'username': user.username}) == path
+    path = '/questionnaires/reports/'
+    assert reverse('questionnaires:reports-list') == path
     assert resolve(path).view_name == 'questionnaires:reports-list'
 
 

@@ -7,8 +7,6 @@ staticfiles/
 
 # test data
 docker/nginx-data/
-*.csv
-*.xlsx
 
 # Auto-generated:
 

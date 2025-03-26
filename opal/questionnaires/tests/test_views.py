@@ -38,18 +38,10 @@ def test_views_use_correct_template(user_client: Client, admin_user: AbstractUse
     assertTemplateUsed(response, template)
 
 
-def test_reportlist_urls_exist(user_client: Client, admin_user: AbstractUser) -> None:
-    """Ensure that a page exists at each URL address."""
-    user_client.force_login(admin_user)
-    url = reverse('questionnaires:reports-list', kwargs={'username': admin_user.username})
-    response = user_client.get(url)
-    assert response.status_code == HTTPStatus.OK
-
-
 def test_filter_report_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure that a form exists in the reports list page pointing to the filter page."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:reports-list', kwargs={'username': admin_user.username}))
+    response = user_client.get(reverse('questionnaires:reports-list'))
     soup = BeautifulSoup(response.content, 'html.parser')
     forms = soup.find_all('form')
 
@@ -170,7 +162,7 @@ def test_get_downloadxlsx_viewreport_unauthorized(user_client: Client, admin_use
 def test_reportlist_visible_authenticated(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure that an authenticated user can view the Export Reports page."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:reports-list', kwargs={'username': admin_user.username}))
+    response = user_client.get(reverse('questionnaires:reports-list'))
 
     assert response.status_code == HTTPStatus.OK
 

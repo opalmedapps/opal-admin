@@ -1,20 +1,23 @@
 """This file contains SQL queries for the ePRO reporting tool."""
 import html
 import logging
-from typing import Any
 
 from django.conf import settings
 from django.db import connections
+from django.db.backends.utils import CursorWrapper
 from django.db.utils import DatabaseError
 from django.http.request import QueryDict
 
 # Logger instance declared at the module level
 logger = logging.getLogger(__name__)
 
-test_accounts = ', '.join(map(str, settings.TEST_PATIENTS))
+if settings.DEBUG:
+    test_accounts = ('')
+else:
+    test_accounts = ', '.join(map(str, settings.TEST_PATIENTS))
 
 
-def _getdescription(qid: int, lang_id: int) -> Any:
+def _get_description(qid: int, lang_id: int) -> str:
     """Get detailed description for selected questionnaire.
 
     Args:
@@ -32,11 +35,11 @@ def _getdescription(qid: int, lang_id: int) -> Any:
         conn.execute(
             'SELECT content FROM dictionary WHERE contentId = %s and languageId = %s', [description_id, lang_id],
         )
-        description = conn.fetchone()[0]
+        description = str(conn.fetchone()[0])
     return description
 
 
-def dictfetchall(cursor: Any) -> list[dict]:
+def fetch_all_as_dict(cursor: CursorWrapper) -> list[dict]:
     """Return all rows from a cursor as a dict.
 
     Args:
@@ -53,7 +56,7 @@ def dictfetchall(cursor: Any) -> list[dict]:
     ]
 
 
-def get_all_questionnaire(lang_id: int) -> list[dict]:
+def get_all_questionnaires(lang_id: int) -> list[dict]:
     """Get list of questionnaires which have non-zero number of responses.
 
     Args:
@@ -64,19 +67,16 @@ def get_all_questionnaire(lang_id: int) -> list[dict]:
     """
     try:
         with connections['questionnaire'].cursor() as conn:
-            if settings.DEBUG:  # when in debug just return all questionnaires
-                conn.execute('SELECT DISTINCT questionnaireId FROM answer where deleted=0')
-            else:  # if in prod disclude test responses
-                conn.execute(
-                    'SELECT DISTINCT questionnaireId FROM answer where deleted=0 and patientId not in %s',
-                    [test_accounts],
-                )
+            conn.execute(
+                'SELECT DISTINCT questionnaireId FROM answer where deleted=0 and patientId not in (%s)',
+                [test_accounts],
+            )
             aq = tuple([row[0] for row in conn.fetchall()])
             conn.execute(
                 'SELECT ID, getDisplayName(title, %s) `name` FROM questionnaire WHERE ID in %s',
                 [lang_id, aq],
             )
-            qs = dictfetchall(conn)
+            qs = fetch_all_as_dict(conn)
     except DatabaseError as err:
         logger.error(f'DatabaseError: No questionnaires found, are you sure you are connected to a production database? \n Error:  {err} ')  # noqa: E501
         return [{}]
@@ -97,29 +97,18 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210, W
         conn.execute(
             'SELECT ID, getDisplayName(title, %s) `name` FROM questionnaire WHERE ID = %s', [lang_id, qid],
         )
-        questionnaire = dictfetchall(conn)
+        questionnaire = fetch_all_as_dict(conn)
 
         conn.execute('DROP TABLE IF EXISTS`tempB`')
-        if settings.DEBUG:
-            conn.execute(
-                """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
-                date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
-                getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
-                from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
-                where AQ.questionnaireId = %s and AQ.`status` = 2
-                and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId and A.deleted = 0
-                and A.answered = 1 and A.questionId = Q.ID) """, [lang_id, qid],
-            )
-        else:
-            conn.execute(
-                """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
-                date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
-                getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
-                from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
-                where AQ.questionnaireId = %s and AQ.patientId not in (%s) and AQ.`status` = 2
-                and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId and A.deleted = 0
-                and A.answered = 1 and A.questionId = Q.ID) """, [lang_id, qid, test_accounts],
-            )
+        conn.execute(
+            """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
+            date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
+            getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
+            from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
+            where AQ.questionnaireId = %s and AQ.patientId not in (%s) and AQ.`status` = 2
+            and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId and A.deleted = 0
+            and A.answered = 1 and A.questionId = Q.ID) """, [lang_id, qid, test_accounts],
+        )
 
         conn.execute('SELECT DISTINCT patientId FROM tempB')
         patient_ids = [row[0] for row in conn.fetchall()]
@@ -132,9 +121,9 @@ def get_questionnaire_detail(qid: int, lang_id: int) -> dict:  # noqa: WPS210, W
         maxdate = conn.fetchone()
 
         conn.execute('SELECT DISTINCT questionId, question, typeId FROM tempB')
-        questions = dictfetchall(conn)
+        questions = fetch_all_as_dict(conn)
 
-    description = _getdescription(qid, lang_id)
+    description = _get_description(qid, lang_id)
     description = html.unescape(description)
 
     return {
@@ -191,32 +180,18 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
                 and qq.ID = qs.questionId)
                 """, [lang_id, lang_id, qid, sql_qids],
             )
-            if settings.DEBUG:
-                conn.execute(
-                    """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
-                    date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
-                    getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
-                    from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
-                    where AQ.questionnaireId = %s and AQ.patientId in (%s)
-                    and AQ.lastUpdated and AQ.`status` = 2
-                    and cast(AQ.lastUpdated as date) BETWEEN %s and %s
-                    and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId
-                    and A.deleted = 0 and A.answered = 1 and A.questionId = Q.ID)
-                    """, [lang_id, qid, sql_pids, startdate, enddate],
-                )
-            else:
-                conn.execute(
-                    """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
-                    date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
-                    getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
-                    from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
-                    where AQ.questionnaireId = %s and AQ.patientId not in (%s) and AQ.patientId in (%s)
-                    and AQ.lastUpdated and AQ.`status` = 2
-                    and cast(AQ.lastUpdated as date) BETWEEN %s and %s
-                    and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId
-                    and A.deleted = 0 and A.answered = 1 and A.questionId = Q.ID)
-                    """, [lang_id, qid, test_accounts, sql_pids, startdate, enddate],
-                )
+            conn.execute(
+                """create table tempB(SELECT AQ.questionnaireId, date(AQ.creationDate) creationDate,
+                date(AQ.lastUpdated) lastUpdated, AQ.patientId, A.questionId,
+                getDisplayName(Q.question, %s) `question`, A.typeId, A.ID AnswerID
+                from answerQuestionnaire AQ, answerSection aSection, answer A, question Q
+                where AQ.questionnaireId = %s and AQ.patientId not in (%s) and AQ.patientId in (%s)
+                and AQ.lastUpdated and AQ.`status` = 2
+                and cast(AQ.lastUpdated as date) BETWEEN %s and %s
+                and AQ.ID = aSection.answerQuestionnaireId and aSection.ID = A.answerSectionId
+                and A.deleted = 0 and A.answered = 1 and A.questionId = Q.ID)
+                """, [lang_id, qid, test_accounts, sql_pids, startdate, enddate],
+            )
             conn.execute(
                 """create table temp(SELECT A.Questionnaire_ID, A.Questionnaire_Title, A.Section_ID, A.order, B.*
                 from tempA A, tempB B
@@ -261,7 +236,7 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
 
 
 def get_temp_table() -> list[dict]:
-    """Retrieve the previously generated report in tempC.
+    """Retrieve the previously generated report in the temporary table.
 
     Returns:
         List of all rows of the query as dictionaries.
@@ -276,5 +251,5 @@ def get_temp_table() -> list[dict]:
             ORDER BY last_updated ASC
             """,
         )
-        q_dict = dictfetchall(conn)
+        q_dict = fetch_all_as_dict(conn)
     return q_dict

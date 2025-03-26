@@ -14,7 +14,7 @@ urlpatterns = [
     path('', views.IndexTemplateView.as_view(), name='index'),
     # Export Reports
     path(
-        'reports/<str:username>',
+        'reports/',
         views.QuestionnaireReportListTemplateView.as_view(),
         name='reports-list',
     ),

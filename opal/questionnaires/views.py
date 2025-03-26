@@ -13,7 +13,7 @@ import pandas as pd
 from easyaudit.models import RequestEvent
 
 from ..users.models import User
-from .backend import get_all_questionnaire, get_questionnaire_detail, get_temp_table, make_temp_tables
+from .backend import get_all_questionnaires, get_questionnaire_detail, get_temp_table, make_temp_tables
 from .models import ExportReportPermission
 from .tables import ReportTable
 
@@ -45,8 +45,8 @@ class QuestionnaireReportListTemplateView(PermissionRequiredMixin, TemplateView)
             dict containing questionnaire list.
         """
         context = super().get_context_data(**kwargs)
-        requestor = User.objects.get(username=context['username'])
-        context['questionnaire_list'] = get_all_questionnaire(language_map[requestor.language])
+        requestor = User.objects.get(username=self.request.user)
+        context['questionnaire_list'] = get_all_questionnaires(language_map[requestor.language])
         return context
 
 
@@ -137,11 +137,23 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
             },
         )
 
-        # Also update auditing service with request details
+        # Update audit query string with request parameters
+        self._update_request_event_query_string(request)
+
+        return self.render_to_response(context)
+
+    def _update_request_event_query_string(self, request: HttpRequest) -> None:
+        """Get the request event attached to this request path and update query string with POST arguments.
+
+        Args:
+            request: The post request data
+
+        """
         request_event = RequestEvent.objects.filter(
             url=request.path,
         ).order_by('-datetime').first()
         request_event.query_string = {
+            'username: {0}'.format(request.user),
             'questionnaireid: {0}'.format(request.POST.get('questionnaireid')),
             'startdate: {0}'.format(request.POST.get('start')),
             'enddate: {0}'.format(request.POST.get('end')),
@@ -149,8 +161,6 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
             'questionIdFilter: {0}'.format(request.POST.getlist('questionIDs')),
         }
         request_event.save()
-
-        return self.render_to_response(context)
 
 
 # EXPORT REPORTS VIEW REPORT (Downloaded csv)
