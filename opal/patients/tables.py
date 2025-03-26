@@ -78,15 +78,15 @@ class CaregiverAccessTable(tables.Table):
         accessor='caregiver__user__last_name',
     )
 
-    type = tables.Column(  # noqa: A003
+    relationship_type = tables.Column(
         verbose_name=_('Relationship'),
     )
 
-    start_date = tables.Column(  # noqa: A003
+    start_date = tables.Column(
         verbose_name=_('Start Date'),
     )
 
-    end_date = tables.Column(  # noqa: A003
+    end_date = tables.Column(
         verbose_name=_('End Date'),
     )
 
@@ -101,7 +101,7 @@ class CaregiverAccessTable(tables.Table):
 
     class Meta:
         model = Relationship
-        fields = ['first_name', 'last_name', 'type', 'start_date', 'end_date', 'status', 'actions']
+        fields = ['first_name', 'last_name', 'relationship_type', 'start_date', 'end_date', 'status', 'actions']
         empty_text = _('No caregivers.')
         attrs = {
             'class': 'table table-bordered table-hover',
