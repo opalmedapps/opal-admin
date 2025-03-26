@@ -45,7 +45,8 @@ class QuestionnaireReportListTemplateView(PermissionRequiredMixin, TemplateView)
             dict containing questionnaire list.
         """
         context = super().get_context_data(**kwargs)
-        requestor = User.objects.get(username=self.request.user)
+        # due to the LoginRequiredMiddleware we know that this can only be an authenticated user (not AnonymousUser)
+        requestor: User = self.request.user  # type: ignore[assignment]
         context['questionnaire_list'] = get_all_questionnaires(language_map[requestor.language])
         return context
 
