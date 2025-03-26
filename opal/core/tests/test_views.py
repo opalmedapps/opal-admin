@@ -204,10 +204,10 @@ def test_hl7_create_view_pid_does_not_match_uuid(
     )
     hospital_factories.Site(acronym='RVH')
     patient_factories.HospitalPatient(
-            patient=patient,
-            site=Site.objects.get(acronym='RVH'),
-            mrn='9999996',
-        )
+        patient=patient,
+        site=Site.objects.get(acronym='RVH'),
+        mrn='9999996',
+    )
 
     response = api_client.post(
         reverse('api:patient-pharmacy-create', kwargs={'uuid': uuid4()}),
@@ -215,29 +215,30 @@ def test_hl7_create_view_pid_does_not_match_uuid(
         content_type='application/hl7-v2+er7',
     )
     assertJSONEqual(
-            raw=json.dumps(response.json()),
-            expected_data={
-                'status': 'error',
-                'message': 'PID segment data did not match uuid provided in url.',
-            },
-        )
+        raw=json.dumps(response.json()),
+        expected_data={
+            'status': 'error',
+            'message': 'PID segment data did not match uuid provided in url.',
+        },
+    )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 def test_hl7_create_view_patient_not_found_by_pid_data(
-        api_client: APIClient,
-        interface_engine_user: User,
-    ) -> None:
-        """Ensure the endpoint returns an error if the PID data does not yield a valid and unique patient."""
-        api_client.force_login(interface_engine_user)
-        hospital_factories.Site(acronym='RVH')
-        message = 'Patient identified by HL7 PID could not be uniquely found in database.'
-        with assertRaisesMessage(ValidationError, message):
-            api_client.post(
-                reverse('api:patient-pharmacy-create', kwargs={'uuid': PATIENT_UUID}),
-                data=_load_hl7_fixture('marge_pharmacy.hl7v2'),
-                content_type='application/hl7-v2+er7',
-            )
+    api_client: APIClient,
+    interface_engine_user: User,
+) -> None:
+    """Ensure the endpoint returns an error if the PID data does not yield a valid and unique patient."""
+    api_client.force_login(interface_engine_user)
+    hospital_factories.Site(acronym='RVH')
+    message = 'Patient identified by HL7 PID could not be uniquely found in database.'
+    with assertRaisesMessage(ValidationError, message):
+        api_client.post(
+            reverse('api:patient-pharmacy-create', kwargs={'uuid': PATIENT_UUID}),
+            data=_load_hl7_fixture('marge_pharmacy.hl7v2'),
+            content_type='application/hl7-v2+er7',
+        )
+
 
 def _load_hl7_fixture(filename: str) -> str:
     """Load a HL7 fixture for testing.
