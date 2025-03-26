@@ -14,7 +14,7 @@
                       {% blocktranslate %}Are you sure you want to delete the following relationship type: {{ object }}?{% endblocktranslate %}
                     </h5>
 
-                    <form action="" method="POST">
+                    <form action="" method="POST" novalidate>
                       {% csrf_token %}
                       <input class="btn btn-danger btn-sm" type="submit" value="{% translate "Yes" %}, {% translate "Delete"|lower %}.">
                     </form>

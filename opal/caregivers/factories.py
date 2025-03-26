@@ -1,4 +1,5 @@
 """Module providing model factories for caregiver app models."""
+import datetime as dt
 
 from django.utils import timezone
 
@@ -107,4 +108,4 @@ class EmailVerification(DjangoModelFactory):
     caregiver = SubFactory(CaregiverProfile)
     code = '123456'
     email = 'opal@muhc.mcgill.ca'
-    sent_at = timezone.now() - timezone.timedelta(seconds=10)
+    sent_at = timezone.now() - dt.timedelta(seconds=10)

@@ -27,7 +27,7 @@ class RelationshipTypeAdmin(TranslationAdmin):
             boolean delete permission (false if model has restricted role type).
         """
         if obj:
-            return obj.role_type not in {models.RoleType.SELF, models.RoleType.PARENTGUARDIAN}
+            return obj.role_type not in {models.RoleType.SELF, models.RoleType.PARENT_GUARDIAN}
         return True
 
 
