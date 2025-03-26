@@ -771,8 +771,8 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
         context_data['table'] = tables.PatientTable([context_data['relationship'].patient])
         if self.request.method == 'POST':
             context_data['cancel_url'] = context_data['form'].cleaned_data['cancel_url']
-        elif self.request.META.get('HTTP_REFERER'):
-            context_data['cancel_url'] = self.request.META.get('HTTP_REFERER')
+        elif self.request.headers.get('referer'):
+            context_data['cancel_url'] = self.request.headers.get('referer')
         else:
             context_data['cancel_url'] = default_success_url
 
@@ -804,8 +804,8 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
             regular response for continuing get functionlity for `ManageCaregiverAccessUpdateView`
         """
         relationship_record = self.get_object()
-        http_referer = self.request.META.get('HTTP_REFERER')
-        cancel_url = http_referer if http_referer else self.get_success_url()
+        http_referrer = self.request.headers.get('referer')
+        cancel_url = http_referrer if http_referrer else self.get_success_url()
         if relationship_record.status == RelationshipStatus.EXPIRED:
             return render(
                 request,

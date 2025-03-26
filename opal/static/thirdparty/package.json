@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "@fortawesome/fontawesome-free": "6.5.2",
+    "@fortawesome/fontawesome-free": "6.6.0",
     "bootstrap": "5.3.3",
-    "unpoly": "3.7.3"
+    "unpoly": "3.8.0"
   },
   "scripts": {
     "postinstall": "node copy_distribution_files.js"
