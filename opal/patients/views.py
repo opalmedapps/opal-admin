@@ -175,7 +175,6 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                     # TODO: create relationship, patient (if new) etc.
                     return render(self.request, 'patients/access_request/qr_code.html', {
                         'qrcode': base64.b64encode(self._generate_qr_code('').getvalue()).decode(),
-                        'header_title': _('Opal Registration: Success'),
                     })
             else:
                 print("some forms are invalid (or the next button wasn't clicked)")
