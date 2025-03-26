@@ -11,6 +11,7 @@ from opal.hospital_settings.models import Institution, Site
 from opal.patients import factories
 from opal.patients.models import HospitalPatient, Patient, Relationship
 from opal.users.models import Caregiver, User
+from opal.test_results.models import GeneralTest, PathologyObservation, Note
 
 pytestmark = pytest.mark.django_db()
 
@@ -33,11 +34,14 @@ class TestInsertTestData(CommandTestMixin):
         assert Institution.objects.count() == 1
         assert Institution.objects.get().code == 'MUHC'
         assert Site.objects.count() == 5
-        assert Patient.objects.count() == 5
-        assert HospitalPatient.objects.count() == 6
-        assert CaregiverProfile.objects.count() == 4
-        assert Relationship.objects.count() == 9
-        assert SecurityAnswer.objects.count() == 9
+        assert Patient.objects.count() == 7
+        assert HospitalPatient.objects.count() == 8
+        assert CaregiverProfile.objects.count() == 5
+        assert Relationship.objects.count() == 11
+        assert SecurityAnswer.objects.count() == 12
+        assert GeneralTest.objects.count() == 5
+        assert PathologyObservation.objects.count() == 5
+        assert Note.objects.count() == 5
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_chusj(self) -> None:
@@ -49,9 +53,12 @@ class TestInsertTestData(CommandTestMixin):
         assert Site.objects.count() == 1
         assert Patient.objects.count() == 2
         assert HospitalPatient.objects.count() == 2
-        assert CaregiverProfile.objects.count() == 2
+        assert CaregiverProfile.objects.count() == 3
         assert Relationship.objects.count() == 3
         assert SecurityAnswer.objects.count() == 6
+        assert GeneralTest.objects.count() == 0
+        assert PathologyObservation.objects.count() == 0
+        assert Note.objects.count() == 0
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_existing_data_cancel(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -95,11 +102,11 @@ class TestInsertTestData(CommandTestMixin):
         # new data was created
         assert Institution.objects.count() == 1
         assert Site.objects.count() == 5
-        assert Patient.objects.count() == 5
-        assert HospitalPatient.objects.count() == 6
-        assert CaregiverProfile.objects.count() == 4
-        assert Relationship.objects.count() == 9
-        assert SecurityAnswer.objects.count() == 9
+        assert Patient.objects.count() == 7
+        assert HospitalPatient.objects.count() == 8
+        assert CaregiverProfile.objects.count() == 5
+        assert Relationship.objects.count() == 11
+        assert SecurityAnswer.objects.count() == 12
 
     def test_insert_existing_data_force_delete(self) -> None:
         """The existing data is deleted without confirmation."""
