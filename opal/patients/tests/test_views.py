@@ -1307,7 +1307,7 @@ def test_relationships_response_contains_menu(user_client: Client, django_user_m
 
     response = user_client.get(reverse('hospital-settings:index'))
 
-    assertContains(response, 'Pending Requests')
+    assertContains(response, 'Pending Access Requests')
 
 
 def test_relationships_pending_response_no_menu(user_client: Client, django_user_model: User) -> None:
