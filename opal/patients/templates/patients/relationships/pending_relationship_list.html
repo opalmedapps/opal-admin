@@ -9,20 +9,24 @@
 {% endblock %}
 
 {% block content %}
-  <div class="btn-toolbar-no-group mb-2">
-    {% if filter %}
-      <h4>{% translate "Patient Details" %}</h4>
-      <div class="mt-2">
-        {% crispy filter.form %}
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="btn-toolbar-no-group mb-2">
+        {% if filter %}
+          <h4>{% translate "Patient Details" %}</h4>
+          <div class="mt-2">
+            {% crispy filter.form %}
+          </div>
+        {% endif %}
+        <div class="mt-4">
+          {% if is_search %}
+            <h4>{% translate "Specific Patient" %}</h4>
+          {% else %}
+            <h4>{% translate "Pending Requests" %}</h4>
+          {% endif %}
+          {% render_table table %}
+        </div>
       </div>
-    {% endif %}
-    <div class="mt-4">
-      {% if is_search %}
-        <h4>{% translate "Specific Patient" %}</h4>
-      {% else %}
-        <h4>{% translate "Pending Requests" %}</h4>
-      {% endif %}
-      {% render_table table %}
     </div>
   </div>
 {% endblock %}

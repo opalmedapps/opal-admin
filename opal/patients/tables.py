@@ -85,6 +85,12 @@ class PatientTable(tables.Table):
 
     class Meta:
         model = Patient
+        attrs = {
+            'class': 'table table-hover custom-table',
+            'thead': {
+                'class': 'table-light',
+            },
+        }
         fields = ['first_name', 'last_name', 'date_of_birth', 'mrns', 'ramq']
         empty_text = _('No patient could be found.')
         orderable = False
