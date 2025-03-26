@@ -167,16 +167,12 @@ class TestCreatePathologyView:
         api_client.force_login(interface_engine_user)
 
         valid_data.update({'receiving_facility': ''})
-        response = api_client.post(
-            reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
-            data=valid_data,
-            format='json',
-        )
-
-        assertRaisesMessage(
-            expected_exception=Site.DoesNotExist,
-            expected_message='Site matching query does not exist.',
-        )
+        with assertRaisesMessage(Site.DoesNotExist, 'Site matching query does not exist.'):
+            response = api_client.post(
+                reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
+                data=valid_data,
+                format='json',
+            )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert test_results_models.GeneralTest.objects.count() == 0
