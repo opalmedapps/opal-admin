@@ -16,6 +16,11 @@ python manage.py showmigrations
 If an error occurs during a migration, your database may end up in an in-between or conflicting state.
 If this occurs, follow the steps below to repair your database.
 
+Please note that while you're encouraged to fix errors in migration files that you've introduced,
+it's not good practice to go into the history and edit past migrations. If necessary, this should only be done with
+agreement from the team, and in a manner that does not cause the database structure to diverge on different developers'
+machines.
+
 !!! important
     The solutions below may cause you to lose data related to the migration that failed. For example, if your failing
     migration added a field `date_of_birth`, reverting and re-migrating will cause you to lose any values entered in
