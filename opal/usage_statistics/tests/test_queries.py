@@ -15,7 +15,7 @@ from opal.usage_statistics import factories as stats_factories
 from opal.usage_statistics import models as stats_models
 from opal.usage_statistics import queries as stats_queries
 
-pytestmark = pytest.mark.django_db(databases=['default'])
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
 def test_empty_fetch_registration_summary() -> None:
@@ -2697,6 +2697,272 @@ def test_fetch_received_questionnaires_summary_by_year() -> None:
             'year': dt.date(2022, 1, 1),
         },
     ]
+
+
+def test_fetch_users_latest_login_year_summary_empty() -> None:
+    """Ensure fetch_users_latest_login_year_summary successfully fetches an empty data result without errors."""
+    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary()
+    assert not user_last_login_year_summary
+
+
+def test_fetch_users_latest_login_year_summary_success() -> None:
+    """Ensure fetch_users_latest_login_year_summary successfully fetches latest login statistics."""
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=3,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        last_login=dt.datetime(2023, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2023, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary()
+    assert len(user_last_login_year_summary) == 2
+    assert user_last_login_year_summary[2023] == 1
+    assert user_last_login_year_summary[2024] == 2
+
+
+def test_fetch_users_latest_login_year_summary_user_multiple_records() -> None:
+    """Ensure fetch_users_latest_login_year_summary successfully fetches latest login statistics.
+
+    The test user are same and has records in different years.
+    """
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2022, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=3,
+        action_date=dt.datetime(2022, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2023, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2023, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary()
+    assert len(user_last_login_year_summary) == 1
+    assert user_last_login_year_summary[2024] == 1
+
+
+def test_fetch_users_latest_login_year_summary_multiple_annual_records() -> None:
+    """Ensure fetch_users_latest_login_year_summary successfully fetches statistics.
+
+    The test users are different and have records in the same year.
+    """
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=3,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary()
+    assert len(user_last_login_year_summary) == 1
+    assert user_last_login_year_summary[2024] == 3
+
+
+def test_fetch_labs_summary_per_patient_empty() -> None:
+    """Ensure fetch_labs_summary_per_patient successfully fetches an empty result without errors."""
+    patient_lab_summary = stats_queries.fetch_labs_summary_per_patient()
+    assert not patient_lab_summary
+
+
+def test_fetch_labs_summary_per_patient_success() -> None:
+    """Ensure fetch_labs_summary_per_patient successfully fetches labs statistics per patient."""
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=55, ramq='TEST01161976'),
+        last_lab_received=None,
+        labs_received=0,
+        action_date=dt.date(2024, 8, 10),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=56, ramq='TEST01161977'),
+        last_lab_received=dt.datetime(2024, 8, 1, 10, 10, 10).astimezone(),
+        labs_received=3,
+        action_date=dt.date(2024, 8, 1),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=56, ramq='TEST01161977'),
+        last_lab_received=dt.datetime(2024, 8, 2, 10, 10, 10).astimezone(),
+        labs_received=5,
+        action_date=dt.date(2024, 8, 2),
+    )
+    stats_factories.DailyPatientDataReceived(
+        patient=patient_factories.Patient(legacy_id=56, ramq='TEST01161977'),
+        last_lab_received=dt.datetime(2024, 8, 10, 10, 10, 10).astimezone(),
+        labs_received=10,
+        action_date=dt.date(2024, 8, 10),
+    )
+    patient_lab_summary = stats_queries.fetch_labs_summary_per_patient()
+    assert patient_lab_summary == [
+        {
+            'patient_ser_num': 55,
+            'patient__legacy_id': 55,
+            'first_lab_received': None,
+            'last_lab_received': None,
+            'total_labs_received': 0,
+        },
+        {
+            'patient_ser_num': 56,
+            'patient__legacy_id': 56,
+            'first_lab_received': dt.datetime(2024, 8, 1, 14, 10, 10, tzinfo=dt.timezone.utc),
+            'last_lab_received': dt.datetime(2024, 8, 10, 14, 10, 10, tzinfo=dt.timezone.utc),
+            'total_labs_received': 18,
+        },
+    ]
+
+
+def test_fetch_logins_summary_per_user_empty() -> None:
+    """Ensure fetch_logins_summary_per_user successfully fetches an empty result without errors."""
+    average_login_summary = stats_queries.fetch_logins_summary_per_user()
+    assert not average_login_summary
+
+
+def test_fetch_logins_summary_per_user_success() -> None:
+    """Ensure fetch_logins_summary_per_user successfully fetches individual login statistics."""
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    homer_caregiver = caregiver_factories.CaregiverProfile(user__username='homer', legacy_id=2)
+    bart_caregiver = caregiver_factories.CaregiverProfile(user__username='bart', legacy_id=3)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=3,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=homer_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=bart_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    average_login_report = stats_queries.fetch_logins_summary_per_user()
+    assert average_login_report == [
+        {
+            'user_id': marge_caregiver.user.id,
+            'total_logged_in_days': 1,
+            'total_logins': 3,
+            'avg_logins_per_day': 3,
+        },
+        {
+            'user_id': homer_caregiver.user.id,
+            'total_logged_in_days': 1,
+            'total_logins': 5,
+            'avg_logins_per_day': 5,
+        },
+        {
+            'user_id': bart_caregiver.user.id,
+            'total_logged_in_days': 1,
+            'total_logins': 5,
+            'avg_logins_per_day': 5,
+        },
+    ]
+
+
+def test_fetch_logins_summary_per_user_multiple_logins() -> None:
+    """Ensure fetch_logins_summary_per_user successfully fetches login statistics.
+
+    The test user has multiple logins in different days.
+    """
+    marge_caregiver = caregiver_factories.CaregiverProfile(user__username='marge', legacy_id=1)
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=2,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=marge_caregiver.user,
+        last_login=dt.datetime(2024, 8, 20, 10, 10, 10).astimezone(),
+        count_logins=5,
+        action_date=dt.datetime(2024, 8, 20),
+    )
+    average_login_summary = stats_queries.fetch_logins_summary_per_user()
+    assert average_login_summary == [
+        {
+            'user_id': marge_caregiver.user.id,
+            'total_logged_in_days': 3,
+            'total_logins': 12,
+            'avg_logins_per_day': 4,
+        },
+    ]
+
+
+def test_fetch_patient_demographic_diagnosis_summary_empty() -> None:
+    """Ensure fetch_patient_demographic_diagnosis_summary successfully fetches an empty result without errors."""
+    demographic_diagnosis_summary = stats_queries.fetch_patient_demographic_diagnosis_summary()
+    assert not demographic_diagnosis_summary
+
+
+def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
+    """Ensure fetch_patient_demographic_diagnosis_summary successfully fetches the no empty statistics."""
+    django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+    legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+    legacy_factories.LegacyPatientControlFactory(
+        patient=legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id),
+    )
+    legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_pat1, hospital__code='RVH', mrn=1234567)
+    django_pat2 = patient_factories.Patient(ramq='SIMM12345679', legacy_id=52)
+    legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+    legacy_factories.LegacyPatientControlFactory(
+        patient=legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id),
+    )
+    legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_pat2, hospital__code='MGH', mrn=1234566)
+    # Create a dummy patient to ensure it is not included in the report
+    legacy_factories.LegacyPatientFactory(patientsernum=53)
+    legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1, description_en='Test Diagnosis1')
+    legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1, description_en='Test Diagnosis2')
+    legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat2, description_en='Test Diagnosis3')
+    demographic_diagnosis_summary = stats_queries.fetch_patient_demographic_diagnosis_summary()
+    assert len(demographic_diagnosis_summary) == 2
+    assert demographic_diagnosis_summary[0]['patient_ser_num'] == 51
+    assert demographic_diagnosis_summary[1]['patient_ser_num'] == 52
+    assert demographic_diagnosis_summary[0]['latest_diagnosis_description'] == 'Test Diagnosis2'
+    assert demographic_diagnosis_summary[1]['latest_diagnosis_description'] == 'Test Diagnosis3'
 
 
 def _create_relationship_records() -> dict[str, Any]:
