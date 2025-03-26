@@ -398,7 +398,7 @@ def test_userviewset_set_manager_wrong_user_action_fail(api_client: APIClient, a
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert str(response.data['detail']) == 'Not found.'
+    assert str(response.data['detail']) == 'No ClinicalStaff matches the given query.'
 
 
 def test_userviewset_unset_manager_wrong_user_action_fail(api_client: APIClient, admin_user: User) -> None:
@@ -415,7 +415,7 @@ def test_userviewset_unset_manager_wrong_user_action_fail(api_client: APIClient,
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert str(response.data['detail']) == 'Not found.'
+    assert str(response.data['detail']) == 'No ClinicalStaff matches the given query.'
 
 
 def test_userviewset_set_manager_no_group_action_fail(api_client: APIClient, admin_user: User) -> None:
@@ -481,7 +481,7 @@ def test_api_deactivate_user_action_fail(api_client: APIClient, admin_user: User
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.data['detail'] == 'Not found.'
+    assert response.data['detail'] == 'No ClinicalStaff matches the given query.'
 
 
 def test_api_reactivate_user_action_pass(api_client: APIClient, admin_user: User) -> None:
@@ -513,4 +513,4 @@ def test_api_reactivate_user_action_fail(api_client: APIClient, admin_user: User
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.data['detail'] == 'Not found.'
+    assert response.data['detail'] == 'No ClinicalStaff matches the given query.'

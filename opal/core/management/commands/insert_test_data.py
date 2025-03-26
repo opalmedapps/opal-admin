@@ -146,11 +146,14 @@ MRN_DATA = MappingProxyType({
         'Marge Simpson': [('RVH', '9999996')],
         'Homer Simpson': [
             ('RVH', '9999997'),
-            ('MGH', '9999996'),
+            ('MGH', '9999998'),
         ],
         'Bart Simpson': [('MCH', '9999996')],
         'Lisa Simpson': [('MCH', '9999993')],
-        'Mona Simpson': [('RVH', '9999993')],
+        'Mona Simpson': [
+            ('RVH', '9999993'),
+            ('MCH', '5407383'),
+        ],
         'Fred Flintstone': [('RVH', '9999998')],
         'Pebbles Flintstone': [('MCH', '9999999')],
     },

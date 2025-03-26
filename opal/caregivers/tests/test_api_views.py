@@ -623,7 +623,7 @@ class TestVerifyEmailCodeView:
         assert response.status_code == HTTPStatus.NOT_FOUND
         assert response.data == {
             'detail': ErrorDetail(
-                string='Not found.',
+                string='No EmailVerification matches the given query.',
                 code='not_found',
             ),
         }
@@ -798,7 +798,7 @@ class TestVerifyEmailView:
         assert response.status_code == HTTPStatus.NOT_FOUND
         assert response.data == {
             'detail': ErrorDetail(
-                string='Not found.',
+                string='No RegistrationCode matches the given query.',
                 code='not_found',
             ),
         }
@@ -824,7 +824,7 @@ class TestVerifyEmailView:
         assert response.status_code == HTTPStatus.NOT_FOUND
         assert response.data == {
             'detail': ErrorDetail(
-                string='Not found.',
+                string='No RegistrationCode matches the given query.',
                 code='not_found',
             ),
         }
