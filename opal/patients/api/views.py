@@ -86,7 +86,6 @@ class RegistrationCompletionView(APIView):
         serializer.is_valid(raise_exception=True)
         register_data = serializer.validated_data
 
-        # update registration code status
         registration_code = get_and_update_registration_code(code)
 
         try:  # noqa: WPS229

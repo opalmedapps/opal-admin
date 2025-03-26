@@ -9,13 +9,13 @@ from .models import Patient
 
 def get_and_update_registration_code(code: str) -> caregiver_models.RegistrationCode:
     """
-    Get and update RegistrationCode object.
+    Get and update RegistrationCode status from NEW to REGISTERED.
 
     Args:
-        code (str): registration code.
+        code: registration code.
 
     Returns:
-        the object of model RegistrationCode, None if not exists
+        the object of model RegistrationCode
     """
     registration_code = caregiver_models.RegistrationCode.objects.select_related(
         'relationship__patient',
