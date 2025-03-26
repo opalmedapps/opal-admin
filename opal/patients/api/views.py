@@ -80,7 +80,9 @@ class RegistrationRegisterView(APIView):
             partial=True,
         )
         request_serializer.is_valid(raise_exception=True)
-        register_data = request_serializer.data
+        register_data = request_serializer.validated_data
+
+        print(register_data)
 
         # update registration code status
         registration_code = None
@@ -90,17 +92,17 @@ class RegistrationRegisterView(APIView):
             db_error = 'Registration code is invalid.'
 
         # update patient legacy_id
-        if not db_error:
+        if registration_code:
             db_error = self._update_patient_legacy_id(
                 registration_code.relationship.patient,
-                register_data['patient']['legacy_id'],
+                register_data['relationship']['patient']['legacy_id'],
             )
 
         # update caregiver
         if not db_error:
             db_error = self._update_caregiver(
                 registration_code.relationship.caregiver.user,
-                register_data['caregiver'],
+                register_data['relationship']['caregiver'],
             )
 
         # insert related security answers
@@ -167,9 +169,8 @@ class RegistrationRegisterView(APIView):
         Returns:
             The error message string if there is an exception, otherwise return None
         """
-        user.language = info['language']
-        user.phone_number = info['phone_number']
-        user.email = info['email']
+        user.language = info['user']['language']
+        user.phone_number = info['user']['phone_number']
         user.date_joined = timezone.now()
         user.is_active = True
         db_error = ''

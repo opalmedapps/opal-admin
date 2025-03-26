@@ -108,7 +108,6 @@ class TestApiRegistrationRegister:
             'caregiver': {
                 'language': 'fr',
                 'phone_number': '+15141112222',
-                'email': 'aaa@aaa.com',
             },
             'security_answers': [
                 {
@@ -156,7 +155,6 @@ class TestApiRegistrationRegister:
             'caregiver': {
                 'language': 'fr',
                 'phone_number': '+15141112222',
-                'email': 'aaa@aaa.com',
             },
             'security_answers': [
                 {
@@ -187,7 +185,7 @@ class TestApiRegistrationRegister:
         }
 
     def test_registered_registration_code(self, api_client: APIClient, admin_user: AbstractUser) -> None:
-        """Test non-existent registration code."""
+        """Test registered registration code."""
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
         patient = Patient()
@@ -205,7 +203,6 @@ class TestApiRegistrationRegister:
             'caregiver': {
                 'language': 'fr',
                 'phone_number': '+15141112222',
-                'email': 'aaa@aaa.com',
             },
             'security_answers': [
                 {
@@ -250,7 +247,6 @@ class TestApiRegistrationRegister:
             'caregiver': {
                 'language': 'fr',
                 'phone_number': '+15141112222',
-                'email': 'aaaaaaaaa',
             },
             'security_answers': [
                 {
@@ -282,7 +278,7 @@ class TestApiRegistrationRegister:
             'patient': {'legacy_id': ['Ensure this value is greater than or equal to 1.']},
         }
 
-    def test_register_with_invalid_email(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+    def test_register_with_invalid_phone(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test api registration register success."""
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
@@ -297,8 +293,7 @@ class TestApiRegistrationRegister:
             },
             'caregiver': {
                 'language': 'fr',
-                'phone_number': '+15141112222',
-                'email': 'aaaaaaaaa',
+                'phone_number': '1234567890',
             },
             'security_answers': [
                 {
@@ -327,5 +322,5 @@ class TestApiRegistrationRegister:
         assert registration_code.status == RegistrationCodeStatus.NEW
         assert not security_answers
         assert response.json() == {
-            'detail': "({'email': [ValidationError(['Enter a valid email address.'])]}, None, None)",
+            'detail': "({'phone_number': [ValidationError(['Enter a valid value.'])]}, None, None)",
         }

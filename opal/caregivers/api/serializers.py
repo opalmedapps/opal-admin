@@ -119,7 +119,6 @@ class CaregiverSerializer(DynamicFieldsSerializer):
 
     language = serializers.CharField(source='user.language')
     phone_number = serializers.CharField(source='user.phone_number')
-    email = serializers.CharField(source='user.email')
 
     class Meta:
         model = CaregiverProfile
@@ -128,7 +127,6 @@ class CaregiverSerializer(DynamicFieldsSerializer):
             'uuid',
             'language',
             'phone_number',
-            'email',
         ]
 
 
@@ -146,7 +144,7 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer):
 
     caregiver = CaregiverSerializer(
         source='relationship.caregiver',
-        fields=('language', 'email', 'phone_number'),
+        fields=('language', 'phone_number'),
         many=False,
     )
     security_answers = SecurityAnswerSerializer(
