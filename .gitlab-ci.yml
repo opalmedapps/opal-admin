@@ -81,7 +81,7 @@ flake8:
     # don't fail if there are errors so the result can also be printed to the console for logs
     # - flake8 --format gl-codeclimate --output-file gl-code-quality-report.json || true
     # try to fix relative path to see if it shows up in the diff now
-    - flake8 --format gl-codeclimate | python -c "import sys; import json; lines = [line.replace('./', '') for line in sys.stdin];" > gl-code-quality-report.json
+    - flake8 --format gl-codeclimate | python -c "import sys; import json; lines = [line.replace('./', '') for line in sys.stdin];" print(json.dumps(json.loads('\n'.join(lines)), indent='\t'));> gl-code-quality-report.json
     # - flake8 --format gl-codeclimate | python -c "import sys; import json; lines = [line.replace('\"path\": \"./', '\"path\": \"') for line in sys.stdin]; print(json.dumps(json.loads('\n'.join(lines)), indent='\t'));"
     - flake8
   artifacts:
