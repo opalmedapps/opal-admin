@@ -68,7 +68,7 @@ def insert_security_answers(
     caregiver_models.SecurityAnswer.objects.bulk_create(answers)
 
 
-def search_valid_relationship_types(date_of_birth: date) -> List[Dict[str, Any]]:
+def search_valid_relationship_types(date_of_birth: date) -> list[dict[str, Any]]:
     """
     Search for valid relationship types according to the patient's age.
 
