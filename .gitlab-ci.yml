@@ -34,7 +34,7 @@ before_script:
   - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
   - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=OpalDB/" .env
   - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
-  - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
+  - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=foo/" .env
   # generate secret key
   - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
   - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
