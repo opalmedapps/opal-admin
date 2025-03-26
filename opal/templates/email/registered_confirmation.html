@@ -1,0 +1,12 @@
+{% load i18n %}
+
+<body>
+  <p>{% translate "Dear" %} {{first_name}} {{last_name}},</p>
+  <p>{% translate "Welcome to Opal" %}!</p>
+  <p>{% translate "Thank you for deciding to create an account with us" %}.</p>
+  <p>{% translate "If you are not trying to create an Opal account using this email address, you can safely disregard this email" %}.</p>
+  <p>{% translate "To verify your email address, please enter the code below on the verification page" %}:</p>
+  <p>{% translate "This code will expire in 10 minutes. Once the code has expired, you will need to request a new verification code to continue the registration process" %}.</p>
+  <p>{% translate "Yours" %},</p>
+  <p><b><a href='https://opalmedapps.com/' alt='Link to the Opal website' target='_blank' alt='Opal'>{% translate "The Opal team" %}</a></b><p>
+</body>
