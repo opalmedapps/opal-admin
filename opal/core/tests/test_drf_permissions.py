@@ -1,13 +1,13 @@
-from http import HTTPStatus
 from typing import Any, Optional
 
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest
 from django.test import RequestFactory
 from django.utils import timezone
 
 import pytest
 from rest_framework import exceptions, generics
-from rest_framework.serializers import ModelSerializer
+from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from opal.caregivers import factories as caregiver_factories
@@ -187,19 +187,10 @@ class TestCaregiverSelfPermissions:
         self.view = APIView()
 
 
-class _UserSerializer(ModelSerializer):
-    """Serializer for User model."""
-
-    class Meta:
-        model = User
-        fields = ['username']
-
-
 class _ModelView(generics.ListAPIView):
     model = User
     queryset = User.objects.none()
     permission_classes = [FullDjangoModelPermissions]
-    serializer_class = _UserSerializer
 
 
 class TestFullDjangoModelPermissions:
@@ -210,28 +201,26 @@ class TestFullDjangoModelPermissions:
     @pytest.mark.parametrize('method', methods)
     def test_unauthenticated(self, method: str) -> None:
         """Test that an unauthenticated request is rejected."""
-        request = RequestFactory().generic(method, '/')
+        view = _ModelView()
+        request = Request(RequestFactory().generic(method, '/'))
+        request.user = AnonymousUser()
 
-        response = _ModelView.as_view()(request)
-
-        assert response.status_code == HTTPStatus.FORBIDDEN
+        assert not FullDjangoModelPermissions().has_permission(request, view)
 
     @pytest.mark.parametrize('method', methods)
     def test_no_permission(self, method: str) -> None:
         """Test that a request with an authenticated user with no permission is rejected."""
-        request = RequestFactory().generic(method, '/')
+        view = _ModelView()
+        request = Request(RequestFactory().generic(method, '/'))
         request.user = User.objects.create(username='testuser')
 
-        response = _ModelView.as_view()(request)
+        assert not FullDjangoModelPermissions().has_permission(request, view)
 
-        assert response.status_code == HTTPStatus.FORBIDDEN
-
-    @pytest.mark.parametrize('method', ['get', 'head', 'options'])
+    @pytest.mark.parametrize('method', methods)
     def test_with_permission(self, method: str) -> None:
         """Test that a request with user with the required permission (or a superuser) succeeds."""
-        request = RequestFactory().generic(method, '/')
+        view = _ModelView()
+        request = Request(RequestFactory().generic(method, '/'))
         request.user = User.objects.create(username='testuser', is_superuser=True)
 
-        response = _ModelView.as_view()(request)
-
-        assert response.status_code == HTTPStatus.OK
+        assert FullDjangoModelPermissions().has_permission(request, view)
