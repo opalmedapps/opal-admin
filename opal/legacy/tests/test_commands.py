@@ -275,8 +275,8 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         assert 'Patient identifier legacy_id: 99, mrn:9999996 already exists, skipping\n' in message
         assert 'Number of imported patients is: 0\n' in message
 
-    def test_import_pass_multiple_patientidentifiers(self) -> None:
-        """Test import fail for patient and pass multiple patient identifier."""
+    def test_import_failure_multiple_mrns_at_same_site(self) -> None:
+        """Test import fail for patient with multiple MRNs at the same site."""
         legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=10)
         patient_factories.Patient(legacy_id=10)
         code = legacy_factories.LegacyHospitalIdentifierTypeFactory(code='TEST')
@@ -293,10 +293,14 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         hospital_settings_factories.Site(code='TEST')
 
         message, error = self._call_command('migrate_patients')
+
         assert 'Patient with legacy_id: 10 already exists, skipping\n' in message
         assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999996\n' in message
-        assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999997\n' in message
         assert 'Number of imported patients is: 0\n' in message
+        assert error == (
+            'Cannot import patient hospital identifier for patient (ID: 10, MRN: 9999997),'
+            + ' already has an MRN at the same site (TEST)\n'
+        )
 
 
 class TestUsersCaregiversMigration(CommandTestMixin):
