@@ -257,3 +257,16 @@ def test_patient_pathology_create_defined(settings: SettingsWrapper) -> None:
     )
     assert reverse('api:patient-pathology-create', kwargs={'uuid': patient_uuid}) == url_path
     assert resolve(url_path).view_name == 'api:patient-pathology-create'
+
+
+def test_user_caregiver_update(settings: SettingsWrapper) -> None:
+    """Ensure that the endpoint for users/caregivers/<username> is defined."""
+    url_path = '/{api_root}/users/caregivers/{username}/'.format(
+        api_root=settings.API_ROOT,
+        username='username',
+    )
+    assert reverse(
+        'api:users-caregivers',
+        kwargs={'username': 'username'},
+    ) == url_path
+    assert resolve(url_path).view_name == 'api:users-caregivers'
