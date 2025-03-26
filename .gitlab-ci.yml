@@ -362,3 +362,4 @@ gemnasium-python-dependency_scanning:
     - pip install --upgrade pip
     - pip install -r requirements/development.txt
     - pip install -r requirements/production.txt
+    - deactivate
