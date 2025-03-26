@@ -27,11 +27,11 @@ class RetrieveInstitutionView(generics.RetrieveAPIView):
             APIException: if there is more than one institution
         """
         try:
-            obj: Institution = generics.get_object_or_404(self.get_queryset())
+            institution: Institution = generics.get_object_or_404(self.get_queryset())
         except Institution.MultipleObjectsReturned:
             raise exceptions.APIException('There is more than one institution')
 
         # May raise a permission denied
-        self.check_object_permissions(self.request, obj)
+        self.check_object_permissions(self.request, institution)
 
-        return obj
+        return institution
