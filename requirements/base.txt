@@ -25,7 +25,7 @@ slippers==0.5.0  # https://github.com/mixxorz/slippers
 #
 # NOTE! we use release candidate version since it fixes the SSL issue/bug
 # TODO: Use mysqlclient=2.2.0 once released
-mysqlclient==2.2.0rc1 # https://github.com/PyMySQL/mysqlclient
+mysqlclient==2.2.0 # https://github.com/PyMySQL/mysqlclient
 
 # Other
 #
