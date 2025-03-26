@@ -2,7 +2,7 @@
 DROP TABLE IF EXISTS `tempAnswerDetails`;
 CREATE TEMPORARY TABLE tempAnswerDetails(
 	SELECT
-		AQ.ID AS answer_questionnaire_ser_num,
+		AQ.ID AS answer_questionnaire_id,
 	   AQ.creationDate AS creation_date,
 		qstnr.ID as questionnaire_id,
 	   getDisplayName(qstnr.title, 2) AS questionnaire_title,
