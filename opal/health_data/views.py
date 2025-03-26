@@ -109,6 +109,7 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
                 title=title,
                 xaxis={'title': xlab},
                 yaxis={'title': ylab},
+                legend={'title': 'Device'},
             )
 
             # Graph objects are instances of the automatically generated hierarchy of python classes in Plotly
