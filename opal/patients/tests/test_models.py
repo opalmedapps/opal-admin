@@ -192,5 +192,5 @@ def test_hospitalpatient_one_patient_many_sites() -> None:
     hospitalpatients = HospitalPatient.objects.all()
     assert len(hospitalpatients) == 2
 
-    with assertRaisesMessage(BaseException, 'Duplicate entry'):
+    with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
         HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
