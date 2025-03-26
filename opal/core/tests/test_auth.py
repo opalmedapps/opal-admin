@@ -143,7 +143,40 @@ def test_authenticate_wrong_credentials(mocker: MockerFixture) -> None:
 
 
 @pytest.mark.django_db()
+def test_create_user() -> None:
+    """Ensure the create_user function creates a new user."""
+    user = auth_backend._create_user('johnwayne', UserData(
+        'john.wayne@example.com',
+        'John',
+        'Wayne',
+    ))
+
+    assert UserModel.objects.count() == 1
+    db_user = UserModel.objects.get()
+    assert db_user == user
+    assert user.username == 'johnwayne'
+    assert user.email == 'john.wayne@example.com'
+    assert user.first_name == 'John'
+    assert user.last_name == 'Wayne'
+    assert user.type == UserModel.UserType.CLINICAL_STAFF
+    assert not user.has_usable_password()
+
+
+@pytest.mark.django_db()
 def test_authenticate_user_does_not_exist(mocker: MockerFixture) -> None:
+    """Ensure authentication fails if the user does not exist."""
+    # mock authentication and pretend it was successful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = UserData('user@example.com', 'First', 'Last')
+
+    user = auth_backend.authenticate(None, 'testuser', 'testpass')
+
+    assert user is None
+
+
+@pytest.mark.xfail(reason="Disabled automatic creation of user if they don't exist yet")
+@pytest.mark.django_db()
+def test_authenticate_user_does_not_exist_new_user_created(mocker: MockerFixture) -> None:
     """Ensure a user instance is created if the user authenticates for the first time."""
     # mock authentication and pretend it was successful
     mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
@@ -160,6 +193,7 @@ def test_authenticate_user_does_not_exist(mocker: MockerFixture) -> None:
     assert UserModel.objects.get(username='testuser').pk == user.pk
 
 
+@pytest.mark.xfail(reason="Disabled automatic creation of user if they don't exist yet")
 @pytest.mark.django_db()
 def test_authenticate_new_user_clinical_staff(mocker: MockerFixture) -> None:
     """Ensure a user instance is created with the user type `CLINICAL_STAFF`."""
@@ -173,6 +207,7 @@ def test_authenticate_new_user_clinical_staff(mocker: MockerFixture) -> None:
     assert user.type == UserModel.UserType.CLINICAL_STAFF
 
 
+@pytest.mark.xfail(reason="Disabled automatic creation of user if they don't exist yet")
 @pytest.mark.django_db()
 def test_authenticate_new_user_unusable_password(mocker: MockerFixture) -> None:
     """Ensure a user instance is created with an unusable password."""
@@ -217,6 +252,7 @@ def test_authenticate_user_already_exists_updated_data(mocker: MockerFixture) ->
     assert authenticated_user.last_name == 'Last'
 
 
+@pytest.mark.xfail(reason="Disabled automatic creation of user if they don't exist yet")
 @pytest.mark.django_db()
 def test_authenticate_integration(mocker: MockerFixture) -> None:
     """Authenticate should return new user if fed auth is successful."""
@@ -229,6 +265,7 @@ def test_authenticate_integration(mocker: MockerFixture) -> None:
     assert authenticated_user.username == 'testuser'
 
 
+@pytest.mark.xfail(reason="Disabled automatic creation of user if they don't exist yet")
 @pytest.mark.django_db()
 def test_authenticate_integration_incomplete_data(mocker: MockerFixture) -> None:
     """A missing email in the response should still authenticate the user."""

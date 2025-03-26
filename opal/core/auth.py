@@ -60,27 +60,16 @@ class FedAuthBackend(BaseBackend):
             user_data = self._authenticate_fedauth(username, password)
 
             if user_data:
-                # Look up existing user or create new user if it is the first time.
-                try:
-                    user: User = UserModel.objects.get(username=username)
-                except UserModel.DoesNotExist:
-                    user = UserModel(username=username)
+                # Look up existing user and update any fields if necessary.
+                # Note that new user creation was disabled
+                user = UserModel.objects.filter(username=username).first()
 
-                    user.email = user_data.email
-                    user.first_name = user_data.first_name
-                    user.last_name = user_data.last_name
-                    # There's no need to set a password since it is stored in ADFS.
-                    # Mark it as unusable:
-                    # https://docs.djangoproject.com/en/dev/ref/contrib/auth/#django.contrib.auth.models.User.set_unusable_password
-                    user.set_unusable_password()
-
-                    user.save()
-                else:
+                if user:
                     # augment user data if it is not present with data from ADFS
                     # required for users added via the legacy OpalAdmin which doesn't capture email, first and last name
                     self._update_user(user, user_data)
 
-                return user
+                    return user
 
         return None
 
@@ -157,6 +146,30 @@ class FedAuthBackend(BaseBackend):
                 return UserData(email, first_name, last_name)
 
         return None
+
+    def _create_user(self, username: str, user_data: UserData) -> User:
+        """
+        Create a new user.
+
+        Args:
+            username: the ADFS username of the user
+            user_data: the user data received from the ADFS
+
+        Returns:
+            the new `User` instance
+        """
+        user = UserModel(username=username)
+
+        user.email = user_data.email
+        user.first_name = user_data.first_name
+        user.last_name = user_data.last_name
+        # There's no need to set a password since it is stored in ADFS.
+        # Mark it as unusable:
+        # https://docs.djangoproject.com/en/dev/ref/contrib/auth/#django.contrib.auth.models.User.set_unusable_password
+        user.set_unusable_password()
+
+        user.save()
+        return user
 
     def _update_user(self, user: User, user_data: UserData) -> None:
         """
