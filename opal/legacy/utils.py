@@ -590,7 +590,7 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[Question]:
 
         answers = que.get('values') or []
         if not isinstance(answers, list):
-            raise DataFetchError(f"Invalid 'values' format for question: {que}")
+            raise DataFetchError(f"Invalid type for 'answers' {type(answers)} for question: {question}")
 
         questions.append(
             Question(
