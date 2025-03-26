@@ -390,6 +390,9 @@ def initialize_new_opal_patient(mrn_list: list[tuple[Site, str, bool]], patient_
         mrn_list: A list of (site, mrn, is_active) tuples representing the patient's MRNs.
         patient_uuid: The new patient's Patient UUID.
     """
+    # Initialize the patient's data in the legacy database
+    # TODO
+
     # Call ORMS to notify it of the existence of the new patient
     active_mrn_list = [(site.code, mrn) for site, mrn, is_active in mrn_list if is_active]
     orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
