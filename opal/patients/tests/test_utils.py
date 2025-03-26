@@ -291,45 +291,45 @@ def test_get_patient_by_ramq_in_success() -> None:
     """Get the patient instance by RAMQ in success."""
     ramq = 'MARG99991313'
     mrn = '9999993'
-    site_code = 'MGH'
+    site_acronym = 'MGH'
 
     patient = patient_factories.Patient(ramq=ramq)
 
-    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) == patient
+    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_acronym) == patient
 
 
 def test_get_patient_by_ramq_in_failed() -> None:
     """Get the patient instance by RAMQ in failed."""
     ramq = 'MARG99991313'
     mrn = '9999993'
-    site_code = 'MGH'
+    site_acronym = 'MGH'
     patient_factories.Patient(ramq='')
 
-    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) is None
+    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_acronym) is None
 
 
 def test_get_patient_by_mrn_in_success() -> None:
-    """Get the patient instance by MRN and site code in success."""
+    """Get the patient instance by MRN and site acronym in success."""
     ramq = ''
     mrn = '9999993'
-    site_code = 'MGH'
+    site_acronym = 'MGH'
     patient = patient_factories.Patient()
-    site = Site(code=site_code)
+    site = Site(acronym=site_acronym)
     patient_factories.HospitalPatient(patient=patient, site=site, mrn=mrn)
 
-    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) == patient
+    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_acronym) == patient
 
 
 def test_get_patient_by_mrn_in_failed() -> None:
-    """Get the patient instance by MRN and site code in failed."""
+    """Get the patient instance by MRN and site acronym in failed."""
     ramq = ''
     mrn = '9999993'
-    site_code = 'MGH'
+    site_acronym = 'MGH'
     patient = patient_factories.Patient()
-    site = Site(code=site_code)
+    site = Site(acronym=site_acronym)
     patient_factories.HospitalPatient(patient=patient, site=site, mrn='9999996')
 
-    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) is None
+    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_acronym) is None
 
 
 def test_create_patient() -> None:
@@ -525,7 +525,7 @@ def test_initialize_new_opal_patient_orms_success(mocker: MockerFixture) -> None
     RequestMockerTest.mock_requests_post(mocker, {'status': 'Success'})
     mock_error_logger = mocker.patch('logging.Logger.info')
 
-    rvh_site: hospital_models.Site = Site(code='RVH')
+    rvh_site: hospital_models.Site = Site(acronym='RVH')
     LegacyHospitalIdentifierType(code='RVH')
     mrn_list = [(rvh_site, '9999993', True)]
     patient = patient_factories.Patient()
@@ -542,7 +542,7 @@ def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
     RequestMockerTest.mock_requests_post(mocker, {'status': 'Error'})
     mock_error_logger = mocker.patch('logging.Logger.error')
 
-    rvh_site: hospital_models.Site = Site(code='RVH')
+    rvh_site: hospital_models.Site = Site(acronym='RVH')
     LegacyHospitalIdentifierType(code='RVH')
     mrn_list = [(rvh_site, '9999993', True)]
     patient = patient_factories.Patient()
@@ -557,7 +557,7 @@ def test_initialize_new_opal_patient_oie_success(mocker: MockerFixture) -> None:
     RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
     mock_error_logger = mocker.patch('logging.Logger.info')
 
-    rvh_site: hospital_models.Site = Site(code='RVH')
+    rvh_site: hospital_models.Site = Site(acronym='RVH')
     LegacyHospitalIdentifierType(code='RVH')
     mrn_list = [(rvh_site, '9999993', True)]
     patient = patient_factories.Patient()
@@ -574,7 +574,7 @@ def test_initialize_new_opal_patient_oie_error(mocker: MockerFixture) -> None:
     RequestMockerTest.mock_requests_post(mocker, {'status': 'error'})
     mock_error_logger = mocker.patch('logging.Logger.error')
 
-    rvh_site: hospital_models.Site = Site(code='RVH')
+    rvh_site: hospital_models.Site = Site(acronym='RVH')
     LegacyHospitalIdentifierType(code='RVH')
     mrn_list = [(rvh_site, '9999993', True)]
     patient = patient_factories.Patient()
@@ -676,8 +676,8 @@ def test_create_access_request_new_patient_mrns_missing_site() -> None:
 def test_create_access_request_new_patient_mrns(mocker: MockerFixture) -> None:
     """A new relationship and patient are created along with associated hospital patient instances."""
     RequestMockerTest.mock_requests_post(mocker, {})
-    Site(code='RVH')
-    Site(code='MGH')
+    Site(acronym='RVH')
+    Site(acronym='MGH')
     LegacyHospitalIdentifierType(code='RVH')
     LegacyHospitalIdentifierType(code='MGH')
     caregiver_profile = CaregiverProfile()
@@ -803,8 +803,8 @@ def test_create_access_request_missing_legacy_id() -> None:
 def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type: RoleType) -> None:
     """Legacy data is saved when requesting access to a new patient for an existing caregiver (as self)."""
     RequestMockerTest.mock_requests_post(mocker, {})
-    Site(code='RVH')
-    Site(code='MGH')
+    Site(acronym='RVH')
+    Site(acronym='MGH')
     LegacyHospitalIdentifierType(code='RVH')
     LegacyHospitalIdentifierType(code='MGH')
     caregiver_profile = CaregiverProfile()

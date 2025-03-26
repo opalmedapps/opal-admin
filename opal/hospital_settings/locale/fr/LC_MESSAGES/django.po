@@ -40,10 +40,6 @@ msgid "Name"
 msgstr "Nom"
 
 #: opal/hospital_settings/models.py
-msgid "Code"
-msgstr "Code"
-
-#: opal/hospital_settings/models.py
 msgid "Terms of use"
 msgstr "Conditions d'utilisation"
 

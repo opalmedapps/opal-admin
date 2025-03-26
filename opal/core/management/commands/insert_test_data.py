@@ -506,7 +506,6 @@ def create_institution(institution_option: InstitutionOption) -> Institution:
     institution = Institution(
         name=data['name'],
         name_fr=data['name_fr'],
-        code=institution_option.value,
         acronym=institution_option.value,
         support_email=data['support_email'],
         terms_of_use=terms_of_use_en,
@@ -544,7 +543,7 @@ def _create_site(
     institution: Institution,
     name: str,
     name_fr: str,
-    code: str,
+    acronym: str,
     parking_urls: tuple[str, str],
     direction_urls: tuple[str, str],
     latitude: Decimal,
@@ -558,7 +557,7 @@ def _create_site(
         institution: the institution instance the site belongs to
         name: the English name of the site
         name_fr: the French name of the site
-        code: the code (acronym) of the institution
+        acronym: the acronym of the institution
         parking_urls: a tuple of URLs to the English and French parking information
         direction_urls: a tuple of URLs to the English and French direction to the hospital information
         latitude: the latitude of the GPS location of the site
@@ -572,7 +571,7 @@ def _create_site(
         institution=institution,
         name=name,
         name_fr=name_fr,
-        code=code,
+        acronym=acronym,
         parking_url=parking_urls[0],
         parking_url_fr=parking_urls[1],
         direction_url=direction_urls[0],

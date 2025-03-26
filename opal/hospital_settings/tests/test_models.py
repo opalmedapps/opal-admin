@@ -29,10 +29,10 @@ def test_institution_factory_multiple() -> None:
 
 def test_institution_code_unique() -> None:
     """The institution code needs to be unique."""
-    factories.Institution(code='MUHC')
+    factories.Institution(acronym='MUHC')
 
     with assertRaisesMessage(IntegrityError, "Duplicate entry 'MUHC'"):
-        factories.Institution(name='Another', code='MUHC')
+        factories.Institution(name='Another', acronym='MUHC')
 
 
 def test_institution_email_required() -> None:
@@ -67,7 +67,7 @@ def test_institution_string_method() -> None:
 def test_institution_ordered() -> None:
     """Ensure that the institutions are ordered by name."""
     factories.Institution(name='BTest Institution')
-    factories.Institution(name='ATest Institution', code='ATH')
+    factories.Institution(name='ATest Institution', acronym='ATH')
 
     first = Institution.objects.all()[0]
     assert first.name == 'ATest Institution'
@@ -150,12 +150,12 @@ def test_site_factory_multiple() -> None:
     assert site.institution == site2.institution
 
 
-def test_site_code_unique() -> None:
+def test_site_acronym_unique() -> None:
     """The institution name needs to be unique."""
-    factories.Site(code='MVP')
+    factories.Site(acronym='MVP')
 
     with assertRaisesMessage(IntegrityError, "Duplicate entry 'MVP'"):
-        factories.Site(code='MVP')
+        factories.Site(acronym='MVP')
 
 
 def test_site_string_method() -> None:

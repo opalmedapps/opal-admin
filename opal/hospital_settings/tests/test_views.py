@@ -195,7 +195,7 @@ def test_site_update_object_displayed(site_user: Client) -> None:
         name_fr='TEST1_FR',
         parking_url_en='http://127.0.0.1:8000/hospital-settings/site/1/fr',
         parking_url_fr='http://127.0.0.1:8000/hospital-settings/site/1/en',
-        code='TEST1',
+        acronym='TEST1',
         longitude=13.381969928741455,
         latitude=52.50479381812203,
     )

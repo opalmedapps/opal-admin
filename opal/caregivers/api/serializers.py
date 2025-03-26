@@ -169,7 +169,7 @@ class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
     )
     hospital_patients = HospitalPatientSerializer(
         source='relationship.patient.hospital_patients',
-        fields=('mrn', 'site_code'),
+        fields=('mrn', 'site_acronym'),
         many=True,
         read_only=True,
     )
@@ -267,7 +267,7 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer):
         Returns:
             code of the singleton institution
         """
-        return Institution.objects.get().code
+        return Institution.objects.get().acronym
 
     class Meta:
         model = Patient

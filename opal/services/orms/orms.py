@@ -33,7 +33,7 @@ class ORMSService:
         Tries calling ORMS using each of the patient's MRNs until one succeeds.
 
         Args:
-            active_mrn_list: a list of all active (site_code, mrn) tuples belonging to the patient
+            active_mrn_list: a list of all active (site_acronym, mrn) tuples belonging to the patient
             patient_uuid: the patient's UUID created and saved in Django
 
         Returns:
@@ -48,12 +48,12 @@ class ORMSService:
                 },
             )
 
-        for site_code, mrn in active_mrn_list:
+        for site_acronym, mrn in active_mrn_list:
             response_data = self.communication_manager.submit(
                 endpoint='/php/api/public/v2/patient/updateOpalStatus.php',
                 payload={
                     'mrn': mrn,
-                    'site': site_code,
+                    'site': site_acronym,
                     'opalStatus': 1,  # 1 => registered/active patient; 0 => unregistered/inactive patient
                     'opalUUID': str(patient_uuid),
                 },

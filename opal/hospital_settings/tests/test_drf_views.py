@@ -48,7 +48,7 @@ def test_api_institution(admin_api_client: APIClient) -> None:
 def test_api_institution_multiple_institutions(admin_api_client: APIClient) -> None:
     """Ensure that the singleton institution is returned."""
     factories.Institution()
-    factories.Institution(name='Test', code='TST')
+    factories.Institution(name='Test', acronym='TST')
 
     response = admin_api_client.get(reverse('api:institution-detail'))
 

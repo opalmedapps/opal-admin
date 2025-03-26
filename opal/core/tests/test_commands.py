@@ -31,7 +31,7 @@ class TestInsertTestData(CommandTestMixin):
         stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
 
         assert Institution.objects.count() == 1
-        assert Institution.objects.get().code == 'MUHC'
+        assert Institution.objects.get().acronym == 'MUHC'
         assert Site.objects.count() == 5
         assert Patient.objects.count() == 5
         assert HospitalPatient.objects.count() == 6
@@ -45,7 +45,7 @@ class TestInsertTestData(CommandTestMixin):
         stdout, _stderr = self._call_command('insert_test_data', 'CHUSJ')
 
         assert Institution.objects.count() == 1
-        assert Institution.objects.get().code == 'CHUSJ'
+        assert Institution.objects.get().acronym == 'CHUSJ'
         assert Site.objects.count() == 1
         assert Patient.objects.count() == 2
         assert HospitalPatient.objects.count() == 2

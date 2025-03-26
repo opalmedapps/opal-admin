@@ -663,7 +663,7 @@ class HospitalPatient(models.Model):
         Returns:
             the textual representation of this instance
         """
-        return '{site_code}: {mrn}'.format(
-            site_code=str(self.site.code),
+        return '{site_acronym}: {mrn}'.format(
+            site_acronym=str(self.site.acronym),
             mrn=str(self.mrn),
         )

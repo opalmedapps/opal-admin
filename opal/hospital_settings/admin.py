@@ -35,7 +35,7 @@ class InstitutionAdmin(TranslationAdmin, admin.ModelAdmin):
 class SiteAdmin(TranslationAdmin):
     """This class provides admin options for `Site`."""
 
-    list_display = ['__str__', 'code', 'institution']
+    list_display = ['__str__', 'acronym', 'institution']
 
 
 admin.site.register(Institution, InstitutionAdmin)

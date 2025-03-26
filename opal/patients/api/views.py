@@ -259,23 +259,23 @@ class PatientUpdateView(UpdateAPIView):
 
 
 class PatientExistsView(APIView):
-    """Class to return the Patient uuid & legacy_id given an input list of mrns and site codes.
+    """Class to return the Patient uuid & legacy_id given an input list of mrns and site acronyms.
 
     `get_patient_by_site_mrn_list` constructs a bitwise OR query comprised of each mrn+site pair for an efficient query.
 
     For example, for an input Mrn+Site list
     [
-    {"site_code": "RVH", "mrn": "9999996"},
-    {"site_code": "LAC", "mrn": "0765324"}
+    {"site_acronym": "RVH", "mrn": "9999996"},
+    {"site_acronym": "LAC", "mrn": "0765324"}
     ]
 
     We want to query the database using the condition:
 
     ```
     WHERE
-    (site__location.code = 'RVH' AND hospital_patient.mrn = '9999996')
+    (site__location.acronym = 'RVH' AND hospital_patient.mrn = '9999996')
     OR
-    (site__location.code = 'LAC' AND hospital_patient.mrn = '0765324')
+    (site__location.acronym = 'LAC' AND hospital_patient.mrn = '0765324')
     AND hospital_patient.is_active = True;
     ```
     """
@@ -297,7 +297,7 @@ class PatientExistsView(APIView):
         """
         # Make `is_active` not required for cases when OIE calling the API without knowing if Patient is active in Opal
         serializer = HospitalPatientSerializer(
-            fields=('mrn', 'site_code'),
+            fields=('mrn', 'site_acronym'),
             data=request.data,
             many=True,
         )

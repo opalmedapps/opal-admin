@@ -136,7 +136,7 @@ class PatientTable(tables.Table):
                 )
         else:
             mrn_site_list = [
-                f'{hospital_patient.site.code}: {hospital_patient.mrn}' for hospital_patient in value.all()
+                f'{hospital_patient.site.acronym}: {hospital_patient.mrn}' for hospital_patient in value.all()
             ]
 
         return ', '.join(str(mrn_value) for mrn_value in mrn_site_list)

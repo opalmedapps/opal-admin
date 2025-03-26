@@ -20,7 +20,7 @@ class SiteSerializer(serializers.HyperlinkedModelSerializer):
             'id',
             'url',
             'name',
-            'code',
+            'acronym',
             'direction_url',
             'parking_url',
             'longitude',

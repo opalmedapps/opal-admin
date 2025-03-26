@@ -56,14 +56,14 @@ class QuestionnairesReportView(views.APIView):
             patient = Patient.objects.get_patient_by_site_mrn_list(
                 [
                     {
-                        'site': {'code': serializer.validated_data.get('site')},
+                        'site': {'acronym': serializer.validated_data.get('site')},
                         'mrn': serializer.validated_data.get('mrn'),
                     },
                 ],
             )
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             return self._create_error_response(
-                'Could not find `Patient` record with the provided MRN and site code.',
+                'Could not find `Patient` record with the provided MRN and site acronym.',
             )
 
         # the language used in the current thread

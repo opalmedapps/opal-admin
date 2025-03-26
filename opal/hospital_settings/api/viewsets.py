@@ -38,14 +38,14 @@ class SiteViewSet(viewsets.ReadOnlyModelViewSet):
     This viewset provides an API view for `Site`.
 
     It uses the `SiteSerializer` to serialize a `Site`.
-    It allows to filter by site `code` where a comma-separated list of codes
-    can be provided for the `code__in` query parameter.
+    It allows to filter by site `acronym` where a comma-separated list of acronyms
+    can be provided for the `acronym__in` query parameter.
     """
 
     queryset = Site.objects.all()
     serializer_class = SiteSerializer
     # see: https://github.com/carltongibson/django-filter/issues/1076#issuecomment-489252242
     filterset_fields = {
-        'code': ['in'],
-        'institution__code': ['exact'],
+        'acronym': ['in'],
+        'institution__acronym': ['exact'],
     }

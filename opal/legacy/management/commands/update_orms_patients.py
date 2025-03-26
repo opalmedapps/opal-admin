@@ -53,7 +53,7 @@ class Command(BaseCommand):
                     },
                     json={
                         'mrn': hospital_patient.mrn,
-                        'site': hospital_patient.site.code,
+                        'site': hospital_patient.site.acronym,
                         'opalStatus': 1,  # Patient.OpalPatient field in the ORMS database
                         'opalUUID': str(patient.uuid),
                     },
