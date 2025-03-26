@@ -23,6 +23,7 @@ from opal.legacy.api.views.orms_auth import ORMSLoginView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 from opal.patients.api import views as patient_views
 from opal.test_results.api.views import CreatePathologyView
+from opal.users.api import views as user_views
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
@@ -124,7 +125,7 @@ urlpatterns = [
     ),
     # patients (by new ID) for the health data quantity samples
     path(
-        'patients/<int:patient_id>/health-data/quantity-samples/',
+        'patients/<uuid:uuid>/health-data/quantity-samples/',
         data_views.CreateQuantitySampleView.as_view(),
         name='patients-data-quantity-create',
     ),
@@ -172,6 +173,12 @@ urlpatterns = [
         'registration/<str:code>/register/',
         patient_views.RegistrationCompletionView.as_view(),
         name='registration-register',
+    ),
+    # USERS ENDPOINTS
+    path(
+        'groups/',
+        user_views.ListGroupView.as_view(),
+        name='groups-list',
     ),
 
     path('', include(router.urls)),
