@@ -889,12 +889,10 @@ class TestPatientUpdateView:
         assert res.status_code == HTTPStatus.OK
         assert patient.data_access == 'ALL'
 
-    def test_get_patient_update_with_permission(self, api_client: APIClient) -> None:
+    @pytest.mark.parametrize('permission_name', ['change_patient'])
+    def test_get_patient_update_with_permission(self, api_client: APIClient, permission_user: User) -> None:
         """Test patient updates data access success with permission."""
-        permission = Permission.objects.get(codename='change_patient')
-        user = caregiver_factories.User()
-        user.user_permissions.add(permission)
-        api_client.force_login(user=user)
+        api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
         res = api_client.put(
@@ -928,6 +926,48 @@ class TestPatientUpdateView:
         patient.refresh_from_db()
         assert res.status_code == HTTPStatus.FORBIDDEN
         assert patient.data_access != 'ALL'
+
+    @pytest.mark.parametrize('permission_name', ['change_patient'])
+    def test_get_patient_update_with_empty_data_access(self, api_client: APIClient, permission_user: User) -> None:
+        """Test patient updates data access success with permission."""
+        api_client.force_login(user=permission_user)
+        legacy_id = 1
+        patient = Patient(legacy_id=legacy_id, data_access='NTK')
+        res = api_client.put(
+            reverse(
+                'api:patient-update',
+                kwargs={'legacy_id': 1},
+            ),
+            data={'data_access': ''},
+            format='json',
+        )
+
+        assert res.status_code == HTTPStatus.BAD_REQUEST
+        assert patient.data_access == 'NTK'
+        assert str(res.data['data_access']) == '{0}'.format(
+            "[ErrorDetail(string='\"\" is not a valid choice.', code='invalid_choice')]",
+        )
+
+    @pytest.mark.parametrize('permission_name', ['change_patient'])
+    def test_get_patient_update_without_data_access(self, api_client: APIClient, permission_user: User) -> None:
+        """Test patient updates data access success with permission."""
+        api_client.force_login(user=permission_user)
+        legacy_id = 1
+        patient = Patient(legacy_id=legacy_id, data_access='NTK')
+        res = api_client.put(
+            reverse(
+                'api:patient-update',
+                kwargs={'legacy_id': 1},
+            ),
+            data={'': 'ALL'},
+            format='json',
+        )
+
+        assert res.status_code == HTTPStatus.BAD_REQUEST
+        assert patient.data_access == 'NTK'
+        assert str(res.data['data_access']) == '{0}'.format(
+            "[ErrorDetail(string='This field is required.', code='required')]",
+        )
 
 
 class TestApiPatientExists:

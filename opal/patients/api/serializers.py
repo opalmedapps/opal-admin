@@ -37,6 +37,10 @@ class PatientSerializer(DynamicFieldsSerializer):
                 'allow_null': False,
                 'required': True,
             },
+            'data_access': {
+                'allow_null': False,
+                'required': True,
+            },
         }
 
 

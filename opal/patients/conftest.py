@@ -74,3 +74,22 @@ def registration_user(client: Client, django_user_model: User) -> User:
     client.force_login(user)
 
     return user
+
+
+@pytest.fixture()
+def permission_user(django_user_model: User, permission_name: str) -> User:
+    """
+    Fixture providing a `User` instance with the permission from the parameter.
+
+    Args:
+        django_user_model: the `User` model used in this project
+        permission_name: the name of the permission
+
+    Returns:
+        a user instance with the permission from the parameter
+    """
+    user: User = django_user_model.objects.create_user(username='test_permission_user')
+    permission = Permission.objects.get(codename=permission_name)
+    user.user_permissions.add(permission)
+
+    return user
