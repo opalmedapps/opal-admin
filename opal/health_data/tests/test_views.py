@@ -23,7 +23,8 @@ MISSING_DATA_WARNINGS = (
     'No data found for Heart Rate',
     'No data found for Heart Rate Variability',
     'No data found for Oxygen Saturation',
-    'No data found for Blood Pressure',
+    'No data found for Blood Pressure Systolic',
+    'No data found for Blood Pressure Diastolic',
 )
 
 
@@ -69,7 +70,8 @@ def test_health_data_template_plots_detected(user_client: Client, admin_user: Ab
     healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.HEART_RATE)
     healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.HEART_RATE_VARIABILITY)
     healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.OXYGEN_SATURATION)
-    healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.BLOOD_PRESSURE)
+    healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.BLOOD_PRESSURE_SYSTOLIC)
+    healthdata_factory.QuantitySample(patient=patient, type=QuantitySampleType.BLOOD_PRESSURE_DIASTOLIC)
 
     response = user_client.get(reverse('health_data:health-data-ui', kwargs={'uuid': patient.uuid}))
     soup = BeautifulSoup(response.content, 'html.parser')
