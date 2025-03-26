@@ -1,9 +1,9 @@
 # Django
 #
-django==3.2.16
+django==3.2.17
 django-environ==0.9.0  # https://github.com/joke2k/django-environ
 django-extensions==3.2.1  # https://github.com/django-extensions/django-extensions
-django-modeltranslation==0.18.7  # https://django-modeltranslation.readthedocs.io/en/latest/
+django-modeltranslation==0.18.8  # https://django-modeltranslation.readthedocs.io/en/latest/
 djangorestframework==3.14.0  # https://www.django-rest-framework.org/
 dj-rest-auth==2.2.7  # https://github.com/iMerica/dj-rest-auth
 django-filter==22.1  # https://github.com/carltongibson/django-filter
@@ -12,7 +12,7 @@ django-easy-audit==1.3.3  # https://github.com/soynatan/django-easy-audit
 django-crispy-forms==1.14.0  # https://github.com/django-crispy-forms/django-crispy-forms
 django-tables2==2.5.1  # https://github.com/jieter/django-tables2
 django-formtools==2.4 # https://github.com/jazzband/django-formtools/blob/master/docs/wizard.rst
-qrcode==7.3.1 # https://pypi.org/project/qrcode/
+qrcode==7.4 # https://pypi.org/project/qrcode/
 Pillow==9.4.0  # https://pypi.org/project/Pillow
 
 # MySQL/MariaDB
@@ -28,4 +28,4 @@ requests==2.28.2  # https://github.com/psf/requests
 # Export Report functionality
 #
 pandas==1.5.3  # https://pypi.org/project/pandas/
-openpyxl==3.0.10  # https://pypi.org/project/openpyxl/
+openpyxl==3.1.0  # https://pypi.org/project/openpyxl/

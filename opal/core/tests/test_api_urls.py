@@ -186,3 +186,12 @@ def test_retrieve_device_update(settings: SettingsWrapper) -> None:
     url_path = f'/{settings.API_ROOT}/caregivers/devices/{device_id}/'
     assert reverse('api:devices-update-or-create', kwargs={'device_id': device_id}) == url_path
     assert resolve(url_path).view_name == 'api:devices-update-or-create'
+
+
+def test_quantitysample_create(settings: SettingsWrapper) -> None:
+    """Ensure the quantity sample endpoint is defined for a specific patient."""
+    patient_id = 42
+    url_path = f'/{settings.API_ROOT}/patients/{patient_id}/health-data/quantity-samples/'
+
+    assert reverse('api:patients-data-quantity-create', kwargs={'patient_id': patient_id}) == url_path
+    assert resolve(url_path).view_name == 'api:patients-data-quantity-create'

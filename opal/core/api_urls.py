@@ -12,6 +12,7 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 from opal.caregivers.api import views as caregivers_views
 from opal.caregivers.api.viewsets import SecurityAnswerViewSet, SecurityQuestionViewSet
 from opal.core.api import views as core_views
+from opal.health_data.api import views as data_views
 from opal.hospital_settings.api import viewsets as settings_views
 from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_general import AppGeneralView
@@ -56,6 +57,12 @@ urlpatterns = [
         'registration/by-hash/<str:hash>/',
         caregivers_views.GetRegistrationEncryptionInfoView.as_view(),
         name='registration-by-hash',
+    ),
+    # patients (by new ID)
+    path(
+        'patients/<int:patient_id>/health-data/quantity-samples/',
+        data_views.CreateQuantitySampleView.as_view(),
+        name='patients-data-quantity-create',
     ),
     path('questionnaires/reviewed/', QuestionnairesReportView.as_view(), name='questionnaires-reviewed'),
     path('app/general/', AppGeneralView.as_view(), name='app-general'),
