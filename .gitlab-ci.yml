@@ -23,7 +23,7 @@ before_script:
   - source .venv/bin/activate || true
   # set up env file for DB service
   # use sample env file
-  - mv .env.sample .env
+  - cp .env.sample .env
   - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=mariadb/" .env
   - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
   - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
@@ -122,6 +122,30 @@ coverage:
       coverage_report:
         coverage_format: cobertura
         path: coverage.xml
+
+django:
+  stage: Checks
+  script:
+    # install dependencies for makemessages and git diff
+    - apt update && apt-get install -y gettext git
+    # Change DB to use the test DB since the MariaDB user has access to it
+    - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=test_$DB_NAME/" .env
+    # Run checks to be sure we follow all django's best practices:
+    - python manage.py check --fail-level WARNING
+    # Check that there are no model changes for which there is no migration
+    - python manage.py makemigrations --dry-run --check
+    # Check templates
+    - python manage.py validate_templates
+    # Check that translation files have been updated
+    - python manage.py makemessages --add-location file -l fr
+    - git diff --ignore-matching-lines=POT-Creation-Date --exit-code
+    # Ensure that migrations are not auto-named
+    # See: https://adamj.eu/tech/2020/02/24/how-to-disallow-auto-named-django-migrations/
+    # Return exit code of 1 if results found, 0 otherwise
+    # See: https://serverfault.com/q/225798 and https://stackoverflow.com/a/53753605
+    - (! find ./opal -regex '.*/migrations/.*_auto_.*\.py$' | grep -q .)
+  needs:
+    - job: setup
 
 # Try building the documentation site to ensure there are no issues
 build docs:
