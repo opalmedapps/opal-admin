@@ -1150,6 +1150,31 @@ class TestRegistrationCompletionView:
 
         assert response.status_code == HTTPStatus.NOT_FOUND
 
+    def test_registration_without_security_answers(self, api_client: APIClient, admin_user: User) -> None:
+        """Test registration without security answers."""
+        api_client.force_login(user=admin_user)
+        input_data_without_security_answers = {
+            'patient': {
+                'legacy_id': 1,
+            },
+            'caregiver': {
+                'language': 'fr',
+                'phone_number': '+15141112222',
+                'username': 'test-username',
+                'legacy_id': 1,
+            },
+        }
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': '123456'},
+            ),
+            data=input_data_without_security_answers,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
     def test_registered_registration_code(self, api_client: APIClient, admin_user: User) -> None:
         """Test registered registration code."""
         api_client.force_login(user=admin_user)
