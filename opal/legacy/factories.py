@@ -82,7 +82,7 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     readstatus = 0
     readby = '[]'
     roomlocation_en = 'CVIS Clinic Room 1'
-    roomlocation_fr = 'CVIS Clinic Room 1'
+    roomlocation_fr = 'SMVC Salle 1'
     aliasexpressionsernum = SubFactory(LegacyAliasexpressionFactory)
     patientsernum = SubFactory(LegacyPatientFactory)
 
