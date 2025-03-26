@@ -140,12 +140,12 @@ class LegacyAppointmentCheckinSerializer(serializers.ModelSerializer[LegacyAppoi
     )
     source_system_id = serializers.CharField(
         max_length=100,
-        read_only=True,
+        required=True,
         help_text='The source system identifier.',
     )
     source_database = serializers.IntegerField(
         source='source_database_id',
-        read_only=True,
+        required=True,
         help_text='The source database identifier.',
     )
 

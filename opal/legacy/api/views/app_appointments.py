@@ -4,7 +4,7 @@ from typing import Any
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import NotFound
 from rest_framework.generics import UpdateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -69,18 +69,16 @@ class UpdateAppointmentCheckinView(UpdateAPIView[models.LegacyAppointment]):
         Override get_object to filter by source_system_id and source_database.
 
         Raises:
-            ValidationError: If one or both search parameters are omitted from request
             NotFound: If zero or multiple appointment records are found
 
         Returns:
             LegacyAppointment model instance
         """
-        source_system_id = self.request.data.get('source_system_id')
-        source_database = self.request.data.get('source_database')
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        source_system_id = serializer.validated_data['source_system_id']
+        source_database = serializer.validated_data['source_database_id']
 
-        # Ensure both required fields are present
-        if not source_system_id or not source_database:
-            raise ValidationError("Both 'source_system_id' and 'source_database' are required.")
         try:
             return models.LegacyAppointment.objects.get(
                 source_system_id=source_system_id,
