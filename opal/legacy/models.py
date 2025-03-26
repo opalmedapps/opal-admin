@@ -109,6 +109,9 @@ class LegacyAlias(models.Model):
     """Legacy alias model mapping Alias table from legacy database."""
 
     aliassernum = models.AutoField(db_column='AliasSerNum', primary_key=True)  # Field name made lowercase.
+    aliastype = models.CharField(db_column='AliasType', max_length=25)
+    aliasname_en = models.CharField(db_column='AliasName_EN', max_length=100)
+    aliasname_fr = models.CharField(db_column='AliasName_FR', max_length=100)
 
     class Meta:
         managed = False
