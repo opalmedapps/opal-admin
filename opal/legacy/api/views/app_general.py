@@ -32,6 +32,7 @@ class AppGeneralView(APIView):
         unread_count = {
             'unread_announcement_count': models.LegacyAnnouncement.objects.get_unread_queryset(
                 Relationship.objects.get_patient_id_list_for_caregiver(request.headers['Appuserid']),
+                request.headers['Appuserid'],
             ),
         }
         return Response(AnnouncementUnreadCountSerializer(unread_count).data)

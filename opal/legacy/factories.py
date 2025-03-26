@@ -149,6 +149,7 @@ class LegacyAnnouncementFactory(DjangoModelFactory):
     patientsernum = SubFactory(LegacyPatientFactory)
     postcontrolsernum = SubFactory(LegacyPostcontrolFactory)
     readstatus = 0
+    readby = '[]'
 
 
 class LegacySecurityQuestionFactory(DjangoModelFactory):

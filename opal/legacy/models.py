@@ -199,6 +199,7 @@ class LegacyAnnouncement(models.Model):
     postcontrolsernum = models.ForeignKey('LegacyPostcontrol', models.DO_NOTHING, db_column='PostControlSerNum')
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
+    readby = models.JSONField(db_column='ReadBy', default=list)
     objects: managers.LegacyAnnouncementManager = managers.LegacyAnnouncementManager()
 
     class Meta:
