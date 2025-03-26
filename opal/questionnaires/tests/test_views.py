@@ -23,15 +23,17 @@ test_url_template_data: list[Tuple] = [
 
 
 @pytest.mark.parametrize(('url', 'template'), test_url_template_data)
-def test_questionnaire_urls_exist(user_client: Client, url: str, template: str) -> None:
+def test_questionnaire_urls_exist(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
     """Ensure that a page exists at each URL address."""
+    user_client.force_login(admin_user)
     response = user_client.get(url)
 
     assert response.status_code == HTTPStatus.OK
 
 
-def test_export_report_launch_redirects(user_client: Client, settings: SettingsWrapper) -> None:
+def test_export_report_launch_redirects(user_client: Client, admin_user: AbstractUser, settings: SettingsWrapper) -> None:  # noqa: E501
     """Ensure that after clicking the ePRO button, the page redirects to the reporting tool."""
+    user_client.force_login(admin_user)
     response = user_client.get(reverse('questionnaires:exportreports-launch'))
 
     assertRedirects(
