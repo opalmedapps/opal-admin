@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-31 14:43-0400\n"
+"POT-Creation-Date: 2023-06-05 08:13-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,8 +29,8 @@ msgid "Opal Verification Code"
 msgstr "Code de vérification Opal"
 
 #: opal/caregivers/api/views.py
-msgid "Registered Confirmation"
-msgstr "Confirmation enregistrée"
+msgid "Your existing Opal account"
+msgstr "Votre compte Opal existant"
 
 #: opal/caregivers/api/viewsets.py
 msgid "The provided answer is not correct"
