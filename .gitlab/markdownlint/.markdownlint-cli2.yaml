@@ -1,0 +1,4 @@
+# Use a specific formatter (only valid at root)
+outputFormatters:
+  - - markdownlint-cli2-formatter-pretty
+  - - markdownlint-cli2-formatter-gitlab
