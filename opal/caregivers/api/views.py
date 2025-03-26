@@ -417,7 +417,7 @@ class RegistrationCompletionView(APIView):
 
 
 class RetrieveCaregiverUsernameView(RetrieveAPIView[User]):
-    """Registration-register `APIView` class for handling "registration-completed" requests."""
+    """Caregiver `RetrieveAPIView` class for verify the existence of the caregiver for the given username."""
 
     permission_classes = (IsRegistrationListener,)
     queryset = Caregiver.objects.all().select_related('caregiver')
