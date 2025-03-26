@@ -1,16 +1,19 @@
 """App patients util functions."""
 from datetime import date
-from typing import Optional
+from typing import Any, Optional, Union
 
+from django import forms
 from django.db.models import QuerySet
 from django.utils import timezone
 
 from opal.caregivers import models as caregiver_models
 from opal.users.models import User
 
+#: The indicator of the female sex within the RAMQ number (added to the month)
+from ..hospital_settings.models import Site
+from . import constants
 from .models import Patient, Relationship, RelationshipType, RoleType
 
-#: The indicator of the female sex within the RAMQ number (added to the month)
 RAMQ_FEMALE_INDICATOR = 50
 
 
@@ -156,3 +159,15 @@ def get_patient_by_ramq_or_mrn(ramq: Optional[str], mrn: str, site: str) -> Opti
         hospital_patients__mrn=mrn,
         hospital_patients__site__code=site,
     ).first()
+
+
+def is_mrn_or_single_site(form: forms.Form) -> Any:
+    """
+    Check a form object that has a `card_type` field
+    Args:
+        form: AccessRequestManagementForm
+
+    Returns:
+        True if there is only one site or the selected `card_type` is MRN, False otherwise
+    """
+    return form['card_type'].value() != constants.MedicalCard.mrn.name or Site.objects.all().count() == 1  # noqa: WPS221

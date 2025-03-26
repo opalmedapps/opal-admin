@@ -75,7 +75,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         queryset=Site.objects.all(),
         label=_('Hospital'),
         required=lambda form: form['card_type'].value() == constants.MedicalCard.mrn.name,
-        disabled=lambda form: form['card_type'].value() != constants.MedicalCard.mrn.name or len(Site.objects.all()) == 1,  # noqa: WPS221, E501
+        disabled=utils.is_mrn_or_single_site,
     )
     medical_number = forms.CharField(label=_('Identification Number'))
 
@@ -96,7 +96,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         site_field: DynamicField = self.fields['site']
         cardtype_initial_value = self.initial.get('card_type')
 
-        if len(site_field.queryset) == 1 and cardtype_initial_value == constants.MedicalCard.mrn.name:
+        if site_field.queryset.count() == 1 and cardtype_initial_value == constants.MedicalCard.mrn.name:
             self.fields['site'].initial = site_field.queryset.first()
         else:
             self.fields['site'].initial = None
