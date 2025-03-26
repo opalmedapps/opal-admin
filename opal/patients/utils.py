@@ -28,10 +28,6 @@ RANDOM_USERNAME_LENGTH: Final = 16
 #: Length for the registration code excluding the two character prefix.
 REGISTRATION_CODE_LENGTH: Final = 10
 
-# Initialize services to communicate with external components
-source_system_service: SourceSystemService = SourceSystemService()
-orms_service: ORMSService = ORMSService()
-
 logger = logging.getLogger(__name__)
 
 
@@ -398,7 +394,7 @@ def initialize_new_opal_patient(  # noqa: WPS210, WPS213
 
     # Call the source system to notify it of the existence of the new patient (must be done before calling
     # ORMS to create the patient in ORMS if necessary)
-    source_system_response = source_system_service.new_opal_patient(active_mrn_list)
+    source_system_response = SourceSystemService().new_opal_patient(active_mrn_list)
 
     if source_system_response['status'] == 'success':
         logger.info(f'Successfully initialized patient via the source system; patient_uuid = {patient_uuid}')
@@ -409,7 +405,7 @@ def initialize_new_opal_patient(  # noqa: WPS210, WPS213
         )
     if settings.ORMS_ENABLED:
         # Call ORMS to notify it of the existence of the new patient
-        orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
+        orms_response = ORMSService().set_opal_patient(active_mrn_list, patient_uuid)
 
         if orms_response['status'] == 'success':
             logger.info(f'Successfully initialized patient via ORMS; patient_uuid = {patient_uuid}')
