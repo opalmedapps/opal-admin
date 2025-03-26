@@ -23,5 +23,5 @@ def update_request_event_query_string(request: HttpRequest, method: str, paramet
     for param in parameters:
         query_string[param] = request.POST.get(param, '')
 
-    request_event.query_string = query_string
+    request_event.query_string += str(query_string)
     request_event.save()
