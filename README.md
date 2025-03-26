@@ -1,9 +1,6 @@
-# Opal Backend
-
 [![pipeline status](https://gitlab.com/opalmedapps/backend/badges/main/pipeline.svg)](https://gitlab.com/opalmedapps/backend/-/commits/main) [![coverage report](https://gitlab.com/opalmedapps/backend/badges/main/coverage.svg)](https://gitlab.com/opalmedapps/backend/-/commits/main) [![wemake-python-styleguide](https://img.shields.io/badge/code%20style-wemake-000000.svg)](https://github.com/wemake-services/wemake-python-styleguide) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Docs](https://img.shields.io/badge/documentation-available-brightgreen.svg)](https://opalmedapps.gitlab.io/backend)
 
 ## Requirements
-
 This project has the following requirements to be available on your system:
 
 * [Docker Desktop](https://docs.docker.com/desktop/) (or Docker Engine on Linux)
@@ -127,7 +124,6 @@ The steps below refer to an interpreter path, which is the following (depending 
 #### Install dependencies
 
 Run the following commands within the virtual environment:
-
 ```sh
 python -m pip install --upgrade pip
 python -m pip install -r requirements/development.txt
@@ -243,7 +239,7 @@ The dependencies are kept up-to-date by using [Renovate Bot](https://www.whiteso
 However, you can also manually update dependencies:
 
 1. Install [`pip-upgrader`](https://github.com/simion/pip-upgrader): `pip install pip-upgrader`
-2. Run `pip-upgrade` to see new available versions and update the desired dependencies
+ 2. Run `pip-upgrade` to see new available versions and update the desired dependencies
 3. Run linting, type checking and tests with coverage (see below) to ensure that everything still works as expected
 4. Commit the updates to the requirements file(s)
 
