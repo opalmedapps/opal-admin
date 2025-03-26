@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-20 22:46-0400\n"
+"POT-Creation-Date: 2023-03-22 10:33-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -444,8 +444,12 @@ msgid "Please follow the instructions below"
 msgstr "Veuillez suivre les instructions ci-dessous"
 
 #: opal/patients/templates/patients/access_request/qr_code.html
-msgid "A unique one-time Opal registration code has been created for the following patient:"
-msgstr "Un code d'enregistrement Opal à usage unique a été créé pour le patient suivant:"
+msgid ""
+"A unique one-time Opal registration code has been created for the following "
+"patient:"
+msgstr ""
+"Un code d'enregistrement Opal à usage unique a été créé pour le patient "
+"suivant:"
 
 #: opal/patients/templates/patients/access_request/qr_code.html
 msgid "Name:"
@@ -460,12 +464,20 @@ msgid "Ask the patient to capture the QR code using a QR reader"
 msgstr "Demandez au patient de saisir le code QR à l'aide d'un lecteur QR"
 
 #: opal/patients/templates/patients/access_request/qr_code.html
-msgid "OR write the patient's code on an Opal registration form and give it to the patient"
-msgstr "OU écrivez le code du patient sur un formulaire d'inscription Opal et le remettez au patient"
+msgid ""
+"OR write the patient's code on an Opal registration form and give it to the "
+"patient"
+msgstr ""
+"OU écrivez le code du patient sur un formulaire d'inscription Opal et le "
+"remettez au patient"
 
 #: opal/patients/templates/patients/access_request/qr_code.html
-msgid "OR enter the patient's cell phone number and click 'Send SMS' to send them their code by text message"
-msgstr "OU entrez le numéro de téléphone portable du patient et cliquez sur 'Envoyer SMS' pour lui envoyer son code par SMS"
+msgid ""
+"OR enter the patient's cell phone number and click 'Send SMS' to send "
+"them their code by text message"
+msgstr ""
+"OU entrez le numéro de téléphone portable du patient et cliquez sur 'Envoyer "
+"SMS' pour lui envoyer son code par SMS"
 
 #: opal/patients/templates/patients/access_request/qr_code.html
 msgid "Inform the patient that their code will expire in 72 hours."
@@ -580,6 +592,3 @@ msgid "Please note multiple MRNs need to be merged by medical records."
 msgstr ""
 "Veuillez noter que plusieurs MRN doivent être fusionnés par dossiers "
 "médicaux."
-
-#~ msgid "QR Code Generation"
-#~ msgstr "Générateur de code QR"
