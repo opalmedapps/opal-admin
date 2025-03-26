@@ -28,7 +28,6 @@ class CreatePathologyView(generics.CreateAPIView):
     queryset = GeneralTest.objects.none()
     serializer_class = PathologySerializer
     permission_classes = [CreateModelPermissions]
-    pagination_class = None
     # Report service for generating pathology reports
     report_service = ReportService()
 
