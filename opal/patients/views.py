@@ -4,7 +4,7 @@ from django.views.generic.edit import DeleteView
 
 from django_tables2 import SingleTableView
 
-from opal.core.views import CreateUpdateView
+from opal.core.views import CreateUpdateView, UpdateView
 
 from .forms import RelationshipPendingAccessForm
 from .models import Relationship, RelationshipStatus, RelationshipType
@@ -65,7 +65,7 @@ class PendingRelationshipListView(SingleTableView):
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
 
 
-class PendingRelationshipCreateUpdateView(CreateUpdateView):
+class PendingRelationshipUpdateView(UpdateView):
     """
     This `CreateView` displays a form for creating a `Relationship` object.
 
