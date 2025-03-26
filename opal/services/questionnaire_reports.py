@@ -233,7 +233,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
         It should not be called directly by the user application.
         """
-        # Move the cursor to the bottom (e.g., 4 cm from the bottom).
         footer_text: str = (
             'Si une version papier de ce document est reçue aux archives, avec ou sans notes manuscrites, en statut'
             + ' préliminaire ou final, **il ne sera pas numérisé.** '
