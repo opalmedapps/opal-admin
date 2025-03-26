@@ -165,32 +165,6 @@ def test_relationship_pending_status_reason() -> None:
     assert pending_form.errors['reason'][0] == message
 
 
-def test_relationship_pending_type_inital() -> None:
-    """Ensure that the `RelationshipPendingAccess` form is validated for reason is not empty when status is denied."""
-    relationship_type = RelationshipType.objects.guardian_caregiver()
-    relationship_info = factories.Relationship.build(
-        patient=factories.Patient(
-            date_of_birth=date.today() - relativedelta(
-                years=14,
-            ),
-        ),
-        type=relationship_type,
-    )
-    form_data = model_to_dict(relationship_info)
-    # add first_name and last_name as they are not part of the relationship form
-    form_data['first_name'] = 'test_firstname'
-    form_data['last_name'] = 'test_lastname'
-
-    pending_form = forms.RelationshipAccessForm(
-        data=form_data,
-        instance=relationship_info,
-    )
-    available_choices = pending_form.fields['type'].queryset   # type: ignore[attr-defined]
-    for index, item in enumerate(available_choices):
-        if item == relationship_type:
-            assert pending_form.fields['type'].initial == available_choices[index]
-
-
 def test_site_selection_exist() -> None:
     """Ensure that the site selection is valid."""
     site = factories.Site(name='Montreal General Hospital', code='MGH')

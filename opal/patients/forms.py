@@ -550,12 +550,6 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         })
         available_choices = get_valid_relationship_types_queryset(date_of_birth, self.instance.patient)
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
-        initial_index = (
-            index
-            for index, item in enumerate(available_choices)
-            if item == self.instance.type
-        )
-        self.fields['type'].initial = available_choices[next(initial_index)]
 
         self.helper = FormHelper()
         self.helper.attrs = {'novalidate': ''}
