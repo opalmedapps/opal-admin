@@ -99,9 +99,9 @@ class TestChartAppView:
         clinical_purpose = questionnaires_factories.LegacyPurposeFactory(id=1)
         research_purpose = questionnaires_factories.LegacyPurposeFactory(id=2)
         consent_purpose = questionnaires_factories.LegacyPurposeFactory(id=4)
-        clinical_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=clinical_purpose)
-        research_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=research_purpose)
-        consent_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=consent_purpose)
+        clinical_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purpose=clinical_purpose)
+        research_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purpose=research_purpose)
+        consent_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purpose=consent_purpose)
         patient_one = questionnaires_factories.LegacyPatientFactory()
         patient_two = questionnaires_factories.LegacyPatientFactory(external_id=52)
 
@@ -121,12 +121,12 @@ class TestChartAppView:
             patient=patient_one,
         )
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
-            questionnaireid=consent_questionnaire,
-            patientid=patient_one,
+            questionnaire=consent_questionnaire,
+            patient=patient_one,
         )
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
-            questionnaireid=clinical_questionnaire,
-            patientid=patient_two,
+            questionnaire=clinical_questionnaire,
+            patient=patient_two,
         )
         new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
             patient_sernum=51,
