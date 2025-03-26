@@ -115,8 +115,9 @@ class RegistrationCode(models.Model):
         """Validate the length of registration code and the length of email verification code.
 
         Raises:
-            ValidationError: the error shows when the code is greater than or less than the limit length
+            ValidationError: the error shows when the code is less than the limit length
         """
+        # Test function won't throw exception if we do not add this validation
         length_regis_code = len(self.code)
         length_verif_code = len(self.email_verification_code)
         errors = {}
