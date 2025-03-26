@@ -7,8 +7,7 @@ import pytest
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
 from opal.core.test_utils import CommandTestMixin
-
-from ..constants import REGISTRATION_CODE_EXPIRY
+from opal.hospital_settings import factories as hospital_factories
 
 pytestmark = pytest.mark.django_db
 
@@ -20,12 +19,13 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         """Test `NEW` registration codes that have past expiry duration are set to `EXPIRED`."""
         reg_code1 = caregiver_factories.RegistrationCode(code='code11111115')
         reg_code2 = caregiver_factories.RegistrationCode(code='code11111116')
+        institution = hospital_factories.Institution()
 
         # update creation date to be overdue the expiration date
-        longer_expiry = REGISTRATION_CODE_EXPIRY + 10
+        longer_expiry = institution.registration_code_valid_period + 10
         reg_code1.created_at = timezone.now() - timedelta(hours=longer_expiry)
         # just expired
-        reg_code2.created_at = timezone.now() - timedelta(hours=REGISTRATION_CODE_EXPIRY)
+        reg_code2.created_at = timezone.now() - timedelta(hours=institution.registration_code_valid_period)
         reg_code1.save()
         reg_code2.save()
 
@@ -44,9 +44,10 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         reg_code1 = caregiver_factories.RegistrationCode(code='code11111115')
         reg_code2 = caregiver_factories.RegistrationCode(code='code11111116')
         reg_code3 = caregiver_factories.RegistrationCode(code='code11111117')
+        institution = hospital_factories.Institution()
 
         # update creation date to be within the allowed date to remain in `NEW` status
-        barely_allowed_duration = timedelta(hours=REGISTRATION_CODE_EXPIRY) - timedelta(seconds=1)
+        barely_allowed_duration = timedelta(hours=institution.registration_code_valid_period) - timedelta(seconds=1)
         reg_code1.created_at = timezone.now() - timedelta(hours=10)
         reg_code2.created_at = timezone.now()
         # barely allowed
@@ -70,11 +71,12 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         """Test not `NEW` registration codes that have past expiry duration are not set to `EXPIRED`."""
         reg_code1 = caregiver_factories.RegistrationCode(code='code11111115', status=RegistrationCodeStatus.REGISTERED)
         reg_code2 = caregiver_factories.RegistrationCode(code='code11111116', status=RegistrationCodeStatus.BLOCKED)
+        institution = hospital_factories.Institution()
 
         # update creation date to be overdue the expiration date
-        longer_expiry = REGISTRATION_CODE_EXPIRY + 10
+        longer_expiry = institution.registration_code_valid_period + 10
         reg_code1.created_at = timezone.now() - timedelta(hours=longer_expiry)
-        reg_code2.created_at = timezone.now() - timedelta(hours=REGISTRATION_CODE_EXPIRY)
+        reg_code2.created_at = timezone.now() - timedelta(hours=institution.registration_code_valid_period)
         reg_code1.save()
         reg_code2.save()
 
@@ -94,10 +96,11 @@ class TestRegistrationCodeExpiration(CommandTestMixin):
         reg_code1 = caregiver_factories.RegistrationCode(code='code11111115', status=RegistrationCodeStatus.NEW)
         reg_code2 = caregiver_factories.RegistrationCode(code='code11111116', status=RegistrationCodeStatus.REGISTERED)
         reg_code3 = caregiver_factories.RegistrationCode(code='code11111117', status=RegistrationCodeStatus.NEW)
+        institution = hospital_factories.Institution()
 
         # update created at date to be combination of dates.
-        reg_code1.created_at = timezone.now() - timedelta(hours=REGISTRATION_CODE_EXPIRY)
-        reg_code2.created_at = timezone.now() - timedelta(hours=REGISTRATION_CODE_EXPIRY)
+        reg_code1.created_at = timezone.now() - timedelta(hours=institution.registration_code_valid_period)
+        reg_code2.created_at = timezone.now() - timedelta(hours=institution.registration_code_valid_period)
         reg_code3.created_at = timezone.now()
         reg_code1.save()
         reg_code2.save()

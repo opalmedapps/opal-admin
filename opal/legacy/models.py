@@ -263,7 +263,7 @@ class LegacyDocument(models.Model):
         db_column='SourceDatabaseSerNum',
         to_field='source_database',
     )
-    documentid = models.CharField(db_column='DocumentId', max_length=100)
+    documentid = models.CharField(db_column='DocumentId', blank=True, max_length=100)
     aliasexpressionsernum = models.ForeignKey(
         to=LegacyAliasExpression,
         on_delete=models.DO_NOTHING,

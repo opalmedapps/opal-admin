@@ -1,10 +1,70 @@
 """Utility functions used by the test results app."""
 
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
+from django.db import models
 
-def parse_observations(
+from opal.hospital_settings.models import Institution
+from opal.patients.models import Patient
+from opal.services.reports import PathologyData, ReportService
+
+
+def generate_pathology_report(
+    patient: Patient,
+    pathology_data: dict[str, Any],
+) -> Path:
+    """Generate the pathology PDF report by calling the ReportService.
+
+    Args:
+        patient: patient instance for whom a new PDF pathology report being generated
+        pathology_data: pathology data required to generate the PDF report
+
+    Returns:
+        Path: path to the generated pathology report
+    """
+    # Parsed observations that contain SPCI, SPSPECI, SPGROS, and SPDX values
+    observations = _parse_observations(pathology_data['observations'])
+
+    # Note containing doctors' names and time that show by whom and when the report was created
+    note_comment = _parse_notes(pathology_data['notes'])
+
+    # Report service for generating pathology reports
+    report_service = ReportService()
+
+    return report_service.generate_pathology_report(
+        pathology_data=PathologyData(
+            site_logo_path=Path(Institution.objects.get().logo.path),
+            site_name='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
+            site_building_address='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
+            site_city='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
+            site_province='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
+            site_postal_code='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
+            site_phone='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
+            patient_first_name=patient.first_name,
+            patient_last_name=patient.last_name,
+            patient_date_of_birth=patient.date_of_birth,
+            patient_ramq=patient.ramq if patient.ramq else '',
+            patient_sites_and_mrns=list(
+                patient.hospital_patients.all().annotate(
+                    site_code=models.F('site__code'),
+                ).values('mrn', 'site_code'),
+            ),
+            test_number=pathology_data['case_number'] if 'case_number' in pathology_data else '',
+            test_collected_at=pathology_data['collected_at'],
+            test_reported_at=pathology_data['reported_at'],
+            observation_clinical_info=observations['SPCI'],
+            observation_specimens=observations['SPSPECI'],
+            observation_descriptions=observations['SPGROS'],
+            observation_diagnosis=observations['SPDX'],
+            prepared_by=note_comment['prepared_by'],
+            prepared_at=note_comment['prepared_at'],
+        ),
+    )
+
+
+def _parse_observations(
     observations: list[dict[str, Any]],
 ) -> dict[str, list]:
     """Parse the pathology observations and extract SPCI, SPSPECI, SPGROS, SPDX values.
@@ -39,7 +99,7 @@ def parse_observations(
     return parsed_observations
 
 
-def parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
+def _parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
     """Parse the pathology notes and extract the information by whom and when the report was created.
 
     Args:
@@ -58,13 +118,13 @@ def parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
         if 'note_text' not in note:
             continue
 
-        doctor_name = find_doctor_name(note['note_text'])
+        doctor_name = _find_doctor_name(note['note_text'])
 
         if doctor_name:
             doctor_names.append(doctor_name)
 
         # TODO: Decide what datetime to use in case of several notes (e.g., the latest vs oldest)
-        prepared_at = find_note_date(note['note_text'])
+        prepared_at = _find_note_date(note['note_text'])
         if prepared_at > parsed_notes['prepared_at']:
             parsed_notes['prepared_at'] = prepared_at
 
@@ -72,7 +132,7 @@ def parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
     return parsed_notes
 
 
-def find_doctor_name(note_text: str) -> str:
+def _find_doctor_name(note_text: str) -> str:
     """Find doctor's name in a pathology note.
 
     Args:
@@ -85,7 +145,7 @@ def find_doctor_name(note_text: str) -> str:
     return ''
 
 
-def find_note_date(note_text: str) -> datetime:
+def _find_note_date(note_text: str) -> datetime:
     """Find date and time in a pathology note that indicates when the doctor's comments were left.
 
     Args:
