@@ -153,8 +153,8 @@ msgid "Medical Record Number"
 msgstr "Numéro de dossier médical"
 
 #: opal/patients/models.py
-msgid "Is Active"
-msgstr "C'est Actif"
+msgid "Active"
+msgstr "Actif"
 
 #: opal/patients/models.py
 msgid "Hospital Patient"

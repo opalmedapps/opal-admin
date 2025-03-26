@@ -208,7 +208,7 @@ class HospitalPatient(models.Model):
         max_length=10,
     )
     is_active = models.BooleanField(
-        verbose_name=_('Is Active'),
+        verbose_name=_('Active'),
         default=True,
     )
 
