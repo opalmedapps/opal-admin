@@ -243,7 +243,6 @@ def test_institution_successful_create_redirects(user_client: Client) -> None:
 
     response = user_client.post(url, data=form_data)
 
-    print(form_data)
     assertRedirects(response, reverse('hospital-settings:institution-list'))
 
 

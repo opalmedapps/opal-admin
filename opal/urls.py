@@ -52,7 +52,10 @@ urlpatterns = [
         RedirectView.as_view(permanent=True, url=staticfiles_storage.url('images/favicon.ico')),
         name='favicon.ico',
     ),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # type: ignore
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 admin.site.site_header = _('Opal Management')
 admin.site.site_title = _('Opal Backend Admin')
