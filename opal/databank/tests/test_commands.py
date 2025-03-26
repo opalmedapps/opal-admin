@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from http import HTTPStatus
 
+from django.core.management.base import CommandError
 from django.utils import timezone
 
 import pytest
