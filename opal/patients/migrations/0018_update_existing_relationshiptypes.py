@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='relationshiptype',
             name='can_answer_questionnaire',
-            field=models.BooleanField(default=False, help_text='The caregiver can answer questionnaires on behalf of the patient.', verbose_name='Can answer patient questionnaire'),
+            field=models.BooleanField(default=False, help_text='The caregiver can answer questionnaires on behalf of the patient.', verbose_name='Can answer patient questionnaires'),
         ),
         migrations.RunPython(update_data, reverse_code=migrations.RunPython.noop),
     ]
