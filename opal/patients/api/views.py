@@ -239,7 +239,7 @@ class PatientCaregiverDevicesView(RetrieveAPIView):
 class PatientUpdateView(UpdateAPIView):
     """Class handling PUT requests for patient access level update."""
 
-    permission_classes = [FullDjangoModelPermissions]
+    permission_classes = (FullDjangoModelPermissions,)
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
     lookup_url_kwarg = 'legacy_id'

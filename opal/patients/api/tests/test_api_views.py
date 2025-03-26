@@ -920,12 +920,35 @@ class TestPatientCaregiverDevicesView:
 class TestPatientUpdateView:
     """Class wrapper for patient update endpoint tests."""
 
+    def test_unauthenticated_unauthorized(
+        self,
+        api_client: APIClient,
+        user: User,
+        user_with_permission: Callable[[str | list[str]], User],
+    ) -> None:
+        """Test that unauthenticated and unauthorized users cannot access the API."""
+        url = reverse('api:patient-update', kwargs={'legacy_id': 42})
+
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+        api_client.force_login(user)
+        response = api_client.get(url)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+        api_client.force_login(user_with_permission('patients.change_patient'))
+        response = api_client.options(url)
+
+        assert response.status_code == HTTPStatus.OK
+
     def test_get_patient_update_superuser(self, api_client: APIClient, admin_user: User) -> None:
         """Test patient updates data access success with superuser."""
         api_client.force_login(user=admin_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
-        res = api_client.put(
+        response = api_client.put(
             reverse(
                 'api:patient-update',
                 kwargs={'legacy_id': 1},
@@ -935,7 +958,7 @@ class TestPatientUpdateView:
         )
 
         patient.refresh_from_db()
-        assert res.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.OK
         assert patient.data_access == 'ALL'
 
     @pytest.mark.parametrize('permission_name', ['change_patient'])
@@ -944,7 +967,7 @@ class TestPatientUpdateView:
         api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
-        res = api_client.put(
+        response = api_client.put(
             reverse(
                 'api:patient-update',
                 kwargs={'legacy_id': 1},
@@ -954,27 +977,8 @@ class TestPatientUpdateView:
         )
 
         patient.refresh_from_db()
-        assert res.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.OK
         assert patient.data_access == 'ALL'
-
-    def test_get_patient_update_no_permission(self, api_client: APIClient) -> None:
-        """Test patient updates data access failure without permission."""
-        user = caregiver_factories.User()
-        api_client.force_login(user=user)
-        legacy_id = 1
-        patient = Patient(legacy_id=legacy_id, data_access='NTK')
-        res = api_client.put(
-            reverse(
-                'api:patient-update',
-                kwargs={'legacy_id': 1},
-            ),
-            data={'data_access': 'ALL'},
-            format='json',
-        )
-
-        patient.refresh_from_db()
-        assert res.status_code == HTTPStatus.FORBIDDEN
-        assert patient.data_access != 'ALL'
 
     @pytest.mark.parametrize('permission_name', ['change_patient'])
     def test_get_patient_update_with_empty_data_access(self, api_client: APIClient, permission_user: User) -> None:
@@ -982,7 +986,7 @@ class TestPatientUpdateView:
         api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
-        res = api_client.put(
+        response = api_client.put(
             reverse(
                 'api:patient-update',
                 kwargs={'legacy_id': 1},
@@ -991,9 +995,9 @@ class TestPatientUpdateView:
             format='json',
         )
 
-        assert res.status_code == HTTPStatus.BAD_REQUEST
+        assert response.status_code == HTTPStatus.BAD_REQUEST
         assert patient.data_access == 'NTK'
-        assert str(res.data['data_access']) == '{0}'.format(
+        assert str(response.data['data_access']) == '{0}'.format(
             "[ErrorDetail(string='\"\" is not a valid choice.', code='invalid_choice')]",
         )
 
@@ -1003,7 +1007,7 @@ class TestPatientUpdateView:
         api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
-        res = api_client.put(
+        response = api_client.put(
             reverse(
                 'api:patient-update',
                 kwargs={'legacy_id': 1},
@@ -1012,9 +1016,9 @@ class TestPatientUpdateView:
             format='json',
         )
 
-        assert res.status_code == HTTPStatus.BAD_REQUEST
+        assert response.status_code == HTTPStatus.BAD_REQUEST
         assert patient.data_access == 'NTK'
-        assert str(res.data['data_access']) == '{0}'.format(
+        assert str(response.data['data_access']) == '{0}'.format(
             "[ErrorDetail(string='This field is required.', code='required')]",
         )
 
