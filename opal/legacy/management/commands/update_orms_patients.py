@@ -22,7 +22,7 @@ class Command(BaseCommand):
     help = "Update patients' UUIDs in the ORMS"  # noqa: A003
     requires_migrations_checks = True
 
-    def handle(self, *args: Any, **kwargs: Any) -> None:
+    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
         """
         Handle the update of the patients' UUIDs in the ORMS.
 
@@ -47,7 +47,7 @@ class Command(BaseCommand):
             # Try to send an HTTP POST request and get a response
             try:
                 response = requests.post(
-                    url='{0}/php/api/public/v2/patient/updateOpalStatus.php'.format(settings.ORMS_HOST),
+                    url=f'{settings.ORMS_HOST}/php/api/public/v2/patient/updateOpalStatus.php',
                     headers={
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
@@ -81,12 +81,11 @@ class Command(BaseCommand):
                     (patient, f'response not OK ({response.status_code}: {response.content.decode()})'),
                 )
 
-        self.stdout.write('\n\n{0}\n'.format(SPLIT_LENGTH * '-'))
+        divider = SPLIT_LENGTH * '-'
+        self.stdout.write(f'\n\n{divider}\n')
+        updated_count = patients.count() - len(skipped_patients)
         self.stdout.write(
-            'Updated {0} out of {1} patients.'.format(
-                patients.count() - len(skipped_patients),
-                patients.count(),
-            ),
+            f'Updated {updated_count} out of {patients.count()} patients.',
         )
 
         self._print_skipped_patients(skipped_patients)

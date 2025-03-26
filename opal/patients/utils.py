@@ -1,7 +1,7 @@
 """App patients util functions."""
 import logging
 from datetime import date
-from typing import Final, Optional
+from typing import Final
 from uuid import UUID
 
 from django.conf import settings
@@ -82,7 +82,7 @@ def update_registration_code_status(
     registration_code.save()
 
 
-def find_caregiver(username: str) -> Optional[User]:
+def find_caregiver(username: str) -> User | None:
     """
     Find the user if it exists.
 
@@ -199,7 +199,7 @@ def valid_relationship_types(patient: Patient) -> QuerySet[RelationshipType]:
     return relationship_types_queryset
 
 
-def get_patient_by_ramq_or_mrn(ramq: Optional[str], mrn: str, site: str) -> Optional[Patient]:
+def get_patient_by_ramq_or_mrn(ramq: str | None, mrn: str, site: str) -> Patient | None:
     """
     Get a `Patient` object filtered by a given RAMQ or sites and MRNs.
 
@@ -302,8 +302,8 @@ def create_relationship(  # noqa: WPS211
     caregiver_profile: caregiver_models.CaregiverProfile,
     relationship_type: RelationshipType,
     status: RelationshipStatus,
-    request_date: Optional[date] = None,
-    start_date: Optional[date] = None,
+    request_date: date | None = None,
+    start_date: date | None = None,
 ) -> Relationship:
     """
     Create a new relationship instance with the given properties.
@@ -394,29 +394,29 @@ def initialize_new_opal_patient(  # noqa: WPS210
     legacy_patient = legacy_utils.initialize_new_patient(patient, mrn_list, self_caregiver)
     patient.legacy_id = legacy_patient.patientsernum
     patient.save()
-    logger.info('Successfully initialized patient in legacy DB; legacy_id = {0}'.format(patient.legacy_id))
+    logger.info(f'Successfully initialized patient in legacy DB; legacy_id = {patient.legacy_id}')
 
     # Call the OIE to notify it of the existence of the new patient (must be done before calling
     # ORMS to create the patient in ORMS if necessary)
     oie_response = oie_service.new_opal_patient(active_mrn_list)
 
     if oie_response['status'] == 'success':
-        logger.info('Successfully initialized patient via the OIE; patient_uuid = {0}'.format(patient_uuid))
+        logger.info(f'Successfully initialized patient via the OIE; patient_uuid = {patient_uuid}')
     else:
         logger.error('Failed to initialize patient via the OIE')
         logger.error(
-            'MRNs = {0}, patient_uuid = {1}, OIE response = {2}'.format(mrn_list, patient_uuid, oie_response),
+            f'MRNs = {mrn_list}, patient_uuid = {patient_uuid}, OIE response = {oie_response}',
         )
 
     # Call ORMS to notify it of the existence of the new patient
     orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
 
     if orms_response['status'] == 'success':
-        logger.info('Successfully initialized patient via ORMS; patient_uuid = {0}'.format(patient_uuid))
+        logger.info(f'Successfully initialized patient via ORMS; patient_uuid = {patient_uuid}')
     else:
         logger.error('Failed to initialize patient via ORMS')
         logger.error(
-            'MRNs = {0}, patient_uuid = {1}, ORMS response = {2}'.format(mrn_list, patient_uuid, orms_response),
+            f'MRNs = {mrn_list}, patient_uuid = {patient_uuid}, ORMS response = {orms_response}',
         )
 
 
@@ -425,7 +425,7 @@ def create_access_request(  # noqa: WPS210, WPS231
     patient: Patient | OIEPatientData,
     caregiver: caregiver_models.CaregiverProfile | tuple[str, str],
     relationship_type: RelationshipType,
-) -> tuple[Relationship, Optional[caregiver_models.RegistrationCode]]:
+) -> tuple[Relationship, caregiver_models.RegistrationCode | None]:
     """
     Create a new access request (relationship) between the patient and caregiver.
 

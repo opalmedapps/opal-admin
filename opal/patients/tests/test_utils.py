@@ -496,7 +496,7 @@ def test_initialize_new_opal_patient_orms_success(mocker: MockerFixture) -> None
     utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
 
     mock_error_logger.assert_any_call(
-        'Successfully initialized patient via ORMS; patient_uuid = {0}'.format(patient_uuid),
+        f'Successfully initialized patient via ORMS; patient_uuid = {patient_uuid}',
     )
 
 
@@ -528,7 +528,7 @@ def test_initialize_new_opal_patient_oie_success(mocker: MockerFixture) -> None:
     utils.initialize_new_opal_patient(patient, mrn_list, patient_uuid, None)
 
     mock_error_logger.assert_any_call(
-        'Successfully initialized patient via the OIE; patient_uuid = {0}'.format(patient_uuid),
+        f'Successfully initialized patient via the OIE; patient_uuid = {patient_uuid}',
     )
 
 

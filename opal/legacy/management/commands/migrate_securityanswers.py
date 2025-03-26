@@ -1,5 +1,5 @@
 """Command for Security Answer migration."""
-from typing import Any, Optional
+from typing import Any
 
 from django.core.management.base import BaseCommand
 
@@ -78,7 +78,7 @@ class Command(BaseCommand):
             f'Migrated {migrated_answers} out of {legacy_answers.count()} security answers',
         ))
 
-    def _find_user(self, patientsernum: int) -> Optional[User]:  # noqa: C901
+    def _find_user(self, patientsernum: int) -> User | None:  # noqa: C901
         """
         Check legacy user and user exist or not according the legacy patientsernum.
 

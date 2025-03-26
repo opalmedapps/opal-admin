@@ -222,7 +222,7 @@ def test_registration_encryption_invalid_hash(api_client: APIClient, admin_user:
     api_client.force_login(user=admin_user)
     registration_code = caregiver_factories.RegistrationCode()
     patient_factories.HospitalPatient(patient=registration_code.relationship.patient)
-    invalid_hash = sha512('badcode'.encode()).hexdigest()
+    invalid_hash = sha512(b'badcode').hexdigest()
 
     response = api_client.get(reverse('api:registration-by-hash', kwargs={'hash': invalid_hash}))
 

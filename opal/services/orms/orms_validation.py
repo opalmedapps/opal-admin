@@ -9,7 +9,7 @@ class ORMSValidator:
     #   Also adjust `initialize_new_opal_patient` accordingly; its calls to ORMS, the OIE etc. should be handled and
     #   not cause the whole function to fail.
     # TODO log or return original errors from ORMS instead of suppressing them
-    def is_patient_response_valid(  # noqa: C901, WPS231
+    def is_patient_response_valid(
         self,
         response_data: Any,
     ) -> tuple[bool, list[str]]:
@@ -34,6 +34,6 @@ class ORMSValidator:
             if response_data.get('error') == 'Patient not found':
                 errors.append('Skipping patient initialization in ORMS because the patient was not found there')
         elif not success:
-            errors.append('Patient response data has an unexpected "status" value: {0}'.format(status))
+            errors.append(f'Patient response data has an unexpected "status" value: {status}')
 
         return success, errors

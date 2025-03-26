@@ -284,7 +284,7 @@ def test_user_nonclinical_user_remove_not_change_status() -> None:
     assert clinical_staff.is_staff
 
 
-def test_user_group_remove_add_multiple_groups() -> None:  # noqa: WPS213
+def test_user_group_remove_add_multiple_groups() -> None:
     """User properties `is_staff` and `is_superuser` changed when multiple groups are added and removed."""
     # create a user
     clinical_staff = factories.User()

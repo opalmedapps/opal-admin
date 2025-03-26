@@ -131,10 +131,8 @@ class PatientDemographicView(UpdateAPIView[Patient]):
         except (ObjectDoesNotExist, MultipleObjectsReturned):
             # Raise `NotFound` if `Patient` object is empty
             raise NotFound(
-                '{0} {1}'.format(
-                    'Cannot find patient record with the provided MRNs and sites.',
-                    'Make sure that MRN/site pairs refer to the same patient.',
-                ),
+                'Cannot find patient record with the provided MRNs and sites.'
+                + 'Make sure that MRN/site pairs refer to the same patient.',
             )
 
         # May raise a permission denied
@@ -273,10 +271,7 @@ class PatientExistsView(APIView):
                 patient = Patient.objects.get_patient_by_site_mrn_list(mrn_site_data)
             except (ObjectDoesNotExist, MultipleObjectsReturned):
                 raise NotFound(
-                    detail='{0} {1}'.format(
-                        'Cannot find patient record with the provided MRNs and sites or',
-                        'multiple patients found.',
-                    ),
+                    detail='Cannot find patient record with the provided MRNs and sites or multiple patients found.',
                 )
             return Response(
                 data=PatientSerializer(patient, fields=('uuid', 'legacy_id')).data,

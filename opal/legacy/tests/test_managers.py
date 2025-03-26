@@ -1,6 +1,5 @@
 import datetime as dt
 import json
-from typing import Optional
 
 from django.db import DatabaseError
 from django.utils import timezone
@@ -1369,7 +1368,7 @@ def test_get_aggregated_user_app_activities_labs_statistics() -> None:
 def _create_log_record(
     request: str = 'Login',
     parameters: str = '',
-    target_patient_id: Optional[int] = None,
+    target_patient_id: int | None = None,
     username: str = 'username',
     app_version: str = '100.100.100',
     days_delta: int = 1,

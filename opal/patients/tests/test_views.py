@@ -199,7 +199,7 @@ def test_relationships_pending_list(relationship_user: Client) -> None:
     assertQuerySetEqual(list(reversed(response.context['relationship_list'])), relationships)
 
     for relationship in relationships:
-        assertContains(response, f'<td >{relationship.type.name}</td>')  # noqa: WPS237
+        assertContains(response, f'<td >{relationship.type.name}</td>')
 
 
 def test_relationships_not_pending_not_list(relationship_user: Client) -> None:
@@ -254,7 +254,7 @@ def test_form_pending_readonly_update_template(relationship_user: Client) -> Non
     table: tables.PatientTable = response.context['table']
 
     assert table.data.data[0] == relationship_record.patient
-    assertContains(response, '{0}: {1}'.format(hospital_patient.site.acronym, hospital_patient.mrn))
+    assertContains(response, f'{hospital_patient.site.acronym}: {hospital_patient.mrn}')
     assertContains(response, 'Back')
     assertNotContains(response, 'Save')
 

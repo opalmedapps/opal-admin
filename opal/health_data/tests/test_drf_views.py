@@ -1,7 +1,7 @@
 from datetime import timedelta
 from decimal import Decimal
 from http import HTTPStatus
-from typing import Any, Union
+from typing import Any
 from uuid import uuid4
 
 from django.forms import model_to_dict
@@ -24,7 +24,7 @@ pytestmark = pytest.mark.django_db
 
 
 def _create_sample_data(
-    value: Union[int, float, str] = '12.34',
+    value: int | float | str = '12.34',
     sample_type: QuantitySampleType = QuantitySampleType.BODY_MASS,
     source: SampleSourceType = SampleSourceType.PATIENT,
 ) -> dict[str, Any]:

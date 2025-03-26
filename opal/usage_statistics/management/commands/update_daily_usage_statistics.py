@@ -22,9 +22,9 @@ class Command(BaseCommand):
     The command populates `DailyUserAppActivity`, `DailyUserPatientActivity` and `DailyPatientDataReceived` models.
     """
 
-    help = '{0}\n{1}'.format(  # noqa: A003
-        'Populate the daily app activity statistics per user and patient from PatientActivityLog',
-        'By default the command calculates the statistics for the complete previous day',
+    help = (  # noqa: A003
+        'Populate the daily app activity statistics per user and patient from PatientActivityLog'
+        + '\nBy default the command calculates the statistics for the complete previous day'
     )
 
     def add_arguments(self, parser: CommandParser) -> None:

@@ -48,7 +48,7 @@ class QuestionnaireProfile(models.Model):
         Returns:
             username with the following questionnaire list
         """
-        return '{user}__follows__{qstList}'.format(user=self.user.username, qstList=self.questionnaire_list)
+        return f'{self.user.username}__follows__{self.questionnaire_list}'
 
     @classmethod
     def update_questionnaires_following(cls, qid: str, qname: str, user: User, toggle: bool) -> None:

@@ -1,7 +1,7 @@
 """This module provides forms for the `patients` app."""
 import logging
 from datetime import timedelta
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 
 from django import forms
 from django.conf import settings
@@ -155,7 +155,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         super().__init__(*args, **kwargs)
 
         # store response for patient searched in hospital
-        self.patient: Union[OIEPatientData, Patient, None] = None
+        self.patient: OIEPatientData | Patient | None = None
 
         # initialize site with a site object when there is a single site and card type is mrn
         site_field: forms.ModelChoiceField[Site] = self.fields['site']  # type: ignore[assignment]
@@ -219,16 +219,16 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         # initialize the OIEService to communicate with oie
         self.oie_service: OIEService = OIEService()
 
-        card_type: Optional[str] = self.cleaned_data.get('card_type')
-        medical_number: Optional[str] = self.cleaned_data.get('medical_number')
-        site: Optional[Site] = self.cleaned_data.get('site')
+        card_type: str | None = self.cleaned_data.get('card_type')
+        medical_number: str | None = self.cleaned_data.get('medical_number')
+        site: Site | None = self.cleaned_data.get('site')
 
         if card_type and medical_number:
             self._search_patient(card_type, medical_number, site)
 
         return self.cleaned_data
 
-    def _search_patient(self, card_type: str, medical_number: str, site: Optional[Site]) -> None:
+    def _search_patient(self, card_type: str, medical_number: str, site: Site | None) -> None:
         """
         Perform patient search in `Patient` model then in OIE.
 
@@ -410,10 +410,10 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         required=lambda form: form.is_existing_user_selected(),
     )
 
-    def __init__(  # noqa: WPS231 (too much cognitive complexity)
+    def __init__(  # noqa: WPS231, WPS210 (too much cognitive complexity, too many local variables)
         self,
         patient: Patient | OIEPatientData,
-        existing_user: Optional[CaregiverProfile] = None,
+        existing_user: CaregiverProfile | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -449,12 +449,13 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         super().__init__(*args, **kwargs)
 
-        self.existing_user: Optional[CaregiverProfile] = existing_user
+        self.existing_user: CaregiverProfile | None = existing_user
 
         self.helper = FormHelper()
         self.helper.form_tag = False
         self.helper.disable_csrf = True
 
+        validation_text = gettext('Validation')
         self.helper.layout = Layout(
             Row(
                 Column(
@@ -462,7 +463,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 ),
                 Column(
                     # make it appear like a label
-                    HTML('<p class="fw-semibold">{0}</p>'.format(_('Validation'))),
+                    HTML(f'<p class=\"fw-semibold\">{validation_text}</p>'),
                     'form_filled',
                     'id_checked',
                 ),
@@ -516,7 +517,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         return False
 
-    def is_existing_user_selected(self, cleaned_data: Optional[dict[str, Any]] = None) -> bool:
+    def is_existing_user_selected(self, cleaned_data: dict[str, Any] | None = None) -> bool:
         """
         Return whether the existing user option is selected.
 
@@ -530,11 +531,11 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         Returns:
             True, if the existing user option is selected, False otherwise
         """
-        user_type: Optional[str] = cleaned_data.get('user_type') if cleaned_data else self['user_type'].value()
+        user_type: str | None = cleaned_data.get('user_type') if cleaned_data else self['user_type'].value()
 
         return user_type == constants.UserType.EXISTING.name
 
-    def clean(self) -> dict[str, Any]:  # noqa: WPS231
+    def clean(self) -> dict[str, Any]:
         """
         Validate the form.
 
@@ -756,7 +757,7 @@ class AccessRequestSendSMSForm(forms.Form):
             ),
         )
 
-    def clean(self) -> Optional[dict[str, Any]]:  # noqa: WPS210 (too many local variables)
+    def clean(self) -> dict[str, Any] | None:  # noqa: WPS210 (too many local variables)
         """
         Send the SMS to the phone number if the form fields are valid.
 
@@ -936,8 +937,8 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         """
         super().clean()
 
-        caregiver_firstname: Optional[str] = self.cleaned_data.get('first_name')
-        caregiver_lastname: Optional[str] = self.cleaned_data.get('last_name')
+        caregiver_firstname: str | None = self.cleaned_data.get('first_name')
+        caregiver_lastname: str | None = self.cleaned_data.get('last_name')
         type_field: RelationshipType = cast(RelationshipType, self.cleaned_data.get('type'))
 
         # Prevent the caregiver name from being changed for a self-relationship since the fields are readonly

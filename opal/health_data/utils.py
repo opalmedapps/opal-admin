@@ -1,5 +1,5 @@
 """Utility functions used by health data app."""
-from typing import Final, Optional
+from typing import Final
 
 from django.conf import settings
 from django.utils.translation import gettext
@@ -21,7 +21,7 @@ SINGLE_VALUE_SAMPLE_TYPES: Final = tuple(
 )
 
 
-def build_all_quantity_sample_charts(patient: Patient) -> dict[str, Optional[str]]:
+def build_all_quantity_sample_charts(patient: Patient) -> dict[str, str | None]:
     """Build all the quantity sample charts for a specific patient.
 
     Args:
@@ -30,7 +30,7 @@ def build_all_quantity_sample_charts(patient: Patient) -> dict[str, Optional[str
     Returns:
         dictionary of the quantity sample charts in HTML format
     """
-    charts: dict[str, Optional[str]] = {}
+    charts: dict[str, str | None] = {}
     chart_service = ChartService()
 
     # Build charts for the measurements that contain only one value
@@ -84,7 +84,7 @@ def build_all_quantity_sample_charts(patient: Patient) -> dict[str, Optional[str
 
         charts[gettext('Blood Pressure')] = chart_service.generate_error_bar_chart(
             ChartData(
-                title='{0} (mmHg)'.format(gettext('Blood Pressure')),
+                title=f"{gettext('Blood Pressure')} (mmHg)",
                 label_x=gettext('Date'),
                 label_y=gettext('Blood Pressure'),
                 label_legend=gettext('Device'),

@@ -27,7 +27,7 @@ class User(DjangoModelFactory):
     username = Faker('user_name')
     # produce a different hash for the same password for each user
     password = LazyFunction(lambda: make_password('thisisatest'))
-    email = lazy_attribute(lambda user: '{0}@example.com'.format(user.username))
+    email = lazy_attribute(lambda user: f'{user.username}@example.com')
     phone_number = ''
 
 
