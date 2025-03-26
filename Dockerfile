@@ -25,7 +25,7 @@ RUN apk upgrade --no-cache \
   && apk add --no-cache mariadb-dev \
   # Translation dependencies
   && apk add --no-cache gettext \
-  # Chromium
+  # kaleido dependencies
   && apk add --no-cache chromium
 
 
