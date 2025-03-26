@@ -333,7 +333,7 @@ def test_relationship_clean_end_date_beyond_boundary() -> None:
     calculated_end_date = relationship.patient.date_of_birth + relativedelta(
         years=relationship.type.end_age,
     )
-    relationship.start_date = calculated_end_date - relativedelta(years=constants.RELATIVE_YEAR_VALUE)
+    relationship.start_date = calculated_end_date - relativedelta(years=2)
     relationship.end_date = calculated_end_date + timedelta(days=1)
 
     expected_message = 'End date for Caregiver relationship cannot be later than {calculated_end_date}.'.format(
@@ -789,7 +789,6 @@ def test_validstatuses_not_contain_wrong_status_expired() -> None:
                 RelationshipStatus.CONFIRMED,
                 RelationshipStatus.PENDING,
                 RelationshipStatus.REVOKED,
-                RelationshipStatus.EXPIRED,
             ],
         ),
         (

@@ -15,7 +15,6 @@ from factory.django import DjangoModelFactory
 
 from opal.caregivers.factories import CaregiverProfile
 from opal.hospital_settings.factories import Site
-from opal.patients import constants
 
 from . import models
 
@@ -61,8 +60,8 @@ class Relationship(DjangoModelFactory):
     caregiver = SubFactory(CaregiverProfile)
     type = SubFactory(RelationshipType)  # noqa: A003
     request_date = datetime.date.today()
-    start_date = datetime.date.today() - relativedelta(years=constants.RELATIVE_YEAR_VALUE)
-    end_date = datetime.date.today() + relativedelta(years=constants.RELATIVE_YEAR_VALUE)
+    start_date = lazy_attribute(lambda relationship: relationship.patient.date_of_birth)
+    end_date = datetime.date.today() + relativedelta(years=2)
     reason = ''
 
 

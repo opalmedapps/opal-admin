@@ -1,11 +1,10 @@
 """This module provides views for hospital-specific settings."""
 import base64
-import io
 import json
 from collections import OrderedDict
 from datetime import date
 from http import HTTPStatus
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any, Dict, Optional, Type
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -22,25 +21,18 @@ from django.utils.translation import gettext_lazy as _
 from django.views import generic
 from django.views.generic.base import ContextMixin, TemplateResponseMixin, View
 
-import qrcode
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin, SingleTableView
-from formtools.wizard.views import SessionWizardView
-from qrcode.image import svg
 
-from opal.caregivers.models import RegistrationCode
-from opal.core.utils import generate_random_registration_code, generate_random_uuid, qr_code
+from opal.core.utils import qr_code
 from opal.core.views import CreateUpdateView, UpdateView
 from opal.patients import forms, tables
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
-from opal.users.models import Caregiver
 
-from . import constants
 from .filters import ManageCaregiverAccessFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
-from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
+from .models import Patient, Relationship, RelationshipStatus, RelationshipType
 from .utils import create_access_request
-from .validators import has_multiple_mrns_with_same_site_code, is_deceased
 
 _StorageValue = str | dict[str, Any]
 
@@ -88,7 +80,12 @@ class RelationshipTypeDeleteView(
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: WPS214 (too many methods)
+class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many base classes)
+    PermissionRequiredMixin,
+    TemplateResponseMixin,
+    ContextMixin,
+    View,
+):
     """
     View to process an access request.
 
@@ -97,6 +94,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
     Any previous form (validated) is disabled.
     """
 
+    permission_required = ('patients.can_perform_registration',)
     template_name = 'patients/access_request/new_access_request.html'
     template_name_confirmation_code = 'patients/access_request/confirmation_code.html'
     template_name_confirmation = 'patients/access_request/confirmation.html'
@@ -109,10 +107,10 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
         'confirm': forms.AccessRequestConfirmForm,
     })
     texts = {
-        'search': 'Find Patient',
-        'patient': 'Confirm Patient Data',
-        'relationship': 'Continue',
-        'confirm': 'Generate Registration Code',
+        'search': _('Find Patient'),
+        'patient': _('Confirm Patient Data'),
+        'relationship': _('Continue'),
+        'confirm': _('Generate Registration Code'),
     }
     current_step_name = 'current_step'
     session_key_name = 'access_request'
@@ -239,7 +237,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
             relationship_form.full_clean()
 
             if relationship_form.is_existing_user_selected(relationship_form.cleaned_data):
-                context_data['next_button_text'] = 'Submit Access Request'
+                context_data['next_button_text'] = _('Create Access Request')
 
         # TODO: might not be needed anymore
         context_data['next_button_disabled'] = disable_next
@@ -480,427 +478,6 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
         return keys[next_index] if len(keys) > next_index else None
 
 
-class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WPS214
-    """
-    Form wizard view providing the steps for a caregiver's patient access request.
-
-    The collected information is stored in the server-side session. Once all information is collected,
-    a confirmation page with a QR code is displayed.
-    """
-
-    model = Site
-    permission_required = ('patients.can_perform_registration',)
-    form_list = [
-        ('site', forms.SelectSiteForm),
-        ('search', forms.SearchForm),
-        ('confirm', forms.ConfirmPatientForm),
-        ('relationship', forms.RequestorDetailsForm),
-        ('account', forms.RequestorAccountForm),
-        ('requestor', forms.ExistingUserForm),
-        ('existing', forms.ConfirmExistingUserForm),
-        ('password', forms.ConfirmPasswordForm),
-    ]
-    form_title_list = {
-        'site': _('Hospital Information'),
-        'search': _('Patient Details'),
-        'confirm': _('Patient Details'),
-        'relationship': _('Requestor Details'),
-        'account': _('Requestor Details'),
-        'requestor': _('Requestor Details'),
-        'existing': _('Requestor Details'),
-        'password': _('Confirm access to patient data'),
-    }
-    template_list = {
-        'site': 'patients/access_request/access_request.html',
-        'search': 'patients/access_request/access_request.html',
-        'confirm': 'patients/access_request/access_request.html',
-        'relationship': 'patients/access_request/access_request.html',
-        'account': 'patients/access_request/access_request.html',
-        'requestor': 'patients/access_request/access_request.html',
-        'existing': 'patients/access_request/access_request.html',
-        'password': 'patients/access_request/access_request.html',
-    }
-
-    def get_template_names(self) -> List[str]:
-        """
-        Return the template url for a step.
-
-        Returns:
-            the template url for a step
-        """
-        return [self.template_list[self.steps.current]]
-
-    def process_step(self, form: Form) -> Any:
-        """
-        Postprocess the form data.
-
-        Args:
-            form: the form of the step being processed
-
-        Returns:
-            the raw `form.data` dictionary
-        """
-        form_step_data = self.get_form_step_data(form)
-        if self.steps.current == 'site':
-            site_selection = form_step_data['site-sites']
-            self.request.session['site_selection'] = site_selection
-        return form_step_data
-
-    def get_context_data(self, form: Form, **kwargs: Any) -> dict[str, Any]:
-        """
-        Return the template context for a step.
-
-        Args:
-            form: a list of different forms
-            kwargs: additional keyword arguments
-
-        Returns:
-            the template context for a step
-        """
-        context: dict[str, Any] = super().get_context_data(form=form, **kwargs)
-        if self.steps.current == 'confirm':
-            patient_record = self.get_cleaned_data_for_step(self.steps.prev)['patient_record']
-            context = self._update_patient_confirmation_context(context, patient_record)
-        if self.steps.current == 'existing':
-            user_record = self.get_cleaned_data_for_step(self.steps.prev)['user_record']
-            context.update({'table': tables.ExistingUserTable([user_record])})
-        context.update({'header_title': self.form_title_list[self.steps.current]})
-        return context
-
-    def get_form(self, step: Optional[str] = None, data: Any = None, files: Any = None) -> Any:
-        """
-        Initialize the form for a given `step`.
-
-        Args:
-            step: a form step
-            data: form `data` argument
-            files: form `files` argument
-
-        Returns:
-            the form
-        """
-        form = super().get_form(step, data, files)
-        if step is None:
-            step = self.steps.current
-        if step == 'requestor':
-            user_type = self.get_cleaned_data_for_step('account')['user_type']
-            # If new user is selected, the current form will be replaced by `NewUserForm`.
-            # The step `existing` will be ignored.
-            if user_type == str(constants.NEW_USER):
-                form_class = forms.NewUserForm
-                form = form_class(data=data, prefix=self.get_form_prefix(step, form_class))
-                self.condition_dict = {'existing': False}
-        # Since `form_list` will be initalized for each step,
-        # the step `existing` will be ignored one more time in step `password` if the new user is selected
-        elif step == 'password':
-            user_type = self.get_cleaned_data_for_step('account')['user_type']
-            if user_type == str(constants.NEW_USER):
-                self.condition_dict = {'existing': False}
-        return form
-
-    def get_form_initial(self, step: str) -> dict[str, str]:
-        """
-        Return a dictionary which will be passed to the form for `step` as `initial`.
-
-        If no initial data was provided while initializing the form wizard, an empty dictionary will be returned.
-
-        Args:
-            step: a form step
-
-        Returns:
-            a dictionary or an empty dictionary for a step
-        """
-        initial: dict[str, Any] = self.initial_dict.get(step, {})
-        if step == 'site' and 'site_selection' in self.request.session:
-            site_user_selection = Site.objects.filter(pk=self.request.session['site_selection']).first()
-            if site_user_selection:
-                initial.update({
-                    'sites': site_user_selection,
-                })
-        elif step == 'search' and 'site_selection' in self.request.session:
-            site_user_selection = Site.objects.filter(pk=self.request.session['site_selection']).first()
-            if site_user_selection:
-                initial.update({
-                    'site_code': site_user_selection.code,
-                })
-        return initial
-
-    def get_form_kwargs(self, step: str) -> dict[str, str]:
-        """
-        Return the keyword arguments for instantiating the form on the given step.
-
-        Args:
-            step: a form step
-
-        Returns:
-            a dictionary or an empty dictionary for a step
-        """
-        kwargs = {}
-        if step == 'relationship':
-            patient_record = self.get_cleaned_data_for_step('search')['patient_record']
-            kwargs['ramq'] = patient_record.ramq
-            kwargs['mrn'] = patient_record.mrns[0].mrn
-            kwargs['site'] = patient_record.mrns[0].site
-            kwargs['date_of_birth'] = patient_record.date_of_birth
-        elif step == 'requestor':
-            relationship_type = self.get_cleaned_data_for_step('relationship')['relationship_type']
-            kwargs['relationship_type'] = relationship_type
-        elif step == 'password':
-            kwargs['authorized_user'] = self.request.user
-        return kwargs
-
-    def done(self, form_list: Tuple, **kwargs: Any) -> HttpResponse:
-        """
-        Redirect to a test qr code page.
-
-        Args:
-            form_list: a list of different forms
-            kwargs: additional keyword arguments
-
-        Returns:
-            the object of HttpResponse
-        """
-        form_data = [form.cleaned_data for form in form_list]
-        # process form data for easily accessing to
-        new_form_data = self._process_form_data(form_data)
-        # generate access request for both of the case(new user or existing user)
-        relationship = self._generate_access_request(new_form_data)
-        # create the registration code instance for the relationship and validate the registration code
-        registration_code = RegistrationCode(
-            relationship=relationship,
-            code=generate_random_registration_code(settings.INSTITUTION_CODE, 10),
-        )
-        registration_code.full_clean()
-        registration_code.save()
-        # generate QR code for Opal registration system
-        stream = self._generate_qr_code(registration_code.code)
-
-        return render(self.request, 'patients/access_request/confirmation_code.html', {
-            'qrcode': base64.b64encode(stream.getvalue()).decode(),
-            'patient': relationship.patient,
-            'hospital': new_form_data['sites'],
-            'registration_code': registration_code,
-            'registration_url': str(settings.OPAL_USER_REGISTRATION_URL),
-        })
-
-    def _generate_qr_code(self, registration_code: str) -> io.BytesIO:
-        """
-        Generate a QR code for Opal registration system.
-
-        Args:
-            registration_code: registration code
-
-        Returns:
-            a stream of in-memory bytes for a QR-code image
-        """
-        factory = svg.SvgImage
-        img = qrcode.make(
-            '{0}/#!/?code={1}'.format(settings.OPAL_USER_REGISTRATION_URL, registration_code),
-            image_factory=factory,
-            box_size=constants.QR_CODE_BOX_SIZE,
-        )
-        stream = io.BytesIO()
-        img.save(stream)
-        return stream
-
-    def _create_caregiver_profile(self, form_data: dict, random_username_length: int) -> dict[str, Any]:
-        """
-        Create caregiver user and caregiver profile instance if not exists.
-
-        Args:
-            form_data: form data
-            random_username_length: the length of random username
-
-        Returns:
-            caregiver user and caregiver profile instance dictionary
-        """
-        caregiver_dict: dict[str, Any] = {}
-        if form_data['user_type'] == str(constants.EXISTING_USER):
-            # Get the Caregiver user if it exists
-            caregiver_user = Caregiver.objects.filter(
-                email=form_data['user_email'],
-                phone_number=form_data['user_phone'],
-            ).first()
-        else:
-            # Create a new Caregiver user
-            caregiver_user = Caregiver.objects.create(
-                username=generate_random_uuid(random_username_length),
-                first_name=form_data['first_name'],
-                last_name=form_data['last_name'],
-            )
-
-        # Check if the caregiver record exists. If not, create a new record.
-        if caregiver_user:
-            caregiver, created = CaregiverProfile.objects.get_or_create(
-                user_id=caregiver_user.id,
-                defaults={'user': caregiver_user},
-            )
-            caregiver_dict['caregiver_user'] = caregiver_user
-            caregiver_dict['caregiver'] = caregiver
-
-        return caregiver_dict
-
-    def _create_patient(self, form_data: dict) -> Patient:
-        """
-        Create patient instance if not exists.
-
-        Args:
-            form_data: form data
-
-        Returns:
-            patient instance
-        """
-        patient_record = form_data['patient_record']
-        # Check if the patient record exists searching by RAMQ. If not, create a new record.
-        patient, created = Patient.objects.get_or_create(
-            ramq=patient_record.ramq,
-            defaults={
-                'first_name': patient_record.first_name,
-                'last_name': patient_record.last_name,
-                'date_of_birth': patient_record.date_of_birth,
-                'sex': patient_record.sex,
-                'ramq': patient_record.ramq,
-            },
-        )
-        patient.full_clean()
-
-        return patient
-
-    def _create_relationship(   # noqa: WPS210
-        self,
-        form_data: dict,
-        caregiver_dict: dict[str, Any],
-        patient: Patient,
-    ) -> Relationship:
-        """
-        Create relationship instance if not exists.
-
-        Args:
-            form_data: form data
-            caregiver_dict: caregiver user nad caregiver profile instance dictionary
-            patient: patient instance
-
-        Returns:
-            relationship instance
-        """
-        caregiver_user = caregiver_dict['caregiver_user']
-        caregiver = caregiver_dict['caregiver']
-        relationship_type = form_data['relationship_type']
-        # Check if there is no relationship between requestor and patient
-        relationship: Optional[Relationship] = Relationship.objects.get_relationship_by_patient_caregiver(
-            str(relationship_type),
-            caregiver_user.id,
-            patient.ramq,
-        ).first()
-        # For `Self` relationship, the status is CONFIRMED
-        if relationship_type.role_type == RoleType.SELF:
-            status = RelationshipStatus.CONFIRMED
-        else:
-            status = RelationshipStatus.PENDING
-
-        start_date = Relationship.calculate_default_start_date(
-            date.today(),
-            patient.date_of_birth,
-            relationship_type,
-        )
-
-        if not relationship:
-            relationship = Relationship(
-                patient=patient,
-                caregiver=caregiver,
-                type=relationship_type,
-                status=status,
-                reason='',
-                request_date=date.today(),
-                start_date=start_date,
-                end_date=Relationship.calculate_end_date(
-                    patient.date_of_birth,
-                    relationship_type,
-                ),
-            )
-            relationship.full_clean()
-            relationship.save()
-
-        return relationship
-
-    def _generate_access_request(self, new_form_data: dict) -> Relationship:
-        """
-        Generate the relationship instance.
-
-        Args:
-            new_form_data: processed form data
-
-        Returns:
-            relationship instance
-        """
-        # Create caregiver user and caregiver profile if not exists
-        caregiver_dict = self._create_caregiver_profile(new_form_data, random_username_length=constants.USERNAME_LENGTH)
-
-        # Create patient instance if not exists
-        patient = self._create_patient(new_form_data)
-
-        # Create relationship instance if not exists
-        return self._create_relationship(new_form_data, caregiver_dict, patient)
-
-    def _process_form_data(self, forms_data: list) -> dict:
-        """
-        Process form data for easily accessing to.
-
-        Args:
-            forms_data: a list of form data
-
-        Returns:
-            the processed form data dictionary
-        """
-        processed_form_date = {}
-        for form_data in forms_data:
-            for key, value in form_data.items():
-                processed_form_date[key] = value
-        return processed_form_date
-
-    def _is_searched_patient_deceased(self, patient_record: OIEPatientData) -> bool:
-        """
-        Check if the searched patient is deceased.
-
-        Args:
-            patient_record: patient record search by RAMQ or MRN
-
-        Returns:
-            True if the searched patient is deceased
-        """
-        return patient_record.deceased
-
-    def _update_patient_confirmation_context(
-        self,
-        context: dict[str, Any],
-        patient_record: OIEPatientData,
-    ) -> dict[str, Any]:
-        """
-        Update the context for patient confirmation form.
-
-        Args:
-            context: the template context for step 'confirm'
-            patient_record: patient record search by RAMQ or MRN
-
-        Returns:
-            the template context for step 'confirm'
-        """
-        if is_deceased(patient_record):
-            context.update({
-                'error_message': _('Unable to complete action with this patient. Please contact Medical Records.'),
-            })
-
-        elif has_multiple_mrns_with_same_site_code(patient_record):
-            context.update({
-                'error_message': _('Please note multiple MRNs need to be merged by medical records.'),
-            })
-
-        context.update({
-            'table': tables.ConfirmPatientDetailsTable([patient_record]),
-        })
-        return context
-
-
 class ManageCaregiverAccessListView(PermissionRequiredMixin, SingleTableMixin, FilterView):
     """This view provides a page that displays a list of `RelationshipType` objects."""
 
@@ -1052,7 +629,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
 
         return super().get(request, *args, **kwargs)
 
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:  # noqa: WPS210
         """
         Save updates for the `first_name` and `last_name` fields that are related to the caregiver/user module.
 
@@ -1079,7 +656,31 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
                 status=HTTPStatus.METHOD_NOT_ALLOWED,
             )
 
-        return super().post(request, **kwargs)
+        data = self.request.POST
+        # convert data from queryset to dict
+        initial = data.dict()
+
+        # use initial instead of data to avoid validating a form when up-validate is used
+        form = self.form_class(
+            data=None if 'X-Up-Validate' in self.request.headers else data,
+            initial=initial,
+            instance=relationship_record,
+        )
+        # when the post is triggered by up validate
+        if 'X-Up-Validate' in self.request.headers:
+            context_data = form.get_context()
+            # keep original cancel_url
+            context_data['cancel_url'] = request.POST.get('cancel_url')
+        # when the post is triggered by submit/save button
+        else:
+            if form.is_valid():
+                return super().post(request, **kwargs)
+            else:
+                context_data = form.get_context()
+                context_data['cancel_url'] = request.POST.get('cancel_url')
+
+        # update the form with context data when post does not succeed
+        return self.render_to_response(context_data)
 
     def form_valid(self, form: ModelForm[Relationship]) -> HttpResponse:
         """

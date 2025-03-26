@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-06 20:19-0400\n"
+"POT-Creation-Date: 2023-06-08 15:49-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,12 +31,12 @@ msgid "Patients"
 msgstr "Patients"
 
 #: opal/patients/constants.py
-msgid "Medicare Card (RAMQ)"
-msgstr "Régie de l'assurance maladie du Québec (RAMQ)"
-
-#: opal/patients/constants.py
 msgid "Hospital Card (MRN)"
 msgstr "Numéro de dossier médical (NDM)"
+
+#: opal/patients/constants.py
+msgid "Medicare Card (RAMQ)"
+msgstr "Régie de l'assurance maladie du Québec (RAMQ)"
 
 #: opal/patients/constants.py
 msgid "New Opal User"
@@ -51,12 +51,12 @@ msgid "Card Type"
 msgstr "Type de Carte"
 
 #: opal/patients/filters.py opal/patients/forms.py
-msgid "Choose..."
-msgstr "Choisir..."
-
-#: opal/patients/filters.py opal/patients/forms.py
 msgid "Hospital"
 msgstr "Nom de l'hôpital:"
+
+#: opal/patients/filters.py opal/patients/forms.py
+msgid "Choose..."
+msgstr "Choisir..."
 
 #: opal/patients/filters.py opal/patients/forms.py
 msgid "Identification Number"
@@ -78,7 +78,7 @@ msgstr "Non requis"
 msgid "No patient could be found."
 msgstr "Aucun patient n'a pu être retrouvé."
 
-#: opal/patients/forms.py opal/patients/views.py
+#: opal/patients/forms.py
 msgid ""
 "Unable to complete action with this patient. Please contact Medical Records."
 msgstr ""
@@ -119,6 +119,10 @@ msgstr "Adresse courriel"
 msgid "Phone Number"
 msgstr "Numéro de téléphone"
 
+#: opal/patients/forms.py
+msgid "Validation"
+msgstr ""
+
 #: opal/patients/forms.py opal/patients/tables.py
 msgid "No existing user could be found."
 msgstr "Aucun utilisateur existant n'a pu être trouvé."
@@ -138,78 +142,6 @@ msgstr ""
 #: opal/patients/forms.py
 msgid "The password you entered is incorrect. Please try again."
 msgstr "Le mot de passe que vous avez entré est incorrect. Veuillez réessayer."
-
-#: opal/patients/forms.py
-msgid "At which hospital is the patient?"
-msgstr "Dans quel hôpital se trouve le patient?"
-
-#: opal/patients/forms.py
-msgid "Next"
-msgstr "Suivant"
-
-#: opal/patients/forms.py
-msgid "Please Select A Card Type"
-msgstr "Veuillez sélectionner un type de carte"
-
-#: opal/patients/forms.py
-msgid "Please Input The Card Number"
-msgstr "Veuillez remplir le numéro de la carte"
-
-#: opal/patients/forms.py
-msgid "Correct?"
-msgstr "Correct?"
-
-#: opal/patients/forms.py
-msgid "Relationship types"
-msgstr "Types de relations"
-
-#: opal/patients/forms.py
-msgid "Has the requestor filled out the request form?"
-msgstr "Le demandeur a-t-il rempli le formulaire de demande?"
-
-#: opal/patients/forms.py
-msgid "Form request is required."
-msgstr "La demande de formulaire est obligatoire."
-
-#: opal/patients/forms.py
-msgid "New User or Existing User?"
-msgstr "Nouvel utilisateur ou utilisateur existant?"
-
-#: opal/patients/forms.py
-msgid "Find Account"
-msgstr "Trouver un compte"
-
-#: opal/patients/forms.py
-msgid ""
-"Opal user was not found in your database. This may be an out-of-hospital "
-"account. Please proceed to generate a new QR code. Inform the user they must "
-"register at the Registration website."
-msgstr ""
-"L'utilisateur Opal n'a pas été trouvé dans votre base de données. Il peut "
-"s'agir d'un compte hors hôpital. Veuillez procéder à la génération d'un "
-"nouveau code QR. Informez l'utilisateur qu'il doit s'inscrire sur le site "
-"Web d'inscription."
-
-#: opal/patients/forms.py
-msgid "This opal user already has a self-relationship with the patient."
-msgstr ""
-"Cet utilisateur d'Opal a déjà une relation de type « soi » avec le patient."
-
-#: opal/patients/forms.py
-msgid "ID Checked?"
-msgstr "Identité vérifiée?"
-
-#: opal/patients/forms.py
-msgid "Generate Access Request"
-msgstr "Générer une demande d'accès"
-
-#: opal/patients/forms.py
-msgid "Generate QR Code"
-msgstr "Générer un code QR"
-
-#: opal/patients/forms.py
-msgid "Confirm"
-msgstr "Confirmer"
 
 #: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
 #: opal/patients/templates/patients/relationships/view_relationship.html
@@ -257,7 +189,6 @@ msgid "Mandatary"
 msgstr "Mandataire"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/edit_relationship.html
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "Caregiver"
 msgstr "Proche aidant"
@@ -387,7 +318,6 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/edit_relationship.html
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "Patient"
 msgstr "Patient"
@@ -537,10 +467,6 @@ msgstr "Aucun aidant n'a pu être retrouvé."
 msgid "No caregiver could be found."
 msgstr "Aucun aidant n'a pu être retrouvé."
 
-#: opal/patients/templates/patients/access_request/access_request.html
-msgid "New Patient Data Access Request"
-msgstr "Nouvelle demande d'accès aux données patient"
-
 #: opal/patients/templates/patients/access_request/confirmation.html
 msgid "Opal Registration: Confirmation"
 msgstr ""
@@ -629,12 +555,12 @@ msgid "Opal Registration"
 msgstr ""
 
 #: opal/patients/templates/patients/access_request/new_access_request.html
-#: opal/patients/views.py
+#: opal/patients/templates/patients/relationships/edit_relationship.html
+#: opal/patients/templates/patients/relationships/pending_relationship_list.html
 msgid "Patient Details"
 msgstr "Détails du patient"
 
 #: opal/patients/templates/patients/access_request/new_access_request.html
-#: opal/patients/views.py
 msgid "Requestor Details"
 msgstr "Détails du demandeur"
 
@@ -668,6 +594,10 @@ msgstr "MRN(s)"
 msgid "RAMQ"
 msgstr "RAMQ"
 
+#: opal/patients/templates/patients/relationships/edit_relationship.html
+msgid "Caregiver Details"
+msgstr "Proches aidants"
+
 #: opal/patients/templates/patients/relationships/pending_relationship_list.html
 msgid "Manage Caregiver Access"
 msgstr "Générer une demande d'accès"
@@ -689,15 +619,21 @@ msgid "No explanation provided"
 msgstr ""
 
 #: opal/patients/views.py
-msgid "Hospital Information"
-msgstr "Patient de l'hôpital"
-
-#: opal/patients/views.py
-msgid "Confirm access to patient data"
-msgstr "Confirmer l'accès aux données du patient"
-
-#: opal/patients/views.py
-msgid "Please note multiple MRNs need to be merged by medical records."
+msgid "Find Patient"
 msgstr ""
-"Veuillez noter que plusieurs MRN doivent être fusionnés par dossiers "
-"médicaux."
+
+#: opal/patients/views.py
+msgid "Confirm Patient Data"
+msgstr ""
+
+#: opal/patients/views.py
+msgid "Continue"
+msgstr "Continuer"
+
+#: opal/patients/views.py
+msgid "Generate Registration Code"
+msgstr "Générer le code du registration"
+
+#: opal/patients/views.py
+msgid "Create Access Request"
+msgstr "Créer une demande d'accès"
