@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+from _pytest.logging import LogCaptureFixture  # noqa: WPS436
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from requests import Response
@@ -336,3 +337,23 @@ def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
     assert base64_report is None
+
+
+def test_questionnaire_report_no_base64(mocker: MockerFixture, caplog: LogCaptureFixture) -> None:
+    """Ensure that when the report is not base64 an error is logged."""
+    mock_post = _mock_requests_post(mocker, {
+        'data': {
+            'status': 'Success: {0}'.format(HTTPStatus.OK),
+            'base64EncodedReport': 'not-base64',
+        },
+    })
+
+    base64_report = reports_service.generate_questionnaire_report(
+        QUESTIONNAIRE_REPORT_REQUEST_DATA,
+    )
+
+    assert mock_post.return_value.status_code == HTTPStatus.OK
+    assert base64_report is None
+
+    assert caplog.records[0].message == 'The generated questionnaire PDF report is not in the base64 format.'
+    assert caplog.records[0].levelname == 'ERROR'
