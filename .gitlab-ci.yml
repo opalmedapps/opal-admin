@@ -154,6 +154,7 @@ pytest:
   script:
     # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
     - apk add --no-cache mariadb-client
+    - apk add chromium
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - pytest --version
