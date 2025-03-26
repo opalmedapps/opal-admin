@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-05 01:58+0300\n"
+"POT-Creation-Date: 2022-12-06 19:29+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -319,7 +319,6 @@ msgid "Create"
 msgstr ""
 
 #: opal/patients/templates/patients/relationship_type/form.html
-#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Save"
 msgstr ""
 
@@ -350,6 +349,10 @@ msgstr "Détails de l'aidant"
 #: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Pending Relationships Access Request"
 msgstr "Date de la demande de relation"
+
+#: opal/patients/templates/patients/relationships/pending/form.html
+msgid "save"
+msgstr ""
 
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"
