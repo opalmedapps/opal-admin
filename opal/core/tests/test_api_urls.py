@@ -74,7 +74,7 @@ def test_api_app_appointments_defined(settings: SettingsWrapper) -> None:
 
 def test_api_check_permissions_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API check_permissions endpoint is defined."""
-    check_permissions_path = '/{api_root}/patients/legacy/{legacy_id}/check_permissions/'.format(
+    check_permissions_path = '/{api_root}/patients/legacy/{legacy_id}/check-permissions/'.format(
         api_root=settings.API_ROOT,
         legacy_id=1,
     )
