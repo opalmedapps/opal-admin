@@ -4,6 +4,7 @@ from collections import Counter
 from datetime import date
 from typing import Any, Dict, List, Tuple
 
+from django.conf import settings
 from django.forms import Form
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -283,7 +284,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         """
         factory = svg.SvgImage
         img = qrcode.make(
-            'https://registration.opalmedapps.ca/#!/?code={0}'.format(registration_code),
+            '{0}#!/?code={1}'.format(settings.OPAL_USER_REGISTRATION_URL, registration_code),
             image_factory=factory,
             box_size=constants.QR_CODE_BOX_SIZE,
         )

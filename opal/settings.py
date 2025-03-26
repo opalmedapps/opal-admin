@@ -350,6 +350,9 @@ OIE_PASSWORD = env('OIE_PASSWORD')
 # ePRO Data Extractions tool URL
 EPRO_DATA_EXTRACTIONS_URL = env.url('EPRO_URL').geturl()
 
+# Opal User Registration URL
+OPAL_USER_REGISTRATION_URL = env.url('OPAL_USER_REGISTRATION_URL').geturl()
+
 # Third party apps settings
 # ------------------------------------------------------------------------------
 #
