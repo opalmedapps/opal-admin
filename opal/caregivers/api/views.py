@@ -415,21 +415,11 @@ class RegistrationCompletionView(APIView):
         # also support an existing caregiver who has a Firebase account already
         # this can happen if the caregiver has an account at another institution
         email: str = email_verification.email if email_verification is not None else data_email
-        self._update_caregiver(relationship.caregiver, email, caregiver_data)
-
-        # Handle creation of legacy user and dummy patient (if necessary)
-        user_data = caregiver_data['user']
-        legacy_user = legacy_utils.create_caregiver_user(
-            relationship,
-            user_data['username'],
-            user_data['language'],
-            email,
-        )
-        utils.update_caregiver_profile(relationship.caregiver, legacy_user.usersernum)
+        self._update_caregiver(relationship, email, caregiver_data)
 
     def _update_caregiver(
         self,
-        caregiver_profile: caregiver_models.CaregiverProfile,
+        relationship: Relationship,
         email: str,
         caregiver_data: dict[str, Any],
     ) -> None:
@@ -437,11 +427,12 @@ class RegistrationCompletionView(APIView):
         Update the caregiver with the provided data.
 
         Args:
-            caregiver_profile: the caregiver profile instance to update
+            relationship: the relationship linking to the the caregiver to update
             email: the verified email
             caregiver_data: the validated data specific to the caregiver
         """
         user_data = caregiver_data['user']
+        caregiver_profile = relationship.caregiver
         utils.update_caregiver(
             caregiver_profile.user,
             email,
@@ -449,10 +440,14 @@ class RegistrationCompletionView(APIView):
             user_data['language'],
             user_data['phone_number'],
         )
-        utils.update_caregiver_profile(
-            caregiver_profile,
-            caregiver_data['legacy_id'],
+        # Handle creation of legacy user and dummy patient (if necessary)
+        legacy_user = legacy_utils.create_caregiver_user(
+            relationship,
+            user_data['username'],
+            user_data['language'],
+            email,
         )
+        utils.update_caregiver_profile(caregiver_profile, legacy_user.usersernum)
 
 
 class RetrieveCaregiverView(RetrieveAPIView[User]):
