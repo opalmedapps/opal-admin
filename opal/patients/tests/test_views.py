@@ -1397,7 +1397,7 @@ def test_relationship_cannot_update_invalid_entry(relationship_user: Client) -> 
 
 
 def test_relationship_update_success(relationship_user: Client) -> None:
-    """Ensures that post is not allowed for wrong last_name and correct error message is shown."""
+    """Ensures that post is successful for correct entries."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     relationship = factories.Relationship(
