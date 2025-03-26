@@ -46,15 +46,16 @@ class Command(BaseCommand):
         staff_users_counter = 0
 
         for legacy_user in LegacyOAUser.objects.all():
-            if legacy_user.oaroleid == admin_role:
+            # create a clinicalstaff user
+            clinical_staff_user = ClinicalStaff(
+                username=legacy_user.username,
+                language=legacy_user.language.lower(),
+                date_joined=legacy_user.date_added,
+            )
 
-                clinical_staff_user = ClinicalStaff(
-                    username=legacy_user.username,
-                    is_staff=True,
-                    is_superuser=True,
-                    language=legacy_user.language.lower(),
-                    date_joined=legacy_user.date_added,
-                )
+            if legacy_user.oaroleid == admin_role:
+                clinical_staff_user.is_staff = True
+                clinical_staff_user.is_superuser = True
 
                 if self._save_clinical_staff_user(clinical_staff_user):
                     admin_group.user_set.add(clinical_staff_user)
@@ -65,12 +66,6 @@ class Command(BaseCommand):
                     oaroleid=legacy_user.oaroleid,
                     moduleid=patient_module,
                     access__gte=Access.READ_WRITE.value,
-                )
-
-                clinical_staff_user = ClinicalStaff(
-                    username=legacy_user.username,
-                    language=legacy_user.language.lower(),
-                    date_joined=legacy_user.date_added,
                 )
 
                 if self._save_clinical_staff_user(clinical_staff_user):
