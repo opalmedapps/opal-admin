@@ -746,6 +746,8 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             initial_type = RelationshipType.objects.get(pk=selected_type)
             # combine the instance value and with the valid relationshiptypes
             available_choices |= utils.valid_relationship_types(self.instance.patient)
+            # exclude self relationship to disallow switching to self
+            available_choices = available_choices.exclude(role_type=RelationshipType.objects.self_type())
 
         # set the type field with the proper choices
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
