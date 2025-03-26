@@ -65,8 +65,9 @@ class TermsOfUseSerializer(serializers.HyperlinkedModelSerializer):
     """This class defines how the `terms of use` of an `Institution` is serialized for an API."""
 
     url = serializers.HyperlinkedIdentityField(view_name='api:institutions-terms-of-use')
-    terms_of_use = Base64FileField()
+    terms_of_use_en = Base64FileField()
+    terms_of_use_fr = Base64FileField()
 
     class Meta:
         model = Institution
-        fields = ['id', 'url', 'terms_of_use']
+        fields = ['id', 'url', 'terms_of_use_en', 'terms_of_use_fr']
