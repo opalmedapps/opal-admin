@@ -1,0 +1,17 @@
+{% load i18n %}
+
+{% translate "Dear" %} {{first_name}} {{last_name}}:
+
+{% translate "Welcome to Opal" %}.
+
+{% translate "Thank you for deciding to register with Opal" %}.
+
+{% translate "To verify your email address, enter the code below on the verification page" %}:
+
+{{code}}
+
+{% translate "This code will expire 10 minutes after the email is sent. Once the code expires you will need to request a new verification code" %}.
+
+{% translate "Yours" %},
+
+{% translate "The Opal team" %}

@@ -221,7 +221,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         """
         email_subject = _('Opal Verification Code')
 
-        template_plain = 'email/verification_code_{0}.txt'.format(language)
+        template_plain = 'email/verification_code.txt'
         parameters = {
             'code': email_verification.code,
             'first_name': user.first_name,
@@ -231,7 +231,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             template_plain,
             parameters,
         )
-        template_html = 'email/verification_code_{0}.html'.format(language)
+        template_html = 'email/verification_code.html'
         msg_html = render_to_string(
             template_html,
             parameters,
