@@ -14,7 +14,7 @@ class DatabankConsent(DjangoModelFactory):
 
     patient = factory.SubFactory(Patient)
     has_appointments = factory.Faker('boolean')
-    has_diagnosis = factory.Faker('boolean')
+    has_diagnoses = factory.Faker('boolean')
     has_demographics = factory.Faker('boolean')
     has_labs = factory.Faker('boolean')
     has_questionnaires = factory.Faker('boolean')
@@ -22,3 +22,15 @@ class DatabankConsent(DjangoModelFactory):
 
     class Meta:
         model = models.DatabankConsent
+
+
+class SharedData(DjangoModelFactory):
+    """Model factory to create [opal.databank.models.SharedData][] models."""
+
+    databank_consent = factory.SubFactory(DatabankConsent)
+    sent_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
+    data_id = factory.Sequence(lambda number: number + 1)
+    data_type = factory.Iterator(models.DataModuleType.values)
+
+    class Meta:
+        model = models.SharedData
