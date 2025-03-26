@@ -469,7 +469,11 @@ REST_FRAMEWORK = {
 # See https://drf-spectacular.readthedocs.io/en/latest/index.html
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Opal Backend',
-    'DESCRIPTION': 'This python django-based backend provides API endpoints for other opal applications and a user interface for administrative functionality.',
+    'DESCRIPTION': '{0}{1}{2}'.format(
+        'This python django-based backend provides API ',
+        'endpoints for other opal applications and a user ',
+        'interface for administrative functionality.',
+    ),
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     #  TODO: 'CONTACT': {},
