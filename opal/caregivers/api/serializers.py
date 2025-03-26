@@ -241,6 +241,7 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer[RegistrationCode]):
     security_answers = SecurityAnswerSerializer(
         fields=('question', 'answer'),
         many=True,
+        required=False,
     )
 
     class Meta:
