@@ -500,11 +500,11 @@ class PathologyPDF(FPDF):  # noqa: WPS214
 
         # Wrap the text with the maximum characters can be filled in each line.
         wrapper = textwrap.TextWrapper(
-            width=int((195 - 108) / 2) - 1,
+            width=int((185 - 110) / 2) - 1,
         )
         patient_name = wrapper.fill(text=f'Nom/Name: {self.patient_name}')
         # Calculate the number of the linse patient name will occupy
-        line = math.ceil(len(patient_name) * 2 / (195 - 108))
+        line = math.ceil(len(patient_name) * 2 / (185 - 110))
         return [
             {
                 'name': 'site_name',
@@ -577,12 +577,12 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'patient_name',
                 'type': 'T',
-                'x1': 108,
+                'x1': 110,
                 'y1': 47,
-                'x2': 195,
+                'x2': 185,
                 'y2': 51,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 9,
+                'size': 10,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -594,12 +594,12 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'patient_date_of_birth',
                 'type': 'T',
-                'x1': 108,
+                'x1': 110,
                 'y1': 47 + 4 * line,
-                'x2': 190,
+                'x2': 185,
                 'y2': 47 + 4 * (line + 1),
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 9,
+                'size': 10,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -611,12 +611,12 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'patient_ramq',
                 'type': 'T',
-                'x1': 108,
+                'x1': 110,
                 'y1': 47 + 4 * (line + 1),
-                'x2': 190,
+                'x2': 185,
                 'y2': 47 + 4 * (line + 2),
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 9,
+                'size': 10,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -628,12 +628,12 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'patient_sites_and_mrns',
                 'type': 'T',
-                'x1': 108,
+                'x1': 110,
                 'y1': 47 + 4 * (line + 2),
-                'x2': 190,
+                'x2': 185,
                 'y2': 47 + 4 * (line + 3),
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 9,
+                'size': 10,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
