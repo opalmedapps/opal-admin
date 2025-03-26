@@ -3,8 +3,8 @@ from unittest.mock import patch
 import pytest
 from pytest_django.asserts import assertRaisesMessage
 from pytest_django.fixtures import SettingsWrapper
-from twilio.rest.api import MessageList
 from twilio.rest import Client
+from twilio.rest.api import MessageList
 
 from opal.services.twilio import TwilioService, TwilioServiceException
 
