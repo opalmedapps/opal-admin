@@ -590,6 +590,7 @@ class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateM
         context = super().get_context_data(**kwargs)
         # to pass url to crispy form to be able to use it as a url for cancel button.
         context['cancel_url'] = reverse_lazy('patients:relationships-pending-list')
+
         return context
 
 

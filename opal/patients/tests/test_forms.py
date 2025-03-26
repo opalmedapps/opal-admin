@@ -37,7 +37,11 @@ def test_relationshippending_form_is_valid() -> None:
     relationship_info = factories.Relationship.create(reason='REASON')
     form_data = model_to_dict(relationship_info)
 
-    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
+    )
 
     assert relationshippending_form.is_valid()
 
@@ -50,7 +54,11 @@ def test_relationshippending_missing_startdate() -> None:
         'end_date',
     ])
 
-    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
+    )
     assert not relationshippending_form.is_valid()
 
 
@@ -59,7 +67,11 @@ def test_relationshippending_update() -> None:
     relationship_info = factories.Relationship.create(reason='REASON')
     form_data = model_to_dict(relationship_info)
 
-    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
+    )
     relationshippending_form.save()
 
     assert Relationship.objects.all()[0].start_date == relationshippending_form.data['start_date']
@@ -74,7 +86,11 @@ def test_relationshippending_update_fail() -> None:
     ])
 
     message = 'This field is required.'
-    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
+    )
 
     assert not relationshippending_form.is_valid()
     assert relationshippending_form.errors['start_date'][0] == message
@@ -92,7 +108,11 @@ def test_relationshippending_form_date_validated() -> None:
     form_data = model_to_dict(relationship_info)
 
     message = 'Start date should be earlier than end date.'
-    relationshippending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
+    relationshippending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
+    )
 
     assert not relationshippending_form.is_valid()
     assert relationshippending_form.errors['start_date'][0] == message
@@ -113,7 +133,11 @@ def test_relationship_pending_status_reason() -> None:
     print(form_data)
 
     message = 'Reason is mandatory when status is denied or revoked.'
-    pending_form = forms.RelationshipAccessForm(data=form_data, instance=relationship_info)
+    pending_form = forms.RelationshipAccessForm(
+        data=form_data,
+        instance=relationship_info,
+        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
+    )
 
     assert not pending_form.is_valid()
     print(pending_form.errors)
