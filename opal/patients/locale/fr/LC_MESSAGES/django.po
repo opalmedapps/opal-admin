@@ -168,7 +168,7 @@ msgstr ""
 
 #: opal/patients/forms.py
 msgid "This opal user already has a self-relationship with the patient."
-msgstr "Cet utilisateur d'Opal a déjà une relation à soi avec le patient."
+msgstr "Cet utilisateur d'Opal a déjà une relation de type « soi » avec le patient."
 
 #: opal/patients/forms.py
 msgid "ID Checked?"
@@ -444,6 +444,10 @@ msgstr "La date de fin doit être après la date de début."
 #: opal/patients/models.py
 msgid "Reason is mandatory when status is denied or revoked."
 msgstr "La raison est obligatoire lorsque le statut est refusé ou révoqué."
+
+#: opal/patients/models.py
+msgid "\"Pending\" status does not apply for the Self relationship."
+msgstr "Le statut \"En attente\" ne s'applique pas à la relation de type « soi »."
 
 #: opal/patients/models.py
 msgid "The patient already has a self-relationship"
