@@ -13,7 +13,7 @@ class SiteSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Site
-        fields = ['id', 'url', 'name', 'code', 'direction_url', 'parking_url']
+        fields = ['id', 'url', 'name', 'code', 'direction_url', 'parking_url', 'longitude', 'latitude']
 
 
 class InstitutionSerializer(serializers.HyperlinkedModelSerializer):

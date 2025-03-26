@@ -85,6 +85,8 @@ class SiteCreateUpdateView(CreateUpdateView):
         'direction_url_fr',
         'code',
         'institution',
+        'longitude',
+        'latitude',
     ]
     success_url = reverse_lazy('hospital-settings:site-list')
 

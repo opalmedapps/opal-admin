@@ -1,5 +1,4 @@
 """Module providing model factories for hospital settings app models."""
-
 import factory
 from factory.django import DjangoModelFactory
 
@@ -32,3 +31,7 @@ class Site(DjangoModelFactory):
     direction_url = 'https://directions.example.com'
     direction_url_fr = 'https://directions.example.com/fr'
     institution = factory.SubFactory(Institution)
+    # this is to create a float value with 16 digits decimal places.
+    # function such as (lambda: ('%.16f' % 32))() can be used instead
+    longitude = '43.3242143546534465'
+    latitude = '32.3242143546534465'

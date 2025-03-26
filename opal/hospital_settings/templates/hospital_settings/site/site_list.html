@@ -37,6 +37,12 @@
                                     <th>
                                       {% translate "Institution" %}
                                     </th>
+                                    <th>
+                                      {% translate "Longitude" %}
+                                    </th>
+                                    <th>
+                                      {% translate "Latitude" %}
+                                    </th>
                                     <th style="width: 33%">
                                     </th>
                                 </tr>
@@ -57,6 +63,12 @@
                                         <a href="{% url 'hospital-settings:institution-detail' site.institution.id %}">
                                           {{ site.institution }}
                                         </a>
+                                      </td>
+                                      <td>
+                                        {{ site.longitude }}
+                                      </td>
+                                      <td>
+                                        {{ site.latitude }}
                                       </td>
                                       <td class="project-actions text-right">
                                         <div class="btn-toolbar" role="group">
