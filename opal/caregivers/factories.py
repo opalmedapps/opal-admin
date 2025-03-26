@@ -92,4 +92,4 @@ class EmailVerification(DjangoModelFactory):
     caregiver = SubFactory(CaregiverProfile)
     code = '123456'
     email = 'opal@muhc.mcgill.ca'
-    sent_at = timezone.now()
+    sent_at = timezone.now() - timezone.timedelta(seconds=10)

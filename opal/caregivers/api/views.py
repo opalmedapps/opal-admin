@@ -1,12 +1,11 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
-
-import random
-
 from django.db.models.functions import SHA512
 from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
+from rest_framework import serializers as drf_serializers
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -16,6 +15,7 @@ from rest_framework.views import APIView
 
 from opal.caregivers.api.serializers import EmailVerificationSerializer, RegistrationEncryptionInfoSerializer
 from opal.caregivers.models import EmailVerification, RegistrationCode, RegistrationCodeStatus
+from opal.core.utils import generate_random_number
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
 
@@ -99,6 +99,9 @@ class ApiVerifyEmailView(ApiVerifyEmailBasicView):
             request: Http request made by the listener.
             code: registration code.
 
+        Raises:
+            ValidationError: resend email after 10 seconds.
+
         Returns:
             Http response with empty message.
         """
@@ -108,10 +111,7 @@ class ApiVerifyEmailView(ApiVerifyEmailBasicView):
         input_serializer.is_valid(raise_exception=True)
 
         email = input_serializer.validated_data['email']
-        verification_code = random.randint(  # noqa: S311
-            constants.VERIFICATION_CODE_MIN,
-            constants.VERIFICATION_CODE_MAX,
-        )
+        verification_code = generate_random_number(constants.VERIFICATION_CODE_LENGTH)
         caregiver = registration_code.relationship.caregiver
         try:
             email_verification = registration_code.relationship.caregiver.email_verifications.get(
@@ -125,14 +125,18 @@ class ApiVerifyEmailView(ApiVerifyEmailBasicView):
                 sent_at=timezone.now(),
             )
         else:
-            input_serializer.update(
-                email_verification,
-                {
-                    'code': verification_code,
-                    'is_verified': False,
-                    'sent_at': timezone.now(),
-                },
-            )
+            time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
+            if time_delta.total_seconds() >= constants.TIME_DELAY:
+                input_serializer.update(
+                    email_verification,
+                    {
+                        'code': verification_code,
+                        'is_verified': False,
+                        'sent_at': timezone.now(),
+                    },
+                )
+            else:
+                raise drf_serializers.ValidationError({'detail': _('Resend email after 10 seconds.')})
 
         return Response()
 
