@@ -57,7 +57,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
-    def post(self, request: Any) -> HttpResponse:
+    def post(self, request: HttpRequest) -> HttpResponse:
         """Override class method and fetch query parameters for the requested questionnaire.
 
         Args:
@@ -67,9 +67,8 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
             template rendered with updated context or HttpError
         """
         context = self.get_context_data()
-        context.update({'title': 'questionnaire detail'})
 
-        qid = request.POST['questionnaireid']
+        qid = int(request.POST['questionnaireid'])
         if qid is not None:
             questionnaire_detail = get_questionnaire_detail(qid)
             context.update(questionnaire_detail)
@@ -104,7 +103,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         complete_params_check = make_tempC(request.POST)  # create temporary table for requested questionnaire data
         if not complete_params_check:  # fail with 400 error if query parameters are incomplete
             self.logger.error('Server received incomplete query parameters.')
-            return HttpResponse(status=400)  # noqa: WPS432
+            return HttpResponse(status=HTTPStatus.BAD_REQUEST)
 
         report = get_tempC()  # after verifying parameters were complete, retrieve the prepared data
 
@@ -199,21 +198,21 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         df = pd.DataFrame.from_dict(report_dict)
 
         if tabs == 'patients':
-            pids = df['patientId'].unique()
+            pids = df['patient_id'].unique()
             pids.sort()
             with pd.ExcelWriter(filename_long) as writer:  # noqa: WPS440
                 for pat in pids:
-                    patient_rows = df.loc[df['patientId'] == pat]
-                    patient_rows = patient_rows.sort_values(['lastUpdated', 'questionId'], ascending=[True, True])
+                    patient_rows = df.loc[df['patient_id'] == pat]
+                    patient_rows = patient_rows.sort_values(['last_updated', 'question_id'], ascending=[True, True])
                     patient_rows.to_excel(writer, sheet_name=f'patient-{pat}', index=False, header=True)
         elif tabs == 'questions':
-            qids = df['questionId'].unique()
+            qids = df['question_id'].unique()
             qids.sort()
             with pd.ExcelWriter(filename_long) as writer:  # noqa: WPS440
                 for ques in qids:
-                    patient_rows = df.loc[df['questionId'] == ques]
-                    patient_rows = patient_rows.sort_values(['lastUpdated', 'patientId'], ascending=[True, True])
-                    patient_rows.to_excel(writer, sheet_name=f'questionId-{ques}', index=False, header=True)
+                    patient_rows = df.loc[df['question_id'] == ques]
+                    patient_rows = patient_rows.sort_values(['last_updated', 'patient_id'], ascending=[True, True])
+                    patient_rows.to_excel(writer, sheet_name=f'question_id-{ques}', index=False, header=True)
         else:
             df.to_excel(filename_long, sheet_name='Sheet1', index=False, header=True)
 
