@@ -106,7 +106,7 @@ from django.contrib.auth.models import Permission
        with pytest.raises(PermissionDenied):
            SiteListView.as_view()(request)
            
-    # PASS CASE: to not raise permission denied permission when user has right privilege 
+    # PASS CASE: to not raise permission denied exception when user has right privilege 
     def test_site_permission_required_success(user_client: Client, django_user_model: User) -> None:
        """Ensure that `site` cannot be accessed without the required permission."""
        user = django_user_model.objects.create(username='test_site_user')
