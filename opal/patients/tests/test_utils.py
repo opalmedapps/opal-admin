@@ -1,6 +1,7 @@
 """App patient utils test functions."""
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
+from django.http import Http404
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
@@ -29,9 +30,9 @@ def test_get_and_update_registration_code_success() -> None:
 
 def test_get_and_update_registration_code_failure() -> None:
     """Test get non-exists registration code fails."""
-    expected_message = 'RegistrationCode matching query does not exist.'
+    expected_message = 'No RegistrationCode matches the given query.'
     with assertRaisesMessage(
-        caregiver_models.RegistrationCode.DoesNotExist,  # type: ignore[arg-type]
+        Http404,  # type: ignore[arg-type]
         expected_message,
     ):
         get_and_update_registration_code('NONE12345678')

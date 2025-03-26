@@ -8,11 +8,9 @@ from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 
 import pytest
-from pytest_django.asserts import assertRaisesMessage
 from rest_framework.test import APIClient
 
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
-from opal.caregivers.models import RegistrationCode as RegistrationCodeModel
 from opal.caregivers.models import RegistrationCodeStatus, SecurityAnswer
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients.factories import HospitalPatient, Patient, Relationship
@@ -194,16 +192,15 @@ class TestApiRegistrationCompletion:
         relationship = Relationship(patient=patient, caregiver=caregiver)
         RegistrationCode(relationship=relationship)
         valid_input_data = copy.deepcopy(self.valid_input_data)
-        expected_message = 'RegistrationCode matching query does not exist.'
-        with assertRaisesMessage(RegistrationCodeModel.DoesNotExist, expected_message):  # type: ignore[arg-type]
-            api_client.post(
-                reverse(
-                    'api:registration-register',
-                    kwargs={'code': 'code11111111'},
-                ),
-                data=valid_input_data,
-                format='json',
-            )
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': 'code11111111'},
+            ),
+            data=valid_input_data,
+            format='json',
+        )
+        assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_registered_registration_code(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test registered registration code."""
@@ -218,16 +215,15 @@ class TestApiRegistrationCompletion:
             status=RegistrationCodeStatus.REGISTERED,
         )
         valid_input_data = copy.deepcopy(self.valid_input_data)
-        expected_message = 'RegistrationCode matching query does not exist.'
-        with assertRaisesMessage(RegistrationCodeModel.DoesNotExist, expected_message):  # type: ignore[arg-type]
-            api_client.post(
-                reverse(
-                    'api:registration-register',
-                    kwargs={'code': registration_code.code},
-                ),
-                data=valid_input_data,
-                format='json',
-            )
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=valid_input_data,
+            format='json',
+        )
+        assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_register_with_invalid_input_data(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test api registration register success."""

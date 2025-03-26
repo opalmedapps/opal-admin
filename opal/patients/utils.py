@@ -1,6 +1,8 @@
 """App patients util functions."""
 from django.utils import timezone
 
+from rest_framework.generics import get_object_or_404
+
 from opal.caregivers import models as caregiver_models
 from opal.users.models import User
 
@@ -17,10 +19,12 @@ def get_and_update_registration_code(code: str) -> caregiver_models.Registration
     Returns:
         the object of model RegistrationCode
     """
-    registration_code = caregiver_models.RegistrationCode.objects.select_related(
-        'relationship__patient',
-        'relationship__caregiver__user',
-    ).filter(code=code, status=caregiver_models.RegistrationCodeStatus.NEW).get()
+    registration_code = get_object_or_404(
+        caregiver_models.RegistrationCode.objects.select_related(
+            'relationship__patient',
+            'relationship__caregiver__user',
+        ).filter(code=code, status=caregiver_models.RegistrationCodeStatus.NEW),
+    )
     registration_code.status = caregiver_models.RegistrationCodeStatus.REGISTERED
     registration_code.full_clean()
     registration_code.save()
