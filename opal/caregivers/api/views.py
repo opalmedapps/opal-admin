@@ -176,7 +176,7 @@ class ApiEmailVerificationView(APIView):
                     'sent_at': timezone.now(),
                 },
             )
-        language = get_language_from_request(request)
+        language = get_language_from_request(request)  # type: ignore[arg-type]
         self._send_email(email_verification, caregiver.user, language)
         return Response()
 
