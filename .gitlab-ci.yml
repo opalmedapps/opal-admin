@@ -96,7 +96,7 @@ test:
   # create second DB for legacy DB
   before_script:
     - apt update && apt-get install -y default-mysql-client
-    - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hlocalhost -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
+    - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
   script:
     - pytest --version
     - coverage run -m pytest --junitxml=report.xml
