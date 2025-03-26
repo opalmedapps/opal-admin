@@ -152,13 +152,13 @@ class TestApiRetrieveRegistrationDetails:
         assert response.status_code == HTTPStatus.OK
         assert response.json() == {
             'caregiver': {
-                'uuid': caregiver.uuid.value,
+                'uuid': str(caregiver.uuid),
                 'first_name': caregiver.user.first_name,
                 'last_name': caregiver.user.last_name,
                 'legacy_id': caregiver.legacy_id,
             },
             'patient': {
-                'uuid': patient.uuid.value,
+                'uuid': str(patient.uuid),
                 'first_name': patient.first_name,
                 'last_name': patient.last_name,
                 'date_of_birth': datetime.strftime(patient.date_of_birth, '%Y-%m-%d'),
