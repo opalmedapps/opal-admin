@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 import pytest
+import requests
 from pytest_django.asserts import assertRaisesMessage
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock import MockerFixture
@@ -48,6 +49,22 @@ from opal.patients.factories import Relationship
 from opal.patients.models import RelationshipStatus, RelationshipType
 from opal.users import factories as user_factories
 from opal.users.models import Caregiver, User
+
+
+class MockConnectionError:
+    """Mock a connection error during database query to ensure api views handle errors gracefully."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Raise the error.
+
+        Args:
+            args: Any number of additional arguments
+            kwargs: Any number of additional keyword arguments
+
+        Raises:
+            ConnectionError: always
+        """
+        raise requests.exceptions.ConnectionError
 
 
 def test_get_caregiver_patient_list_unauthenticated_unauthorized(api_client: APIClient, user: User) -> None:
@@ -1853,3 +1870,51 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert patient.legacy_id == legacy_patient.patientsernum
         assert legacy_patient.email == 'opal@muhc.mcgill.ca'
         assert legacy_patient.language == LegacyLanguage.FRENCH
+
+    @pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
+    def test_self_registration_success_databank_throws(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        databank_consent_questionnaire_data: tuple[qdb_LegacyQuestionnaire, LegacyEducationalMaterialControl],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Ensure the patient is still created if there is a connection error while creating db consent."""
+        monkeypatch.setattr('opal.legacy.utils.fetch_databank_control_records', MockConnectionError)
+        api_client.force_login(user=admin_user)
+        registration_code, _ = self._build_access_request(new_patient=True, email_verified=True, self_relationship=True)
+        info_sheet = databank_consent_questionnaire_data[1]
+        patient = registration_code.relationship.patient
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.data_new_caregiver,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        patient.refresh_from_db()
+        # actual patient is still created as expected
+        assert LegacyPatient.objects.count() == 1
+        legacy_patient = LegacyPatient.objects.get(first_name='Marge')
+        assert patient.legacy_id == legacy_patient.patientsernum
+        assert legacy_patient.email == 'opal@muhc.mcgill.ca'
+        assert legacy_patient.language == LegacyLanguage.FRENCH
+
+        # We expect consent records to not be created
+        message = 'LegacyPatient matching query does not exist.'
+        with assertRaisesMessage(ObjectDoesNotExist, message):
+            qdb_LegacyPatient.objects.get(
+                external_id=patient.legacy_id,
+            )
+        message = 'LegacyEducationalMaterial matching query does not exist.'
+        with assertRaisesMessage(ObjectDoesNotExist, message):
+            LegacyEducationalMaterial.objects.get(
+                educationalmaterialcontrolsernum=info_sheet,
+                patientsernum=patient.legacy_id,
+            )
+        answer_questionnaires = LegacyAnswerQuestionnaire.objects.all()
+        for qst in answer_questionnaires:
+            assert qst.created_by != 'DJANGO_AUTO_CREATE_DATABANK_CONSENT'
