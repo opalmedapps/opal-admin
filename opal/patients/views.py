@@ -531,7 +531,7 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableView):
     permission_required = ('patients.can_manage_relationships',)
     table_class = PendingRelationshipTable
     ordering = ['request_date']
-    template_name = 'patients/relationships/pending/list.html'
+    template_name = 'patients/relationships/pending_relationship_list.html'
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
 
 
@@ -546,7 +546,7 @@ class PendingRelationshipUpdateView(
 
     model = Relationship
     permission_required = ('patients.can_manage_relationships',)
-    template_name = 'patients/relationships/pending/form.html'
+    template_name = 'patients/relationships/edit_relationships.html'
     form_class = RelationshipAccessForm
     success_url = reverse_lazy('patients:relationships-pending-list')
 
@@ -561,7 +561,7 @@ class SearchRelationshipUpdateView(UpdateView[Relationship, ModelForm[Relationsh
     """
 
     model = Relationship
-    template_name = 'patients/relationships-search/form.html'
+    template_name = 'patients/relationships/edit_relationships.html'
     # re-use same RelationshipAccessForm
     form_class = RelationshipAccessForm
 
@@ -609,7 +609,7 @@ class CaregiverAccessView(MultiTableMixin, FilterView):
     filterset_class = ManageCaregiverAccessFilter
     tables = [PatientTable, RelationshipCaregiverTable]
     success_url = reverse_lazy('patients:relationships-search')
-    template_name = 'patients/relationships-search/relationship_filter.html'
+    template_name = 'patients/relationships/relationship_filter.html'
 
     def get_tables_data(self) -> List[QuerySet[Any]]:
         """

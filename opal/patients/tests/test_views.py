@@ -62,7 +62,7 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
 )
 
 test_url_template_data: list[Tuple] = [
-    (reverse('patients:relationships-search'), 'patients/relationships-search/relationship_filter.html'),
+    (reverse('patients:relationships-search'), 'patients/relationships/relationship_filter.html'),
 ]
 
 
