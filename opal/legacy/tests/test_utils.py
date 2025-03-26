@@ -3,8 +3,6 @@ from pathlib import Path
 from typing import Any, cast
 from unittest.mock import MagicMock
 
-from django.core.management.base import CommandError
-from django.db import OperationalError
 from django.utils import timezone
 
 import pytest
@@ -471,10 +469,10 @@ def test_get_questionnaire_data_db_error(mocker: MockerFixture) -> None:
     patient = patient_factories.Patient.create(legacy_id=123)
 
     mock_fetch = mocker.patch(
-        'opal.legacy.utils._fetch_questionnaires_from_db', side_effect=OperationalError('DB Error'),
+        'opal.legacy.utils._fetch_questionnaires_from_db', side_effect=legacy_utils.DataFetchError('DB Error'),
     )
 
-    with pytest.raises(OperationalError, match='Error fetching questionnaires: DB Error'):
+    with pytest.raises(legacy_utils.DataFetchError, match='DB Error'):
         legacy_utils.get_questionnaire_data(patient)
 
     mock_fetch.assert_called_once_with(123)
@@ -490,7 +488,7 @@ def test_get_questionnaire_data_parsing_error(mocker: MockerFixture) -> None:
         'opal.legacy.utils._fetch_questionnaires_from_db', return_value=mock_query_result,
     )
 
-    with pytest.raises(ValueError, match='Error parsing questionnaires: Expected parsed data to be a dict'):
+    with pytest.raises(legacy_utils.DataFetchError, match='Expected parsed data'):
         legacy_utils.get_questionnaire_data(patient)
 
     mock_fetch.assert_called_once_with(123)
@@ -542,7 +540,7 @@ def test_parse_query_result_empty_rows() -> None:
 def test_parse_query_result_non_dict_items() -> None:
     """Test parsing when data contains non-dictionary items."""
     query_result = [[123, 456], None]  # A mix of invalid list contents
-    with pytest.raises(ValueError, match='Expected parsed data to be a dict or list of dicts, got'):
+    with pytest.raises(legacy_utils.DataFetchError, match='Expected parsed data to be a dict or list of dicts, got'):
         legacy_utils._parse_query_result(query_result)
 
 
@@ -600,7 +598,7 @@ def test_process_questionnaire_data_missing_questions(mocker: MockerFixture) -> 
         },
     ]
 
-    with pytest.raises(ValueError, match='Unexpected data format:'):
+    with pytest.raises(legacy_utils.DataFetchError, match='Unexpected data format:'):
         legacy_utils._process_questionnaire_data(parsed_data_list)
 
 
@@ -679,7 +677,7 @@ def test_invalid_question_values_format() -> None:
         },
     ]
 
-    with pytest.raises(CommandError, match="Invalid 'values' format for question"):
+    with pytest.raises(legacy_utils.DataFetchError, match="Invalid 'values' format for question"):
         legacy_utils._process_questions(parsed_question_list)
 
 

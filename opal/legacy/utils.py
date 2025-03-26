@@ -6,7 +6,6 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, TypeAlias, Union
 
-from django.core.management.base import CommandError
 from django.db import OperationalError, connections, models, transaction
 from django.utils import timezone
 
@@ -57,6 +56,10 @@ DatabankControlRecords: TypeAlias = Union[
     ],
     None,
 ]
+
+
+class DataFetchError(Exception):
+    """Class for handling error when fetching."""
 
 
 def get_patient_sernum(username: str) -> int:
@@ -465,8 +468,7 @@ def get_questionnaire_data(patient: Patient) -> list[QuestionnaireData]:
         patient: patient for data
 
     Raises:
-        OperationalError: if there are deviations
-        ValueError: value error given as arguments
+        DataFetchError: error fetching the arguments
 
     Returns:
         list of the questionnaireData
@@ -475,17 +477,17 @@ def get_questionnaire_data(patient: Patient) -> list[QuestionnaireData]:
     if patient.legacy_id:
         external_patient_id = patient.legacy_id
     else:
-        raise ValueError('The patient has no legacy id.')
+        raise DataFetchError('The patient has no legacy id.')
 
     try:
         query_result = _fetch_questionnaires_from_db(external_patient_id)
     except OperationalError as exc:
-        raise OperationalError(f'Error fetching questionnaires: {exc}')
+        raise DataFetchError(f'Error fetching questionnaires: {exc}')
 
     try:
         data_list = _parse_query_result(query_result)
     except ValueError as exc:  # noqa: WPS440
-        raise ValueError(f'Error parsing questionnaires: {exc}')
+        raise DataFetchError(f'Error parsing questionnaires: {exc}')
     return _process_questionnaire_data(data_list)
 
 
@@ -522,7 +524,7 @@ def _parse_query_result(
         query_result: raw query results, each tuple represents a database row
 
     Raises:
-        ValueError: if the JSON data cannot be deserialized
+        DataFetchError: if the JSON data cannot be deserialized
 
     Returns:
         structured list of dictonaries representing the query
@@ -534,7 +536,7 @@ def _parse_query_result(
         elif isinstance(parsed_data, list):
             data_list.extend(parsed_data)
         else:
-            raise ValueError(
+            raise DataFetchError(
                 f'Expected parsed data to be a dict or list of dicts, got {type(parsed_data)}.',
             )
     return data_list
@@ -547,7 +549,7 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
         parsed_data_list: parsed data list of the questionnaire
 
     Raises:
-        ValueError: if the questionnaire format is wrong
+        DataFetchError: if the questionnaire data format is wrong
 
     Returns:
         complete answered questionnaire data list of the patient
@@ -556,7 +558,7 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
 
     for data in parsed_data_list:
         if 'questions' not in data:
-            raise ValueError(f'Unexpected data format: {data!r}')
+            raise DataFetchError(f'Unexpected data format: {data!r}')
         questions = _process_questions(data['questions'])
         questionnaire_data_list.append(
             QuestionnaireData(
@@ -577,7 +579,7 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[Question]:
         questions_data: unprocessed questions data associated with the questionnaire
 
     Raises:
-        CommandError: if the question format is wrong
+        DataFetchError: the answers are wrongly formatted
 
     Returns:
         list of questions associated with the questionnaire
@@ -588,7 +590,7 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[Question]:
 
         answers = que.get('values') or []
         if not isinstance(answers, list):
-            raise CommandError(f"Invalid 'values' format for question: {que}")
+            raise DataFetchError(f"Invalid 'values' format for question: {que}")
 
         questions.append(
             Question(
