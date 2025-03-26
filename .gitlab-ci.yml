@@ -69,7 +69,7 @@ setup:
     - pip install uv
     - uv venv
     - source .venv/bin/activate
-    - uv pip install --cache-dir .cache/uv -r requirements/development.txt
+    - uv pip install --compile --cache-dir .cache/uv -r requirements/development.txt
   artifacts:
     # pin artifacts to the branch
     # see: https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#use-cicd-variables-to-define-the-artifacts-name
