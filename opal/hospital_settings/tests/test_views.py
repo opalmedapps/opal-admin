@@ -275,7 +275,6 @@ def test_site_updated(user_client: Client) -> None:
     url = reverse('hospital-settings:site-update', args=(site.id,))
     site.name = 'updated'
     form_data = model_to_dict(site)
-    print(form_data)
     user_client.post(url, data=form_data)
 
     assert Site.objects.all()[0].name == 'updated'
