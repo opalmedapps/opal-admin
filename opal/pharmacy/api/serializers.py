@@ -155,7 +155,6 @@ class PharmacyEncodedOrderSerializer(serializers.ModelSerializer[PharmacyEncoded
         many=True,
         required=True,
     )
-    refills_remaining = serializers.IntegerField(allow_null=True, required=False, default=0)
 
     class Meta:
         model = PharmacyEncodedOrder

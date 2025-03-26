@@ -104,7 +104,6 @@ class CreatePrescriptionView(HL7CreateView):
         note_data = parsed_data['NTE'][0]
         components = parsed_data['RXC']
         route = parsed_data['RXR'][0]
-        print(pharmacy_encoded_data)
         return {
             'quantity': order_data['order_quantity'],
             'unit': order_data['order_quantity_unit'],
