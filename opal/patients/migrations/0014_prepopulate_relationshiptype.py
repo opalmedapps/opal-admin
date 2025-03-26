@@ -31,13 +31,13 @@ def generate_restricted_roletypes(apps: Apps, schema_editor: BaseDatabaseSchemaE
                 role_type=RoleType.SELF,
             )
 
-    parent_type = RelationshipType.objects.filter(role_type=RoleType.PARENTGUARDIAN).first()
+    parent_type = RelationshipType.objects.filter(role_type=RoleType.PARENT_GUARDIAN).first()
 
     if not parent_type:
         parent_type = RelationshipType.objects.filter(name='guardian').first()
 
         if parent_type:
-            parent_type.role_type = RoleType.PARENTGUARDIAN
+            parent_type.role_type = RoleType.PARENT_GUARDIAN
             parent_type.full_clean()
             parent_type.save()
         else:
@@ -50,12 +50,12 @@ def generate_restricted_roletypes(apps: Apps, schema_editor: BaseDatabaseSchemaE
                 description_fr='Un parent ou un tuteur du patient',
                 start_age=constants.RELATIONSHIP_MIN_AGE,
                 end_age=14,
-                role_type=RoleType.PARENTGUARDIAN,
+                role_type=RoleType.PARENT_GUARDIAN,
             )
 
 
 class Migration(migrations.Migration):
-    """Pre-populate deployment with the SELF and PARENTGUARDIAN role types."""
+    """Pre-populate deployment with the SELF and PARENT_GUARDIAN role types."""
 
     dependencies = [
         ('patients', '0013_relationshiptype_role'),

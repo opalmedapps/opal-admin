@@ -617,7 +617,7 @@ def test_relationshiptype_default() -> None:
     """Ensure there are two relationship types by default."""
     assert RelationshipType.objects.count() == 2
     assert RelationshipType.objects.filter(role_type=RoleType.SELF).count() == 1
-    assert RelationshipType.objects.filter(role_type=RoleType.PARENTGUARDIAN).count() == 1
+    assert RelationshipType.objects.filter(role_type=RoleType.PARENT_GUARDIAN).count() == 1
 
 
 def test_relationshiptype_self_role_delete_error() -> None:
@@ -632,7 +632,7 @@ def test_relationshiptype_self_role_delete_error() -> None:
 def test_relationshiptype_par_role_delete_error() -> None:
     """Ensure operator can not delete a parent/guardian role type."""
     relationship_type = factories.RelationshipType()
-    relationship_type.role_type = RoleType.PARENTGUARDIAN
+    relationship_type.role_type = RoleType.PARENT_GUARDIAN
     message = "['The relationship type with this role type cannot be deleted']"
     with assertRaisesMessage(ValidationError, message):
         relationship_type.delete()
@@ -643,7 +643,7 @@ def test_relationshiptype_duplicate_self_role() -> None:
     roletype_self_copy = factories.RelationshipType()
     roletype_self_copy.role_type = RoleType.SELF
 
-    message = "['There must always be exactly one SELF and one PARENTGUARDIAN role']"
+    message = "['There must always be exactly one SELF and one PARENT_GUARDIAN role']"
     with assertRaisesMessage(ValidationError, message):
         roletype_self_copy.full_clean()
 
@@ -651,8 +651,8 @@ def test_relationshiptype_duplicate_self_role() -> None:
 def test_relationshiptype_duplicate_parent_role() -> None:
     """Ensure validation error when creating a second parent/guardian role type."""
     roletype_parent_copy = factories.RelationshipType()
-    roletype_parent_copy.role_type = RoleType.PARENTGUARDIAN
+    roletype_parent_copy.role_type = RoleType.PARENT_GUARDIAN
 
-    message = "['There must always be exactly one SELF and one PARENTGUARDIAN role']"
+    message = "['There must always be exactly one SELF and one PARENT_GUARDIAN role']"
     with assertRaisesMessage(ValidationError, message):
         roletype_parent_copy.full_clean()

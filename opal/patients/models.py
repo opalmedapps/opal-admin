@@ -27,8 +27,10 @@ class RoleType(models.TextChoices):
 
     # 'self' is a reserved keyword in Python requiring a noqa here.
     SELF = 'SELF', _('Self')  # noqa: WPS117
+    PARENT_GUARDIAN = 'PARENTGUARDIAN', _('Parent/Guardian')
+    CAREGIVER_GUARDIAN = 'CRGIVERGUARDN', _('Caregiver-Guardian')
+    MANDATARY = 'MANDATARY', _('Mandatary')
     CAREGIVER = 'CAREGIVER', _('Caregiver')
-    PARENTGUARDIAN = 'PARENTGUARDIAN', _('Parent/Guardian')
 
 
 class RelationshipType(models.Model):
@@ -97,7 +99,7 @@ class RelationshipType(models.Model):
         return self.name
 
     def clean(self) -> None:
-        """Validate the model being saved does not add an extra SELF or PARENTGUARDIAN role type.
+        """Validate the model being saved does not add an extra SELF or PARENT_GUARDIAN role type.
 
         If additional restricted role types are added in the future, add them to the RoleType lists here.
 
@@ -105,7 +107,7 @@ class RelationshipType(models.Model):
             ValidationError: If the changes result in a missing or extra restricted roletype.
         """
         existing_restricted_relationshiptypes = RelationshipType.objects.filter(
-            role_type__in=[RoleType.SELF, RoleType.PARENTGUARDIAN],
+            role_type__in=[RoleType.SELF, RoleType.PARENT_GUARDIAN],
         )
         existing_restricted_roletypes = [rel.role_type for rel in existing_restricted_relationshiptypes]
 
@@ -118,16 +120,16 @@ class RelationshipType(models.Model):
             and self not in existing_restricted_relationshiptypes
         ):
             raise ValidationError(
-                _('There must always be exactly one SELF and one PARENTGUARDIAN role'),
+                _('There must always be exactly one SELF and one PARENT_GUARDIAN role'),
             )
 
         if (
-            self.role_type == RoleType.PARENTGUARDIAN
-            and RoleType.PARENTGUARDIAN in existing_restricted_roletypes
+            self.role_type == RoleType.PARENT_GUARDIAN
+            and RoleType.PARENT_GUARDIAN in existing_restricted_roletypes
             and self not in existing_restricted_relationshiptypes
         ):
             raise ValidationError(
-                _('There must always be exactly one SELF and one PARENTGUARDIAN role'),
+                _('There must always be exactly one SELF and one PARENT_GUARDIAN role'),
             )
 
     def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
@@ -143,7 +145,7 @@ class RelationshipType(models.Model):
         Returns:
             Number of models deleted and dict of models deleted.
         """
-        if (self.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}):
+        if (self.role_type in {RoleType.SELF, RoleType.PARENT_GUARDIAN}):
             raise ValidationError(
                 _('The relationship type with this role type cannot be deleted'),
             )

@@ -20,7 +20,7 @@ def test_migration_relationshiptype_prepopulate_no_existing_types(migrator: Migr
 
     assert RelationshipType.objects.count() == 2
     assert RelationshipType.objects.filter(role_type=models.RoleType.SELF).count() == 1
-    assert RelationshipType.objects.filter(role_type=models.RoleType.PARENTGUARDIAN).count() == 1
+    assert RelationshipType.objects.filter(role_type=models.RoleType.PARENT_GUARDIAN).count() == 1
 
     # ensure that the migration can be reversed without any error
     migrator.apply_tested_migration(('patients', '0013_relationshiptype_role'))
@@ -62,7 +62,7 @@ def test_migration_relationshiptype_prepopulate_existing_types(migrator: Migrato
 
     assert RelationshipType.objects.count() == 2
     assert RelationshipType.objects.filter(role_type=models.RoleType.SELF).count() == 1
-    assert RelationshipType.objects.filter(role_type=models.RoleType.PARENTGUARDIAN).count() == 1
+    assert RelationshipType.objects.filter(role_type=models.RoleType.PARENT_GUARDIAN).count() == 1
 
     # ensure that the migration can be reversed without any error
     migrator.apply_tested_migration(('patients', '0013_relationshiptype_role'))
@@ -95,7 +95,7 @@ def test_migration_relationshiptype_prepopulate_existing_role_types(migrator: Mi
         description_fr='Un parent ou un tuteur du patient',
         start_age=0,
         end_age=14,
-        role_type=models.RoleType.PARENTGUARDIAN,
+        role_type=models.RoleType.PARENT_GUARDIAN,
     )
 
     new_state = migrator.apply_tested_migration(('patients', '0014_prepopulate_relationshiptype'))
@@ -136,7 +136,7 @@ def test_migration_relationshiptype_prepopulate_existing_caregiver(migrator: Mig
         description_fr='Un parent ou un tuteur du patient',
         start_age=0,
         end_age=14,
-        role_type=models.RoleType.PARENTGUARDIAN,
+        role_type=models.RoleType.PARENT_GUARDIAN,
     )
 
     new_state = migrator.apply_tested_migration(('patients', '0014_prepopulate_relationshiptype'))
