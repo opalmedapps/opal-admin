@@ -137,7 +137,10 @@ class MarkQuantitySampleAsViewedView(APIView):
             Response: successful response with no body
         """
         patient = generics.get_object_or_404(Patient.objects.all(), uuid=uuid)
-        QuantitySample.objects.filter(patient=patient).update(
+        QuantitySample.objects.filter(
+            patient=patient,
+            viewed_at=None,
+        ).update(
             viewed_at=timezone.now(),
             viewed_by=request.user.get_username(),
         )
