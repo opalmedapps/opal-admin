@@ -505,22 +505,45 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         )
 
         return self.annotate(
-            next_appointment=next_appointment_subquery,
             last_appointment_received=last_appointment_subquery,
-            appointments_received=appointments_received_subquery,
+            next_appointment=next_appointment_subquery,
+            appointments_received=models.functions.Coalesce(
+                appointments_received_subquery,
+                models.Value(0),
+            ),
             last_document_received=last_document_subquery,
-            documents_received=documents_received_subquery,
-            last_educational_materials_received=last_educational_material_subquery,
-            educational_materials_received=educational_materials_received_subquery,
+            documents_received=models.functions.Coalesce(
+                documents_received_subquery,
+                models.Value(0),
+            ),
+            last_educational_material_received=last_educational_material_subquery,
+            educational_materials_received=models.functions.Coalesce(
+                educational_materials_received_subquery,
+                models.Value(0),
+            ),
             last_questionnaire_received=last_questionnaire_subquery,
-            questionnaires_received=questionnaires_received_subquery,
+            questionnaires_received=models.functions.Coalesce(
+                questionnaires_received_subquery,
+                models.Value(0),
+            ),
             last_lab_received=last_lab_subquery,
-            labs_received=labs_received_subquery,
+            labs_received=models.functions.Coalesce(
+                labs_received_subquery,
+                models.Value(0),
+            ),
         ).distinct().values(
             'patientsernum',
             'last_appointment_received',
             'next_appointment',
             'appointments_received',
+            'last_document_received',
+            'documents_received',
+            'last_educational_material_received',
+            'educational_materials_received',
+            'last_questionnaire_received',
+            'questionnaires_received',
+            'last_lab_received',
+            'labs_received',
         )
 
 

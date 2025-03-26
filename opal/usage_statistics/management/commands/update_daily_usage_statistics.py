@@ -11,8 +11,8 @@ from django.utils import timezone
 from django_stubs_ext.aliases import ValuesQuerySet
 
 from opal.legacy.models import LegacyPatient, LegacyPatientActivityLog
-from opal.patients.models import Relationship, RelationshipStatus
-from opal.usage_statistics.models import DailyUserAppActivity, DailyUserPatientActivity
+from opal.patients.models import Patient, Relationship, RelationshipStatus
+from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
 from opal.users.models import User
 
 
@@ -197,34 +197,24 @@ class Command(BaseCommand):
             start_datetime_period: the beginning of the time period of received data statistics being extracted
             end_datetime_period: the end of the time period of received data statistics being extracted
         """
+        # NOTE! The action_date indicates the date when the patients' data were received.
+        # It is not the date when the activity statistics were populated.
+        action_date = start_datetime_period.date()
         received_data = LegacyPatient.objects.get_aggregated_patient_received_data(
             start_datetime_period=start_datetime_period,
             end_datetime_period=end_datetime_period,
+        ).annotate(
+            action_date=models.Value(action_date),
         )
-        print(received_data)
-        return
-        # Update model
-        for patient in patient_data_received_queryset.values():
-            django_patient = Patient.objects.filter(legacy_id=patient['patientsernum']).first()
-            patient_data_received = DailyPatientDataReceived(
-                patient=django_patient,
-                next_appointment=patient['next_appointment'],
-                last_appointment_received=patient['last_appointment_received'],
-                # TODO: Find a better way to force 0 value for integer fields instead of `None` which causes Model error
-                # Using Coalesce did not work
-                # Might have something to do with the interaction of Coalesce with Subquery.values
-                appointments_received=patient['appointments_received'] if patient['appointments_received'] else 0,
-                last_document_received=patient['last_document_received'],
-                documents_received=patient['documents_received'] if patient['documents_received'] else 0,
-                last_educational_materials_received=patient['last_educational_materials_received'],
-                educational_materials_received=patient['educational_materials_received'] if patient['educational_materials_received'] else 0,  # noqa: E501
-                last_questionnaire_received=patient['last_questionnaire_received'],
-                questionnaires_received=patient['questionnaires_received'] if patient['questionnaires_received'] else 0,
-                last_lab_received=patient['last_lab_received'],
-                labs_received=patient['labs_received'] if patient['labs_received'] else 0,
-                date_added=time_period_start,
-            )
-            patient_data_received.save()
+        patients = Patient.objects.values('id', 'legacy_id')
+        patients_dict = {patient['legacy_id']: patient['id'] for patient in patients}
+
+        DailyPatientDataReceived.objects.bulk_create(
+            DailyPatientDataReceived(
+                patient_id=patients_dict[data.pop('patientsernum')],
+                **data,
+            ) for data in received_data
+        )
 
     def _annotate_patient_activities(
         self,
@@ -291,7 +281,7 @@ class Command(BaseCommand):
     def _delete_stored_statistics(self) -> bool:
         """Delete daily application activity statistics data.
 
-        The records are deleted from the `DailyUserAppActivity`, `DailyUserPatientActivity` models.
+        The records are deleted from the `DailyUserAppActivity`, `DailyUserPatientActivity`, `DailyPatientDataReceived`.
 
         Returns:
             True, if the records were deleted, False otherwise
@@ -315,4 +305,6 @@ class Command(BaseCommand):
 
         DailyUserAppActivity.objects.all().delete()
         DailyUserPatientActivity.objects.all().delete()
+        DailyPatientDataReceived.objects.all().delete()
+
         return True
