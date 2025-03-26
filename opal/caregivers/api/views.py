@@ -11,6 +11,7 @@ from django.db.models.manager import Manager
 from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
 from django.utils import timezone, translation
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import exceptions
@@ -399,13 +400,12 @@ class RegistrationCompletionView(APIView):
             email_plain = render_to_string(
                 'email/confirmation_email.txt',
             )
-
-        send_mail(
-            _('Thank you for registering for Opal!'),
-            email_plain,
-            settings.EMAIL_FROM_REGISTRATION,
-            [email],
-        )
+            send_mail(
+                gettext('Thank you for registering for Opal!'),
+                email_plain,
+                settings.EMAIL_FROM_REGISTRATION,
+                [email],
+            )
 
     def _get_serializer_class(self, *args: Any, **kwargs: Any) -> type[serializers.BaseSerializer[RegistrationCode]]:
         """

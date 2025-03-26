@@ -1669,3 +1669,30 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
         caregiver_user.refresh_from_db()
         assert caregiver_user.email == 'foo@bar.com'
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_confirmation_email_sent(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        settings: SettingsWrapper,
+    ) -> None:
+        """Test that the confirmation email is sent when registration complete."""
+        api_client.force_login(user=admin_user)
+        registration_code, _ = self._build_access_request(email_verified=True)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.data_new_caregiver,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].from_email == settings.EMAIL_FROM_REGISTRATION
+        assert mail.outbox[0].to == ['opal@muhc.mcgill.ca']
+        body = mail.outbox[0].body
+        assert "Merci de vous être inscrit(e) à l'application Opal." in body
+        assert mail.outbox[0].subject == 'Merci de vous être inscrit(e) à Opal !'

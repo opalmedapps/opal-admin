@@ -1,17 +1,13 @@
 {% load i18n %}
 
-{% blocktranslate %}
-Hello,
-Thank you for registering for the Opal app.
-If you haven't already downloaded the app, please open one of the links below on your mobile device to start the download process.
-iOS: https://apps.apple.com/ca/app/opal-health/id1446920350
-Android: https://play.google.com/store/apps/details?id=com.hig.opal2
-
-Once installed, launch the application and sign in with the username and password you created when you registered.
-If you have any problems with the app, please contact us at opal@muhc.mcgill.ca or by using the Feedback form available on the General tab of Opal.
-If you find the app useful, please let us know by rating it and leaving us a comment on the App Store or Google Play store. We are working hard to make Opal useful and empowering for our patients, and we appreciate your feedback.
-
-Thank you,
-The Opal team
-https://opalmedapps.com
-{% endblocktranslate %}
+{% translate "Hello," %}
+{% translate "Thank you for registering for the Opal app." %}
+{% translate "If you haven't already downloaded the app, please open one of the links below on your mobile device to start the download process." %}
+{% translate "iOS: https://apps.apple.com/ca/app/opal-health/id1446920350" %}
+{% translate "Android: https://play.google.com/store/apps/details?id=com.hig.opal2" %}
+{% translate "Once installed, launch the application and sign in with the username and password you created when you registered." %}
+{% translate "If you have any problems with the app, please contact us at opal@muhc.mcgill.ca or by using the Feedback form available on the General tab of Opal." %}
+{% translate "If you find the app useful, please let us know by rating it and leaving us a comment on the App Store or Google Play store. We are working hard to make Opal useful and empowering for our patients, and we appreciate your feedback." %}
+{% translate "Thank you," %}
+{% translate "The Opal team" %}
+{% translate "https://opalmedapps.com" %}
