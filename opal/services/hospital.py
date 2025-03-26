@@ -66,8 +66,9 @@ class OIECommunicationService:
         # Try to send a request and get a response
         try:
             # TODO: OIE server should support SSL certificates. This will allow to use `verify=True` that fixes S501
+            # TODO: Remove the hardcoded 6682 port once the OIE changes are finalized. Update the .env file
             response = requests.post(
-                '{0}{1}'.format(settings.OIE_HOST, 'reports/post'),
+                '{0}{1}'.format(settings.OIE_HOST, ':6682/reports/post'),
                 auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
                 json=payload,
                 timeout=5,
