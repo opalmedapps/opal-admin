@@ -5,6 +5,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 
 import pytest
+from dateutil.relativedelta import relativedelta
 from pytest_django.asserts import assertRaisesMessage
 
 from opal.caregivers.models import CaregiverProfile
@@ -304,6 +305,61 @@ def test_relationship_clean_start_date_before_date_of_birth() -> None:
         relationship.clean()
 
 
+def test_relationship_start_date_beyond_boundary() -> None:
+    """Ensure that the relationship start_date cannot be before the boundary."""
+    relationship = factories.Relationship()
+    relationship.request_date = datetime.date.today()
+    relationship.start_date = relationship.request_date - relativedelta(
+        years=constants.RELATIVE_YEAR_VALUE,
+    ) - datetime.timedelta(days=1)
+
+    expected_message = (
+        'Start date cannot be earlier than {relative_year} years '
+        + 'before the request date of {request_date}.'
+    ).format(
+        relative_year=constants.RELATIVE_YEAR_VALUE,
+        request_date=relationship.request_date,
+    )
+    with assertRaisesMessage(ValidationError, expected_message):
+        relationship.clean()
+
+
+def test_relationship_start_date_beyond_boundary_by_relationship() -> None:
+    """Ensure that the start_date is valid when the relationship type start age is closer to request date."""
+    relationship = factories.Relationship()
+    relationship.patient.date_of_birth = datetime.date(2008, 5, 9)
+    relationship.request_date = datetime.date.today()
+    calculated_start_date = relationship.patient.date_of_birth + relativedelta(
+        years=relationship.type.start_age,
+    )
+    relationship.start_date = calculated_start_date - datetime.timedelta(days=1)
+
+    expected_message = 'Start date cannot be earlier than {calculated_start_date}.'.format(
+        calculated_start_date=calculated_start_date,
+    )
+    with assertRaisesMessage(ValidationError, expected_message):
+        relationship.clean()
+
+
+def test_relationship_end_date_beyond_boundary() -> None:
+    """Ensure that the relationship end_date cannot be before the boundary."""
+    relationship = factories.Relationship()
+    relationship.patient.date_of_birth = datetime.date(2008, 5, 9)
+    relationship.type.end_age = 18
+
+    calculated_end_date = relationship.patient.date_of_birth + relativedelta(
+        years=relationship.type.end_age,
+    )
+    relationship.start_date = calculated_end_date - relativedelta(years=constants.RELATIVE_YEAR_VALUE)
+    relationship.end_date = calculated_end_date + datetime.timedelta(days=1)
+
+    expected_message = 'End date for Caregiver relationship cannot be later than {calculated_end_date}.'.format(
+        calculated_end_date=calculated_end_date,
+    )
+    with assertRaisesMessage(ValidationError, expected_message):
+        relationship.clean()
+
+
 def test_relationship_invalid_dates_constraint() -> None:
     """Ensure that the date cannot be saved if start date is later than end date."""
     relationship = factories.Relationship()
@@ -338,6 +394,27 @@ def test_relationship_no_patient_multiple_self() -> None:
 
     with assertRaisesMessage(ValidationError, 'The patient already has a self-relationship'):
         relationship2.full_clean()
+
+
+def test_relationship_can_update_existing_self() -> None:
+    """Ensure that an existing self-relationship can be updated."""
+    self_type = RelationshipType.objects.self_type()
+
+    relationship = factories.Relationship(type=self_type)
+
+    relationship.end_date = None  # type: ignore[assignment]
+    relationship.full_clean()
+
+
+def test_relationship_clean_unsaved_instance() -> None:
+    """Ensure that an unsaved relationship instance can be cleaned."""
+    self_type = RelationshipType.objects.self_type()
+
+    patient = factories.Patient()
+    caregiver = factories.CaregiverProfile()
+    relationship = factories.Relationship.build(patient=patient, caregiver=caregiver, type=self_type)
+
+    relationship.full_clean()
 
 
 def test_relationship_no_caregiver_multiple_self() -> None:
@@ -662,6 +739,65 @@ def test_validstatuses_contain_correct_statuses(
     validstatuses = Relationship.valid_statuses(initial_status)
 
     assert validstatuses == expected_statuses
+
+
+def test_set_relationship_start_date_adult_patient() -> None:
+    """Test set relationship start date for adult patient."""
+    request_date = datetime.date.today()
+    date_of_birth = datetime.date(2004, 1, 1)
+    relationship_type = factories.RelationshipType(name='Parent or Guardian', start_age=1)
+
+    assert Relationship.set_relationship_start_date(
+        request_date=request_date,
+        date_of_birth=date_of_birth,
+        relationship_type=relationship_type,
+    ) == request_date - relativedelta(years=constants.RELATIVE_YEAR_VALUE)
+
+
+def test_set_relationship_start_date_younger_patient() -> None:
+    """Test set relationship start date for younger patient."""
+    request_date = datetime.date.today()
+    date_of_birth = datetime.date(2010, 1, 1)
+    relationship_type = factories.RelationshipType(name='Guardian-Caregiver', start_age=14)
+
+    assert Relationship.set_relationship_start_date(
+        request_date=request_date,
+        date_of_birth=date_of_birth,
+        relationship_type=relationship_type,
+    ) == date_of_birth + relativedelta(years=relationship_type.start_age)
+
+
+def test_set_relationship_end_date_with_end_age_set() -> None:
+    """Test set relationship end date if a relationship type has an end age set."""
+    date_of_birth = datetime.date(2013, 4, 3)
+    relationship_type = factories.RelationshipType(name='Guardian-Caregiver', start_age=14, end_age=18)
+
+    assert Relationship.set_relationship_end_date(
+        date_of_birth=date_of_birth,
+        relationship_type=relationship_type,
+    ) == date_of_birth + relativedelta(years=relationship_type.end_age)
+
+
+def test_set_relationship_end_date_actual_value() -> None:
+    """Test set relationship end date if it is an actual date value."""
+    date_of_birth = datetime.date(2013, 4, 3)
+    relationship_type = factories.RelationshipType(name='Guardian-Caregiver', start_age=14, end_age=18)
+
+    assert Relationship.set_relationship_end_date(
+        date_of_birth=date_of_birth,
+        relationship_type=relationship_type,
+    ) == datetime.date(2031, 4, 3)
+
+
+def test_set_relationship_end_date_without_end_age_set() -> None:
+    """Test set relationship end date if a relationship type has no end age set."""
+    date_of_birth = datetime.date(2013, 4, 3)
+    relationship_type = factories.RelationshipType(name='Mandatary', start_age=1)
+
+    assert Relationship.set_relationship_end_date(
+        date_of_birth=date_of_birth,
+        relationship_type=relationship_type,
+    ) is None
 
 
 def test_relationshiptype_default() -> None:
