@@ -205,6 +205,35 @@ class TestCreateDatabankConsentView:
         assert response.status_code == status.HTTP_201_CREATED
         assert DatabankConsent.objects.count() == 1
 
+    def test_databank_consent_create_success_french_form(
+        self,
+        api_client: APIClient,
+        listener_user: User,
+    ) -> None:
+        """Ensure the endpoint can create databank consent for a full french form input with no errors."""
+        patient = Patient(
+            ramq='TEST01161972',
+            uuid=PATIENT_UUID,
+        )
+        api_client.force_login(listener_user)
+
+        response = api_client.post(
+            reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
+            data={
+                'has_appointments': True,
+                'has_diagnoses': True,
+                'has_demographics': True,
+                'has_labs': False,
+                'has_questionnaires': False,
+                'middle_name': '',
+                'city_of_birth': 'ddd',
+                'health_data_authorization': 'Accepter',
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert DatabankConsent.objects.count() == 1
+
     def test_databank_consent_create_blank_health_form_auth(
         self,
         api_client: APIClient,
@@ -242,7 +271,7 @@ class TestCreateDatabankConsentView:
         api_client: APIClient,
         listener_user: User,
     ) -> None:
-        """Ensure the endpoint doesn't create a consent instance if the patient decline health form auth."""
+        """Ensure the endpoint doesn't create a consent instance if the patient declines health form auth."""
         patient = Patient(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
@@ -264,7 +293,40 @@ class TestCreateDatabankConsentView:
         )
         assertContains(
             response=response,
-            text='{"health_data_authorization":["Health data authorization must be \'Consent\'."]}',
+            text='{"health_data_authorization":["Patient must consent to health data authorization."]}',
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        assert DatabankConsent.objects.count() == 0
+
+    def test_databank_consent_create_declined_health_form_auth_french(
+        self,
+        api_client: APIClient,
+        listener_user: User,
+    ) -> None:
+        """Ensure the endpoint doesn't create a consent instance if the patient declines health form auth in french."""
+        patient = Patient(
+            ramq='TEST01161972',
+            uuid=PATIENT_UUID,
+        )
+
+        api_client.force_login(listener_user)
+        response = api_client.post(
+            reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
+            data={
+                'has_appointments': True,
+                'has_diagnoses': True,
+                'has_demographics': True,
+                'has_labs': False,
+                'has_questionnaires': False,
+                'middle_name': 'Bert',
+                'city_of_birth': 'Whatever',
+                'health_data_authorization': 'Refuser',
+            },
+        )
+
+        assertContains(
+            response=response,
+            text='{"health_data_authorization":["Patient must consent to health data authorization."]}',
             status_code=status.HTTP_400_BAD_REQUEST,
         )
         assert DatabankConsent.objects.count() == 0

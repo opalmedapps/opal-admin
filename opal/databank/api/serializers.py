@@ -42,6 +42,6 @@ class DatabankConsentSerializer(DynamicFieldsSerializer[DatabankConsent]):
             ValidationError: if patient declined authorization
 
         """
-        if value != 'Consent':
-            raise serializers.ValidationError("Health data authorization must be 'Consent'.")
+        if value not in {'Consent', 'Accepter'}:
+            raise serializers.ValidationError('Patient must consent to health data authorization.')
         return value
