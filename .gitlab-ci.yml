@@ -99,12 +99,14 @@ xray:
   # replace default before_script section
   before_script:
     - uname -a
+    - x-ray-scan -v
   script:
     - x-ray-scan --help
     - echo "$CI_PROJECT_DIR"
     - echo "$OUTPUT_DIR"
-    - x-ray-scan -p "$CI_PROJECT_DIR" -o "$OUTPUT_DIR"
-    - ls -la "$OUTPUT_DIR"
+    - x-ray-scan
+    - ls -la .
+    - ls -la /reports
   artifacts:
     reports:
       repository_xray: "$OUTPUT_DIR/*/*.json"
