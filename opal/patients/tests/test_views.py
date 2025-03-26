@@ -1,12 +1,38 @@
 from http import HTTPStatus
+from typing import Tuple
 
+from django.contrib.auth.models import AbstractUser
 from django.forms.models import model_to_dict
 from django.test import Client
 from django.urls import reverse
 
-from pytest_django.asserts import assertContains, assertQuerysetEqual
+import pytest
+from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 
 from .. import factories, models, tables
+
+# Add any future GET-requestable patients app pages here for faster test writing
+test_url_template_data: list[Tuple] = [
+    (reverse('patients:caregiver-access'), 'patients/caregiver_access/form.html'),
+]
+
+
+@pytest.mark.parametrize(('url', 'template'), test_url_template_data)
+def test_patients_urls_exist(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+    """Ensure that a page exists at each URL address."""
+    user_client.force_login(admin_user)
+    response = user_client.get(url)
+
+    assert response.status_code == HTTPStatus.OK
+
+
+@pytest.mark.parametrize(('url', 'template'), test_url_template_data)
+def test_views_use_correct_template(user_client: Client, admin_user: AbstractUser, url: str, template: str) -> None:
+    """Ensure that a page uses appropriate templates."""
+    user_client.force_login(admin_user)
+    response = user_client.get(url)
+
+    assertTemplateUsed(response, template)
 
 
 def test_relationshiptypes_list_table(user_client: Client) -> None:
