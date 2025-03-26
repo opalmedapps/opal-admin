@@ -28,10 +28,10 @@ class OIECommunicationService:
         }
         response = requests.post(url, data=data)
         if response.status_code == HTTPStatus.OK:
-            response = {data: response.json()}
+            result = {data: response.json()}
         else:
-            response = {data: None}
-        return response
+            result = {data: None}
+        return result
 
     def find_patient_by_ramq(self, ramq: str) -> requests.Response:
         """Search patient info by ramq code.
@@ -49,7 +49,7 @@ class OIECommunicationService:
         }
         response = requests.post(url, data=data)
         if response.status_code == HTTPStatus.OK:
-            response = {data: response.json()}
+            result = {data: response.json()}
         else:
-            response = {data: None}
-        return response
+            result = {data: None}
+        return result
