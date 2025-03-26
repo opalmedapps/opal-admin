@@ -737,14 +737,15 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 initial_type,
             ),
         })
-
-        available_choices = utils.valid_relationship_types(self.instance.patient)
-
         # get the RelationshipType record that corresponds to the instance
         existing_choice = RelationshipType.objects.filter(pk=self.instance.type.pk)
+        available_choices: QuerySet[RelationshipType] = existing_choice
 
         # combine the instance value and with the valid relationshiptypes
-        available_choices |= existing_choice
+        if existing_choice[0].role_type == RoleType.SELF.name:
+            self.fields['type'].disabled = True
+        else:
+            available_choices = utils.valid_relationship_types(self.instance.patient)
 
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
 
