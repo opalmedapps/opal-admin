@@ -307,7 +307,7 @@ class Command(BaseCommand):  # noqa: WPS214
 
             # Intialize the patient_data_success tracker for this patient
             if patient_guid not in self.patient_data_success_tracker:
-                self.patient_data_success_tracker[patient_guid] = {module: True for module in DataModuleType}
+                self.patient_data_success_tracker[patient_guid] = dict.fromkeys(DataModuleType, True)  # noqa: WPS425
 
             # Handle response codes
             if status_code in {HTTPStatus.OK, HTTPStatus.CREATED}:
