@@ -11,6 +11,7 @@ The models in this module are inspired by Apple HealthKit, such as:
     * https://developer.apple.com/documentation/healthkit/hkquantitytypeidentifier
     * https://developer.apple.com/documentation/healthkit/hkelectrocardiogram
 """
+from decimal import Decimal
 from enum import Enum
 from typing import Any
 
@@ -133,7 +134,7 @@ class QuantitySample(AbstractSample):
         _('Value'),
         max_digits=7,
         decimal_places=2,
-        validators=[MinValueValidator(0)],
+        validators=[MinValueValidator(Decimal('0'))],
     )
     type = models.CharField(  # noqa: A003
         _('Type'),
