@@ -76,7 +76,7 @@ def test_authenticate_fedauth(mocker: MockerFixture) -> None:
     auth_data = _create_auth_data(AUTHENTICATION_SUCCESS)
     mock_post = _mock_requests_post(mocker, auth_data)
 
-    user_data = auth_backend.authenticate_fedauth('user', 'pass')
+    user_data = auth_backend._authenticate_fedauth('user', 'pass')
     assert user_data == ('user@example.com', 'First', 'Last')
 
     mock_post.assert_called_once()
@@ -94,7 +94,7 @@ def test_authenticate_fedauth_uses_settings(mocker: MockerFixture, settings: Set
     mock_post = mocker.patch('requests.post')
     mock_post.side_effect = ConnectionError('connection failed')
 
-    user_data = auth_backend.authenticate_fedauth('user', 'pass')
+    user_data = auth_backend._authenticate_fedauth('user', 'pass')
     assert user_data is None
 
     mock_post.assert_called_once_with(
@@ -115,7 +115,7 @@ def test_authenticate_fedauth_error(mocker: MockerFixture) -> None:
     mock_logger = mocker.patch('logging.Logger.error', return_value=None)
     mock_post.side_effect = ConnectionError('connection failed')
 
-    user_data = auth_backend.authenticate_fedauth('user', 'pass')
+    user_data = auth_backend._authenticate_fedauth('user', 'pass')
 
     assert user_data is None
     mock_logger.assert_called_once_with('connection failed')
@@ -145,7 +145,7 @@ def test_authenticate_missing_params() -> None:
 def test_authenticate_wrong_credentials(mocker: MockerFixture) -> None:
     """Ensure authenticate returns `None` for unsuccessful authentication attempts."""
     # mock authentication and pretend it was unsuccessful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend.authenticate_fedauth')
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = False
 
     assert auth_backend.authenticate(None, 'testuser', 'testpass') is None
@@ -155,7 +155,7 @@ def test_authenticate_wrong_credentials(mocker: MockerFixture) -> None:
 def test_authenticate_user_does_not_exist(mocker: MockerFixture) -> None:
     """Ensure a user instance is created if the user authenticates for the first time."""
     # mock authentication and pretend it was successful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend.authenticate_fedauth')
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = UserData('user@example.com', 'First', 'Last')
 
     user = auth_backend.authenticate(None, 'testuser', 'testpass')
@@ -173,7 +173,7 @@ def test_authenticate_user_does_not_exist(mocker: MockerFixture) -> None:
 def test_authenticate_new_user_clinical_staff(mocker: MockerFixture) -> None:
     """Ensure a user instance is created with the user type `CLINICAL_STAFF`."""
     # mock authentication and pretend it was successful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend.authenticate_fedauth')
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = UserData('user@example.com', 'First', 'Last')
 
     user = auth_backend.authenticate(None, 'testuser', 'testpass')
@@ -186,7 +186,7 @@ def test_authenticate_new_user_clinical_staff(mocker: MockerFixture) -> None:
 def test_authenticate_new_user_unusable_password(mocker: MockerFixture) -> None:
     """Ensure a user instance is created with an unusable password."""
     # mock authentication and pretend it was successful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend.authenticate_fedauth')
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = UserData('user@example.com', 'First', 'Last')
 
     user = auth_backend.authenticate(None, 'testuser', 'testpass')
@@ -199,7 +199,7 @@ def test_authenticate_new_user_unusable_password(mocker: MockerFixture) -> None:
 def test_authenticate_user_already_exists(mocker: MockerFixture) -> None:
     """Ensure the existing user instance is returned if the user already exists."""
     # mock authentication and pretend it was successful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend.authenticate_fedauth')
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
     mock_authenticate.return_value = ('user@example.com', 'First', 'Last')
 
     user = UserModel.objects.create(username='testuser')

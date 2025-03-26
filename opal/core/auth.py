@@ -55,7 +55,7 @@ class FedAuthBackend(BaseBackend):
         """
         if username is not None and password is not None:
             # perform auth against fedauth service
-            user_data = self.authenticate_fedauth(username, password)
+            user_data = self._authenticate_fedauth(username, password)
 
             if user_data:
                 # Look up existing user or create new user if it is the first time.
@@ -92,7 +92,7 @@ class FedAuthBackend(BaseBackend):
         except UserModel.DoesNotExist:
             return None
 
-    def authenticate_fedauth(self, username: str, password: str) -> Optional[UserData]:
+    def _authenticate_fedauth(self, username: str, password: str) -> Optional[UserData]:
         """
         Perform the request to the fed auth web service.
 
