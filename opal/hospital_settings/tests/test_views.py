@@ -339,5 +339,3 @@ def test_site_deleted(user_client: Client, site: Site) -> None:
     url = reverse('hospital-settings:site-delete', args=(site.id,))
     user_client.delete(url)
     assert Site.objects.count() == 0
-
-# TODO: pagination, ordering, restricted to logged in users

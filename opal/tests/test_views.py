@@ -24,10 +24,10 @@ def test_opal_admin_url_shown(user_client: Client, settings: SettingsWrapper) ->
 
 
 def test_unauthenticated_redirected(client: Client, settings: SettingsWrapper) -> None:
-    """Ensure that an unauthenticated request is redirected to the login page."""
+    """Ensure that an unauthenticated request to the redirect URL is redirected to the login page."""
     response = client.get(reverse(settings.LOGIN_REDIRECT_URL))
-    assert response.status_code == HTTPStatus.FOUND
-    assert response.url == '{url}?next=/'.format(url=reverse(settings.LOGIN_URL))
+
+    assertRedirects(response, '{url}?next=/'.format(url=reverse(settings.LOGIN_URL)))
 
 
 def test_loginview_success(client: Client, django_user_model: User, settings: SettingsWrapper) -> None:
@@ -45,8 +45,11 @@ def test_loginview_success(client: Client, django_user_model: User, settings: Se
         data=credentials,
     )
 
-    assert response.status_code == HTTPStatus.FOUND
-    assert response.url == reverse(settings.LOGIN_REDIRECT_URL)
+    assertRedirects(
+        response,
+        expected_url=reverse(settings.LOGIN_REDIRECT_URL),
+        target_status_code=HTTPStatus.FOUND,
+    )
 
 
 def test_loginview_error(client: Client, django_user_model: User, settings: SettingsWrapper) -> None:
