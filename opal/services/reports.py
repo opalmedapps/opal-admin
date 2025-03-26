@@ -87,37 +87,7 @@ class PathologyData(NamedTuple):
 
 
 class PathologyPDF(FPDF):
-    """Class that provides a base setup for the pathology PDF generation."""
-
-    def header(self) -> None:
-        """Set PDF header."""
-        # Setting font: helvetica bold 15
-        self.set_font('helvetica', 'B', 15)  # noqa: WPS432
-        # Moving cursor to the right:
-        self.cell(w=80)  # noqa: WPS432
-        # Printing title:
-        self.cell(30, 10, 'Title', border=1, align='C')  # noqa: WPS432
-        # Performing a line break:
-        self.ln(h=20)  # noqa: WPS432
-
-    def footer(self) -> None:
-        """Set PDF footer."""
-        # Position cursor at 1.5 cm from bottom:
-        self.set_y(y=-15)  # noqa: WPS432
-        # Setting font: helvetica italic 8
-        self.set_font(
-            family='arial',
-            style='B',
-            size=12,  # noqa: WPS432
-        )
-        # Printing page number:
-        self.cell(
-            w=0,
-            h=10,
-            txt=f'Page {self.page_no()}/{{nb}}',
-            border='B',
-            align='R',
-        )
+    """Customized FPDF class that provides implementation for generating pathology PDF reports."""
 
 
 class ReportService():
