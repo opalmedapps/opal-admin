@@ -105,6 +105,8 @@ class PatientData(NamedTuple):
     patient_ramq: str
     patient_sites_and_mrns: list[dict[str, str]]
 
+# TODO: Correctly define the questionnaireData with it's appropriate attributes
+
 
 class QuestionnaireData(NamedTuple):
     """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
@@ -120,51 +122,17 @@ class QuestionnaireData(NamedTuple):
 
 FIRST_PAGE_NUMBER: int = 1
 QUESTIONNAIRE_REPORT_FONT: str = 'Times'
-TEXT_FONT: str = 'Times'
-NEW_TEXT_FONTT: str = 'ComputerModern'
 
-# TODO: Add query for all the the completed questionnaire Data of the patient
-QUESTIONNAIRE_DATA = (
-    'Edmonton Questionnaire', 'Montreal Questionnaire', 'Toronto Questionnaire',
-    'Vancouver Questionnaire', 'Calgary Questionnaire',
-    'Quebec City Questionnaire', 'Ottawa Questionnaire',
-    'Winnipeg Questionnaire', 'Halifax Questionnaire', 'Victoria Questionnaire',
-    'Saskatoon Questionnaire', 'Regina Questionnaire',
-    'Hamilton Questionnaire', "St. John's Questionnaire", 'Yellowknife Questionnaire',
-    'Surrey Questionnaire', 'Brampton Questionnaire',
-    'Mississauga Questionnaire', 'Laval Questionnaire', 'Burnaby Questionnaire',
-    'Richmond Questionnaire', 'Markham Questionnaire',
-    'Kitchener Questionnaire', 'Windsor Questionnaire', 'Gatineau Questionnaire',
-    'Longueuil Questionnaire', 'Sudbury Questionnaire',
-    'Barrie Questionnaire', 'Saguenay Questionnaire', 'Trois-Rivières Questionnaire',
-    'Lethbridge Questionnaire', 'Sherbrooke Questionnaire', 'Thunder Bay Questionnaire',
-    'London Questionnaire', 'Red Deer Questionnaire',
-    'Kelowna Questionnaire', 'Chilliwack Questionnaire', 'Abbotsford Questionnaire',
-    'Kamloops Questionnaire', 'Prince George Questionnaire',
-    'Moncton Questionnaire', 'Charlottetown Questionnaire', 'Fredericton Questionnaire',
-    'Whitehorse Questionnaire', 'Iqaluit Questionnaire',
-    'Gander Questionnaire', 'Moose Jaw Questionnaire', 'Medicine Hat Questionnaire',
-)
+# TODO: Add query for all the the completed questionnaire data of the patient
+QUESTIONNAIRE_DATA = ()
+UPDATE_DATA = ()
 
-UPDATE_DATA = (
-    '2023-12-13 14:35', '2025-07-19 09:45', '1988-03-24 17:20', '2024-04-22 11:05', '2025-11-05 22:15',
-    '1988-09-14 07:50', '2026-01-30 13:30', '2025-02-27 10:40', '1988-06-11 16:10', '2024-08-21 08:25',
-    '2025-10-16 19:55', '2026-05-07 05:20', '2023-11-29 12:40', '2026-03-12 14:15', '2024-07-02 09:00',
-    '2027-02-18 20:30', '2023-03-14 03:50', '1999-06-25 17:05', '2022-01-10 23:15', '2028-04-30 21:10',
-    '1997-08-23 04:35', '2029-09-01 18:45', '2030-11-15 07:20', '2021-12-29 16:50', '2027-07-05 10:30',
-    '1995-10-11 02:25', '2024-01-19 11:55', '2025-09-28 13:45', '2029-05-22 18:20', '2022-02-09 07:15',
-    '2026-12-03 15:40', '1998-04-16 22:35', '2028-08-08 09:25', '2024-06-27 20:05', '1996-09-21 12:10',
-    '2023-10-13 23:30', '2027-11-17 05:45', '2025-03-20 14:50', '1990-07-30 01:05', '2022-05-12 18:00',
-    '2026-04-19 06:40', '1992-12-07 17:30', '2029-06-02 03:25', '2030-11-15 07:19', '2028-03-29 19:40',
-    '1989-08-15 22:10', '2023-09-25 15:20', '2030-10-09 04:30',
-)
-
-sorted_data = sorted(
+# Subject to changes once the data is correctly imported
+sorted_data = sorted(  # type: ignore[var-annotated]
     zip(QUESTIONNAIRE_DATA, UPDATE_DATA),
     key=lambda sort: datetime.strptime(sort[1], '%Y-%m-%d %H:%M'),
     reverse=True,
 )
-
 
 TABLE_DATA = {}  # noqa: WPS407
 
@@ -227,7 +195,6 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
         This is automatically called by FPDF.add_page() and should not be called directly by the user application.
         """
-        # if self.page != FIRST_PAGE_NUMBER:
         header_patient_info = FPDFCellDictType(
             w=0,
             h=0,
@@ -264,22 +231,22 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             h=12,
         )
         self.set_y(y=5)
-        self.set_font(family=TEXT_FONT, style='B', size=15)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=15)
         self.cell(**header_patient_info)
         self.ln(6)
 
-        self.set_font(family=TEXT_FONT, style='B', size=15)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=15)
         self.cell(70)
         self.cell(**header_text_rvh)
 
         self.ln(11)
         self.cell(8)
 
-        self.set_font(family=TEXT_FONT, style='B', size=15)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=15)
         self.set_x(10)
         self.cell(**header_title)
 
-        self.set_font(family=TEXT_FONT, style='U', size=10)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='U', size=10)
         self.set_text_color(0, 0, 255)
         self.set_x(160)
         self.cell(**header_toc_link, link=self.add_link(page=1))  # type: ignore[arg-type]
@@ -368,14 +335,14 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             text=f'{self.patient_sites_and_mrns_str}',
         )
 
-        self.set_font(family=TEXT_FONT, style='B', size=15)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=15)
         self.cell(**patient_info)
         self.code39(text='NO-SCAN', x=160, y=30, w=1, h=18)
         self.ln(6)
-        self.set_font(family=TEXT_FONT, style='B', size=15)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='B', size=15)
         self.cell(**text_rvh)
         self.ln(8)
-        self.set_font(family=TEXT_FONT, style='', size=12)
+        self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='', size=12)
         self.set_x(162)
         self.cell(
             text='*  NO  -  SCAN  *',
@@ -403,7 +370,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.set_producer(f'fpdf2 v{FPDF_VERSION}')
 
     def _draw_table_of_content(self) -> None:
-        # Make an estimate to how many pages the TOC will take based on how many quesitonnaire go on one page
+        # Make an estimate to how many pages the TOC will take based on how many quesitonnaire are completed
         questionnaire_per_page1 = 15
         questionnaire_per_page = 17
         guesstimate = 0
@@ -419,7 +386,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.set_section_title_styles(
             # Level 0 titles:
             TitleStyle(
-                font_family='Times',
+                font_family=QUESTIONNAIRE_REPORT_FONT,
                 font_style='B',
                 font_size_pt=15,
                 color=None,
@@ -430,7 +397,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             ),
             # Level 1 subtitles for questions:
             TitleStyle(
-                font_family='Times',
+                font_family=QUESTIONNAIRE_REPORT_FONT,
                 font_style='B',
                 font_size_pt=1,
                 color=(255, 255, 255),  # Font is white and size is 1 so we can hide it
@@ -440,7 +407,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
                 b_margin=5,
             ),
             TitleStyle(
-                font_family='Times',
+                font_family=QUESTIONNAIRE_REPORT_FONT,
                 font_size_pt=14,
                 color=128,
                 underline=False,
@@ -455,14 +422,14 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
 
             if num != 0:  # Skip empty first page
                 self.add_page()
-            self.set_font('Times', style='', size=16)
+            self.set_font(QUESTIONNAIRE_REPORT_FONT, style='', size=16)
             self.start_section(f'{title}', level=1)  # For the TOC
             self.set_y(35)
             insert_paragraph(self, f'{title}', align=enums.Align.C)  # To print the title in the center
             self.ln(1)
             insert_paragraph(self, f'Dernière mise à jour: {last_updated}', align=enums.Align.C)
             self.ln(6)
-            self.set_font('Times', size=12)
+            self.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
             insert_paragraph(self, 'TODO: add graphs', align=enums.Align.C)
             num += 1
 
@@ -625,44 +592,14 @@ def insert_toc_title(
     Args:
         pdf: The pdf
     """
-    pdf.set_font('Times', size=16)
+    pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=16)
     pdf.underline = True
     pdf.set_x(12)
     insert_paragraph(pdf, 'Table of contents:')
     pdf.underline = False
     pdf.y += 5
-    pdf.set_font('Times', size=12)
+    pdf.set_font(QUESTIONNAIRE_REPORT_FONT, size=12)
     pdf.x = 10
-
-
-def render_toc(
-    pdf: Any,
-    outline: Any,
-) -> None:
-    """Render the table of content.
-
-    Args:
-        pdf: The pdf
-        outline: The outline of the table of content
-    """
-    insert_toc_title(pdf)
-
-    for section in outline:
-        if pdf.get_y() + 10 > pdf.page_break_trigger:
-            pdf.add_page()
-            insert_toc_title(pdf)
-        if section.level < 2:
-            link = pdf.add_link(page=section.page_number)
-            insert_paragraph(
-                pdf,
-                f'{" " * section.level * 2}'
-                + f'{section.name}'
-                + f'{"." * (69 - section.level*2 - len(section.name))}'  # noqa: WPS221
-                + f'{section.page_number}',
-                align='C',
-                link=link,
-            )
-            pdf.ln(5)
 
 
 def render_toc_with_table(
