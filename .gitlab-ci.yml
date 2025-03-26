@@ -120,7 +120,7 @@ markdownlint:
   extends:
     - .default_needs
   image:
-    name: davidanson/markdownlint-cli2:v0.6.0
+    name: davidanson/markdownlint-cli2:v0.7.1
     # overwrite default entrypoint (which is a call to markdownlint-cli2)
     entrypoint: [""]
   # this is not a Python script so we don't need to do all this extra stuff
