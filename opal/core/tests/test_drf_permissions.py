@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 from django.http import HttpRequest
+from django.utils import timezone
 
 import pytest
 from rest_framework import exceptions
@@ -45,7 +46,7 @@ class TestCaregiverPatientPermissions:
         with pytest.raises(exceptions.ParseError) as exception_info:
             self.has_permission()
 
-        assert "must provide a string 'Appuserid'" in str(exception_info.value)  # noqa: WPS441
+        assert "must provide a string 'Appuserid'" in str(exception_info.value)
 
     def test_non_string_caregiver_username(self) -> None:
         """Test with an 'Appuserid' that's not a string."""
@@ -54,7 +55,7 @@ class TestCaregiverPatientPermissions:
         with pytest.raises(exceptions.ParseError) as exception_info:
             self.has_permission()
 
-        assert "must provide a string 'Appuserid'" in str(exception_info.value)  # noqa: WPS441
+        assert "must provide a string 'Appuserid'" in str(exception_info.value)
 
     def test_no_patient_id(self) -> None:
         """Test with no provided 'legacy_id'."""
@@ -64,7 +65,7 @@ class TestCaregiverPatientPermissions:
         with pytest.raises(exceptions.ParseError) as exception_info:
             self.has_permission()
 
-        assert "must provide an integer 'legacy_id'" in str(exception_info.value)  # noqa: WPS441
+        assert "must provide an integer 'legacy_id'" in str(exception_info.value)
 
     def test_non_integer_patient_id(self) -> None:
         """Test with a 'legacy_id' that's not an integer."""
@@ -74,7 +75,7 @@ class TestCaregiverPatientPermissions:
         with pytest.raises(exceptions.ParseError) as exception_info:
             self.has_permission()
 
-        assert "must provide an integer 'legacy_id'" in str(exception_info.value)  # noqa: WPS441
+        assert "must provide an integer 'legacy_id'" in str(exception_info.value)
 
     def test_caregiver_not_found(self) -> None:
         """Test providing a username that doesn't exist."""
@@ -84,7 +85,7 @@ class TestCaregiverPatientPermissions:
         with pytest.raises(exceptions.PermissionDenied) as exception_info:
             self.has_permission()
 
-        assert 'Caregiver not found' in str(exception_info.value)  # noqa: WPS441
+        assert 'Caregiver not found' in str(exception_info.value)
 
     def test_no_relationship(self) -> None:
         """Test a permissions check where the caregiver doesn't have a relationship with the patient."""
@@ -95,7 +96,7 @@ class TestCaregiverPatientPermissions:
         with pytest.raises(exceptions.PermissionDenied) as exception_info:
             self.has_permission()
 
-        assert 'does not have a relationship' in str(exception_info.value)  # noqa: WPS441
+        assert 'does not have a relationship' in str(exception_info.value)
 
     def test_unconfirmed_relationship(self) -> None:
         """Test a permissions check where the caregiver has a relationship with the patient, but it isn't confirmed."""
@@ -105,7 +106,20 @@ class TestCaregiverPatientPermissions:
         with pytest.raises(exceptions.PermissionDenied) as exception_info:
             self.has_permission()
 
-        assert 'status is not CONFIRMED' in str(exception_info.value)  # noqa: WPS441
+        assert 'status is not CONFIRMED' in str(exception_info.value)
+
+    def test_deceased_patient(self) -> None:
+        """Test a permissions check where the caregiver has a relationship with the patient, but it isn't confirmed."""
+        relationship = patient_factories.Relationship(
+            status=RelationshipStatus.CONFIRMED,
+            patient__date_of_death=timezone.now(),
+        )
+        self.set_args(relationship.caregiver.user.username, relationship.patient.legacy_id)
+
+        with pytest.raises(exceptions.PermissionDenied) as exception_info:
+            self.has_permission()
+
+        assert 'Patient has a date of death recorded' in str(exception_info.value)
 
     def test_success_confirmed_relationship(self) -> None:
         """Test a permissions check where the caregiver has a confirmed relationship with the patient."""
@@ -150,7 +164,7 @@ class TestCaregiverSelfPermissions:
         with pytest.raises(exceptions.PermissionDenied) as exception_info:
             self.has_permission()
 
-        assert 'role type is not SELF' in str(exception_info.value)  # noqa: WPS441
+        assert 'role type is not SELF' in str(exception_info.value)
 
     def test_success_self_relationship_type(self) -> None:
         """Test a permissions check where the caregiver has a self relationship with the patient."""

@@ -10,7 +10,7 @@ from django.http import HttpRequest
 from rest_framework import exceptions, permissions
 
 from opal.caregivers.models import CaregiverProfile
-from opal.patients.models import Relationship, RelationshipStatus, RoleType
+from opal.patients.models import Patient, Relationship, RelationshipStatus, RoleType
 
 if TYPE_CHECKING:
     from rest_framework.views import APIView
@@ -66,6 +66,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
 
         # Perform the permission checks
         caregiver_profile = self._check_caregiver_exists(caregiver_username)
+        self._check_patient_not_deceased(patient_legacy_id)
         relationships_with_target = self._check_has_relationship_with_target(caregiver_profile, patient_legacy_id)
         self._check_has_valid_relationship(relationships_with_target)
 
@@ -156,6 +157,21 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             raise exceptions.PermissionDenied('Caregiver does not have a relationship with the patient.')
         return relationships_with_target
 
+    def _check_patient_not_deceased(self, patient_legacy_id: int) -> None:
+        """
+        Validate that the patient is not deceased.
+
+        Args:
+            patient_legacy_id: the patient's legacy_id whose data is requested access for
+
+        Raises:
+            PermissionDenied: if the patient is deceased
+        """
+        patient = Patient.objects.filter(legacy_id=patient_legacy_id).first()
+
+        if patient and patient.date_of_death is not None:
+            raise exceptions.PermissionDenied('Patient has a date of death recorded')
+
     def _check_has_valid_relationship(self, relationships_with_target: QuerySet[Relationship]) -> None:
         """
         Validate whether at least one of the relationships between a patient and caregiver has a CONFIRMED status.
@@ -168,8 +184,8 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         Raises:
             PermissionDenied: If none of the provided relationships have a confirmed status.
         """
-        valid_relationships = [rel for rel in relationships_with_target if rel.status == RelationshipStatus.CONFIRMED]
-        if not valid_relationships:
+        valid_relationships = relationships_with_target.filter(status=RelationshipStatus.CONFIRMED)
+        if not valid_relationships.exists():
             raise exceptions.PermissionDenied(
                 "Caregiver has a relationship with the patient, but its status is not CONFIRMED ('CON').",
             )
@@ -216,6 +232,7 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
         Returns:
             True if the caregiver has a confirmed relationship with the patient.
         """
+        # TODO: call super's has_permission first and then _check_has_self_relationship_type?
         # Read and validate the input parameters
         caregiver_username = self._get_caregiver_username(request)
         patient_legacy_id = self._get_patient_legacy_id(view)
