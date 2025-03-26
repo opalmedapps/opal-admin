@@ -38,6 +38,11 @@
       "matchPackagePatterns": ["mkdocs-material"],
       "groupName": "mkdocs-material"
     },
+    // Group django stubs together
+    {
+      "matchPackagePatterns": ["django-stubs", "django-stubs-ext"],
+      "groupName": "django-stubs"
+    },
     // Group all mypy stub updates together
     {
       "matchPackagePatterns": ["-stubs$", "^types-"],
