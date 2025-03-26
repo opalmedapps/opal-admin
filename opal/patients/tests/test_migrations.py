@@ -15,3 +15,5 @@ def test_migration_relationshiptype_prepopulate(migrator: Migrator) -> None:
     assert len(prepopulated_types) == 2
     assert prepopulated_type_self is not None
     assert prepopulated_type_parent is not None
+    assert prepopulated_type_self.count() == 1
+    assert prepopulated_type_parent.count() == 1

@@ -9,30 +9,36 @@ from opal.patients import constants
 def generate_restricted_roletypes(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """Generate the restricted role type objects and save to database."""
     RelationshipType = apps.get_model('patients', 'RelationshipType')
-    # Clear before migrating to avoid potential 'out-of-sync' error situations
-    RelationshipType.objects.all().delete()
+    # Clear before migrating to avoid pytest duplicate keys error
+    RelationshipType.objects.filter(role_type__in={RoleType.SELF, RoleType.PARENTGUARDIAN}).delete()
 
     relationship_type_self = RelationshipType.objects.create(
         name='self',
-        name_en='SELF',
-        name_fr='SELF',
-        description_en='A Self role type indicates a patient who owns the data that is being accessed.',
-        description_fr='Un type de rôle Self indique un patient qui possède les données auxquelles on accède.',
+        name_en='Self',
+        name_fr='Soi',
+        description_en='The patient is the requestor',
+        description_fr='Le patient est le demandeur',
         start_age=14,
         role_type=RoleType.SELF,
     )
     relationship_type_self.save()
     relationship_type_parentguardian = RelationshipType.objects.create(
         name='parent/guardian',
-        name_en='PARENT/GUARDIAN',
-        name_fr='PARENT/TUTEUR',
-        description_en='A parent or guardian of a patient.',
-        description_fr="Un parent ou un tuteur d'un patient.",
+        name_en='Guardian',
+        name_fr='Gardien',
+        description_en='A parent or guardian of the patient',
+        description_fr='Un parent ou un tuteur du patient',
         start_age=constants.RELATIONSHIP_MIN_AGE,
         end_age=14,
         role_type=RoleType.PARENTGUARDIAN,
     )
     relationship_type_parentguardian.save()
+
+
+def delete_restricted_roletypes(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
+    """Remove the restricted role type objects (for reverse migrations) and save database state."""
+    RelationshipType = apps.get_model('patients', 'RelationshipType')
+    RelationshipType.objects.filter(role_type__in={RoleType.SELF, RoleType.PARENTGUARDIAN}).delete()
 
 
 class Migration(migrations.Migration):
@@ -43,5 +49,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(generate_restricted_roletypes, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(generate_restricted_roletypes, reverse_code=delete_restricted_roletypes),
     ]
