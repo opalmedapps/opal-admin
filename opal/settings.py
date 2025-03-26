@@ -420,5 +420,6 @@ TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
 
 # ORMS settings
 # ------------------------------------------------------------------------------
-# Group for the ORMS users
-ORMS_USER_GROUP = env.str('ORMS_USER_GROUP_NAME')
+# Name of the group for the ORMS users
+# Please see: https://docs.djangoproject.com/en/3.2/topics/auth/default/#groups
+ORMS_USER_GROUP = 'orms'
