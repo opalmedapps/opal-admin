@@ -1,16 +1,16 @@
 """This module is an API view that return the encryption value required to handle registration listener's requests."""
 from django.db.models.functions import SHA512
 from django.http import HttpRequest, HttpResponse
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from opal.caregivers.api.serializer import RegistrationEncryptionInfoSerializer
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
-from opal.patients.models import Patient
-from opal.patients.serializer import CaregiverPatientListSerializer
+from opal.patients.models import Relationship
+from opal.patients.serializer import CaregiverPatientSerializer
 
 
 class GetRegistrationEncryptionInfoView(RetrieveAPIView):
@@ -39,16 +39,19 @@ class GetCaregiverPatientsList(APIView):
         Handle GET requests from `caregivers/patients/`.
 
         Args:
-            request: Http request made by the listener.
+            request: Http request made by the listener needed to retrive `Appuserid`.
 
         Returns:
             Http response with the list of patient for a given caregiver.
         """
-        patients = Patient.objects.prefetch_related(
-            'caregivers__user',
+        relationships = Relationship.objects.prefetch_related(
+            'patient',
+            'caregiver',
         ).filter(
-            caregivers__user__username=request.headers['Appuserid'],
+            caregiver__user__username=request.headers['Appuserid'],
+        ).exclude(
+            type__name='Self',
         )
         return Response(
-            CaregiverPatientListSerializer(patients, many=True).data,
+            CaregiverPatientSerializer(relationships, many=True).data,
         )

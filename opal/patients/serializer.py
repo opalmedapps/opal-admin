@@ -1,9 +1,8 @@
 """Module that contains serializer classes for patient models."""
-from typing import Union
 
 from rest_framework import serializers
 
-from opal.patients.models import HospitalPatient, Patient
+from opal.patients.models import HospitalPatient, Patient, Relationship
 
 
 class PatientRegistrationSerializer(serializers.ModelSerializer):
@@ -22,23 +21,14 @@ class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):
         fields = ['mrn', 'is_active']
 
 
-class CaregiverPatientListSerializer(serializers.ModelSerializer):
+class CaregiverPatientSerializer(serializers.ModelSerializer):
     """Serializer for the list of patient for a given caregiver."""
 
-    status = serializers.SerializerMethodField()
+    patient_id = serializers.IntegerField(source='patient.id')
+    patient_legacy_id = serializers.IntegerField(source='patient.legacy_id')
+    first_name = serializers.CharField(source='patient.first_name')
+    last_name = serializers.CharField(source='patient.last_name')
 
     class Meta:
-        model = Patient
-        fields = ['id', 'legacy_id', 'first_name', 'last_name', 'status']
-
-    def get_status(self, patient: Patient) -> Union[str, None]:
-        """
-        Get status of the relationship.
-
-        Args:
-            patient: Patient object related to the given caregiver.
-
-        Returns:
-            Status of the relationship
-        """
-        return patient.relationships.first().status
+        model = Relationship
+        fields = ['patient_id', 'patient_legacy_id', 'first_name', 'last_name', 'status']
