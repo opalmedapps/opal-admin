@@ -12,7 +12,7 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 """
 import logging
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar
 
 from django.apps import apps
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
@@ -43,6 +43,8 @@ if TYPE_CHECKING:
 _Model = TypeVar('_Model', bound=models.Model)
 
 logger = logging.getLogger(__name__)
+
+LOGIN_ACTIVITY_FILTER: Final = models.Q(request='Log', parameters__contains='"Activity":"Login"')
 
 
 class UnreadQuerySetMixin(models.Manager[_Model]):
@@ -505,8 +507,8 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
         ).values(
             'username',
         ).annotate(
-            last_login=models.Max('date_time', filter=models.Q(request='Login')),
-            count_logins=models.Count('activity_ser_num', filter=models.Q(request='Login')),
+            last_login=models.Max('date_time', filter=LOGIN_ACTIVITY_FILTER),
+            count_logins=models.Count('activity_ser_num', filter=LOGIN_ACTIVITY_FILTER, distinct=True),
             count_feedback=models.Count('activity_ser_num', filter=models.Q(request='Feedback')),
             count_update_security_answers=models.Count(
                 'activity_ser_num',
@@ -522,30 +524,21 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
             ),
             count_device_ios=models.Count(
                 'activity_ser_num',
-                filter=models.Q(
-                    request='Log',
-                    parameters__contains='"Activity":"Login"',
-                ) & models.Q(
+                filter=LOGIN_ACTIVITY_FILTER & models.Q(
                     parameters__contains='"deviceType":"iOS"',
                 ),
                 distinct=True,
             ),
             count_device_android=models.Count(
                 'activity_ser_num',
-                filter=models.Q(
-                    request='Log',
-                    parameters__contains='"Activity":"Login"',
-                ) & models.Q(
+                filter=LOGIN_ACTIVITY_FILTER & models.Q(
                     parameters__contains='"deviceType":"Android"',
                 ),
                 distinct=True,
             ),
             count_device_browser=models.Count(
                 'activity_ser_num',
-                filter=models.Q(
-                    request='Log',
-                    parameters__contains='"Activity":"Login"',
-                ) & models.Q(
+                filter=LOGIN_ACTIVITY_FILTER & models.Q(
                     parameters__contains='"deviceType":"browser"',
                 ),
                 distinct=True,
