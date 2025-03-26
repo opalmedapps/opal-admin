@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-22 10:49-0400\n"
+"POT-Creation-Date: 2023-03-24 16:36-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -440,6 +440,10 @@ msgid "New Patient Data Access Request"
 msgstr "Nouvelle demande d'accès aux données patient"
 
 #: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Opal Patient Registration Code"
+msgstr "Code d'enregistrement du patient Opal"
+
+#: opal/patients/templates/patients/access_request/qr_code.html
 msgid "Please follow the instructions below"
 msgstr "Veuillez suivre les instructions ci-dessous"
 
@@ -460,32 +464,53 @@ msgid "Hospital Name:"
 msgstr "Nom de l'hôpital:"
 
 #: opal/patients/templates/patients/access_request/qr_code.html
-msgid "Ask the patient to capture the QR code using a QR reader"
-msgstr "Demandez au patient de saisir le code QR à l'aide d'un lecteur QR"
+msgid "Instructions"
+msgstr "Instructions"
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Inform the requestor that the code is valid for 24 hours."
+msgstr "Informez le demandeur que le code est valable pour 24 heures."
 
 #: opal/patients/templates/patients/access_request/qr_code.html
 msgid ""
-"OR write the patient's code on an Opal registration form and give it to the "
-"patient"
+"Inform the requestor that access to patient data is subject to approval by "
+"Medical Records and inform them about any steps required to be done as per "
+"hospital policy. Upon confirmation by Medical Records, the user will receive "
+"a push notification and email to inform them that they can access the "
+"patient's data in the app."
 msgstr ""
-"OU écrivez le code du patient sur un formulaire d'inscription Opal et le "
-"remettez au patient"
+"Informez le demandeur que l'accès aux données du patient est soumis à "
+"l'approbation de Dossiers médicaux et informez-les de toutes les étapes à "
+"suivre conformément à politique de l'hôpital. Après confirmation par Medical "
+"Records, l'utilisateur recevra une notification push et un e-mail pour les "
+"informer qu'ils peuvent accéder les données du patient dans l'application."
 
 #: opal/patients/templates/patients/access_request/qr_code.html
 msgid ""
-"OR enter the patient's cell phone number and click 'Send SMS' to send them "
-"their code by text message."
+"Inform the requestor how to proceed if the code expired (as per hospital "
+"policy)."
 msgstr ""
-"OU entrez le numéro de téléphone portable du patient et cliquez sur 'Envoyer "
-"SMS' pour lui envoyer son code par SMS."
+"Informez le demandeur de la marche à suivre si le code a expiré (selon "
+"l'hôpital politique)."
 
 #: opal/patients/templates/patients/access_request/qr_code.html
-msgid "Inform the patient that their code will expire in 72 hours."
-msgstr "Informez le patient que son code expirera dans 72 heures."
+msgid ""
+"Inform the requestor to create their Opal user account using the above code"
+msgstr ""
+"Informez le demandeur de créer son compte utilisateur Opal à l'aide du code "
+"ci-dessus"
 
 #: opal/patients/templates/patients/access_request/qr_code.html
-msgid "The patient should complete their registration at"
-msgstr "Le patient doit compléter son inscription à"
+msgid "URL: "
+msgstr "URL: "
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Offer to scan the QR code to open the registration website"
+msgstr "Proposez de scanner le code QR pour ouvrir le site d'inscription"
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Offer to receive the registration link via SMS"
+msgstr "Proposez de recevoir le lien d'inscription par SMS"
 
 #: opal/patients/templates/patients/access_request/qr_code.html
 msgid "Code"
@@ -575,10 +600,6 @@ msgstr "Détails du demandeur"
 #: opal/patients/views.py
 msgid "Confirm access to patient data"
 msgstr "Confirmer l'accès aux données du patient"
-
-#: opal/patients/views.py
-msgid "Opal Patient Registration Code"
-msgstr "Code d'enregistrement du patient Opal"
 
 #: opal/patients/views.py
 msgid ""

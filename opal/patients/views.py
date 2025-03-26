@@ -2,7 +2,7 @@
 import base64
 import io
 from collections import Counter
-from datetime import date, datetime
+from datetime import date
 from typing import Any, Dict, List, Optional, Tuple
 
 from django.conf import settings
@@ -269,11 +269,10 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
 
         return render(self.request, 'patients/access_request/qr_code.html', {
             'qrcode': base64.b64encode(stream.getvalue()).decode(),
-            'header_title': _('Opal Patient Registration Code'),
-            'patient_name': relationship.patient,
-            'hospital_name': new_form_data['sites'],
-            'code': registration_code.code,
-            'submission_time': datetime.now().strftime('%b %d, %Y %#I:%M:%S %p'),
+            'patient': relationship.patient,
+            'hospital': new_form_data['sites'],
+            'registration_code': registration_code,
+            'registration_url': str(settings.OPAL_USER_REGISTRATION_URL),
         })
 
     def _generate_qr_code(self, registration_code: str) -> io.BytesIO:
