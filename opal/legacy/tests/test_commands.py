@@ -16,6 +16,7 @@ from opal.caregivers.models import SecurityAnswer, SecurityQuestion
 from opal.core.test_utils import CommandTestMixin, RequestMockerTest
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
+from opal.legacy import models as legacy_models
 from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, RelationshipStatus, RelationshipType
 from opal.users import factories as user_factories
@@ -590,7 +591,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             hospital=legacy_factories.LegacyHospitalIdentifierTypeFactory(code='MGH'),
         )
 
-        # create second CaregiverProfile record
+        # create second User record
         user_factories.User(
             email='second.opal@example.com',
             phone_number='5149991111',
@@ -660,6 +661,130 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             'OpalDB.Patient(UserType="Patient")',
         )
         assert deviations_err in error
+
+    def test_deviations_uneven_caregiver_records(self) -> None:
+        """Ensure the command handles the cases when "Caregiver" model/tables have uneven number of records."""
+        caregiver_user = user_factories.User(first_name='Homer', last_name='Simpson')
+        patient_factories.CaregiverProfile(legacy_id=99, user=caregiver_user)
+        legacy_factories.LegacyUserFactory(
+            usersernum=99,
+            usertypesernum=99,
+            usertype=legacy_models.LegacyUserType.CAREGIVER,
+        )
+        legacy_factories.LegacyUserFactory(
+            usersernum=100,
+            usertypesernum=100,
+            usertype=legacy_models.LegacyUserType.CAREGIVER,
+        )
+        legacy_factories.LegacyPatientFactory(patientsernum=99)
+        legacy_factories.LegacyPatientFactory(patientsernum=100)
+        message, error = self._call_command('find_patients_deviations')
+        assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
+            'opal.caregivers_caregiverprofile',
+            'OpalDB.Patient(UserType="Caregiver")',
+        ) in error
+        assert 'The number of records in "{0}" and "{1}" tables does not match!'.format(
+            'opal.caregivers_caregiverprofile',
+            'OpalDB.Patient(UserType="Caregiver")',
+        ) in error
+        assert 'opal.caregivers_caregiverprofile: 1' in error
+        assert 'OpalDB.Patient(UserType="Caregiver"): 2' in error
+
+    def test_caregiver_records_deviations(self) -> None:
+        """Ensure the command detects the deviations in the "Caregiver" model and tables."""
+        legacy_factories.LegacyUserFactory(usertypesernum=51, usertype=legacy_models.LegacyUserType.CAREGIVER)
+        legacy_factories.LegacyPatientFactory(patientsernum=51, first_name='Homer', last_name='Simpson')
+        user = user_factories.User(
+            first_name='Homer',
+            last_name='Simpson',
+            email='test@test.com',
+        )
+        patient_factories.CaregiverProfile(legacy_id=51, user=user)
+        message, error = self._call_command('find_patients_deviations')
+        assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
+            'opal.caregivers_caregiverprofile',
+            'OpalDB.Patient(UserType="Caregiver")',
+        ) in error
+
+        assert 'opal.caregivers_caregiverprofile  <===>  OpalDB.Patient(UserType="Caregiver"):' in error
+        assert "(51, 'Homer', 'Simpson', '', 'test@test.com', 'en')" in error
+        assert (
+            "(51, 'Homer', 'Simpson', '5149995555', 'test@test.com', 'en')"
+        ) in error
+        assert '{0}\n\n\n'.format(120 * '-')
+
+    def test_no_caregiver_records_deviations(self) -> None:  # noqa: WPS213
+        """Ensure the command does not return an error if there are no deviations in "Caregiver" records."""
+        # create legacy user
+        legacy_factories.LegacyUserFactory(
+            usersernum=99, usertypesernum=99,
+            usertype=legacy_models.LegacyUserType.CAREGIVER,
+        )
+        # create legacy caregiver
+        legacy_factories.LegacyPatientFactory(
+            patientsernum=99,
+            ramq='',
+            first_name='Homer',
+            last_name='Simpson',
+            tel_num='5149995555',
+            email='opal@example.com',
+            language='en',
+        )
+
+        user = user_factories.User(
+            email='opal@example.com',
+            language='en',
+            phone_number='5149995555',
+            first_name='Homer',
+            last_name='Simpson',
+        )
+
+        # create caregiver
+        patient_factories.CaregiverProfile(
+            legacy_id=99,
+            user=user,
+        )
+
+        # create another caregiver record
+
+        # create a second legacy user
+        legacy_factories.LegacyUserFactory(
+            usersernum=98,
+            usertypesernum=98,
+            usertype=legacy_models.LegacyUserType.CAREGIVER,
+        )
+
+        # create a second legacy caregiver
+        legacy_factories.LegacyPatientFactory(
+            patientsernum=98,
+            ramq='RAMQ87654321',
+            first_name='Bart',
+            last_name='Simpson',
+            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            sex='Male',
+            tel_num='5149991111',
+            email='second.opal@example.com',
+            language='fr',
+        )
+
+        # create second User record
+        user = user_factories.User(
+            email='second.opal@example.com',
+            phone_number='5149991111',
+            language='fr',
+            first_name='Bart',
+            last_name='Simpson',
+        )
+
+        # create second `Caregiver` record
+        patient_factories.CaregiverProfile(
+            legacy_id=98,
+            user=user,
+        )
+
+        message, error = self._call_command('find_patients_deviations')
+        print(error)
+        assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
 
 class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
