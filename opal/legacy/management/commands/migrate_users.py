@@ -75,7 +75,7 @@ class Command(BaseCommand):
                         staff_users_counter += 1
 
                     all_users_counter += 1
-        self.stdout.write('Total migrated users: {total} of which {admins} Admins and {staff} Registrants'.format(
+        self.stdout.write('Total migrated users: {total} of which {admins} Admins and {staff} Registrants.'.format(
             total=all_users_counter,
             admins=admin_users_counter,
             staff=staff_users_counter,
