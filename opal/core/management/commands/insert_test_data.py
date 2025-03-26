@@ -1,11 +1,13 @@
 """Management command for inserting test data."""
 from datetime import date, datetime
 from decimal import Decimal
+from enum import Enum
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any, Optional
 
 from django.core.files.base import ContentFile
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 from django.utils import timezone
 
@@ -17,7 +19,116 @@ from opal.patients.models import HospitalPatient, Patient, Relationship, Relatio
 from opal.users.models import Caregiver
 
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
-PARKING_URLS = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
+PARKING_URLS_MUHC = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
+
+
+class InstitutionOption(Enum):
+    """The institutions that test data can be created for."""
+
+    muhc = 'MUHC'
+    chusj = 'CHUSJ'
+
+    def __str__(self) -> str:
+        """
+        Return the value of the enum literal.
+
+        Returns:
+            the value of the enum literal
+        """
+        return self.value
+
+
+INSTITUTION_DATA = MappingProxyType({
+    InstitutionOption.muhc: {
+        'name': 'McGill University Health Centre',
+        'name_fr': 'Centre universitaire de santé McGill',
+        'support_email': 'opal@muhc.mcgill.ca',
+    },
+    InstitutionOption.chusj: {
+        'name': 'CHU Sainte-Justine - Mother and child university hospital center',
+        'name_fr': 'CHU Sainte-Justine - Le centre hospitalier universitaire mère-enfant',
+        'support_email': 'opal+chusj@muhc.mcgill.ca',
+    },
+})
+
+SITE_DATA = MappingProxyType({
+    InstitutionOption.muhc: [
+        (
+            'Royal Victoria Hospital',
+            'Hôpital Royal Victoria',
+            'RVH',
+            PARKING_URLS_MUHC,
+            ('https://muhc.ca/getting-glen-site', 'https://cusm.ca/se-rendre-au-site-glen'),
+            Decimal('45.473435'),
+            Decimal('-73.601611'),
+        ),
+        (
+            'Montreal General Hospital',
+            'Hôpital général de Montréal',
+            'MGH',
+            PARKING_URLS_MUHC,
+            (
+                'https://muhc.ca/how-get-montreal-general-hospital',
+                'https://cusm.ca/se-rendre-lhopital-general-de-montreal',
+            ),
+            Decimal('45.496828'),
+            Decimal('-73.588782'),
+        ),
+        (
+            "Montreal Children's Hospital",
+            "L'Hôpital de Montréal pour enfants",
+            'MCH',
+            PARKING_URLS_MUHC,
+            ('https://www.thechildren.com/getting-hospital', 'https://www.hopitalpourenfants.com/se-rendre-lhopital'),
+            Decimal('45.473343'),
+            Decimal('-73.600802'),
+        ),
+        (
+            'Lachine Hospital',
+            'Hôpital de Lachine',
+            'LAC',
+            PARKING_URLS_MUHC,
+            ('https://muhc.ca/how-get-lachine-hospital', 'https://cusm.ca/se-rendre-lhopital-de-lachine'),
+            Decimal('45.44121'),
+            Decimal('-73.676791'),
+        ),
+    ],
+    InstitutionOption.chusj: [
+        (
+            'CHU Sainte-Justine',
+            'CHU Sainte-Justine',
+            'CHUSJ',
+            (
+                'https://www.chusj.org/en/a-propos/coordonnees/Stationnement',
+                'https://www.chusj.org/a-propos/coordonnees/Stationnement',
+            ),
+            (
+                # there are two pages for "getting there" (car and public transport): favouring public transport
+                'https://www.chusj.org/en/a-propos/coordonnees/Se-rendre-en-transport-public',
+                'https://www.chusj.org/a-propos/coordonnees/Se-rendre-en-transport-public',
+            ),
+            Decimal('45.503426'),
+            Decimal('-73.624549'),
+        ),
+    ],
+})
+
+MRN_DATA = MappingProxyType({
+    InstitutionOption.muhc: {
+        'Marge Simpson': [('RVH', '9999996')],
+        'Homer Simpson': [
+            ('RVH', '9999997'),
+            ('MGH', '9999996'),
+        ],
+        'Bart Simpson': [('MCH', '9999996')],
+        'Lisa Simpson': [('MCH', '9999993')],
+        'Mona Simpson': [('RVH', '9999993')],
+    },
+    InstitutionOption.chusj: {
+        'Bart Simpson': [('CHUSJ', '9999996')],
+        'Lisa Simpson': [('CHUSJ', '9999993')],
+    },
+})
 
 
 class Command(BaseCommand):
@@ -29,8 +140,28 @@ class Command(BaseCommand):
 
     help = 'Insert data for testing purposes. Data includes patients, caregivers, relationships.'  # noqa: A003
 
+    def add_arguments(self, parser: CommandParser) -> None:
+        """
+        Add arguments to the command.
+
+        Args:
+            parser: the command parser to add arguments to
+        """
+        parser.add_argument(
+            'institution',
+            type=InstitutionOption,
+            choices=list(InstitutionOption),
+            help='Choose the institution for which to insert test data',
+        )
+        parser.add_argument(
+            '--force-delete',
+            action='store_true',
+            default=False,
+            help='Force deleting existing test data without prior confirmation',
+        )
+
     @transaction.atomic
-    def handle(self, *args: Any, **kwargs: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         """
         Handle execution of the command.
 
@@ -39,7 +170,7 @@ class Command(BaseCommand):
 
         Args:
             args: additional arguments
-            kwargs: additional keyword arguments
+            options: additional keyword arguments
         """
         if any([
             Relationship.objects.all().exists(),
@@ -48,22 +179,26 @@ class Command(BaseCommand):
             Institution.objects.all().exists(),
             SecurityAnswer.objects.all().exists(),
         ]):
-            confirm = input(
-                'Database already contains data.\n'
-                + 'To continue, existing data has to be deleted.\n'
-                + 'Are you sure you want to do this?\n'
-                + '\n'
-                + "Type 'yes' to continue, or 'no' to cancel: ",
-            )
+            force_delete: bool = options['force_delete']
 
-            if confirm != 'yes':
-                self.stdout.write('Test data insertion cancelled')
-                return
+            if not force_delete:
+                confirm = input(
+                    'Database already contains data.\n'
+                    + 'To continue, existing data has to be deleted.\n'
+                    + 'Are you sure you want to do this?\n'
+                    + '\n'
+                    + "Type 'yes' to continue, or 'no' to cancel: ",
+                )
+
+                if confirm != 'yes':
+                    self.stdout.write('Test data insertion cancelled')
+                    return
 
             _delete_existing_data()
             self.stdout.write('Existing test data deleted')
 
-        _create_test_data()
+        institution_option: InstitutionOption = options['institution']
+        _create_test_data(institution_option)
         self.stdout.write(self.style.SUCCESS('Test data successfully created'))
 
 
@@ -78,7 +213,7 @@ def _delete_existing_data() -> None:
     Institution.objects.all().delete()
 
 
-def _create_test_data() -> None:
+def _create_test_data(institution_option: InstitutionOption) -> None:
     """
     Create all test data.
 
@@ -88,77 +223,57 @@ def _create_test_data() -> None:
         * patients
         * caregivers
         * relationships between the patients and caregivers
+
+
+    Args:
+        institution_option: the chosen institution for which the test data should be inserted
     """
     today = date.today()
 
     # hospital settings
-    institution = _create_institution()
-    rvh = _create_site(
-        institution,
-        'Royal Victoria Hospital',
-        'Hôpital Royal Victoria',
-        'RVH',
-        PARKING_URLS,
-        ('https://muhc.ca/getting-glen-site', 'https://cusm.ca/se-rendre-au-site-glen'),
-        Decimal('45.473435'),
-        Decimal('-73.601611'),
-    )
-    mgh = _create_site(
-        institution,
-        'Montreal General Hospital',
-        'Hôpital général de Montréal',
-        'MGH',
-        PARKING_URLS,
-        ('https://muhc.ca/how-get-montreal-general-hospital', 'https://cusm.ca/se-rendre-lhopital-general-de-montreal'),
-        Decimal('45.496828'),
-        Decimal('-73.588782'),
-    )
-    mch = _create_site(
-        institution,
-        "Montreal Children's Hospital",
-        "L'Hôpital de Montréal pour enfants",
-        'MCH',
-        PARKING_URLS,
-        ('https://www.thechildren.com/getting-hospital', 'https://www.hopitalpourenfants.com/se-rendre-lhopital'),
-        Decimal('45.473343'),
-        Decimal('-73.600802'),
-    )
-    _create_site(
-        institution,
-        'Lachine Hospital',
-        'Hôpital de Lachine',
-        'LAC',
-        PARKING_URLS,
-        ('https://muhc.ca/how-get-lachine-hospital', 'https://cusm.ca/se-rendre-lhopital-de-lachine'),
-        Decimal('45.44121'),
-        Decimal('-73.676791'),
-    )
+    institution = _create_institution(institution_option)
+    sites = _create_sites(institution_option, institution)
+
+    mrn_data: dict[str, list[tuple[Site, str]]] = {}  # noqa: WPS234
+
+    for key, value in MRN_DATA[institution_option].items():
+        new_value = [(sites[site], mrn) for site, mrn in value]
+        mrn_data[key] = new_value
+
+    is_pediatric = institution_option == InstitutionOption.chusj
 
     # patients
-    marge = _create_patient(
-        first_name='Marge',
-        last_name='Simpson',
-        date_of_birth=_create_date(36, 10, 1),
-        sex=Patient.SexType.FEMALE,
-        ramq='SIMM86600199',
-        legacy_id=51,
-        mrns=[
-            (rvh, '9999996'),
-        ],
-    )
+    if not is_pediatric:
+        marge = _create_patient(
+            first_name='Marge',
+            last_name='Simpson',
+            date_of_birth=_create_date(36, 10, 1),
+            sex=Patient.SexType.FEMALE,
+            ramq='SIMM86600199',
+            legacy_id=51,
+            mrns=mrn_data['Marge Simpson'],
+        )
 
-    homer = _create_patient(
-        first_name='Homer',
-        last_name='Simpson',
-        date_of_birth=_create_date(39, 5, 12),
-        sex=Patient.SexType.MALE,
-        ramq='SIMH83051299',
-        legacy_id=52,
-        mrns=[
-            (rvh, '9999997'),
-            (mgh, '9999996'),
-        ],
-    )
+        homer = _create_patient(
+            first_name='Homer',
+            last_name='Simpson',
+            date_of_birth=_create_date(39, 5, 12),
+            sex=Patient.SexType.MALE,
+            ramq='SIMH83051299',
+            legacy_id=52,
+            mrns=mrn_data['Homer Simpson'],
+        )
+
+        mona = _create_patient(
+            first_name='Mona',
+            last_name='Simpson',
+            date_of_birth=date(1940, 3, 15),
+            sex=Patient.SexType.FEMALE,
+            ramq='SIMM40531599',
+            legacy_id=55,
+            mrns=mrn_data['Mona Simpson'],
+            date_of_death=_relative_date(today, -2),
+        )
 
     bart = _create_patient(
         first_name='Bart',
@@ -167,9 +282,7 @@ def _create_test_data() -> None:
         sex=Patient.SexType.MALE,
         ramq='SIMB13022399',
         legacy_id=53,
-        mrns=[
-            (mch, '9999996'),
-        ],
+        mrns=mrn_data['Bart Simpson'],
     )
 
     lisa = _create_patient(
@@ -179,45 +292,19 @@ def _create_test_data() -> None:
         sex=Patient.SexType.FEMALE,
         ramq='SIML14550999',
         legacy_id=54,
-        mrns=[
-            (mch, '9999993'),
-        ],
-    )
-
-    mona = _create_patient(
-        first_name='Mona',
-        last_name='Simpson',
-        date_of_birth=date(1940, 3, 15),
-        sex=Patient.SexType.FEMALE,
-        ramq='SIMM40531599',
-        legacy_id=55,
-        mrns=[
-            (rvh, '9999993'),
-        ],
-        date_of_death=_relative_date(today, -2),
+        mrns=mrn_data['Lisa Simpson'],
     )
 
     # caregivers
     user_marge = _create_caregiver(
-        first_name=marge.first_name,
-        last_name=marge.last_name,
+        # hard-coded name since the patient Marge might not exist
+        first_name='Marge',
+        last_name='Simpson',
         username='QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2',
         email='marge@opalmedapps.ca',
         language='en',
         phone_number='+15551234567',
         legacy_id=1,
-    )
-
-    user_homer = _create_caregiver(
-        first_name=homer.first_name,
-        last_name=homer.last_name,
-        username='PyKlcbRpMLVm8lVnuopFnFOHO4B3',
-        email='homer@opalmedapps.ca',
-        language='en',
-        phone_number='+15557654321',
-        legacy_id=2,
-        # homer is blocked: he lost access due to him being unstable
-        is_active=False,
     )
 
     user_bart = _create_caregiver(
@@ -230,16 +317,29 @@ def _create_test_data() -> None:
         legacy_id=3,
     )
 
-    user_mona = _create_caregiver(
-        first_name=mona.first_name,
-        last_name=mona.last_name,
-        username='61DXBRwLCmPxlaUoX6M1MP9DiEl1',
-        email='mona@opalmedapps.ca',
-        language='en',
-        phone_number='+15144758941',
-        legacy_id=4,
-        is_active=False,
-    )
+    if not is_pediatric:
+        user_homer = _create_caregiver(
+            first_name=homer.first_name,
+            last_name=homer.last_name,
+            username='PyKlcbRpMLVm8lVnuopFnFOHO4B3',
+            email='homer@opalmedapps.ca',
+            language='en',
+            phone_number='+15557654321',
+            legacy_id=2,
+            # homer is blocked: he lost access due to him being unstable
+            is_active=False,
+        )
+
+        user_mona = _create_caregiver(
+            first_name=mona.first_name,
+            last_name=mona.last_name,
+            username='61DXBRwLCmPxlaUoX6M1MP9DiEl1',
+            email='mona@opalmedapps.ca',
+            language='en',
+            phone_number='+15144758941',
+            legacy_id=4,
+            is_active=False,
+        )
 
     # get relationship types
     type_self = RelationshipType.objects.self_type()
@@ -248,48 +348,74 @@ def _create_test_data() -> None:
     type_mandatary = RelationshipType.objects.mandatary()
 
     # relationships
-    # Marge --> Marge: Self
-    _create_relationship(
-        patient=marge,
-        caregiver=user_marge,
-        relationship_type=type_self,
-        status=RelationshipStatus.CONFIRMED,
-        request_date=_relative_date(today, -4),
-        start_date=_relative_date(today, -6),
-    )
-
-    # Marge --> Homer: Mandatary
-    _create_relationship(
-        patient=homer,
-        caregiver=user_marge,
-        relationship_type=type_mandatary,
-        status=RelationshipStatus.CONFIRMED,
-        request_date=_relative_date(today, -1),
-        start_date=_relative_date(today, -1),
-    )
-
-    # Homer --> Homer: Self
-    _create_relationship(
-        patient=homer,
-        caregiver=user_homer,
-        relationship_type=type_self,
-        status=RelationshipStatus.CONFIRMED,
-        request_date=_relative_date(today, -10),
-        start_date=_relative_date(today, -12),
-        end_date=_relative_date(today, -1),
-    )
-
-    # Marge --> Bart: Guardian/Parent
     date_bart_fourteen = _relative_date(bart.date_of_birth, 14)
-    _create_relationship(
-        patient=bart,
-        caregiver=user_marge,
-        relationship_type=type_parent,
-        status=RelationshipStatus.EXPIRED,
-        request_date=_relative_date(today, -9),
-        start_date=bart.date_of_birth,
-        end_date=date_bart_fourteen,
-    )
+
+    if not is_pediatric:
+        # Marge --> Marge: Self
+        _create_relationship(
+            patient=marge,
+            caregiver=user_marge,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -4),
+            start_date=_relative_date(today, -6),
+        )
+
+        # Marge --> Homer: Mandatary
+        _create_relationship(
+            patient=homer,
+            caregiver=user_marge,
+            relationship_type=type_mandatary,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -1),
+            start_date=_relative_date(today, -1),
+        )
+
+        # Homer --> Homer: Self
+        _create_relationship(
+            patient=homer,
+            caregiver=user_homer,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -10),
+            start_date=_relative_date(today, -12),
+            end_date=_relative_date(today, -1),
+        )
+
+        # Marge --> Mona: Mandatary
+        _create_relationship(
+            patient=mona,
+            caregiver=user_marge,
+            relationship_type=type_mandatary,
+            status=RelationshipStatus.EXPIRED,
+            request_date=_relative_date(today, -5),
+            start_date=_relative_date(today, -3),
+            end_date=_relative_date(today, -2),
+            reason='Patient deceased.',
+        )
+
+        # Mona --> Mona: Self
+        _create_relationship(
+            patient=mona,
+            caregiver=user_mona,
+            relationship_type=type_self,
+            status=RelationshipStatus.EXPIRED,
+            request_date=_relative_date(today, -5),
+            start_date=_relative_date(today, -4),
+            end_date=_relative_date(today, -2),
+            reason='Patient deceased.',
+        )
+
+        # Marge --> Bart: Guardian/Parent
+        _create_relationship(
+            patient=bart,
+            caregiver=user_marge,
+            relationship_type=type_parent,
+            status=RelationshipStatus.EXPIRED,
+            request_date=_relative_date(today, -9),
+            start_date=bart.date_of_birth,
+            end_date=date_bart_fourteen,
+        )
 
     # Marge --> Bart: Guardian-Caregiver
     _create_relationship(
@@ -323,61 +449,46 @@ def _create_test_data() -> None:
         start_date=date_bart_fourteen,
     )
 
-    # Marge --> Mona: Mandatary
-    _create_relationship(
-        patient=mona,
-        caregiver=user_marge,
-        relationship_type=type_mandatary,
-        status=RelationshipStatus.EXPIRED,
-        request_date=_relative_date(today, -5),
-        start_date=_relative_date(today, -3),
-        end_date=_relative_date(today, -2),
-        reason='Patient deceased.',
-    )
-
-    # Mona --> Mona: Self
-    _create_relationship(
-        patient=mona,
-        caregiver=user_mona,
-        relationship_type=type_self,
-        status=RelationshipStatus.EXPIRED,
-        request_date=_relative_date(today, -5),
-        start_date=_relative_date(today, -4),
-        end_date=_relative_date(today, -2),
-        reason='Patient deceased.',
-    )
     # create the same security question and answers for the caregivers
+    if not is_pediatric:
+        _create_security_answers(user_homer)
+
     _create_security_answers(user_marge)
-    _create_security_answers(user_homer)
     _create_security_answers(user_bart)
 
 
-def _create_institution() -> Institution:
+def _create_institution(institution_option: InstitutionOption) -> Institution:
     """
     Create, validate and save an institution instance with the given properties.
 
     The logo and terms of use are loaded from the file system under `files/` within the directory of this module.
 
+    Args:
+        institution_option: the chosen institution for which the test data should be inserted
+
     Returns:
         the newly created institution
     """
-    logo_path = DIRECTORY_FILES.joinpath('logo.png')
+    institution_directory = DIRECTORY_FILES.joinpath(institution_option.name)
+    data = INSTITUTION_DATA[institution_option]
+
+    logo_path = institution_directory.joinpath('logo.png')
     with logo_path.open('rb') as logo_file:
         logo = ContentFile(logo_file.read(), logo_path.name)
 
-    terms_path_en = DIRECTORY_FILES.joinpath('terms_of_use_en.pdf')
+    terms_path_en = institution_directory.joinpath('terms_of_use_en.pdf')
     with terms_path_en.open('rb') as terms_file_en:
         terms_of_use_en = ContentFile(terms_file_en.read(), terms_path_en.name)
 
-    terms_path_fr = DIRECTORY_FILES.joinpath('terms_of_use_fr.pdf')
+    terms_path_fr = institution_directory.joinpath('terms_of_use_fr.pdf')
     with terms_path_fr.open('rb') as terms_file_fr:
         terms_of_use_fr = ContentFile(terms_file_fr.read(), terms_path_fr.name)
 
     institution = Institution(
-        name='McGill University Health Centre',
-        name_fr='Centre universitaire de santé McGill',
-        code='MUHC',
-        support_email='opal@muhc.mcgill.ca',
+        name=data['name'],
+        name_fr=data['name_fr'],
+        code=institution_option.value,
+        support_email=data['support_email'],
         terms_of_use=terms_of_use_en,
         terms_of_use_fr=terms_of_use_fr,
         logo=logo,
@@ -387,6 +498,26 @@ def _create_institution() -> Institution:
     institution.save()
 
     return institution
+
+
+def _create_sites(institution_option: InstitutionOption, institution: Institution) -> dict[str, Site]:
+    """
+    Create sites according to the definition of the `SITE_DATA` constant for the chosen institution.
+
+    Args:
+        institution_option: the institution for which to create sites for
+        institution: the institution instance
+
+    Returns:
+        a mapping from site code to `Site` instance
+    """
+    result: dict[str, Site] = {}
+
+    for site_data in SITE_DATA[institution_option]:
+        site = _create_site(institution, *site_data)
+        result[site_data[2]] = site
+
+    return result
 
 
 def _create_site(
