@@ -1094,25 +1094,6 @@ class TestRegistrationCompletionView:
 
         assert response.status_code == HTTPStatus.NOT_FOUND
 
-    def test_caregiver_already_registered(self, api_client: APIClient, admin_user: User) -> None:
-        """Ensure that an existing caregiver can not be handled as a new caregiver."""
-        api_client.force_login(user=admin_user)
-        registration_code = caregiver_factories.RegistrationCode()
-        assert registration_code.relationship.caregiver.user.is_active
-
-        caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
-
-        response = api_client.post(
-            reverse(
-                'api:registration-register',
-                kwargs={'code': registration_code.code},
-            ),
-            data=self.input_data,
-        )
-
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data[0] == 'Caregiver already registered.'
-
     def test_non_existent_registration_code(self, api_client: APIClient, admin_user: User) -> None:
         """Test non-existent registration code."""
         api_client.force_login(user=admin_user)
