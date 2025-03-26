@@ -69,7 +69,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
          required_permissions=('hospital_settings.new_perm',)
          table_class = tables.SiteTable
          template_name = 'hospital_settings/site/site_list.html'
-  ```
+```
 
 ### Applying certain restrictions on front-end at using template tags
 
