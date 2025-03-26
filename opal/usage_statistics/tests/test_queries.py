@@ -2701,7 +2701,10 @@ def test_fetch_received_questionnaires_summary_by_year() -> None:
 
 def test_fetch_users_latest_login_year_summary_empty() -> None:
     """Ensure fetch_users_latest_login_year_summary successfully fetches an empty data result without errors."""
-    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary()
+    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
+        dt.date.min,
+        dt.date.max,
+    )
     assert not user_last_login_year_summary
 
 
@@ -2728,10 +2731,13 @@ def test_fetch_users_latest_login_year_summary_success() -> None:
         count_logins=5,
         action_date=dt.datetime(2024, 8, 20),
     )
-    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary()
+    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
+        dt.date.min,
+        dt.date.max,
+    )
     assert len(user_last_login_year_summary) == 2
-    assert user_last_login_year_summary[2023] == 1
-    assert user_last_login_year_summary[2024] == 2
+    assert user_last_login_year_summary['2023'] == 1
+    assert user_last_login_year_summary['2024'] == 2
 
 
 def test_fetch_users_latest_login_year_summary_user_multiple_records() -> None:
@@ -2758,9 +2764,12 @@ def test_fetch_users_latest_login_year_summary_user_multiple_records() -> None:
         count_logins=5,
         action_date=dt.datetime(2024, 8, 20),
     )
-    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary()
+    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
+        dt.date.min,
+        dt.date.max,
+    )
     assert len(user_last_login_year_summary) == 1
-    assert user_last_login_year_summary[2024] == 1
+    assert user_last_login_year_summary['2024'] == 1
 
 
 def test_fetch_users_latest_login_year_summary_multiple_annual_records() -> None:
@@ -2789,9 +2798,12 @@ def test_fetch_users_latest_login_year_summary_multiple_annual_records() -> None
         count_logins=5,
         action_date=dt.datetime(2024, 8, 20),
     )
-    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary()
+    user_last_login_year_summary = stats_queries.fetch_users_latest_login_year_summary(
+        dt.date.min,
+        dt.date.max,
+    )
     assert len(user_last_login_year_summary) == 1
-    assert user_last_login_year_summary[2024] == 3
+    assert user_last_login_year_summary['2024'] == 3
 
 
 def test_fetch_labs_summary_per_patient_empty() -> None:

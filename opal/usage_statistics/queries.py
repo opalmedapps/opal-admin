@@ -553,8 +553,8 @@ def fetch_users_latest_login_year_summary(
 
 # INDIVIDUAL REPORTS
 def fetch_labs_summary_per_patient(
-    start_date: dt.date,
-    end_date: dt.date,
+    start_date: dt.date = dt.date.min,
+    end_date: dt.date = dt.date.max,
 ) -> list[dict[str, Any]]:
     """Fetch the individual received lab results statistics from the `DailyPatientDataReceived` model.
 
@@ -562,8 +562,8 @@ def fetch_labs_summary_per_patient(
     with which patients receive lab results for a given date range.
 
     Args:
-        start_date: the beginning of the time period of the individual received lab results (inclusive)
-        end_date: the end of the time period of the individual received lab results (inclusive)
+        start_date: the starting date of the time period for lab statistics (inclusive). Defaults to `01.01.1`.
+        end_date: the ending date of the time period for lab statistics (inclusive). Defaults to `31.12.9999`.
 
     Returns:
         individual lab results statistics (per patient).
@@ -587,16 +587,16 @@ def fetch_labs_summary_per_patient(
 
 
 def fetch_logins_summary_per_user(
-    start_date: dt.date,
-    end_date: dt.date,
+    start_date: dt.date = dt.date.min,
+    end_date: dt.date = dt.date.max,
 ) -> list[dict[str, Any]]:
     """Fetch individual user login statistics from the `DailyUserAppActivity` model.
 
     The statistics show user's total login time and login frequency in a given date range.
 
     Args:
-        start_date: the beginning of the time period of the individual user login statistics (inclusive)
-        end_date: the end of the time period of the individual user login statistics (inclusive)
+        start_date: the starting date of the time period for the user login stats (inclusive). Defaults to `01.01.1`.
+        end_date: the ending date of the time period for the user login stats (inclusive). Defaults to `31.12.9999`.
 
     Returns:
         individual login statistics (per user).
@@ -620,8 +620,8 @@ def fetch_logins_summary_per_user(
 
 
 def fetch_patient_demographic_diagnosis_summary(
-    start_date: dt.date,
-    end_date: dt.date,
+    start_date: dt.date = dt.date.min,
+    end_date: dt.date = dt.date.max,
 ) -> list[dict[str, Any]]:
     """Fetch demographic statistics and the latest diagnosis for each individual patient.
 
@@ -629,8 +629,8 @@ def fetch_patient_demographic_diagnosis_summary(
     in a given date range.
 
     Args:
-        start_date: the beginning of the time period of the individual demographic statistics with diagnosis (inclusive)
-        end_date: the end of the time period of the individual demographic statistics with diagnosis (inclusive)
+        start_date: the starting date of the time period for the demographic stats (inclusive). Defaults to `01.01.1`.
+        end_date: the ending date of the time period for the demographic stats (inclusive). Defaults to `31.12.9999`.
 
     Returns:
         demographic information and latest diagnosis per patient.
