@@ -348,7 +348,7 @@ def django_db_setup(  # noqa: PT004
     Yields:
         None
     """
-    with Path('opal/tests/sql/questionnairedb_functions.sql').open(encoding='UTF-8') as handle:
+    with Path('opal/tests/sql/questionnairedb_functions.sql').open() as handle:
         sql_content = handle.read()
 
     with Path('opal/tests/sql/questionnairedb_cleanup.sql').open() as handle:  # noqa: WPS440
