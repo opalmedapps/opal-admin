@@ -1,4 +1,7 @@
+import pytest
 from django_test_migrations.migrator import Migrator
+
+pytestmark = pytest.mark.slow()
 
 
 def test_migration_caregiverprofile_uuid(migrator: Migrator) -> None:
