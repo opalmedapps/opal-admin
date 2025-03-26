@@ -17,7 +17,7 @@ from opal.databank.api.views import CreateDatabankConsentView
 from opal.health_data.api import views as data_views
 from opal.hospital_settings.api import views as settings_views
 from opal.hospital_settings.api import viewsets as settings_viewsets
-from opal.legacy.api.views.app_appointments import AppAppointmentsView
+from opal.legacy.api.views.app_appointments import AppAppointmentsView, UpdateAppointmentCheckinView
 from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_general import AppGeneralView
 from opal.legacy.api.views.app_home import AppHomeView
@@ -185,6 +185,13 @@ urlpatterns = [
         'patients/<uuid:uuid>/health-data/quantity-samples/viewed/',
         data_views.MarkQuantitySampleAsViewedView.as_view(),
         name='patient-viewed-health-data-update',
+    ),
+    # Patient checkin update endpoint to replace legacy OA endpoint
+    # TODO: Move and update the checkin api view to the new appointments app after it has been lift-shifted to django
+    path(
+        'patients/legacy/appointment/checkin/',
+        UpdateAppointmentCheckinView.as_view(),
+        name='patients-legacy-appointment-checkin',
     ),
 
     # QUESTIONNAIRES ENDPOINTS
