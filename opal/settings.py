@@ -39,6 +39,9 @@ DEBUG = env.bool('DEBUG', default=False)
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['.localhost', '127.0.0.1', '[::1]', 'host.docker.internal'])
 
+# https://docs.djangoproject.com/en/dev/ref/settings/#silenced-system-checks
+# allow definition of PAGE_SIZE globally while having pagination opt-in
+SILENCED_SYSTEM_CHECKS = ['rest_framework.W001']
 
 # APPS
 DJANGO_APPS = [
