@@ -415,14 +415,6 @@ msgstr "Aucun aidant n'a pu être retrouvé."
 msgid "New Patient Data Access Request"
 msgstr "Nouvelle demande d'accès aux données patient"
 
-#: opal/patients/templates/patients/health-data/health_data_display.html
-msgid "Health Data"
-msgstr ""
-
-#: opal/patients/templates/patients/health-data/health_data_display.html
-msgid "Patient:"
-msgstr "Patient:"
-
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
 msgstr ""
