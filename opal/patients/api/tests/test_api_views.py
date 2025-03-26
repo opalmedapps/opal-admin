@@ -15,12 +15,13 @@ from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.test import APIClient
 
+from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, Device, RegistrationCode
-from opal.caregivers.models import RegistrationCodeStatus, SecurityAnswer
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
 from opal.patients.factories import HospitalPatient, Patient, Relationship
-from opal.users.factories import Caregiver
+from opal.users import factories as caregiver_factories
+from opal.users.models import Caregiver
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
@@ -222,9 +223,9 @@ class TestApiRegistrationCompletion:
             format='json',
         )
         registration_code.refresh_from_db()
-        security_answers = SecurityAnswer.objects.all()
+        security_answers = caregiver_models.SecurityAnswer.objects.all()
         assert response.status_code == HTTPStatus.OK
-        assert registration_code.status == RegistrationCodeStatus.REGISTERED
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
         assert len(security_answers) == 2
 
     def test_non_existent_registration_code(self, api_client: APIClient, admin_user: AbstractUser) -> None:
@@ -255,7 +256,7 @@ class TestApiRegistrationCompletion:
         relationship = Relationship(patient=patient, caregiver=caregiver)
         registration_code = RegistrationCode(
             relationship=relationship,
-            status=RegistrationCodeStatus.REGISTERED,
+            status=caregiver_models.RegistrationCodeStatus.REGISTERED,
         )
         valid_input_data = copy.deepcopy(self.valid_input_data)
         response = api_client.post(
@@ -289,16 +290,16 @@ class TestApiRegistrationCompletion:
         )
 
         registration_code.refresh_from_db()
-        security_answers = SecurityAnswer.objects.all()
+        security_answers = caregiver_models.SecurityAnswer.objects.all()
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert registration_code.status == RegistrationCodeStatus.NEW
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
         assert not security_answers
         assert response.json() == {
             'patient': {'legacy_id': ['Ensure this value is greater than or equal to 1.']},
         }
 
     def test_register_with_invalid_phone(self, api_client: APIClient, admin_user: AbstractUser) -> None:
-        """Test api registration register success."""
+        """Test api registration register with invalid phone."""
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
         patient = Patient()
@@ -318,13 +319,53 @@ class TestApiRegistrationCompletion:
         )
 
         registration_code.refresh_from_db()
-        security_answers = SecurityAnswer.objects.all()
+        security_answers = caregiver_models.SecurityAnswer.objects.all()
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert registration_code.status == RegistrationCodeStatus.NEW
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
         assert not security_answers
         assert response.json() == {
             'detail': "({'phone_number': [ValidationError(['Enter a valid value.'])]}, None, None)",
         }
+
+    def test_remove_skeleton_caregiver(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test api registration register remove skeleton caregiver."""
+        api_client.force_login(user=admin_user)
+        # Build existing caregiver
+        caregiver = caregiver_factories.Caregiver(
+            username='test-username',
+            first_name='caregiver',
+            last_name='test',
+        )
+        caregiver_profile = CaregiverProfile(user=caregiver)
+        # Build skeleton user
+        skeleton = caregiver_factories.Caregiver(
+            username='skeleton-username',
+            first_name='skeleton',
+            last_name='test',
+        )
+        skeleton_profile = CaregiverProfile(user=skeleton)
+        # Build relationships: code -> relationship -> patient
+        relationship = Relationship(caregiver=skeleton_profile)
+        registration_code = RegistrationCode(relationship=relationship)
+        invalid_data: dict = copy.deepcopy(self.valid_input_data)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=invalid_data,
+            format='json',
+        )
+
+        registration_code.refresh_from_db()
+        relationship.refresh_from_db()
+        assert response.status_code == HTTPStatus.OK
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
+        assert relationship.caregiver.id == caregiver_profile.id
+        assert relationship.caregiver.user.id == caregiver.id
+        assert not Caregiver.objects.filter(username=skeleton.username).exists()
+        assert not caregiver_models.CaregiverProfile.objects.filter(user=skeleton).exists()
 
 
 class TestPatientDemographicView:
@@ -361,7 +402,7 @@ class TestPatientDemographicView:
             status_code=status.HTTP_403_FORBIDDEN,
         )
 
-    def test_demographic_update_wiht_empty_mrns(
+    def test_demographic_update_with_empty_mrns(
         self,
         api_client: APIClient,
     ) -> None:
@@ -763,7 +804,7 @@ class TestPatientDemographicView:
         Returns:
             Authorized API client.
         """
-        user = Caregiver(username='lisaphillips')
+        user = caregiver_factories.Caregiver(username='lisaphillips')
         permission = Permission.objects.get(codename='change_patient')
         user.user_permissions.add(permission)
         api_client.force_login(user=user)
@@ -780,8 +821,8 @@ class TestPatientCaregiversView:
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id)
 
-        user1 = Caregiver(language='en', phone_number='+11234567890')
-        user2 = Caregiver(language='fr', phone_number='+11234567891')
+        user1 = caregiver_factories.Caregiver(language='en', phone_number='+11234567890')
+        user2 = caregiver_factories.Caregiver(language='fr', phone_number='+11234567891')
         caregiver1 = CaregiverProfile(user=user1)
         caregiver2 = CaregiverProfile(user=user2)
         Relationship(caregiver=caregiver1, patient=patient)
