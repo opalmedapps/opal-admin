@@ -1164,11 +1164,19 @@ class TestRegistrationCompletionView:
                 'legacy_id': 1,
             },
         }
+        skeleton = user_factories.Caregiver(
+            username='skeleton-username',
+            first_name='skeleton',
+            last_name='test',
+            is_active=False,
+        )
+        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=skeleton)
+        caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
-                kwargs={'code': '123456'},
+                kwargs={'code': registration_code},
             ),
             data=input_data_without_security_answers,
         )
