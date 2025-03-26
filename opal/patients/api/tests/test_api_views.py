@@ -756,7 +756,7 @@ class TestPatientDemographicView:
         assert relationships[0].end_date
         assert relationships[1].end_date
         assert relationships[0].reason == 'Date of death submitted from ADT'
-        assert relationships[1].reason == 'Opal Account Inactivated'
+        assert relationships[1].reason == 'Opal Account Deactivated'
 
     def test_demographic_update_deceased_patient_with_care_receiver(
         self,
@@ -814,7 +814,7 @@ class TestPatientDemographicView:
         assert relationships[0].end_date
         assert relationships[1].end_date
         assert relationships[0].reason == 'Date of death submitted from ADT'
-        assert relationships[1].reason == 'Opal Account Inactivated'
+        assert relationships[1].reason == 'Opal Account Deactivated'
 
 
 class TestPatientCaregiversView:
