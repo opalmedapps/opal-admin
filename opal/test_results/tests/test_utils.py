@@ -47,8 +47,14 @@ def _create_empty_parsed_notes() -> dict[str, Any]:
 
 def test_find_doctor_name_success() -> None:
     """Ensure find_doctor() successfully finds doctor name in a string."""
-    # TODO: update the unit test once find_doctor() is finalized
-    assert _find_doctor_name('Lorem ipsum dolor sit amet...') == ''
+    note_text = r'Electronically signed on 18-OCT-2023 02:29 pm\\.br\\By Gertruda Evaristo, MD, FRCPC'
+    assert _find_doctor_name(note_text) == 'Gertruda Evaristo, MD, FRCPC'
+
+
+def test_find_doctor_name_fail() -> None:
+    """Ensure find_doctor() does not find doctor name and return a empty string."""
+    note_text = 'AH /AH /AH'
+    assert _find_doctor_name(note_text) == ''
 
 
 def test_find_note_date_success() -> None:
