@@ -327,3 +327,26 @@ The following is the list of supported scopes:
 #### Breaking Changes
 
 In addition to appending a `!` after the type/scope in the commit message header, a breaking change must also be described in more detail in the commit message body prefixed with `BREAKING CHANGE:` (see [specification](https://www.conventionalcommits.org/en/v1.0.0/#commit-message-with-both--and-breaking-change-footer)).
+
+## Using the container image
+
+A container image is built and pushed to the container registry of this repository in the pipeline.
+It is recommended to not use the `latest` tag but a specific version or commit for reproducible purposes.
+
+The `.env` file needs to be volume mapped into the container.
+
+If the network uses a custom certificate that is not trusted by default, the environment variable `REQUESTS_CA_BUNDLE` can be set with the path to the `ca-certificates.crt` file.
+
+For example:
+
+```yaml
+services:
+  app:
+    image: registry.gitlab.com/opalmedapps/backend:<commit>
+    environment:
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+    command: python manage.py runserver 0:8000
+    volumes:
+      - path/to/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt
+      - $PWD/.env:.env
+```
