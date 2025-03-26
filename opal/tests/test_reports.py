@@ -24,6 +24,8 @@ TEST_LEGACY_QUESTIONNAIRES_REPORT_URL = 'http://localhost:80/report'
 
 reports_service = ReportService()
 
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
+
 
 def _create_generated_report_data(status: str) -> dict[str, dict[str, str]]:
     return {
@@ -287,7 +289,6 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
 
 # generate_questionnaire_report function tests
 
-@pytest.mark.django_db(databases=['legacy'])
 def test_questionnaire_report(mocker: MockerFixture) -> None:
     """Ensure the returned value is base64 encoded pdf report."""
     patient = LegacyPatientFactory()
@@ -305,7 +306,6 @@ def test_questionnaire_report(mocker: MockerFixture) -> None:
     assert base64_report == BASE64_ENCODED_REPORT
 
 
-@pytest.mark.django_db(databases=['legacy'])
 def test_questionnaire_report_error(mocker: MockerFixture) -> None:
     """Ensure function failure is handled and does not result in error."""
     patient = LegacyPatientFactory()
@@ -319,43 +319,53 @@ def test_questionnaire_report_error(mocker: MockerFixture) -> None:
         'en',
     )
 
+    assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
     assert base64_report == ''
 
 
-@pytest.mark.django_db(databases=['legacy'])
-def test_questionnaire_report_invalid_patient() -> None:
+def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
     """Ensure invalid patient id is handled and does not result in error."""
-    patient = LegacyPatientFactory()
+    LegacyPatientFactory()
+    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    mock_post = _mock_requests_post(mocker, generated_report_data)
+
     base64_report = reports_service.generate_questionnaire_report(
-        patient.patientsernum,
+        INVALID_PATIENT_SER_NUM,
         LOGO_PATH,
         'en',
     )
 
+    assert mock_post.return_value.status_code == HTTPStatus.OK
     assert base64_report == ''
 
 
-@pytest.mark.django_db(databases=['legacy'])
-def test_questionnaire_report_invalid_logo() -> None:
+def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
     """Ensure invalid logo path is handled and does not result in error."""
     patient = LegacyPatientFactory()
+    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    mock_post = _mock_requests_post(mocker, generated_report_data)
+
     base64_report = reports_service.generate_questionnaire_report(
         patient.patientsernum,
         Path('invalid/logo/path'),
         'en',
     )
 
+    assert mock_post.return_value.status_code == HTTPStatus.OK
     assert base64_report == ''
 
 
-@pytest.mark.django_db(databases=['legacy'])
-def test_questionnaire_report_invalid_language() -> None:
+def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
     """Ensure invalid language is handled and does not result in error."""
     patient = LegacyPatientFactory()
+    generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
+    mock_post = _mock_requests_post(mocker, generated_report_data)
+
     base64_report = reports_service.generate_questionnaire_report(
         patient.patientsernum,
         LOGO_PATH,
         'invalid language',
     )
 
+    assert mock_post.return_value.status_code == HTTPStatus.OK
     assert base64_report == ''
