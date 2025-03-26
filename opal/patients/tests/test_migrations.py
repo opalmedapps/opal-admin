@@ -5,7 +5,7 @@ from .. import models
 
 def test_migration_relationshiptype_prepopulate_no_existing_types(migrator: Migrator) -> None:
     """Ensure the migration correctly prepopulates the relationshiptypes."""
-    old_state = migrator.apply_initial_migration(('patients', '0010_relationshiptype_role'))
+    old_state = migrator.apply_initial_migration(('patients', '0010_relationshiptype_role'))  # noqa: WPS204
     RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')
 
     assert RelationshipType.objects.count() == 0
