@@ -355,6 +355,7 @@ workflow:
 include:
   - component: $CI_SERVER_FQDN/opalmedapps/engineering/ci-templates/check-thirdparty-notice@main
     inputs:
+      # includes base.txt
       pip-requirements-files: requirements/production.txt
       package-file: opal/static/thirdparty/package.json
 
