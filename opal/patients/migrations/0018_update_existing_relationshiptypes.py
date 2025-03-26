@@ -25,6 +25,7 @@ def update_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
 
     guardian_type = RelationshipType.objects.get(role_type=RoleType.PARENT_GUARDIAN)
     guardian_type.name = 'Parent/Guardian'
+    guardian_type.name_en = guardian_type.name
     guardian_type.name_fr = 'Parent/Tuteur'
     guardian_type.description = 'Parent or guardian of a minor under the age of medical consent legally under their care'
     guardian_type.description_en = guardian_type.description

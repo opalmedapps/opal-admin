@@ -1,10 +1,12 @@
 {% load i18n %}
 
-<a class="btn btn-primary btn-sm mr-2" href="{% url urlname_update record.id %}">
-  <i class="fas fa-pencil-alt"></i> {% translate "Edit" %}
-</a>
+{% url urlname_update record.id as update_url %}
+{# Defined in one line due to some weirdness with coverage that detects it as not covered otherwise. #}
+{% #button icon="pencil-alt" href=update_url add_class="btn-sm" %}{% translate "Edit" %}{% /button %}
+
 {% if urlname_delete %}
-  <a class="btn btn-danger btn-sm" href="{% url urlname_delete record.id %}">
-    <i class="fas fa-trash"></i> {% translate "Delete" %}
-  </a>
+  {% url urlname_delete record.id as delete_url %}
+  {% #button icon="trash" href=delete_url type="danger" add_class="btn-sm" %}
+    {% translate "Delete" %}
+  {% /button %}
 {% endif %}

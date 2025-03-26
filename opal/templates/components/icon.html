@@ -1,0 +1,10 @@
+{% var add_class=add_class|default:"me-2" %}
+
+<i
+  class="fa-solid fa-{{ icon }}
+  {% if size|length > 0 %}
+  fa-{{ size }}
+  {% endif %}
+  {{ add_class }}"
+>
+</i>

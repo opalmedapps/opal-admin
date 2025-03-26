@@ -1,0 +1,57 @@
+/**
+  Global CSS styles.
+**/
+
+/*
+  Define global CSS variables.
+
+  Can also be used to change existing CSS variables of Bootstrap.
+  Note that this doesn't always work depending on where the variable is defined in Bootstrap.
+  For example, to change the table-hover hover background color, the rule in the class needs to be overridden.
+  This is because the variable (--bs-table-accent-bg) is defined within that rule in Bootstrap for the first time.
+*/
+:root {
+  --opal-purple: #6f5499;
+  --sidebar-bg-color: var(--bs-gray-100);
+  --sidebar-accent-bg-color: #f0e9ff;
+  --sidebar-active-bg-color: var(--opal-purple);
+  --table-accent-bg-color: var(--bs-table-accent-bg);
+}
+
+/*
+  Make the content fill the page completely.
+
+  Taken from the Bootstrap sidebar example: https://getbootstrap.com/docs/5.3/examples/sidebars/
+*/
+html {
+  height: -webkit-fill-available;
+}
+
+body {
+  height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+/* if there is not enough space for the sidebar, scroll it individually */
+body > div > nav {
+  overflow-y: auto;
+  height: 100vh;
+}
+/* make only the main content scroll so that the sidebar stays fixed */
+main {
+  height: -webkit-fill-available;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+/* Remove default link colour to reset to default text colour */
+table thead a {
+  color: unset;
+}
+
+/* Allow adjusting the background color when hovering over a table row */
+.table-hover > tbody > tr:hover > * {
+  background-color: var(--table-accent-bg-color);
+}

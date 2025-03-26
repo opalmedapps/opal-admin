@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-18 02:44+0300\n"
+"POT-Creation-Date: 2023-03-24 16:36-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -443,6 +443,83 @@ msgstr "Aucun aidant n'a pu être retrouvé."
 msgid "New Patient Data Access Request"
 msgstr "Nouvelle demande d'accès aux données patient"
 
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Opal Patient Registration Code"
+msgstr "Code d'enregistrement du patient Opal"
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Please follow the instructions below"
+msgstr "Veuillez suivre les instructions ci-dessous"
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid ""
+"A unique one-time Opal registration code has been created for the following "
+"patient:"
+msgstr ""
+"Un code d'enregistrement Opal à usage unique a été créé pour le patient "
+"suivant:"
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Name:"
+msgstr "Nom:"
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Hospital Name:"
+msgstr "Nom de l'hôpital:"
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Instructions"
+msgstr "Instructions"
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Inform the requestor that the code is valid for 24 hours."
+msgstr "Informez le demandeur que le code est valable pour 24 heures."
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid ""
+"Inform the requestor that access to patient data is subject to approval by "
+"Medical Records and inform them about any steps required to be done as per "
+"hospital policy. Upon confirmation by Medical Records, the user will receive "
+"a push notification and email to inform them that they can access the "
+"patient's data in the app."
+msgstr ""
+"Informez le demandeur que l'accès aux données du patient est soumis à "
+"l'approbation de Dossiers médicaux et informez-les de toutes les étapes à "
+"suivre conformément à politique de l'hôpital. Après confirmation par Medical "
+"Records, l'utilisateur recevra une notification push et un e-mail pour les "
+"informer qu'ils peuvent accéder les données du patient dans l'application."
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid ""
+"Inform the requestor how to proceed if the code expired (as per hospital "
+"policy)."
+msgstr ""
+"Informez le demandeur de la marche à suivre si le code a expiré (selon "
+"l'hôpital politique)."
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid ""
+"Inform the requestor to create their Opal user account using the above code"
+msgstr ""
+"Informez le demandeur de créer son compte utilisateur Opal à l'aide du code "
+"ci-dessus"
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "URL: "
+msgstr "URL: "
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Offer to scan the QR code to open the registration website"
+msgstr "Proposez de scanner le code QR pour ouvrir le site d'inscription"
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Offer to receive the registration link via SMS"
+msgstr "Proposez de recevoir le lien d'inscription par SMS"
+
+#: opal/patients/templates/patients/access_request/qr_code.html
+msgid "Code"
+msgstr "Code"
+
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
 msgstr ""
@@ -527,10 +604,6 @@ msgstr "Détails du demandeur"
 #: opal/patients/views.py
 msgid "Confirm access to patient data"
 msgstr "Confirmer l'accès aux données du patient"
-
-#: opal/patients/views.py
-msgid "QR Code Generation"
-msgstr "Générateur de code QR"
 
 #: opal/patients/views.py
 msgid ""
