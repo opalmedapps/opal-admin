@@ -2,7 +2,7 @@
 from rest_framework import serializers
 
 from opal.caregivers.models import RegistrationCode
-from opal.patients.serializer import HospitalPatientRegistrationSerializer, PatientRegistrationSerializer
+from opal.patients.api.serializers import HospitalPatientRegistrationSerializer, PatientRegistrationSerializer
 
 
 class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer):

@@ -1,7 +1,7 @@
-"""Module that contains serializer classes for patient models."""
-
+"""This module provides Django REST framework serializers for PatietnView api return value."""
 from rest_framework import serializers
 
+from opal.caregivers.models import RegistrationCode
 from opal.patients.models import HospitalPatient, Patient, Relationship
 
 
@@ -79,3 +79,33 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Relationship
         fields = ['patient_id', 'patient_legacy_id', 'first_name', 'last_name', 'status']
+
+
+class RegistrationCodePatientSerializer(serializers.ModelSerializer):
+    """Serializer for the return summary info of registration code."""
+
+    patient = PatientSummarySerializer(source='relationship.patient', many=False, read_only=True)
+    institutions = HospitalPatientInstitutionSerializer(
+        source='relationship.patient.hospital_patients',
+        many=True,
+        read_only=True,
+    )
+
+    class Meta:
+        model = RegistrationCode
+        fields = ['patient', 'institutions']
+
+
+class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
+    """Serializer for the return detailed info of registration code."""
+
+    patient = PatientDetailedSerializer(source='relationship.patient', many=False, read_only=True)
+    hosptial_patients = HospitalPatientSiteSerializer(
+        source='relationship.patient.hospital_patients',
+        many=True,
+        read_only=True,
+    )
+
+    class Meta:
+        model = RegistrationCode
+        fields = ['patient', 'hosptial_patients']
