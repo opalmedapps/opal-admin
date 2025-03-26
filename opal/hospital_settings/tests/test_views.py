@@ -1,17 +1,21 @@
 from http import HTTPStatus
 from typing import Tuple
 
+from django.contrib.auth.models import Permission
+from django.core.exceptions import PermissionDenied
 from django.forms.models import model_to_dict
-from django.test import Client
+from django.test import Client, RequestFactory
 from django.urls.base import reverse
 
 import pytest
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertRedirects, assertTemplateUsed
 
+from ...users.models import User
 from .. import factories
 from ..forms import InstitutionForm
 from ..models import Institution, Site
+from ..views import InstitutionListView
 
 pytestmark = pytest.mark.django_db
 
@@ -445,3 +449,27 @@ def test_site_deleted(user_client: Client, site: Site) -> None:
     user_client.delete(url)
 
     assert Site.objects.count() == 0
+
+
+def test_institution_permission_required_fail(user_client: Client, django_user_model: User) -> None:
+    """Ensure that `institution` permission denied error is raised when not having privilege."""
+    user = django_user_model.objects.create(username='test_institution_user')
+    user_client.force_login(user)
+    response = user_client.get(reverse('hospital-settings:institution-list'))
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+    request.user = user
+
+    with pytest.raises(PermissionDenied):
+        InstitutionListView.as_view()(request)
+
+
+def test_institution_permission_required_success(user_client: Client, django_user_model: User) -> None:
+    """Ensure that `institution` can be accessed with the required permission."""
+    user = django_user_model.objects.create(username='test_site_user')
+    user_client.force_login(user)
+    permission = Permission.objects.get(codename='can_manage_institutions')
+    user.user_permissions.add(permission)
+    response = user_client.get(reverse('hospital-settings:institution-list'))
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+    request.user = user
+    InstitutionListView.as_view()(request)

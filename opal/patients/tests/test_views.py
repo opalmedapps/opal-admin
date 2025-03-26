@@ -1,17 +1,20 @@
 from http import HTTPStatus
 from typing import Tuple
 
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Permission
+from django.core.exceptions import PermissionDenied
 from django.forms.models import model_to_dict
-from django.test import Client
+from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
 from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 
+from ...users.models import User
 from .. import factories, forms, models, tables
-
 # Add any future GET-requestable patients app pages here for faster test writing
+from ..views import PendingRelationshipListView
+
 test_url_template_data: list[Tuple] = [
     (reverse('patients:relationships-search'), 'patients/relationships-search/form.html'),
 ]
@@ -220,3 +223,27 @@ def test_relationships_pending_form_response(user_client: Client) -> None:
     assertContains(response, patient)
     assertContains(response, caregiver)
     assertContains(response, relationship.patient.ramq)
+
+
+def test_relationship_permission_required_fail(user_client: Client, django_user_model: User) -> None:
+    """Ensure that `relationship` permission denied error is raised when not having privilege."""
+    user = django_user_model.objects.create(username='test_relationship_user')
+    user_client.force_login(user)
+    response = user_client.get(reverse('patients:relationships-pending-list'))
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+    request.user = user
+
+    with pytest.raises(PermissionDenied):
+        PendingRelationshipListView.as_view()(request)
+
+
+def test_relationship_permission_required_success(user_client: Client, django_user_model: User) -> None:
+    """Ensure that `relationship` can be accessed with the required permission."""
+    user = django_user_model.objects.create(username='test_relationship_user')
+    user_client.force_login(user)
+    permission = Permission.objects.get(codename='can_manage_relationships')
+    user.user_permissions.add(permission)
+    response = user_client.get(reverse('patients:relationships-pending-list'))
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+    request.user = user
+    PendingRelationshipListView.as_view()(request)
