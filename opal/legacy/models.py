@@ -696,6 +696,19 @@ class LegacyModule(models.Model):
     operation = models.IntegerField(db_column='operation', default=7)
     name_en = models.CharField(db_column='name_EN', max_length=512)
     name_fr = models.CharField(db_column='name_FR', max_length=512)
+    description_en = models.CharField(db_column='description_EN', max_length=512)
+    description_fr = models.CharField(db_column='description_FR', max_length=512)
+    tablename = models.CharField(db_column='tableName', max_length=256)
+    controltablename = models.CharField(db_column='controlTableName', max_length=256)
+    primarykey = models.CharField(db_column='primaryKey', max_length=256)
+    iconclass = models.CharField(db_column='iconClass', max_length=512)
+    url = models.CharField(db_column='url', max_length=255)
+    sqlpublicationlist = models.TextField(db_column='sqlPublicationList')
+    sqldetails = models.TextField(db_column='sqlDetails')
+    sqlpublocationcharlog = models.TextField(db_column='sqlPublicationChartLog')
+    sqlpublicationlistlog = models.TextField(db_column='sqlPublicationListLog')
+    sqlpublicationmultiple = models.TextField(db_column='sqlPublicationMultiple')
+    sqlpublicationunique = models.TextField(db_column='sqlPublicationUnique')
 
     class Meta:
         managed = False
