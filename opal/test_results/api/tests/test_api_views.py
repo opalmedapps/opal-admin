@@ -9,13 +9,11 @@ from django.urls import reverse
 
 import pytest
 from pytest_django.asserts import assertContains, assertJSONEqual
-from pytest_mock import MockerFixture
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from opal.patients import models as patient_models
-from opal.patients.factories import HospitalPatient, Patient, Relationship
-from opal.test_results.api.serializers import PatientUUIDRelatedField
+from opal.patients.factories import Patient, Relationship
 from opal.users import factories as user_factories
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -44,49 +42,6 @@ class TestCreatePathologyView:
             status_code=status.HTTP_403_FORBIDDEN,
         )
 
-    def test_pathology_create_with_empty_uuid(
-        self,
-        api_client: APIClient,
-    ) -> None:
-        """Ensure the endpoint returns an error if the patient's UUID field is empty."""
-        client = self._get_client_with_permissions(api_client)
-        data = self._get_valid_input_data()
-        data['patient'] = ''
-
-        response = client.post(
-            reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
-            data=data,
-            format='json',
-        )
-
-        assertContains(
-            response=response,
-            text='This field may not be null.',
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
-
-    def test_pathology_create_empty_patient_queryset(
-        self,
-        api_client: APIClient,
-    ) -> None:
-        """Ensure the endpoint returns an error if the patient queryset is empty."""
-        client = self._get_client_with_permissions(api_client)
-        data = self._get_valid_input_data()
-        data['patient'] = PATIENT_UUID
-
-        response = client.post(
-            reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
-            data=data,
-            format='json',
-        )
-
-        assertJSONEqual(
-            raw=json.dumps(response.json()),
-            expected_data={
-                'patient': ['Empty queryset. Expected a `QuerySet[Patient]`.'],
-            },
-        )
-
     def test_pathology_create_patient_uuid_does_not_exist(
         self,
         api_client: APIClient,
@@ -104,7 +59,6 @@ class TestCreatePathologyView:
 
         client = self._get_client_with_permissions(api_client)
         data = self._get_valid_input_data()
-        data['patient'] = PATIENT_UUID
 
         response = client.post(
             reverse('api:patient-pathology-create', kwargs={'uuid': PATIENT_UUID}),
@@ -115,57 +69,11 @@ class TestCreatePathologyView:
         assertJSONEqual(
             raw=json.dumps(response.json()),
             expected_data={
-                'patient': [f'Invalid UUID \"{PATIENT_UUID}\" - patient does not exist.'],
+                'detail': 'Not found.',
             },
         )
 
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-    def test_pathology_create_incorrect_queryset_type(
-        self,
-        api_client: APIClient,
-        mocker: MockerFixture,
-    ) -> None:
-        """Ensure the endpoint returns an error if the `PatientUUIDRelatedField` uses incorrect queryset type."""
-        HospitalPatient()
-        mocker.patch.dict(
-            'opal.test_results.api.serializers.PathologySerializer._declared_fields',
-            {'patient': PatientUUIDRelatedField(queryset=patient_models.HospitalPatient.objects.all())},
-        )
-
-        patient = Patient(
-            ramq='TEST01161972',
-            uuid=self._get_valid_input_data()['patient'],
-        )
-
-        Relationship(
-            patient=patient,
-            type=patient_models.RelationshipType.objects.self_type(),
-        )
-
-        client = self._get_client_with_permissions(api_client)
-        data = self._get_valid_input_data()
-
-        response = client.post(
-            reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
-            data=data,
-            format='json',
-        )
-
-        assertJSONEqual(
-            raw=json.dumps(response.json()),
-            expected_data={
-                'patient': [
-                    '{0} {1} {2}'.format(
-                        'Incorrect queryset type.',
-                        'Expected a `QuerySet[Patient]`,',
-                        "but got <class 'opal.patients.models.HospitalPatient'>",
-                    ),
-                ],
-            },
-        )
-
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_pathology_create_success(
         self,
@@ -198,7 +106,6 @@ class TestCreatePathologyView:
             dict: valid JSON data
         """
         return {
-            'patient': 'b63695a4-cb5d-4b5d-aa1f-351525458054',
             'observations': [{
                 'identifier_code': 'test',
                 'identifier_text': 'txt',
@@ -209,7 +116,7 @@ class TestCreatePathologyView:
                 'note_source': 'test',
                 'note_text': 'test',
             }],
-            'type': 'L',
+            'type': 'P',
             'sending_facility': '',
             'receiving_facility': '',
             'collected_at': '1985-10-01 12:30:30',

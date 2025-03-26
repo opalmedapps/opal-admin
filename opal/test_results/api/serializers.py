@@ -1,13 +1,9 @@
 """This module provides Django REST framework serializers related to the `test_results` app's models."""
 from typing import Any
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 
-from rest_framework import serializers
-
 from opal.core.api.serializers import DynamicFieldsSerializer
-from opal.patients.models import Patient
 from opal.test_results.models import GeneralTest, Note, Observation
 
 
@@ -65,57 +61,9 @@ class NoteSerializer(DynamicFieldsSerializer):
         )
 
 
-class PatientUUIDRelatedField(serializers.RelatedField):
-    """Custom patient UUID relational field that describes how the output representation should be generated."""
-
-    default_error_messages = {
-        'empty_queryset': 'Empty queryset. Expected a `QuerySet[Patient]`.',
-        'incorrect_queryset_type': 'Incorrect queryset type. Expected a `QuerySet[Patient]`, but got {queryset_type}',
-        'does_not_exist': 'Invalid UUID "{value}" - patient does not exist.',
-    }
-
-    def to_representation(self, value: Patient) -> str:
-        """Convert a `Patient` instance into patient's UUID string (i.e., into primitive, serializable datatype).
-
-        Args:
-            value: patient object to be converted
-
-        Returns:
-            UUID of a patient
-        """
-        return str(value.uuid)
-
-    def to_internal_value(self, data: str) -> Patient:
-        """Restore a patient's UUID into `Patient` object representation.
-
-        Takes the unvalidated incoming data as input and should return the validated data.
-
-        Args:
-            data: UUID of a patient that has to be found
-
-        Returns:
-            found patient
-        """
-        if not self.queryset:
-            self.fail('empty_queryset')
-
-        if self.queryset.model is not Patient:
-            self.fail('incorrect_queryset_type', queryset_type=self.queryset.model)
-
-        # Check that `patient` with given UUID exists in the database.
-        try:
-            patient: Patient = self.queryset.get(uuid=data)
-        except ObjectDoesNotExist:
-            # Raise ValidationError if patient does not exist.
-            self.fail('does_not_exist', value=data)
-
-        return patient
-
-
 class PathologySerializer(GeneralTestSerializer):
     """Serializer for the `GeneralTest` (a.k.a. pathology) data received from the `pathology create` endpoint."""
 
-    patient = PatientUUIDRelatedField(queryset=Patient.objects.all())
     observations = ObservationSerializer(
         fields=(
             'identifier_code',
@@ -142,7 +90,6 @@ class PathologySerializer(GeneralTestSerializer):
     class Meta:
         model = GeneralTest
         fields = (
-            'patient',
             'observations',
             'notes',
             'type',
