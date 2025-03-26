@@ -90,14 +90,14 @@ class ApiEmailVerificationView(APIView):
         Handle GET requests from `registration/<str:code>/verify-email-code/`.
 
         Args:
-            request: Http request made by the listener needed to retrive `Appuserid`.
+            request: Http request made by the listener.
             code: registration code.
 
         Raises:
             ValidationError: The object not found.
 
         Returns:
-            Http response with the verification result of the email code.
+            Http response with empty message.
         """
         registration_code = None
         try:
@@ -118,22 +118,25 @@ class ApiEmailVerificationView(APIView):
         else:
             email_verification.is_verified = True
             email_verification.save()
+            user = registration_code.relationship.caregiver.user
+            user.email = email_verification.email
+            user.save()
 
         return Response()
 
-    def post(self, request: Request, code: str) -> Response:
+    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
         """
         Handle POST requests from `registration/<str:code>/verify-email/`.
 
         Args:
-            request: Http request made by the listener needed to retrive `Appuserid`.
+            request: Http request made by the listener.
             code: registration code.
 
         Raises:
             ValidationError: The object not found.
 
         Returns:
-            Http response with the result message of the api.
+            Http response with empty message.
         """
         registration_code = None
         try:
@@ -146,18 +149,26 @@ class ApiEmailVerificationView(APIView):
 
         email = input_serializer.validated_data['email']
         verification_code = random.randint(self.min_number, self.max_number)  # noqa: S311
+        caregiver = registration_code.relationship.caregiver
         try:
             email_verification = registration_code.relationship.caregiver.email_verifications.get(
                 email=email,
             )
         except EmailVerification.DoesNotExist:
-            EmailVerification.objects.create(
-                caregiver=registration_code.relationship.caregiver,
+            email_verification = EmailVerification.objects.create(
+                caregiver=caregiver,
                 code=verification_code,
                 email=email,
                 sent_at=timezone.now(),
             )
         else:
-            input_serializer.update(email_verification, {'code': verification_code})
+            input_serializer.update(
+                email_verification,
+                {
+                    'code': verification_code,
+                    'is_verified': False,
+                    'sent_at': timezone.now(),
+                },
+            )
 
         return Response()

@@ -87,6 +87,7 @@ class TestApiEmailVerification:
         """Test verify verification code success."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
+        user_email = caregiver_profile.user.email
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email_verification = caregiver_factory.EmailVerification(caregiver=caregiver_profile)
@@ -99,8 +100,10 @@ class TestApiEmailVerification:
             format='json',
         )
         email_verification.refresh_from_db()
+        caregiver_profile.user.refresh_from_db()
         assert response.status_code == HTTPStatus.OK
         assert email_verification.is_verified
+        assert caregiver_profile.user.email != user_email
 
     def test_save_verify_email_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test save verify email success."""
@@ -122,7 +125,7 @@ class TestApiEmailVerification:
         assert email_verification
 
     def test_registration_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
-        """Test verify verification code success."""
+        """Test registration code not exists."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
@@ -140,7 +143,7 @@ class TestApiEmailVerification:
         assert response.data == {'detail': 'Registration code is invalid.'}
 
     def test_registration_code_registered(self, api_client: APIClient, admin_user: AbstractUser) -> None:
-        """Test verify verification code success."""
+        """Test registration code is already registered."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
