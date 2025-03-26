@@ -1,27 +1,13 @@
 """Module for common validators for `patients` app."""
 from collections import Counter
-from typing import Any
+from typing import Union
 
 from opal.patients.models import Patient
 from opal.services.hospital.hospital_data import OIEPatientData
 
 
 # Patients Validators
-def is_valid_patient_record(patient: Patient | OIEPatientData) -> bool:
-    """
-    Check if patient is valid patient record.
-
-    Args:
-        patient: patient object or oie patient record
-
-    Returns:
-        True if patient is an object of Patient model or OIEPatientData. False otherwise.
-
-    """
-    return isinstance(patient, (Patient, OIEPatientData))
-
-
-def is_deceased(patient: Patient | OIEPatientData) -> bool:
+def is_deceased(patient: Union[Patient, OIEPatientData]) -> bool:
     """
     Check if a patient is deceased.
 
@@ -32,15 +18,9 @@ def is_deceased(patient: Patient | OIEPatientData) -> bool:
         True if patient is deceased, False otherwise
     """
     if isinstance(patient, Patient):
-        if patient.date_of_death:
-            return True
-    else:
-        patient_dict: dict[str, Any] = patient._asdict()  # noqa: WPS437
+        return bool(patient.date_of_birth)
 
-        if patient_dict.get('deceased'):
-            return True
-
-    return False
+    return bool(patient.deceased)
 
 
 def has_multiple_mrns_with_same_site_code(patient_record: OIEPatientData) -> bool:
