@@ -2,9 +2,13 @@ from datetime import date, datetime
 
 from django.utils import timezone
 
+import pytest
+
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 
 from .. import factories, validators
+
+pytestmark = pytest.mark.django_db
 
 CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
     date_of_birth=date.fromisoformat('1984-05-09'),
