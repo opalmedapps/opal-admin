@@ -30,8 +30,8 @@ TRAVEL_URLS_CRE = (
 class InstitutionOption(Enum):
     """The institutions that test data can be created for."""
 
-    muhc = 'OMI'
-    chusj = 'OHIGPH'
+    omi = 'OMI'
+    ohigph = 'OHIGPH'
 
     def __str__(self) -> str:
         """
@@ -44,13 +44,13 @@ class InstitutionOption(Enum):
 
 
 INSTITUTION_DATA = MappingProxyType({
-    InstitutionOption.muhc: {
+    InstitutionOption.omi: {
         'name': 'Opal Medical Institution',
         'name_fr': 'Établissement Médical Opal',
         'acronym_fr': 'ÉMO',
         'support_email': 'opal@muhc.mcgill.ca',
     },
-    InstitutionOption.chusj: {
+    InstitutionOption.ohigph: {
         'name': 'OHIG Pediatric Hospital',
         'name_fr': 'Hôpital Pédiatrique OHIG',
         'acronym_fr': 'HPOHIG',
@@ -59,7 +59,7 @@ INSTITUTION_DATA = MappingProxyType({
 })
 
 SITE_DATA = MappingProxyType({
-    InstitutionOption.muhc: [
+    InstitutionOption.omi: [
         (
             'Royal Victoria Hospital',
             'Hôpital Royal Victoria',
@@ -119,7 +119,7 @@ SITE_DATA = MappingProxyType({
             ('Boulevard René-Lévesque', '1055', 'H2L4S5', 'Montréal', 'QC', '5148615955', ''),
         ),
     ],
-    InstitutionOption.chusj: [
+    InstitutionOption.ohigph: [
         (
             'CHU Sainte-Justine',
             'CHU Sainte-Justine',
@@ -142,7 +142,7 @@ SITE_DATA = MappingProxyType({
 })
 
 MRN_DATA = MappingProxyType({
-    InstitutionOption.muhc: {
+    InstitutionOption.omi: {
         'Marge Simpson': [('RVH', '9999996')],
         'Homer Simpson': [
             ('RVH', '9999997'),
@@ -158,7 +158,7 @@ MRN_DATA = MappingProxyType({
         'Pebbles Flintstone': [('MCH', '9999999')],
         'Wednesday Addams': [('RVH', '9999991')],
     },
-    InstitutionOption.chusj: {
+    InstitutionOption.ohigph: {
         'Bart Simpson': [('CHUSJ', '9999996')],
         'Lisa Simpson': [('CHUSJ', '9999993')],
     },
@@ -278,7 +278,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         new_value = [(sites[site], mrn) for site, mrn in value]
         mrn_data[key] = new_value
 
-    is_pediatric = institution_option == InstitutionOption.chusj
+    is_pediatric = institution_option == InstitutionOption.ohigph
 
     # patients
     if not is_pediatric:
