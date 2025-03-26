@@ -1,14 +1,14 @@
 {% load i18n %}
 
-{% blocktranslate %}Dear {{ first_name }} {{ last_name }},
+{% blocktranslate %}Dear {{ first_name }} {{ last_name }},{% endblocktranslate %}
 
-To verify your email address, please enter the code below on the verification page:
+{% translate "To verify your email address, please enter the code below on the verification page:" %}
 
 {{ code }}
 
-This code will expire in {{ timeout }} minutes. Once the code has expired, you will need to request a new verification code to continue the registration process.
-If you are not trying to create an Opal account using this email address, you can disregard this email.
+{% blocktranslate %}This code will expire in {{ timeout }} minutes.{% endblocktranslate %}
+{% translate "Once the code has expired, you will need to request a new verification code to continue the registration process." %}
+{% translate "If you are not trying to create an Opal account using this email address, you can disregard this email." %}
 
-The Opal team
-https://opalmedapps.com
-{% endblocktranslate %}
+{% translate "The Opal team" %}
+{% translate "https://opalmedapps.com" %}

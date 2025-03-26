@@ -11,7 +11,9 @@ from django.db.models.manager import Manager
 from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import override
 
 from rest_framework import exceptions
 from rest_framework import serializers
@@ -318,7 +320,7 @@ class RegistrationCompletionView(APIView):
     permission_classes = (IsRegistrationListener,)
 
     @transaction.atomic
-    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210 (too many local variables)
+    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210, WPS213
         """
         Handle POST requests from `registration/<str:code>/register/`.
 
@@ -362,6 +364,7 @@ class RegistrationCompletionView(APIView):
                 utils.initialize_new_opal_patient(patient, mrns, patient.uuid, self_caregiver)
 
             if existing_caregiver:
+                email = existing_caregiver.email
                 utils.replace_caregiver(existing_caregiver, relationship)
                 # if an existing caregiver gets access to themself the legacy data needs to be updated
                 if relationship.type.is_self:
@@ -370,15 +373,40 @@ class RegistrationCompletionView(APIView):
                     caregiver_id: int = caregiver_profile.legacy_id  # type: ignore[assignment]
                     legacy_utils.change_caregiver_user_to_patient(caregiver_id, relationship.patient)
             else:
-                self._handle_new_caregiver(relationship, caregiver_data)
+                email = self._get_email_address(relationship, caregiver_data)
+                self._update_caregiver(relationship, email, caregiver_data)
                 utils.insert_security_answers(relationship.caregiver, validated_data['security_answers'])
 
             utils.update_registration_code_status(registration_code)
+            self._send_confirmation_email(email, caregiver_data['user']['language'])
         except ValidationError as exception:
             transaction.set_rollback(True)
             raise serializers.ValidationError({'detail': str(exception.args)})
 
         return Response()
+
+    def _send_confirmation_email(
+        self,
+        email: str,
+        language: str,
+    ) -> None:
+        """
+        Send confirmation email to the user with an template according to the user language.
+
+        Args:
+            email: the target email
+            language: the language of user
+        """
+        with override(language):
+            email_plain = render_to_string(
+                'email/confirmation_email.txt',
+            )
+            send_mail(
+                gettext('Thank you for registering for Opal!'),
+                email_plain,
+                settings.EMAIL_FROM_REGISTRATION,
+                [email],
+            )
 
     def _get_serializer_class(self, *args: Any, **kwargs: Any) -> type[serializers.BaseSerializer[RegistrationCode]]:
         """
@@ -395,13 +423,20 @@ class RegistrationCompletionView(APIView):
             return caregiver_serializers.ExistingUserRegistrationRegisterSerializer
         return caregiver_serializers.NewUserRegistrationRegisterSerializer
 
-    def _handle_new_caregiver(self, relationship: Relationship, caregiver_data: dict[str, Any]) -> None:
+    def _get_email_address(self, relationship: Relationship, caregiver_data: dict[str, Any]) -> str:
         """
-        Handle registration completion for a new caregiver.
+        Return the email address for a new caregiver.
+
+        The email address is either coming from the related `EmailVerification`.
+        Or, from the request data (if the caregiver has an account at another institution,
+        i.e., an existing Firebase account).
 
         Args:
             relationship: the relationship
             caregiver_data: the validated registration data for the caregiver
+
+        Returns:
+            The email address.
 
         Raises:
             ValidationError: if the caregiver is already registered or there is no verified email
@@ -420,8 +455,7 @@ class RegistrationCompletionView(APIView):
 
         # also support an existing caregiver who has a Firebase account already
         # this can happen if the caregiver has an account at another institution
-        email: str = email_verification.email if email_verification is not None else data_email
-        self._update_caregiver(relationship, email, caregiver_data)
+        return email_verification.email if email_verification is not None else data_email
 
     def _update_caregiver(
         self,

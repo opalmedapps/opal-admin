@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-28 14:22-0400\n"
+"POT-Creation-Date: 2024-05-28 19:19-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -141,40 +141,93 @@ msgstr "Enregistrer"
 msgid "Yes, delete"
 msgstr "Oui, supprimer"
 
+#: opal/templates/email/confirmation_email.txt
+msgid "Hello,"
+msgstr "Bonjour,"
+
+#: opal/templates/email/confirmation_email.txt
+msgid "Thank you for registering for the Opal app."
+msgstr "Merci de vous être inscrit(e) à l'application Opal."
+
+#: opal/templates/email/confirmation_email.txt
+msgid """If you haven't already downloaded the app, please open one of the links "
+"below on your mobile device to start the download process."
+msgstr "Si vous n'avez pas encore téléchargé l'application,"
+"veuillez ouvrir l'un des liens ci-dessous sur votre appareil mobile pour lancer le téléchargement."
+
+#: opal/templates/email/confirmation_email.txt
+msgid "iOS: https://apps.apple.com/ca/app/opal-health/id1446920350"
+msgstr "iOS: https://apps.apple.com/ca/app/opal-sant%C3%A9/id1446920350?l=fr"
+
+#: opal/templates/email/confirmation_email.txt
+msgid "Android: https://play.google.com/store/apps/details?id=com.hig.opal2"
+msgstr "Android: https://play.google.com/store/apps/details?id=com.hig.opal2&hl=fr&gl=CA"
+
+#: opal/templates/email/confirmation_email.txt
+msgid "Once installed, launch the application and sign in with the username and "
+"password you created when you registered."
+msgstr "Une fois l'installation terminée, lancez l'application et connectez-vous avec le nom d'utilisateur et "
+"le mot de passe que vous avez créés lors de votre inscription."
+
+#: opal/templates/email/confirmation_email.txt
+msgid "If you have any problems with the app, please contact us at opal@muhc.mcgill."
+"ca or by using the Feedback form available on the General tab of Opal."
+msgstr "Si vous avez des problèmes avec l'application, n’hésitez pas à nous contacter à opal@muhc.mcgill.ca ou en utilisant la page « Commentaires » disponible sur l'onglet général d'Opal."
+
+#: opal/templates/email/confirmation_email.txt
+msgid "If you find the app useful, please let us know by rating it and leaving us a "
+"comment on the App Store or Google Play store. We are working hard to make "
+"Opal useful and empowering for our patients, and we appreciate your feedback."
+msgstr
+"Si vous trouvez l'application utile et aimeriez nous le faire savoir, laissez-nous une note et un commentaire dans l'un des magasins d'applis. Nous travaillons fort pour répondre aux besoins de nos patients et pour rendre Opal aussi utile que possible, et nous apprécions vos commentaires."
+
+#: opal/templates/email/confirmation_email.txt
+msgid "Thank you,"
+msgstr "Merci,"
+
+#: opal/templates/email/confirmation_email.txt
+#: opal/templates/email/verification_code.txt
+msgid "The Opal team"
+msgstr "L’équipe Opal"
+
+#: opal/templates/email/confirmation_email.txt
+#: opal/templates/email/verification_code.txt
+msgid "https://opalmedapps.com"
+msgstr "https://opalmedapps.com/fr-selected"
+
 #: opal/templates/email/verification_code.txt
 #, python-format
+msgid "Dear %(first_name)s %(last_name)s,"
+msgstr "Bonjour %(first_name)s %(last_name)s,"
+
+#: opal/templates/email/verification_code.txt
 msgid ""
-"Dear %(first_name)s %(last_name)s,\n"
-"\n"
 "To verify your email address, please enter the code below on the "
-"verification page:\n"
-"\n"
-"%(code)s\n"
-"\n"
-"This code will expire in %(timeout)s minutes. Once the code has expired, you "
-"will need to request a new verification code to continue the registration "
-"process.\n"
-"If you are not trying to create an Opal account using this email address, "
-"you can disregard this email.\n"
-"\n"
-"The Opal team\n"
-"https://opalmedapps.com\n"
+"verification page:"
 msgstr ""
-"Bonjour %(first_name)s %(last_name)s ,\n"
-"\n"
-"Pour effectuer la vérification de votre adresse courriel, veuillez entrer "
-"le code ci-dessous sur la page de vérification :\n"
-"\n"
-"%(code)s\n"
-"\n"
-"Ce code expirera dans %(timeout)s minutes. Une fois le code expiré, vous devrez "
-"demander un nouveau code pour procéder avec votre inscription .\n"
+"Pour effectuer la vérification de votre adresse courriel, veuillez entrer le "
+"code ci-dessous sur la page de vérification:"
+
+#: opal/templates/email/verification_code.txt
+#, python-format
+msgid "This code will expire in %(timeout)s minutes."
+msgstr "Ce code expirera dans %(timeout)s minutes."
+
+#: opal/templates/email/verification_code.txt
+msgid ""
+"Once the code has expired, you will need to request a new verification code "
+"to continue the registration process."
+msgstr ""
+"Une fois le code expiré, vous devrez demander un nouveau code pour procéder "
+"avec votre inscription."
+
+#: opal/templates/email/verification_code.txt
+msgid ""
+"If you are not trying to create an Opal account using this email address, "
+"you can disregard this email."
+msgstr ""
 "Si vous n'avez pas effectué de demande de création de compte Opal en "
-"utilisant cette adresse courriel, veuillez ne pas tenir compte de ce "
-"message .\n"
-"\n"
-"L’Équipe Opal\n"
-"https://opalmedapps.com/fr-selected\n"
+"utilisant cette adresse courriel, veuillez ne pas tenir compte de ce message."
 
 #: opal/templates/sidebar.html
 msgid "Go back to opalADMIN menu"
