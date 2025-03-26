@@ -5,7 +5,7 @@ from pytest_mock import MockerFixture
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest.api import MessageList
 
-from opal.services.twilio import TwilioService, TwilioServiceException
+from opal.services.twilio import TwilioService, TwilioServiceError
 
 
 class TestTwilioService:
@@ -36,11 +36,11 @@ class TestTwilioService:
         to = ''
         message = 'Test sending SMS'
 
-        with pytest.raises(TwilioServiceException) as exc:
+        with pytest.raises(TwilioServiceError) as exc:
             self.service.send_sms(
                 to,
                 message,
             )
 
-        assert str(exc.value) == 'HTTP 403 error: Sending SMS failed'
+        assert str(exc.value) == 'Sending SMS failed'
         assert exc.value.__cause__.status == HTTPStatus.FORBIDDEN

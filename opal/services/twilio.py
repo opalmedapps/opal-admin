@@ -1,11 +1,9 @@
 """Sending SMS service, working with twilio."""
-from http import HTTPStatus
-
-from twilio.base.exceptions import TwilioRestException
+from twilio.base.exceptions import TwilioException, TwilioRestException
 from twilio.rest import Client
 
 
-class TwilioServiceException(TwilioRestException):
+class TwilioServiceError(TwilioException):
     """An error occurred while sending an SMS via Twilio."""
 
 
@@ -35,7 +33,7 @@ class TwilioService:
             message: the message to send
 
         Raises:
-            TwilioServiceException: if there is an error sending the SMS
+            TwilioServiceError: if there is an error sending the SMS
         """
         try:
             self.client.messages.create(
@@ -44,4 +42,4 @@ class TwilioService:
                 body=message,
             )
         except TwilioRestException as exc:
-            raise TwilioServiceException(HTTPStatus.FORBIDDEN, 'uri', 'Sending SMS failed') from exc
+            raise TwilioServiceError('Sending SMS failed') from exc
