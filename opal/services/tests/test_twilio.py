@@ -43,4 +43,5 @@ class TestTwilioService:
             )
 
         assert str(exc.value) == 'Sending SMS failed'
+        assert isinstance(exc.value.__cause__, TwilioRestException)
         assert exc.value.__cause__.status == HTTPStatus.FORBIDDEN
