@@ -17,6 +17,8 @@ from pytest_django import DjangoDbBlocker
 from rest_framework.test import APIClient
 
 from opal.core import constants
+from opal.legacy import factories as legacy_factories
+from opal.legacy.models import LegacyEducationalMaterialControl
 from opal.legacy_questionnaires import factories
 from opal.legacy_questionnaires.models import LegacyPatient, LegacyQuestionnaire
 from opal.users.models import User
@@ -410,3 +412,62 @@ def databank_consent_questionnaire_and_response(  # noqa: WPS210
     factories.LegacyAnswerTextBoxFactory(answer=middle_name_answer, value='Juliet')
 
     return (consenting_patient, consent_questionnaire)
+
+
+@pytest.fixture
+def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEducationalMaterialControl]:  # noqa: WPS210, E501
+    """Add a full databank consent questionnaire to test setup.
+
+    Returns:
+        Consent questionnaire
+    """
+    # Questionnaire content, content ids must be non overlapping with existing test_QuestionnaireDB SQL
+    middle_name_content = factories.LegacyDictionaryFactory(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID,
+        content='Middle name',
+        language_id=2,
+    )
+    middle_name_question = factories.LegacyQuestionFactory(display=middle_name_content)
+    cob_content = factories.LegacyDictionaryFactory(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID + 1,
+        content='City of birth',
+        language_id=2,
+    )
+    cob_question = factories.LegacyQuestionFactory(display=cob_content)
+    consent_purpose_content = factories.LegacyDictionaryFactory(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID + 2,
+        content='Consent',
+        language_id=2,
+    )
+    consent_purpose = factories.LegacyPurposeFactory(title=consent_purpose_content)
+    questionnaire_title = factories.LegacyDictionaryFactory(
+        content_id=LEGACY_DICTIONARY_CONTENT_ID + 3,
+        content='QSCC Databank Information',
+        language_id=2,
+    )
+    consent_questionnaire = factories.LegacyQuestionnaireFactory(purpose=consent_purpose, title=questionnaire_title)
+    section = factories.LegacySectionFactory(questionnaire=consent_questionnaire)
+    factories.LegacyQuestionSectionFactory(question=middle_name_question, section=section)
+    factories.LegacyQuestionSectionFactory(question=cob_question, section=section)
+    legacy_factories.LegacyQuestionnaireControlFactory(
+        questionnaire_name_en='QSCC Databank Information',
+        questionnaire_db_ser_num=consent_questionnaire.id,
+        publish_flag=1,
+    )
+    info_sheet = legacy_factories.LegacyEducationalMaterialControlFactory(
+        educational_material_type_en='Factsheet',
+        educational_material_type_fr='Fiche Descriptive',
+        name_en='Information and Consent Factsheet - QSCC Databank',
+        name_fr="Fiche d'information sur l'information et le consentement - Banque de données du CQSI",
+    )
+    return (consent_questionnaire, info_sheet)
+
+
+@pytest.fixture
+def set_databank_disabled(settings: LazySettings) -> None:  # noqa: PT004
+    """Fixture disables the databank for the unit test.
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.DATABANK_ENABLED = False
