@@ -158,12 +158,12 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         with assertRaisesMessage(ValueError, message):
             self._call_command('send_databank_data')
 
-    def test_send_to_oie_generic_request_exception(
+    def test_send_to_oie_bad_configuration_exception(
         self,
         mocker: MockerFixture,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
-        """Verify a generic request exception error is logged."""
+        """Verify the request exception is handled when connection details for the OIE are wrong."""
         django_pat1 = patient_factories.Patient()
         yesterday = datetime.now() - timedelta(days=1)
         databank_factories.DatabankConsent(
@@ -178,16 +178,16 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         generated_data = {
             'status': 'error',
             'data': {
-                'message': 'failed',
+                'message': 'No connection adapters were found for HOST',
             },
         }
         mock_post = RequestMockerTest.mock_requests_post(mocker, generated_data)
-        mock_post.side_effect = requests.RequestException('failed')
+        mock_post.side_effect = requests.RequestException('No connection adapters were found for HOST')
         mock_post.return_value.status_code = HTTPStatus.BAD_GATEWAY
         command = send_databank_data.Command()
         command._send_to_oie_and_handle_response({})
         captured = capsys.readouterr()
-        assert 'OIE connection Error: failed' in captured.err
+        assert 'OIE connection Error: No connection adapters were found for HOST' in captured.err
 
     def test_send_to_oie_bad_gateway_error(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
         """Verify bad gateway error is logged to stderr."""
