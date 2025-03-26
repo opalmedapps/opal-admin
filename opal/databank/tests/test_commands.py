@@ -221,7 +221,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert 'OIE Error: request failed' in captured.err
 
     def test_demographics_data_sent_first(self, mocker: MockerFixture) -> None:
-        """Check that demo data is always the first to be sent to ensure candidate exists in external databank."""
+        """Check that demographics data is always the first to be sent to ensure candidate exists in databank."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
         last_sync = datetime(2022, 1, 1)

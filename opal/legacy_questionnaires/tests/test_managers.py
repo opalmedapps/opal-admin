@@ -4,6 +4,7 @@ import pytest
 
 from opal.caregivers import factories as caregiver_factories
 from opal.patients import factories as patient_factories
+import re
 
 from .. import factories
 from ..models import LegacyAnswerQuestionnaire, LegacyQuestionnaire
@@ -53,6 +54,9 @@ def test_get_questionnaire_databank_data() -> None:
     for questionnaire_answer in databank_data:
         assert questionnaire_answer['last_updated'] > last_cron_sync_time
         assert not (set(expected_returned_fields) - set(questionnaire_answer.keys()))
+        assert 'consent' not in questionnaire_answer['questionnaire_title'].lower()
+        assert re.search(r'\bmiddle\s+name\b', questionnaire_answer['question_text'], re.IGNORECASE) is None
+        assert re.search(r'\bcity\s+of\s+birth\b', questionnaire_answer['question_text'], re.IGNORECASE) is None
 
     assert len(databank_data) == 7
 
