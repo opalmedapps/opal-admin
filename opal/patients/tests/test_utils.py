@@ -1,8 +1,9 @@
 """App patient utils test functions."""
+from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
+
 import pytest
 
-from django.db.utils import IntegrityError
-from django.core.exceptions import ValidationError
 from pytest_django.asserts import assertRaisesMessage
 
 from opal.caregivers import models as caregiver_models
