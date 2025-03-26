@@ -83,24 +83,24 @@ class TestQuestionnairesReportView:
         assert 'This field may not be blank.' in str(response.data['mrn'])
 
     def test_invalid_site_length(self, api_client: APIClient, admin_user: User) -> None:
-        """Test providing a site code that has more than 100 characters."""
+        """Test providing a site code that has more than 10 characters."""
         hospital_patient = patient_factories.HospitalPatient()
 
         response = self.make_request(
             api_client,
             admin_user,
-            get_random_string(length=101),
+            get_random_string(length=11),
             hospital_patient.mrn,
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'Ensure this field has no more than 100 characters.' in str(response.data['site'])
+        assert 'Ensure this field has no more than 10 characters.' in str(response.data['site'])
 
     def test_site_not_found(self, api_client: APIClient, admin_user: User) -> None:
         """Test providing a site code that doesn't exist."""
         hospital_patient = patient_factories.HospitalPatient()
 
-        response = self.make_request(api_client, admin_user, 'invalid site', hospital_patient.mrn)
+        response = self.make_request(api_client, admin_user, 'wrong site', hospital_patient.mrn)
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert 'Provided site code does not exist.' in str(response.data['site'])
@@ -115,18 +115,18 @@ class TestQuestionnairesReportView:
         assert 'This field may not be blank.' in str(response.data['site'])
 
     def test_invalid_site_mrn_length(self, api_client: APIClient, admin_user: User) -> None:
-        """Test providing an MRN that has more than 10 characters and a site code that has more than 100 characters."""
-        response = self.make_request(api_client, admin_user, get_random_string(length=101), 'invalid mrn')
+        """Test providing an MRN that has more than 10 characters and a site code that has more than 10 characters."""
+        response = self.make_request(api_client, admin_user, get_random_string(length=11), 'invalid mrn')
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'Ensure this field has no more than 100 characters.' in str(response.data['site'])
+        assert 'Ensure this field has no more than 10 characters.' in str(response.data['site'])
         assert 'Ensure this field has no more than 10 characters.' in str(response.data['mrn'])
 
     def test_site_mrn_not_found(self, api_client: APIClient, admin_user: User) -> None:
         """Test providing a site code and an MRN that do not exist."""
         patient_factories.HospitalPatient()
 
-        response = self.make_request(api_client, admin_user, 'invalid site', 'wrong mrn')
+        response = self.make_request(api_client, admin_user, 'wrong site', 'wrong mrn')
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert 'Provided site code does not exist.' in str(response.data['site'])
