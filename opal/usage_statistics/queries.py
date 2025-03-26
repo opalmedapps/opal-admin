@@ -567,8 +567,8 @@ def fetch_labs_summary_per_patient(
     with which patients receive lab results for a given date range.
 
     Args:
-        start_date: the starting date of the time period for lab statistics (inclusive). Defaults to `01.01.1`.
-        end_date: the ending date of the time period for lab statistics (inclusive). Defaults to `31.12.9999`.
+        start_date: the starting date of the time period for lab statistics (inclusive).
+        end_date: the ending date of the time period for lab statistics (inclusive).
 
     Returns:
         individual lab results statistics (per patient).
@@ -600,8 +600,8 @@ def fetch_logins_summary_per_user(
     The statistics show user's total login time and login frequency in a given date range.
 
     Args:
-        start_date: the starting date of the time period for the user login stats (inclusive). Defaults to `01.01.1`.
-        end_date: the ending date of the time period for the user login stats (inclusive). Defaults to `31.12.9999`.
+        start_date: the starting date of the time period for the user login stats (inclusive).
+        end_date: the ending date of the time period for the user login stats (inclusive).
 
     Returns:
         individual login statistics (per user).
@@ -634,8 +634,8 @@ def fetch_patient_demographic_diagnosis_summary(
     in a given date range.
 
     Args:
-        start_date: the starting date of the time period for the demographic stats (inclusive). Defaults to `01.01.1`.
-        end_date: the ending date of the time period for the demographic stats (inclusive). Defaults to `31.12.9999`.
+        start_date: the starting date of the time period for the demographic stats (inclusive).
+        end_date: the ending date of the time period for the demographic stats (inclusive).
 
     Returns:
         demographic information and latest diagnosis per patient.
