@@ -37,13 +37,13 @@ class Command(BaseCommand):
             if question is None:
                 continue
 
-            # Import caregiver according to the user
+            # Import caregiver according to the user or create a new one if not found.
             try:
                 caregiver = CaregiverProfile.objects.get(user_id=user.id)
             except ObjectDoesNotExist:
                 caregiver = CaregiverProfile.objects.create(user=user)
 
-            # Import SecurityAnwser
+            # Import SecurityAnwser or create if it does not exist.
             try:
                 SecurityAnswer.objects.get(user_id=caregiver.id)
             except ObjectDoesNotExist:
@@ -55,15 +55,15 @@ class Command(BaseCommand):
 
     def _check_and_import_question(self, securityquestionsernum: int) -> Dict:
         """
-        Check legacy security question and security question exist or not.
+        Check legacy security question exists or not.
 
         Args:
-            securityquestionsernum: legacy security question patientsernum.
+            securityquestionsernum: legacy security question sernum.
 
         Returns:
-            Return SecurityQuestion or return None.
+            Return SecurityQuestion or None.
         """
-        # Skip anwer import if related legacy question not found
+        # Skip answer import if related legacy question not found
         try:
             legacy_question = LegacySecurityquestion.objects.get(
                 securityquestionsernum=securityquestionsernum,
@@ -71,7 +71,7 @@ class Command(BaseCommand):
         except ObjectDoesNotExist:
             return {'question': None}
 
-        # Import SecurityQuestion according to legacy security question
+        # Import SecurityQuestion according to legacy security question or create if not exists.
         try:
             question = SecurityQuestion.objects.get(title_en=legacy_question.questiontext_en)
         except ObjectDoesNotExist:
@@ -91,7 +91,7 @@ class Command(BaseCommand):
         Returns:
             Return user if found otherwise return None.
         """
-        # Skip anwer import if related legacy user not found
+        # Skip answer import if related legacy user not found
         try:
             legacy_user = LegacyUsers.objects.get(usertypesernum=patientsernum)
         except ObjectDoesNotExist:
