@@ -86,11 +86,11 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             Column(InlineSubmit(
                 name='',
                 label=gettext('Search Specific Patient'),
-                extra_css=None if self.is_bound else 'btn-secondary',
+                extra_css=None if self.is_bound else 'btn-unselected',
             )),
             Column(InlineReset(
                 label=gettext('Show Pending Requests'),
-                extra_css=None if self.is_bound else 'btn-primary',
+                extra_css=None if self.is_bound else 'btn-selected',
             )),
         )
 
