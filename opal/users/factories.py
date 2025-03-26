@@ -17,15 +17,15 @@ from . import models
 
 def _slugify_user(user: models.User) -> str:
     """
-    Slugify the user based on the user's first and last name.
+    Slugify the user based on a fake username.
 
     Args:
         user: the user instance
 
     Returns:
-        the slugified user as `<first_name>.<last_name>`
+        the slugified username
     """
-    return slugify('{0}.{1}'.format(user.first_name, user.last_name))
+    return slugify(Faker('username'))
 
 
 class User(DjangoModelFactory):
@@ -35,8 +35,8 @@ class User(DjangoModelFactory):
         model = models.User
         django_get_or_create = ('username',)
 
-    first_name = Faker('first_name')
-    last_name = Faker('last_name')
+    first_name = 'Marge'
+    last_name = 'Simpson'
     username = lazy_attribute(_slugify_user)
     # produce a different hash for the same password for each user
     password = LazyFunction(lambda: make_password('thisisatest'))
