@@ -24,7 +24,7 @@ FIXTURES_DIR = Path(__file__).resolve().parents[3].joinpath(
 PATIENT_UUID = uuid4()
 
 
-class TestCreatePharmacyView:
+class TestCreatePrescriptionView:
     """Class wrapper for pharmacy endpoint tests."""
 
     def test_pharmacy_create_unauthenticated(

@@ -15,8 +15,8 @@ from opal.patients.models import Patient
 from .serializers import PhysicianPrescriptionOrderSerializer
 
 
-class CreatePharmacyView(HL7CreateView):
-    """`HL7CreateView` for handling POST requests to create pharmacy data."""
+class CreatePrescriptionView(HL7CreateView):
+    """`HL7CreateView` for handling POST requests to create prescription pharmacy data."""
 
     segments_to_parse = ('PV1', 'ORC', 'RXE', 'RXR', 'RXC', 'NTE')
     serializer_class = PhysicianPrescriptionOrderSerializer
