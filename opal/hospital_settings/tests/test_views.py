@@ -11,11 +11,11 @@ import pytest
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertNotContains, assertRedirects, assertTemplateUsed
 
-from ...users.models import User
+from ...users.factories import User
 from .. import factories
 from ..forms import InstitutionForm
 from ..models import Institution, Site
-from ..views import InstitutionListView
+from ..views import InstitutionListView, SiteListView
 
 pytestmark = pytest.mark.django_db
 
@@ -513,3 +513,77 @@ def test_institution_response_no_menu(user_client: Client, django_user_model: Us
     response = user_client.get('/hospital-settings/')
 
     assertNotContains(response, 'Institutions')
+
+
+@pytest.mark.parametrize(
+    'url_name', [
+        reverse('hospital-settings:site-list'),
+        reverse('hospital-settings:site-update', args=(1,)),
+        reverse('hospital-settings:site-create'),
+        reverse('hospital-settings:site-delete', args=(1,)),
+    ],
+)
+def test_site_permission_required_fail(user_client: Client, django_user_model: User, url_name: str) -> None:
+    """Ensure that `site` permission denied error is raised when not having privilege."""
+    user = django_user_model.objects.create(username='test_site_user')
+    user_client.force_login(user)
+    factories.Site(pk=1)
+    response = user_client.get(url_name)
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+    request.user = user
+
+    with pytest.raises(PermissionDenied):
+        SiteListView.as_view()(request)
+
+
+@pytest.mark.parametrize(
+    'url_name', [
+        reverse('hospital-settings:site-list'),
+        reverse('hospital-settings:site-update', args=(1,)),
+        reverse('hospital-settings:site-create'),
+        reverse('hospital-settings:site-delete', args=(1,)),
+    ],
+)
+def test_site_permission_required_success(user_client: Client, django_user_model: User, url_name: str) -> None:
+    """Ensure that `site` can be accessed with the required permission."""
+    user = django_user_model.objects.create(username='test_site_user')
+    user_client.force_login(user)
+    permission = Permission.objects.get(codename='can_manage_sites')
+    user.user_permissions.add(permission)
+    factories.Site(pk=1)
+
+    response = user_client.get(url_name)
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_site_response_contains_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that site menu is displayed for users with permission."""
+    user = django_user_model.objects.create(username='test_site_user')
+    user_client.force_login(user)
+    permission = Permission.objects.get(codename='can_manage_sites')
+    user.user_permissions.add(permission)
+
+    response = user_client.get('/hospital-settings/')
+
+    assertContains(response, 'Sites')
+
+
+def test_site_response_no_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that site menu is not displayed for users without permission."""
+    user = django_user_model.objects.create(username='test_site_user')
+    user_client.force_login(user)
+
+    response = user_client.get('/hospital-settings/')
+
+    assertNotContains(response, 'Sites')
+
+
+def test_institution_site_response_no_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that hospital settings menu is not displayed for users without institution and site permissions."""
+    user = django_user_model.objects.create(username='test_site_user')
+    user_client.force_login(user)
+
+    response = user_client.get('/hospital-settings/')
+
+    assertNotContains(response, 'Hospital Settings')

@@ -60,32 +60,34 @@
           <li></li>
 
           {% block sidebar-items %}
-
-          <li class="nav-item has-treeview menu-open">
-            <a href="#" class="nav-link">
-              <p>
-                {% translate "Hospital Settings"|upper %}
-                <i class="right fas fa-angle-left"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              {% if perms.hospital_settings.can_manage_institutions %}
-                <li>
-                  <a href="{% url 'hospital-settings:institution-list' %}" class="nav-link">
-                    <i class="nav-icon fas fa-building"></i>
-                    <p class="text">{% translate "Institutions" %}</p>
-                  </a>
-                </li>
+          {% if perms.hospital_settings.can_manage_institutions or perms.hospital_settings.can_manage_sites%}
+            <li class="nav-item has-treeview menu-open">
+              <a href="#" class="nav-link">
+                <p>
+                  {% translate "Hospital Settings"|upper %}
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                {% if perms.hospital_settings.can_manage_institutions %}
+                  <li>
+                    <a href="{% url 'hospital-settings:institution-list' %}" class="nav-link">
+                      <i class="nav-icon fas fa-building"></i>
+                      <p class="text">{% translate "Institutions" %}</p>
+                    </a>
+                  </li>
+                {% endif %}
+                {% if perms.hospital_settings.can_manage_sites %}
+                  <li class="nav-item">
+                    <a href="{% url 'hospital-settings:site-list' %}" class="nav-link">
+                      <i class="nav-icon fas fa-sitemap"></i>
+                      <p class="text">{% translate "Sites" %}</p>
+                    </a>
+                  </li>
               {% endif %}
-              <li class="nav-item">
-                <a href="{% url 'hospital-settings:site-list' %}" class="nav-link">
-                  <i class="nav-icon fas fa-sitemap"></i>
-                  <p class="text">{% translate "Sites" %}</p>
-                </a>
-              </li>
-            </ul>
-          </li>
-
+              </ul>
+            </li>
+          {% endif %}
           <li class="nav-item has-treeview menu-open">
             <a href="#" class="nav-link">
               <p>
