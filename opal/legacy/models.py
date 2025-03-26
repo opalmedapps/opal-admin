@@ -861,7 +861,7 @@ class LegacyPatientDeviceIdentifier(models.Model):
     device_id = models.CharField(db_column='DeviceId', max_length=255)
     app_version = models.CharField(db_column='appVersion', max_length=16)
     registration_id = models.CharField(db_column='RegistrationId', max_length=256)
-    device_type = models.SmallIntegerField(db_column='DeviceType', default=0)
+    device_type = models.SmallIntegerField(db_column='DeviceType', default=0)  # 0 = iOS, 1 = Android, 3 = browser
     session_id = models.TextField(db_column='SessionId', default='')
     security_answer_ser_num = models.IntegerField(db_column='SecurityAnswerSerNum', null=True)
     attempt = models.IntegerField(db_column='Attempt', default=0)

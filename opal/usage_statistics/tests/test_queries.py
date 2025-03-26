@@ -7,6 +7,7 @@ from pytest_mock import MockerFixture
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers import models as caregiver_models
+from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients import models as patient_models
 from opal.usage_statistics import queries as stats_queries
@@ -258,4 +259,47 @@ def test_fetch_patients_summary() -> None:
         'unknown_sex': 1,
         'all_access': 6,
         'ntk_access': 2,
+    }
+
+
+@pytest.mark.django_db(databases=['legacy'])
+def test_empty_fetch_devices_summary() -> None:
+    """Ensure fetch_devices_summary() query can return an empty result without errors."""
+    devices_summary = stats_queries.fetch_devices_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert devices_summary == {
+        'total': 0,
+        'iOS': 0,
+        'android': 0,
+        'browser': 0,
+    }
+
+
+@pytest.mark.django_db(databases=['legacy'])
+def test_fetch_devices_summary(mocker: MockerFixture) -> None:
+    """Ensure fetch_devices_summary() query successfully returns device statistics."""
+    legacy_factories.LegacyPatientDeviceIdentifierFactory()
+    legacy_factories.LegacyPatientDeviceIdentifierFactory()
+    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=1)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=1)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=3)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=3)
+
+    # Previous day records
+    previous_day = timezone.now() - dt.timedelta(days=1)
+    mock_timezone = mocker.patch('django.utils.timezone.now')
+    mock_timezone.return_value = previous_day
+    legacy_factories.LegacyPatientDeviceIdentifierFactory(last_updated=previous_day)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=1, last_updated=previous_day)
+    devices_summary = stats_queries.fetch_devices_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert devices_summary == {
+        'total': 6,
+        'iOS': 2,
+        'android': 2,
+        'browser': 2,
     }
