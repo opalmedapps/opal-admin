@@ -128,13 +128,10 @@ class SearchForm(forms.Form):
 
         Args:
             response: OIE service response
-
-        Raises:
-            ValidationError: if the status in response is error
         """
-        # add error message to the tempate
+        # add error message to the template
         if response and response['status'] == 'error':
-            raise ValidationError(response['data']['message'])
+            self.add_error(None, response['data']['message'])
         # save patient data to the JSONfield
         elif response and response['status'] == 'success':
             self.cleaned_data['patient_record'] = response['data']
