@@ -222,22 +222,19 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         email_subject = _('Opal Verification Code')
 
         template_plain = 'email/verification_code_{0}.txt'.format(language)
+        parameters = {
+            'code': email_verification.code,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+        }
         msg_plain = render_to_string(
             template_plain,
-            {
-                'code': email_verification.code,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-            },
+            parameters,
         )
         template_html = 'email/verification_code_{0}.html'.format(language)
         msg_html = render_to_string(
             template_html,
-            {
-                'code': email_verification.code,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-            },
+            parameters,
         )
         send_mail(
             email_subject,
