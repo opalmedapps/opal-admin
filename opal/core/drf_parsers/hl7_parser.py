@@ -242,7 +242,7 @@ class HL7Parser(BaseParser):
         }
 
     def _parse_nte_segment(self, segment: Segment) -> dict:
-        """Extract pharmacy route data from an HL7v2 NTE segment.
+        """Extract note and comment data from an HL7v2 NTE segment.
 
         Args:
             segment: HL7 segment data
