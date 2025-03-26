@@ -10,8 +10,8 @@ from django.http import HttpRequest, HttpResponse
 from django.views.generic.base import TemplateView
 
 import pandas as pd
-from easyaudit.models import RequestEvent
 
+from ..core.audit import update_request_event_query_string
 from ..users.models import User
 from .backend import get_all_questionnaires, get_questionnaire_detail, get_temp_table, make_temp_tables
 from .models import ExportReportPermission
@@ -85,7 +85,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
             # Also update auditing service with request details
             update_request_event_query_string(
                 request,
-                requestor,
+                'POST',
                 parameters=[
                     'questionnaireid',
                 ],
@@ -144,7 +144,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         # Update audit query string with request parameters
         update_request_event_query_string(
             request,
-            requestor,
+            'POST',
             parameters=[
                 'questionnaireid',
                 'start',
@@ -261,27 +261,3 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             headers={'Content-Disposition': f'attachment; filename = {filename}'},
         )
-
-
-def update_request_event_query_string(request: HttpRequest, requestor: User, parameters: list) -> None:
-    """Get the request event attached to this request path and update query string with POST arguments.
-
-    Args:
-        request: The post request data
-        requestor: Report user
-        parameters: Filter request parameters to be appended to the request event query string
-
-    """
-    request_event = RequestEvent.objects.filter(
-        url=request.path,
-        user=request.user,
-        method='POST',
-    ).order_by('-datetime').first()
-    query_string = {
-        'username': requestor.get_username(),
-    }
-    for param in parameters:
-        query_string[param] = request.POST.get(param)  # type: ignore[assignment]
-
-    request_event.query_string = query_string
-    request_event.save()
