@@ -9,16 +9,17 @@ from django.db import models
 
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import Patient
-from opal.services.reports import PathologyData, PatientData, ReportService, SiteData
+from opal.services.reports import InstitutionData, PathologyData, PatientData, ReportService, SiteData
 
 LOGGER = logging.getLogger(__name__)
 
 
 def generate_pathology_report(
+    institution_data: dict[str, Any],
     patient: Patient,
-    pathology_data: dict[str, Any],
-    patient_data: dict[str, Any],
     site_data: dict[str, Any],
+    patient_data: dict[str, Any],
+    pathology_data: dict[str, Any],
 ) -> Path:
     """Generate the pathology PDF report by calling the ReportService.
 
@@ -43,26 +44,12 @@ def generate_pathology_report(
     # Find Site record filtering by receiving_facility field (a.k.a. site code)
     site = _get_site_instance(site_data['receiving_facility'])
 
+    institution = _get_instutition_instance(institution_data['receiving_facility'])
+
     return report_service.generate_pathology_report(
-        pathology_data=PathologyData(
-            test_number=pathology_data['case_number'] if 'case_number' in pathology_data else '',
-            test_collected_at=pathology_data['collected_at'],
-            test_reported_at=pathology_data['reported_at'],
-            observation_clinical_info=observations['SPCI'],
-            observation_specimens=observations['SPSPECI'],
-            observation_descriptions=observations['SPGROS'],
-            observation_diagnosis=observations['SPDX'],
-            prepared_by=note_comment['prepared_by'],
-            prepared_at=note_comment['prepared_at'],
-        ),
-        site_data=SiteData(
-            site_logo_path=Path(Institution.objects.get().logo.path),
-            site_name=site.name,
-            site_building_address=site.street_name,
-            site_city=site.city,
-            site_province=site.province_code,
-            site_postal_code=site.postal_code,
-            site_phone=site.contact_telephone,
+        institution_data=InstitutionData(
+            institution_logo_path=Path(Institution.objects.get().logo.path),
+            institution_name=institution.name,
         ),
         patient_data=PatientData(
             patient_first_name=patient.first_name,
@@ -74,6 +61,24 @@ def generate_pathology_report(
                     site_code=models.F('site__acronym'),
                 ).values('mrn', 'site_code'),
             ),
+        ),
+        site_data=SiteData(
+            site_building_address=site.street_name,
+            site_city=site.city,
+            site_province=site.province_code,
+            site_postal_code=site.postal_code,
+            site_phone=site.contact_telephone,
+        ),
+        pathology_data=PathologyData(
+            test_number=pathology_data['case_number'] if 'case_number' in pathology_data else '',
+            test_collected_at=pathology_data['collected_at'],
+            test_reported_at=pathology_data['reported_at'],
+            observation_clinical_info=observations['SPCI'],
+            observation_specimens=observations['SPSPECI'],
+            observation_descriptions=observations['SPGROS'],
+            observation_diagnosis=observations['SPDX'],
+            prepared_by=note_comment['prepared_by'],
+            prepared_at=note_comment['prepared_at'],
         ),
     )
 
@@ -169,13 +174,39 @@ def _get_site_instance(receiving_facility: str) -> Site:
         )
 
         return Site(
-            name=f'''Receiving facility "{receiving_facility}" not found/
-            L'établissement de réception "{receiving_facility}" n'a pas été trouvé.''',
             street_name='',
             city='',
             province_code='',
             postal_code='',
             contact_telephone='',
+        )
+
+
+def _get_instutition_instance(receiving_facility: str) -> Institution:
+    """Fetch institution record by giving receving facility code
+
+    If institution cannot be found, log the incident and return a Site with empty fields.
+
+    Args:
+        receiving_facility: the receiving facility code
+
+    Returns:
+        A institution instance
+    """
+    try:
+        return Institution.objects.get(acronym=receiving_facility)
+    except Institution.DoesNotExist:
+        LOGGER.error(
+            (
+                'An error occurred during pathology report generation.'
+                + 'Given receiving_facility code does not exist: {0}.'
+                + 'Proceeded generation with an empty Site.'
+            ).format(receiving_facility),
+        )
+
+        return Institution(
+            name=f'Receiving facility "{receiving_facility}" not found/'
+                 f'L\'établissement de réception "{receiving_facility}" n\'a pas été trouvé.',
         )
 
 

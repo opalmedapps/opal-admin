@@ -102,20 +102,27 @@ class PathologyData(NamedTuple):
     prepared_at: datetime
 
 
+class InstitutionData(NamedTuple):
+    """Information about an institution from which a report was received.
+
+    Attributes:
+        institution_logo_path: file path of the instituion's logo image
+        institution_name: the name of the institution
+    """
+    institution_logo_path: Path
+    institution_name: str
+
+
 class SiteData(NamedTuple):
     """Information about a hospital site from which a report was received.
 
     Attributes:
-        site_logo_path: file path of the site's logo image
-        site_name: the name of the site (e.g., Royal Victoria Hospital)
         site_building_address: the building address of the site (e.g., 1001, boulevard Décarie)
         site_city: the name of the city that is specified in the address (e.g., Montréal)
         site_province: the name of the province that is specified in the address (e.g., Québec)
         site_postal_code: the postal code that specified in the address (e.g., H4A3J1)
         site_phone: the phone number that is specified in the address (e.g., 514 934 4400)
     """
-    site_logo_path: Path
-    site_name: str
     site_building_address: str
     site_city: str
     site_province: str
@@ -149,6 +156,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
 
     def __init__(
         self,
+        institution_data: InstitutionData,
         patient_data: PatientData,
         site_data: SiteData,
         pathology_data: PathologyData,
@@ -161,12 +169,15 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             - Generating the PDF by using FPDF's templates
 
         Args:
+            patient_data: patient data required to generate the PDF report
+            site_data: site data required to generate the PDF report
             pathology_data: pathology data required to generate the PDF report
         """
         super().__init__()
-        self.pathology_data = pathology_data
-        self.patient_data = patient_data
+        self.institution_data = institution_data
         self.site_data = site_data
+        self.patient_data = patient_data
+        self.pathology_data = pathology_data
         self.patient_name = f'{patient_data.patient_last_name}, {patient_data.patient_first_name}'.upper()
         # Concatenated patient's site codes and MRNs for the header.
         sites_and_mrns_list = [
@@ -290,7 +301,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
 
     def _generate(self) -> None:
         """Generate a PDF pathology report."""
-        self._draw_site_logo()
+        self._draw_institution_logo()
         self._draw_site_address_and_patient_table()
         self._draw_pathology_table_title()
         self._draw_pathology_table_frame()
@@ -319,10 +330,10 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         self.set_title('Pathologie Chirurgicale Rapport Final/Surgical Pathology Final Report')
         self.set_producer(f'fpdf2 v{FPDF_VERSION}')
 
-    def _draw_site_logo(self) -> None:
+    def _draw_institution_logo(self) -> None:
         """Draw the site logo that is shown at the top of the first page."""
         self.image(
-            str(self.site_data.site_logo_path),
+            str(self.institution_data.institution_logo_path),
             x=35,
             y=15,
             w=120,
@@ -503,7 +514,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         line = math.ceil(len(patient_name) * 2 / (185 - 110))
         return [
             {
-                'name': 'site_name',
+                'name': 'institution_name',
                 'type': 'T',
                 'x1': 20,
                 'y1': 47,
@@ -515,7 +526,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': self.site_data.site_name,
+                'text': self.institution_data.institution_name,
                 'priority': 0,
                 'multiline': False,
             },
@@ -1178,15 +1189,19 @@ class ReportService():
 
     def generate_pathology_report(
         self,
-        pathology_data: PathologyData,
+        institution_data: InstitutionData,
         patient_data: PatientData,
         site_data: SiteData,
+        pathology_data: PathologyData,
     ) -> Path:
         """Create a pathology PDF report.
 
         The generated report is saved in the directory specified in the PATHOLOGY_REPORTS_PATH environment variable.
 
         Args:
+            institution_data: institution data required to generate the PDF report
+            patient_data: patient data required to generate the PDF report
+            site_data: site data required to generate the PDF report
             pathology_data: pathology data required to generate the PDF report
 
         Returns:
@@ -1199,7 +1214,7 @@ class ReportService():
             date=generated_at,
         )
         report_path = settings.PATHOLOGY_REPORTS_PATH / f'{report_file_name}.pdf'
-        pathology_pdf = PathologyPDF(patient_data, site_data, pathology_data)
+        pathology_pdf = PathologyPDF(institution_data, patient_data, site_data, pathology_data)
         pathology_pdf.output(name=str(report_path))
 
         return report_path

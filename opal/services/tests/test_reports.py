@@ -13,6 +13,7 @@ from requests.exceptions import RequestException
 from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
 from opal.services.reports import (
+    InstitutionData,
     PathologyData,
     PathologyPDF,
     PatientData,
@@ -41,6 +42,11 @@ QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
     language='en',
 )
 
+INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK = InstitutionData(
+    institution_logo_path=Path('opal/tests/fixtures/test_logo.png'),
+    institution_name='Decarie Boulevard',
+)
+
 PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK = PatientData(
     patient_first_name='Bart',
     patient_last_name='Simpson',
@@ -53,8 +59,7 @@ PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK = PatientData(
 )
 
 SITE_REPORT_DATA_WITH_NO_PAGE_BREAK = SiteData(
-    site_logo_path=Path('opal/tests/fixtures/test_logo.png'),
-    site_name='Decarie Boulevard',
+    # site_name='Decarie Boulevard',
     site_building_address='1001',
     site_city='Montreal',
     site_province='QC',
@@ -105,9 +110,13 @@ PATHOLOGY_REPORT_DATA_WITH_PAGE_BREAK = PathologyData(
     prepared_at=datetime.datetime(2021, 12, 29, 10, 30),
 )
 
+INSTITUTION_REPORT_DATA_WITH_PAGE_BREAK = InstitutionData(
+    institution_logo_path=Path('opal/tests/fixtures/test_logo.png'),
+    institution_name='Decarie Boulevard',
+)
+
 SITE_REPORT_DATA_WITH_PAGE_BREAK = SiteData(
-    site_logo_path=Path('opal/tests/fixtures/test_logo.png'),
-    site_name='Decarie Boulevard',
+    # site_name='Decarie Boulevard',
     site_building_address='1001',
     site_city='Montreal',
     site_province='QC',
@@ -442,9 +451,10 @@ def test_generate_pathology_report_success_with_no_page_break(
 
     # Generate the pathology report
     pathology_report = report_service.generate_pathology_report(
+        institution_data=INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        patient_data=PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        site_data=SITE_REPORT_DATA_WITH_NO_PAGE_BREAK,
         pathology_data=PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK,
-        patient_data=PATIENT_REPORT_DATA_WITH_PAGE_BREAK,
-        site_data=SITE_REPORT_DATA_WITH_PAGE_BREAK,
     )
 
     assert pathology_report.parent == settings.PATHOLOGY_REPORTS_PATH
@@ -461,9 +471,10 @@ def test_generate_pathology_report_success_with_page_break(
 
     # Generate the pathology report
     pathology_report = report_service.generate_pathology_report(
-        pathology_data=PATHOLOGY_REPORT_DATA_WITH_PAGE_BREAK,
+        institution_data=INSTITUTION_REPORT_DATA_WITH_PAGE_BREAK,
         patient_data=PATIENT_REPORT_DATA_WITH_PAGE_BREAK,
         site_data=SITE_REPORT_DATA_WITH_PAGE_BREAK,
+        pathology_data=PATHOLOGY_REPORT_DATA_WITH_PAGE_BREAK,
     )
 
     assert pathology_report.parent == settings.PATHOLOGY_REPORTS_PATH
@@ -486,13 +497,15 @@ def test_long_patient_names_not_splitted(first_name: str, last_name: str) -> Non
     """Ensure long patient names are formatted and no words splitted."""
     pathology_data = PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK
 
+    institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK
+
     site_data = SITE_REPORT_DATA_WITH_NO_PAGE_BREAK
 
     patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK._replace(
         patient_first_name=first_name,
         patient_last_name=last_name,
     )
-    pathology_pdf = PathologyPDF(pathology_data, patient_data, site_data)
+    pathology_pdf = PathologyPDF(institution_data, patient_data, site_data, pathology_data)
 
     patient_list = pathology_pdf._get_site_address_patient_info_box()
 

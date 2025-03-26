@@ -48,6 +48,7 @@ class CreatePathologyView(generics.CreateAPIView[GeneralTest]):
 
         # Generate the pathology report
         pathology_pdf_path = generate_pathology_report(
+            institution_data=serializer.validated_data,
             patient=patient,
             pathology_data=serializer.validated_data,
             patient_data=serializer.validated_data,
