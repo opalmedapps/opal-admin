@@ -88,7 +88,7 @@ class CreatePrescriptionView(HL7CreateView):
                 order_data['ordered_by_id'],
             ),
             'effective_at': order_data['effective_at'],
-            'pharmacy_encoded_order_physician_prescription_order': {
+            'pharmacy_encoded_order': {
                 'quantity': pharmacy_encoded_data['pharmacy_quantity'],
                 'unit': pharmacy_encoded_data['pharmacy_quantity_unit'],
                 'interval_pattern': pharmacy_encoded_data['pharmacy_interval_pattern'],

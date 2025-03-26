@@ -154,8 +154,7 @@ class PharmacyEncodedOrderSerializer(serializers.ModelSerializer[PharmacyEncoded
 class PhysicianPrescriptionOrderSerializer(serializers.ModelSerializer[PhysicianPrescriptionOrder]):
     """Serializer for the `PhysicianPrescriptionOrder` model."""
 
-    # TODO: ...Should we fix this related_name? this seems silly
-    pharmacy_encoded_order_physician_prescription_order = PharmacyEncodedOrderSerializer(  # noqa: WPS118
+    pharmacy_encoded_order = PharmacyEncodedOrderSerializer(  # noqa: WPS118
         many=False,
         required=True,
     )
@@ -164,7 +163,7 @@ class PhysicianPrescriptionOrderSerializer(serializers.ModelSerializer[Physician
         model = PhysicianPrescriptionOrder
         fields = (
             'patient',
-            'pharmacy_encoded_order_physician_prescription_order',
+            'pharmacy_encoded_order',
             'quantity',
             'unit',
             'interval_pattern',
@@ -194,7 +193,7 @@ class PhysicianPrescriptionOrderSerializer(serializers.ModelSerializer[Physician
             Prescription order instance
         """
         # Extract the nested data
-        pharmacy_encoded_order_data = validated_data.pop('pharmacy_encoded_order_physician_prescription_order')
+        pharmacy_encoded_order_data = validated_data.pop('pharmacy_encoded_order')
         pharmacy_components_data = pharmacy_encoded_order_data.pop('pharmacy_components')
         pharmacy_route_data = pharmacy_encoded_order_data.pop('pharmacy_route')
 

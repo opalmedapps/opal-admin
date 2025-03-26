@@ -81,7 +81,7 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
     physician_prescription_order = models.OneToOneField(
         'PhysicianPrescriptionOrder',
         on_delete=models.CASCADE,
-        related_name='pharmacy_encoded_order_physician_prescription_order',
+        related_name='pharmacy_encoded_order',
     )
     give_code = models.ForeignKey(
         'CodedElement',

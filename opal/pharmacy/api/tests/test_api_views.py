@@ -168,7 +168,7 @@ class TestCreatePrescriptionView:
             content_type='application/hl7-v2+er7',
         )
         assert response.status_code == status.HTTP_201_CREATED
-        assert not response.data['pharmacy_encoded_order_physician_prescription_order']['pharmacy_route']['administration_method']  # noqa: E501
+        assert not response.data['pharmacy_encoded_order']['pharmacy_route']['administration_method']  # noqa: E501
 
     def _load_hl7_fixture(self, filename: str) -> str:
         """Load a HL7 fixture for testing.
