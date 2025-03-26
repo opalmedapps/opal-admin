@@ -7,7 +7,7 @@ from django.urls.base import reverse
 
 import pytest
 from bs4 import BeautifulSoup
-from pytest_django.asserts import assertRedirects
+from pytest_django.asserts import assertRedirects, assertURLEqual
 from pytest_django.fixtures import SettingsWrapper
 
 from opal.users.models import User
@@ -40,6 +40,17 @@ def test_export_report_launch_redirects(user_client: Client, settings: SettingsW
         target_status_code=HTTPStatus.FOUND,
         fetch_redirect_response=False,
     )
+
+
+def test_export_report_launch_url_exists(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure that a button exists in the reports page and it contains the correct URL."""
+    user_client.force_login(admin_user)
+    response = user_client.get(reverse('questionnaires:exportreports'))
+    soup = BeautifulSoup(response.content, 'html.parser')
+    links = soup.find_all('a', attrs={'class': 'btn btn-primary mr-2'})
+
+    assert response.status_code == HTTPStatus.OK
+    assertURLEqual(links[0].get('href'), reverse('questionnaires:exportreports-launch'))
 
 
 def test_export_report_hidden_unauthenticated(user_client: Client, django_user_model: User) -> None:
