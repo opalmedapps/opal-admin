@@ -410,6 +410,7 @@ EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL')
 EMAIL_PORT = env.int('EMAIL_PORT')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_FROM_REGISTRATION = 'Opal Registration <registration@opalmedapps.ca>'
 
 # Legacy OpalAdmin related settings
 #

@@ -216,7 +216,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             _('Opal Verification Code'),
             email_plain,
             # TODO: change to a proper from email
-            settings.EMAIL_HOST_USER,
+            settings.EMAIL_FROM_REGISTRATION,
             [email_verification.email],
             html_message=email_html,
         )
@@ -247,7 +247,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             _('Your existing Opal account'),
             email_plain,
             # TODO: change to a proper from email
-            settings.EMAIL_HOST_USER,
+            settings.EMAIL_FROM_REGISTRATION,
             [email],
             html_message=email_html,
         )
