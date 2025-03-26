@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     """Adds unique constraint to the `legacy_id` field of the `Patient` model."""
 
     dependencies = [
-        ('patients', '0007_patient_hin_to_ramq'),
+        ('patients', '0008_relationship_unique_constraint'),
     ]
 
     operations = [
