@@ -19,7 +19,7 @@ class RegisterApiValidator:
         return:
             return a tuple including RegistrationRegisterData and errors list
         """
-        errors = []
+        errors: list = []
 
         patient_data = None
         try:
@@ -27,7 +27,7 @@ class RegisterApiValidator:
         except (KeyError):
             errors = []
 
-        legacy_id = None
+        legacy_id = 0
         if patient_data:
             try:
                 legacy_id = patient_data['legacy_id']
@@ -84,10 +84,10 @@ class RegisterApiValidator:
 
         return (
             RegistrationRegisterData(
-                legacy_id=legacy_id,
-                language=language,
-                email=email,
-                phone_number=phone,
+                legacy_id=int(legacy_id),
+                language=str(language),
+                email=str(email),
+                phone_number=str(phone),
                 security_answers=security_answers,
             ),
             errors,

@@ -8,7 +8,7 @@ class TestRegisterApiValidator:
     """Test RegisterApiValidator success and failure."""
 
     validator = RegisterApiValidator()
-    valid_input_data = {
+    valid_input_data: dict = {
         'patient': {
             'legacy_id': 1,
         },
