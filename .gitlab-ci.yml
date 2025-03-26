@@ -171,11 +171,6 @@ build docs:
   needs:
     - job: setup
 
-
-  lint docs:
-    stage: Documentation
-    image: markdownlint...
-
 # Publish docs to GitLab Pages
 # see: https://squidfunk.github.io/mkdocs-material/publishing-your-site/#gitlab-pages
 #
