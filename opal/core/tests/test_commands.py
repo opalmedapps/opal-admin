@@ -291,11 +291,13 @@ class TestInitializeData(CommandTestMixin):
 
     def test_delete_clinicalstaff_only(self) -> None:
         """Only existing clinical staff users are deleted, not caregivers."""
+        # create a group to trigger the existing data check
+        Group.objects.create(name='Clinicians')
         User.objects.create(username='johnwayne')
-        # create a caregiver with a profile
+        # a caregiver that should not be deleted by the command
         caregiver = caregiver_factories.CaregiverProfile()
 
-        stdout, _ = self._call_command('initialize_data', '--force-delete')
+        stdout, _stderr = self._call_command('initialize_data', '--force-delete')
 
         # ensure that the caregiver is not deleted but the user was
         caregiver.refresh_from_db()

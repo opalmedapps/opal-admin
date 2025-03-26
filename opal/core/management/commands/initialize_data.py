@@ -60,7 +60,6 @@ class Command(BaseCommand):
             options: additional keyword arguments
         """
         if any([
-            ClinicalStaff.objects.exists(),
             Group.objects.all().exists(),
             SecurityQuestion.objects.all().exists(),
         ]):
