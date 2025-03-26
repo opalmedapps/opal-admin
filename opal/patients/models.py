@@ -284,7 +284,7 @@ class Relationship(models.Model):
             initial: the selected value of the status
 
         Returns:
-            list of choices
+            list of valid statuses
         """
         if initial.value == RelationshipStatus.PENDING:
             return [RelationshipStatus.PENDING, RelationshipStatus.DENIED, RelationshipStatus.CONFIRMED]
