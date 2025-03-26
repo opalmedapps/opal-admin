@@ -151,7 +151,7 @@ msgstr "Page d'accueil"
 
 #: opal/templates/sidebar_menu.html
 msgid "Hospital Settings"
-msgstr "Paramètres Hospitalier"
+msgstr "Paramètres Hospitaliers"
 
 #: opal/templates/sidebar_menu.html
 msgid "Institutions"
