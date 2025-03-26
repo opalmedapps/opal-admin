@@ -153,6 +153,7 @@ def test_export_report_hidden_unauthenticated(user_client: Client, django_user_m
     assertNotContains(response, f'href="{export_url}"')
 
 
+@pytest.mark.skip(reason='the sidebar menus are removed; include the test once the sidebar menus are reverted back.')
 def test_export_report_visible_authenticated(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure that an authenticated user can view the Export Reports page."""
     user_client.force_login(admin_user)

@@ -5,7 +5,7 @@ from http import HTTPStatus
 from typing import Tuple
 
 from django.contrib.auth.models import AbstractUser, Permission
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied
 from django.forms.models import model_to_dict
 from django.test import Client, RequestFactory
 from django.urls import reverse
@@ -21,7 +21,7 @@ from opal.users.models import User
 
 from .. import constants, factories, forms, models, tables
 # Add any future GET-requestable patients app pages here for faster test writing
-from ..views import ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView, NewAccessRequestView
+from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView
 
 pytestmark = pytest.mark.django_db
 
@@ -386,6 +386,96 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
     assert response_post.url == cancel_url  # type: ignore[attr-defined]
 
 
+def test_caregiver_access_update_form_fail(relationship_user: Client) -> None:
+    """Ensures patient cannot have different name from caregiver in self-relationship."""
+    patient = factories.Patient()
+    self_type = factories.RelationshipType(role_type=models.RoleType.SELF.name)
+    relationship = factories.Relationship(patient=patient, type=self_type, status=models.RelationshipStatus.CONFIRMED)
+
+    cancel_url = 'patient/test/?search-query'
+    form_data = model_to_dict(relationship)
+    form_data['pk'] = relationship.pk
+    form_data['type'] = relationship.type.pk
+    form_data['first_name'] = 'test_firstname'
+    form_data['last_name'] = 'test_lastname'
+    form_data['end_date'] = date.fromisoformat('2023-05-09')
+    form_data['cancel_url'] = cancel_url
+
+    url = reverse('patients:relationships-view-update', kwargs={'pk': relationship.pk})
+
+    response_post = relationship_user.post(
+        path=url,
+        data=form_data,
+    )
+    err_msg = 'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
+    assert err_msg in response_post.context['form'].errors['__all__']
+
+
+@pytest.mark.parametrize(
+    'role_type', [
+        models.RoleType.MANDATARY,
+        models.RoleType.PARENT_GUARDIAN,
+        models.RoleType.GUARDIAN_CAREGIVER,
+    ],
+)
+def test_caregiver_access_update_form_pass(relationship_user: Client, role_type: models.RoleType) -> None:
+    """Ensure patient can have different name from caregiver in non-self relationship."""
+    patient = factories.Patient()
+    relationshiptype = factories.RelationshipType(role_type=role_type)
+    relationship = factories.Relationship(patient=patient, type=relationshiptype)
+
+    cancel_url = 'patient/test/?search-query'
+    form_data = model_to_dict(relationship)
+    form_data['pk'] = relationship.pk
+    form_data['type'] = relationship.type.pk
+    form_data['first_name'] = 'test_firstname'
+    form_data['last_name'] = 'test_lastname'
+    form_data['end_date'] = date.fromisoformat('2023-05-09')
+    form_data['cancel_url'] = cancel_url
+
+    url = reverse('patients:relationships-view-update', kwargs={'pk': relationship.pk})
+
+    relationship_user.post(
+        path=url,
+        data=form_data,
+    )
+
+    relationship_record = models.Relationship.objects.get(pk=relationship.pk)
+    # assert the first and last name have been changed
+    assert relationship_record.caregiver.user.first_name == form_data['first_name']
+    assert relationship_record.caregiver.user.last_name == form_data['last_name']
+
+
+def test_caregiver_access_update_form_self_pass(relationship_user: Client) -> None:
+    """Ensure patient cannot have different name from caregiver in self relationship."""
+    patient = factories.Patient()
+    relationshiptype = factories.RelationshipType(role_type=models.RoleType.SELF)
+    relationship = factories.Relationship(patient=patient, type=relationshiptype)
+
+    cancel_url = 'patient/test/?search-query'
+    form_data = model_to_dict(relationship)
+    form_data['pk'] = relationship.pk
+    form_data['type'] = relationship.type.pk
+    form_data['first_name'] = 'test_firstname'
+    form_data['last_name'] = 'test_lastname'
+    form_data['cancel_url'] = cancel_url
+
+    err_msg = 'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
+    url = reverse('patients:relationships-view-update', kwargs={'pk': relationship.pk})
+
+    post_response = relationship_user.post(
+        path=url,
+        data=form_data,
+    )
+    form_context = post_response.context['form']
+
+    assert err_msg in form_context.errors.get(NON_FIELD_ERRORS)
+    # assert the first and last name have not been changed
+    relationship_record = models.Relationship.objects.get(pk=relationship.pk)
+    assert relationship_record.caregiver.user.first_name != form_data['first_name']
+    assert relationship_record.caregiver.user.last_name != form_data['last_name']
+
+
 @pytest.mark.parametrize(
     'role_type', [
         models.RoleType.MANDATARY,
@@ -625,6 +715,7 @@ def test_relationship_permission_required_success(user_client: Client, django_us
     assert response.status_code == HTTPStatus.OK
 
 
+@pytest.mark.skip(reason='the sidebar menus are removed; include the test once the sidebar menus are reverted back.')
 def test_relationships_response_contains_menu(user_client: Client, django_user_model: User) -> None:
     """Ensures that pending relationships is displayed for users with permission."""
     user = django_user_model.objects.create(username='test_relationship_user')
@@ -693,6 +784,7 @@ def test_relationshiptype_perm_required_success(
     assert response.status_code == HTTPStatus.OK
 
 
+@pytest.mark.skip(reason='the sidebar menus are removed; include the test once the sidebar menus are reverted back.')
 def test_relationshiptype_response_contains_menu(relationshiptype_user: Client, django_user_model: User) -> None:
     """Ensures that pending relationshiptypes is displayed for users with permission."""
     response = relationshiptype_user.get(reverse('hospital-settings:index'))
@@ -896,20 +988,21 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, dj
 def test_access_request_permission(client: Client, registration_user: User) -> None:
     """Ensure that the access request view can be viewed with the `can_perform_registration` permission."""
     client.force_login(registration_user)
-    response = client.get(reverse('patients:access-request-new'))
+    response = client.get(reverse('patients:access-request'))
 
     assert response.status_code == HTTPStatus.OK
 
 
 def test_access_request_no_permission(django_user_model: User) -> None:
     """Ensure that the access request view can not be viewed without the `can_perform_registration` permission."""
-    request = RequestFactory().get(reverse('patients:access-request-new'))
+    request = RequestFactory().get(reverse('patients:access-request'))
     request.user = django_user_model.objects.create(username='testuser')
 
     with pytest.raises(PermissionDenied):
-        NewAccessRequestView.as_view()(request)
+        AccessRequestView.as_view()(request)
 
 
+@pytest.mark.skip(reason='the sidebar menus are removed; include the test once the sidebar menus are reverted back.')
 def test_access_request_menu_shown(client: Client, registration_user: User) -> None:
     """Ensures that Opal Registration is displayed for users with permission."""
     client.force_login(registration_user)
@@ -927,7 +1020,7 @@ def test_access_request_menu_hidden(user_client: Client) -> None:
 
 def test_access_request_cancel_button(client: Client, registration_user: User) -> None:
     """Ensure the cancel button links to the correct URL."""
-    url = reverse('patients:access-request-new')
+    url = reverse('patients:access-request')
     client.force_login(registration_user)
     response = client.get(url)
 
@@ -940,7 +1033,7 @@ def test_access_request_initial_search(client: Client, registration_user: User) 
     client.force_login(registration_user)
 
     # initialize the session storage
-    response = client.get(reverse('patients:access-request-new'))
+    response = client.get(reverse('patients:access-request'))
 
     assert response.status_code == HTTPStatus.OK
 
@@ -950,7 +1043,7 @@ def test_access_request_initial_search(client: Client, registration_user: User) 
         'search-medical_number': '',
     }
 
-    response_post = client.post(reverse('patients:access-request-new'), data=form_data)
+    response_post = client.post(reverse('patients:access-request'), data=form_data)
 
     # assert site field is being initialized with site when there is only one site
     context = response_post.context

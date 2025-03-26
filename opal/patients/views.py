@@ -82,7 +82,7 @@ class RelationshipTypeDeleteView(
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many base classes)
+class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many base classes)
     PermissionRequiredMixin,
     TemplateResponseMixin,
     ContextMixin,

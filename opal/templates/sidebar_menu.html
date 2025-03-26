@@ -1,0 +1,53 @@
+{% load i18n %}
+
+<ul class="list-unstyled ps-0 mb-auto">
+  {% #menu_group group_id="home" title=_("Home") request=request %}
+    {% #menu_item url_name="start" request=request %}
+      {% translate "Home Page" %}
+    {% /menu_item %}
+  {% /menu_group %}
+
+  {# Hospital Settings #}
+  {% if perms.hospital_settings.can_manage_institutions or perms.hospital_settings.can_manage_sites %}
+    {% #menu_group app_name="hospital-settings" group_id="settings" title=_("Hospital Settings") request=request %}
+      {% if perms.hospital_settings.can_manage_institutions %}
+        {% #menu_item url_name="hospital-settings:institution-list" request=request %}
+          {% translate "Institutions" %}
+        {% /menu_item %}
+      {% endif %}
+      {% if perms.hospital_settings.can_manage_sites %}
+        {% #menu_item url_name="hospital-settings:site-list" request=request %}
+          {% translate "Sites" %}
+        {% /menu_item %}
+      {% endif %}
+    {% /menu_group %}
+  {% endif %}
+
+  {# Patients #}
+  {% #menu_group app_name="patients" group_id="patients" title=_("Patients") request=request %}
+    {% if perms.patients.can_manage_relationshiptypes %}
+      {% #menu_item url_name="patients:relationshiptype-list" request=request %}
+        {% translate "Relationship Types" %}
+      {% /menu_item %}
+    {% endif %}
+    {% if perms.patients.can_perform_registration %}
+      {% #menu_item url_name="patients:access-request" request=request %}
+        {% translate "Opal Registration" %}
+      {% /menu_item %}
+    {% endif %}
+    {% if perms.patients.can_manage_relationships %}
+      {% #menu_item url_name="patients:relationships-list" request=request %}
+        {% translate "Manage Caregiver Access" %}
+      {% /menu_item %}
+    {% endif %}
+  {% /menu_group %}
+
+  {# Questionnaires #}
+  {% if perms.questionnaires.export_report %}
+    {% #menu_group app_name="questionnaires" group_id="questionnaires" title=_("Questionnaires") request=request %}
+      {% #menu_item url_name="questionnaires:reports" request=request %}
+        {% translate "Export Reports" %}
+      {% /menu_item %}
+    {% /menu_group %}
+  {% endif %}
+</ul>
