@@ -1,5 +1,6 @@
 import datetime
 import json
+import math
 from http import HTTPStatus
 from pathlib import Path
 
@@ -11,7 +12,7 @@ from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
-from opal.services.reports import PathologyData, QuestionnaireReportRequestData, ReportService
+from opal.services.reports import PathologyData, PathologyPDF, QuestionnaireReportRequestData, ReportService
 from opal.utils.base64 import Base64Util
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -444,3 +445,47 @@ def test_generate_pathology_report_success_with_page_break(
     assert pathology_report.parent == settings.PATHOLOGY_REPORTS_PATH
     assert pathology_report.exists()
     assert pathology_report.is_file()
+
+
+# tuple with patient first name and last name
+test_patient_names_data: list[tuple[str, str]] = [
+    ('BartBartBartBartBartBartBart', 'SimpsonSimpsonSimpsonSimpsonSimpsonSimpsonSimpson'),
+    ('BartBartBartBartBart', 'SimpsonSimpsonSimpsonSimpsonSimpson'),
+    ('BartBartBartBart', 'SimpsonSimpsonSimpsonSimpson'),
+    ('BartBart', 'SimpsonSimpson'),
+    ('Bart', 'Simpson'),
+]
+
+
+@pytest.mark.parametrize(('first_name', 'last_name'), test_patient_names_data)
+def test_count_lines_by_long_patient_names(first_name: str, last_name: str) -> None:
+    """Ensure count_lines_by_long_patient_names() method return correct number of lines with long patient names."""
+    pathology_data = PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK._replace(
+        patient_first_name=first_name,
+        patient_last_name=last_name,
+    )
+    pathology_pdf = PathologyPDF(pathology_data)
+
+    # Maximum characters can be filled in each line
+    max_char_per_line = (190 - 138) / 2 - 1
+    name_label = 'Nom/Name: '
+    patient_name = f'{pathology_data.patient_last_name}, {pathology_data.patient_first_name}'
+    # The number of lines occupied by the patient's name (including name label)
+    line = math.ceil(
+        (len(name_label) + len(patient_name)) * 2 / (190 - 138),
+    )
+
+    # Return 'line + 2' only if the patient name is longer than 2 times the value of max character per line
+    if (
+        len(patient_name) > max_char_per_line * 2
+    ):
+        assert pathology_pdf._count_lines_by_long_patient_names() == line + 2
+    # Return 'line + 1' if the last name cannot be filled in the first line and other than the first condition
+    elif (
+        len(pathology_data.patient_last_name) > (max_char_per_line - len(name_label) - 1)
+        and len(patient_name) <= max_char_per_line * 2
+    ):
+        assert pathology_pdf._count_lines_by_long_patient_names() == line + 1
+    # Return the value of 'line' other than the 1st and 2nd conditions
+    else:
+        assert pathology_pdf._count_lines_by_long_patient_names() == line
