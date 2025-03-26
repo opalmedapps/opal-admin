@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     """Add Device model."""
 
     dependencies = [
-        ('caregivers', '0003_securityquestion'),
+        ('caregivers', '0004_caregiverprofile_uuid'),
     ]
 
     operations = [
