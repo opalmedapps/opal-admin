@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-18 03:03+0300\n"
+"POT-Creation-Date: 2023-08-22 17:51+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -101,6 +101,10 @@ msgstr "Relation avec le patient"
 msgid "The requestor filled out the request form"
 msgstr "Le demandeur a rempli le formulaire de demande"
 
+#: opal/patients/forms.py
+msgid "Requestor ID checked"
+msgstr "ID du demandeur vérifié"
+
 #: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "First Name"
@@ -123,6 +127,10 @@ msgstr "Numéro de téléphone"
 msgid "Validation"
 msgstr "Validation"
 
+#: opal/patients/forms.py
+msgid "Find User"
+msgstr "Rechercher un utilisateur"
+
 #: opal/patients/forms.py opal/patients/tables.py
 msgid "No existing user could be found."
 msgstr "Aucun utilisateur existant n'a pu être trouvé."
@@ -144,6 +152,14 @@ msgstr ""
 #: opal/patients/forms.py
 msgid "The password you entered is incorrect. Please try again."
 msgstr "Le mot de passe que vous avez entré est incorrect. Veuillez réessayer."
+
+#: opal/patients/forms.py
+msgid "Language"
+msgstr "Langue"
+
+#: opal/patients/forms.py
+msgid "Send"
+msgstr "Envoyer"
 
 #: opal/patients/forms.py
 #, python-brace-format
@@ -646,8 +662,8 @@ msgid ""
 "Caregivers will only have access to the data of their patient once the "
 "relationship has been confirmed."
 msgstr ""
-"Les proches aidants n'auront accès aux données de leur patient qu'une "
-"fois la relation confirmée."
+"Les proches aidants n'auront accès aux données de leur patient qu'une fois "
+"la relation confirmée."
 
 #: opal/patients/templates/patients/relationships/pending_relationship_list.html
 msgid "Manage Caregiver Access"
