@@ -124,7 +124,8 @@ build docs:
   script:
     - pip install -r requirements/docs.txt
     - mkdocs --version
-    - mkdocs build
+    # abort on warnings to catch invalid cross-references
+    - mkdocs build --strict
   # cannot restrict to only merge requests due to the following issue:
   # https://gitlab.com/gitlab-org/gitlab/-/issues/31310
   needs:
