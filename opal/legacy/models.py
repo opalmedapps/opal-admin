@@ -755,6 +755,13 @@ class LegacyTestControl(models.Model):
         db_table = 'TestControl'
 
 
+class LegacyOAUserType(models.IntegerChoices):
+    """The user type for OA users."""
+
+    HUMAN = 1
+    SYSTEM = 2
+
+
 class LegacyOAUser(models.Model):
     """OAUser from the legacy database OpalDB."""
 
@@ -762,11 +769,10 @@ class LegacyOAUser(models.Model):
     username = models.CharField(db_column='Username', max_length=1000)
     password = models.CharField(db_column='Password', max_length=1000)
     oa_role = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId', default=1)
-    # value 1 for human user, 2 for system user
-    user_type = models.IntegerField(db_column='type', default=1)
+    user_type = models.IntegerField(db_column='type', choices=LegacyOAUserType.choices, default=LegacyOAUserType.HUMAN)
     language = models.CharField(db_column='Language', max_length=2, default='EN')
     is_deleted = models.IntegerField(db_column='deleted', default=0)
-    date_added = models.DateTimeField(db_column='DateAdded')
+    date_added = models.DateTimeField(db_column='DateAdded', auto_now_add=True)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
 
     class Meta:
