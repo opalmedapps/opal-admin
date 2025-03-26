@@ -15,6 +15,8 @@ from typing import TYPE_CHECKING
 from django.db import models
 from django.utils import timezone
 
+from opal.patients.models import Relationship
+
 if TYPE_CHECKING:
     from opal.legacy.models import LegacyAppointment
 
@@ -22,17 +24,31 @@ if TYPE_CHECKING:
 class UnreadQuerySetMixin(models.Manager):
     """legacy models unread count mixin."""
 
-    def get_unread_queryset(self, patient_sernum: int) -> models.QuerySet:
+    def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet:
         """
         Get the queryset of unread model records for a given user.
 
         Args:
             patient_sernum: User sernum used to retrieve unread model records queryset.
+            user_name: Username making the request
 
         Returns:
             Queryset of unread model records.
         """
-        return self.filter(patientsernum=patient_sernum, readstatus=0)
+        return self.filter(patientsernum=patient_sernum).exclude(readby__contains=user_name)
+
+    def get_unread_multiple_patients_queryset(self, user_name: str) -> models.QuerySet:
+        """
+        Get the queryset of unread model records for all patient related to the requestion user.
+
+        Args:
+            user_name: Firebase username making the request.
+
+        Returns:
+            Queryset of unread model records.
+        """
+        patient_ids = Relationship.objects.get_patient_id_list_for_caregiver(user_name)
+        return self.filter(patientsernum__in=patient_ids).exclude(readby__contains=user_name)
 
 
 class LegacyNotificationManager(UnreadQuerySetMixin, models.Manager):
@@ -42,41 +58,44 @@ class LegacyNotificationManager(UnreadQuerySetMixin, models.Manager):
 class LegacyAppointmentManager(models.Manager):
     """legacy appointment manager."""
 
-    def get_unread_queryset(self, patient_sernum: int) -> models.QuerySet:
+    def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet:
         """
         Get the queryset of uncompleted appointments for a given user.
 
         Args:
             patient_sernum: User sernum used to retrieve uncompleted appointments queryset.
+            user_name: Firebase username making the request.
 
         Returns:
             Queryset of uncompleted appointments.
         """
         return self.filter(
             patientsernum=patient_sernum,
-            readstatus=0,
             state='Active',
         ).exclude(
-            status='Deleted',
+            readby__contains=user_name,
         )
 
-    def get_daily_appointments(self, patient_sernum: int) -> models.QuerySet['LegacyAppointment']:
+    def get_daily_appointments(self, user_name: str) -> models.QuerySet['LegacyAppointment']:
         """
-        Get all appointment for the current day.
+        Get all appointment for the current day for caregiver related patient(s).
+
+        Used by the home page of the app for checkin.
 
         Args:
-            patient_sernum: Patient sernum used to retrieve unread notifications count.
+            user_name: Firebase username making the request.
 
         Returns:
             Appointments schedule for the current day.
         """
+        patient_ids = Relationship.objects.get_patient_id_list_for_caregiver(user_name)
         return self.select_related(
             'aliasexpressionsernum',
             'aliasexpressionsernum__aliassernum',
             'aliasexpressionsernum__aliassernum__appointmentcheckin',
         ).filter(
             scheduledstarttime__date=timezone.localtime(timezone.now()).date(),
-            patientsernum=patient_sernum,
+            patientsernum__in=patient_ids,
             state='Active',
         ).exclude(
             status='Deleted',
