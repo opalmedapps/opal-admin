@@ -1,9 +1,8 @@
 """Module providing business logic for generating PDF reports using legacy PHP endpoints."""
 
-import base64
-import imghdr
 import json
 from pathlib import Path
+from typing import NamedTuple
 
 from django.conf import settings
 
@@ -12,6 +11,21 @@ from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
 from opal.legacy.models import LegacyPatient
+from opal.utils.base64_util import Base64Util
+
+
+class QuestionnaireReportRequestData(NamedTuple):
+    """Typed `NamedTuple` that describes data fields needed for generating a questionnaire PDF report.
+
+    Attributes:
+        patient_id (int): the ID of an Opal patient (e.g., patient serial number)
+        logo_path (Path): file path of the logo image
+        language (str): report's language (English or French)
+    """
+
+    patient_id: int
+    logo_path: Path
+    language: str
 
 
 class ReportService():
@@ -21,57 +35,40 @@ class ReportService():
 
     def generate_questionnaire_report(
         self,
-        patient_id: int,
-        logo_path: Path,
-        language: str,
+        report_data: QuestionnaireReportRequestData,
     ) -> str:
         """Create PDF report in encoded base64 string format.
 
         Args:
-            patient_id (int): the ID of an Opal patient
-            logo_path (Path): file path of the logo image
-            language (str): report's language (English or French)
+            report_data (QuestionnaireReportRequestData): report request data needed to call legacy PHP report service
 
         Returns:
             str: encoded base64 string of the generated PDF report
         """
-        # return an empty string if patient_id (PatientSerNum) does not exist
-        if not LegacyPatient.objects.filter(patientsernum=patient_id).exists():
+        # return an empty string if questionnaire report request data is not valid
+        if not self._is_questionnaire_report_request_data_valid(report_data):
             return ''
 
-        # return an empty string if logo_path does not exist
-        if not logo_path.exists():
-            return ''
+        base64_report = self._request_base64_report(report_data)
 
-        # return an empty string if language does not exist
-        languages = dict(settings.LANGUAGES)
-        if language not in languages:
-            return ''
-
-        base64_report = self._request_base64_report(patient_id, logo_path, language)
-
-        return base64_report if self._is_base64(base64_report) is True else ''
+        return base64_report if Base64Util().is_base64(base64_report) is True else ''
 
     def _request_base64_report(
         self,
-        patient_id: int,
-        logo_path: Path,
-        language: str,
+        report_data: QuestionnaireReportRequestData,
     ) -> str:
         """Generate a PDF report by making an HTTP call to the legacy PHP endpoint.
 
         Args:
-            patient_id (int): the ID of an Opal patient
-            logo_path (Path): file path of the logo image
-            language (str): report's language (English or French)
+            report_data (QuestionnaireReportRequestData): report request data needed to call legacy PHP report service
 
         Returns:
             str: encoded base64 string of the generated PDF report
         """
         pload = json.dumps({
-            'patient_id': patient_id,
-            'logo_base64': self._encode_image_to_base64(logo_path),
-            'language': language,
+            'patient_id': report_data.patient_id,
+            'logo_base64': Base64Util().encode_image_to_base64(report_data.logo_path),
+            'language': report_data.language,
         })
 
         headers = {'Content-Type': self.content_type}
@@ -98,44 +95,24 @@ class ReportService():
         # Check if ['data']['base64EncodedReport'] is a string and return its value. If not a string, return empty one.
         return base64_report if isinstance(base64_report, str) else ''
 
-    def _encode_image_to_base64(self, logo_path: Path) -> str:
-        """Create base64 string of a given image.
+    def _is_questionnaire_report_request_data_valid(
+        self,
+        report_data: QuestionnaireReportRequestData,
+    ) -> bool:
+        """Check if questionnaire report request data is valid.
 
         Args:
-            logo_path (Path): file path of the logo image
+            report_data (QuestionnaireReportRequestData): report request data needed to call legacy PHP report service
 
         Returns:
-            str: encoded base64 string of the logo image
+            bool: boolean value showing if questionnaire report request data is valid
         """
-        try:
-            # Return an empty string if a given file is not an image
-            if imghdr.what(logo_path) is None:
-                return ''
-        except IOError:
-            return ''
+        languages = dict(settings.LANGUAGES)
 
-        try:
-            with logo_path.open(mode='rb') as image_file:
-                data = base64.b64encode(image_file.read())
-        except IOError:
-            return ''
-
-        return data.decode('utf-8')
-
-    def _is_base64(self, string: str) -> bool:
-        """Check if a given string is base64 encoded.
-
-        Args:
-            string (str): encoded base64 string
-
-        Returns:
-            bool: if a given string is base64
-        """
-        # base64 string cannot be empty
-        if not string:
-            return False
-
-        try:
-            return base64.b64encode(base64.b64decode(string)) == bytes(string, 'ascii')
-        except ValueError:
-            return False
+        return (  # check if patient_id (PatientSerNum) exists
+            LegacyPatient.objects.filter(patientsernum=report_data.patient_id).exists()
+            # check if logo_path exists
+            and report_data.logo_path.exists()
+            # check if language exists
+            and report_data.language in languages
+        )

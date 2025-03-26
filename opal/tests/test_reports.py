@@ -1,4 +1,3 @@
-import base64
 import json
 from http import HTTPStatus
 from pathlib import Path
@@ -11,13 +10,13 @@ from requests import Response
 from requests.exceptions import RequestException
 
 from ..legacy.factories import LegacyPatientFactory
-from ..services.reports import ReportService
+from ..services.reports import QuestionnaireReportRequestData, ReportService
+from ..utils.base64_util import Base64Util
 
 BASE64_ENCODED_REPORT = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
 ENCODING = 'utf-8'
 INVALID_PATIENT_SER_NUM = 0
 LOGO_PATH = Path('opal/tests/fixtures/test_logo.png')
-NON_IMAGE_FILE = Path('opal/tests/fixtures/non_image_file.txt')
 NON_STRING_VALUE = 123
 PATIENT_SER_NUM = 51
 TEST_LEGACY_QUESTIONNAIRES_REPORT_URL = 'http://localhost:80/report'
@@ -51,89 +50,58 @@ def _mock_requests_post(
     return mock_post
 
 
-# _is_base64 function tests
+# _is_questionnaire_report_request_data_valid
 
-def test_is_base64_valid_string_returns_true() -> None:
-    """Ensure `True` value is returned for a valid base64 string."""
-    base64_bytes = base64.b64encode(b'TEST')
-    base64_message = base64_bytes.decode('ascii')
-    assert reports_service._is_base64(base64_message) is True
+def test_is_questionnaire_report_data_valid() -> None:
+    """Ensure `QuestionnaireReportRequestData` successfully validates."""
+    LegacyPatientFactory()
 
+    report_data = QuestionnaireReportRequestData(
+        patient_id=PATIENT_SER_NUM,
+        logo_path=LOGO_PATH,
+        language='en',
+    )
 
-def test_is_base64_invalid_string_returns_false() -> None:
-    """Ensure `False` value is returned for an invalid base64 string."""
-    assert reports_service._is_base64('TEST1') is False
-    assert reports_service._is_base64(b'TEST1') is False
-    assert reports_service._is_base64('TEST==') is False
-    assert reports_service._is_base64('==') is False
-    assert reports_service._is_base64('.') is False
+    assert reports_service._is_questionnaire_report_request_data_valid(report_data)
 
 
-def test_is_base64_empty_string_returns_false() -> None:
-    """Ensure `False` value is returned for an empty string."""
-    assert reports_service._is_base64('') is False
-    assert reports_service._is_base64('\t') is False
-    assert reports_service._is_base64('\n') is False
-    assert reports_service._is_base64('\r') is False
-    assert reports_service._is_base64('\r\n') is False
+def test_is_questionnaire_report_invalid_patient() -> None:
+    """Ensure invalid `QuestionnaireReportRequestData` (invalid patient) are handled and does not result in an error."""
+    LegacyPatientFactory()
+
+    report_data = QuestionnaireReportRequestData(
+        patient_id=INVALID_PATIENT_SER_NUM,
+        logo_path=LOGO_PATH,
+        language='en',
+    )
+
+    assert reports_service._is_questionnaire_report_request_data_valid(report_data) is False
 
 
-def test_is_base64_none_returns_false() -> None:
-    """Ensure `False` value is returned for a passed `None` value."""
-    assert reports_service._is_base64(None) is False
+def test_is_questionnaire_report_invalid_logo() -> None:
+    """Ensure invalid `QuestionnaireReportRequestData` (invalid logo) are handled and does not result in an error."""
+    LegacyPatientFactory()
+
+    report_data = QuestionnaireReportRequestData(
+        patient_id=PATIENT_SER_NUM,
+        logo_path=Path('invalid/logo/path'),
+        language='en',
+    )
+
+    assert reports_service._is_questionnaire_report_request_data_valid(report_data) is False
 
 
-def test_is_base64_non_ascii_error() -> None:
-    """Ensure function catches non-ascii character exceptions/errors."""
-    string = ''
-    try:
-        string = reports_service._is_base64('Centre universitaire de santé McGill')
-    except ValueError:
-        assert string == ''
+def test_is_questionnaire_report_invalid_language() -> None:
+    """Ensure invalid `QuestionnaireReportRequestData` (invalid language) are handled without errors."""
+    LegacyPatientFactory()
 
+    report_data = QuestionnaireReportRequestData(
+        patient_id=PATIENT_SER_NUM,
+        logo_path=LOGO_PATH,
+        language='invalid_language',
+    )
 
-def test_is_base64_non_base64_error() -> None:
-    """Ensure function catches non-base64 character exceptions/errors."""
-    string = ''
-    try:
-        string = reports_service._is_base64('@opal@')
-    except ValueError:
-        assert string == ''
-
-
-# _encode_image_to_base64 function tests
-
-def test_encode_image_to_base64() -> None:
-    """Ensure function returns encoded base64 string of the logo image."""
-    base64_str = reports_service._encode_image_to_base64(LOGO_PATH)
-    assert base64_str != ''
-    assert base64_str is not None
-    assert reports_service._is_base64(base64_str)
-
-
-def test_encode_image_to_base64_invalid_path() -> None:
-    """Ensure function returns an empty string for a given invalid file path."""
-    base64_str = ''
-    try:
-        base64_str = reports_service._encode_image_to_base64(Path('test/invalid/path'))
-    except IOError:
-        assert base64_str == ''
-
-    try:
-        base64_str = reports_service._encode_image_to_base64(Path(''))
-    except IOError:
-        assert base64_str == ''
-
-
-def test_encode_image_to_base64_not_image() -> None:
-    """Ensure function returns an empty string for a given non-image file."""
-    base64_str = ''
-    try:
-        base64_str = reports_service._encode_image_to_base64(
-            NON_IMAGE_FILE,
-        )
-    except IOError:
-        assert base64_str == ''
+    assert reports_service._is_questionnaire_report_request_data_valid(report_data) is False
 
 
 # _request_base64_report function tests
@@ -144,9 +112,11 @@ def test_request_base64_report(mocker: MockerFixture) -> None:
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     response_base64_report = reports_service._request_base64_report(
-        PATIENT_SER_NUM,
-        LOGO_PATH,
-        'en',
+        QuestionnaireReportRequestData(
+            patient_id=PATIENT_SER_NUM,
+            logo_path=LOGO_PATH,
+            language='en',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -159,16 +129,18 @@ def test_request_base64_report(mocker: MockerFixture) -> None:
 
 
 def test_request_base64_report_error(mocker: MockerFixture) -> None:
-    """Ensure request failure is handled and does not result in error."""
+    """Ensure request failure is handled and does not result in an error."""
     # mock actual web API call to raise a request error
     generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
     mock_post = _mock_requests_post(mocker, generated_report_data)
     mock_post.side_effect = RequestException('request failed')
 
     base64_report = reports_service._request_base64_report(
-        PATIENT_SER_NUM,
-        LOGO_PATH,
-        'en',
+        QuestionnaireReportRequestData(
+            patient_id=PATIENT_SER_NUM,
+            logo_path=LOGO_PATH,
+            language='en',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -176,16 +148,18 @@ def test_request_base64_report_error(mocker: MockerFixture) -> None:
 
 
 def test_request_base64_report_bad_request(mocker: MockerFixture) -> None:
-    """Ensure request failure (bad request response) is handled and does not result in error."""
+    """Ensure request failure (bad request response) is handled and does not result in an error."""
     # mock actual web API call to raise a request error
     generated_report_data = _create_generated_report_data(str(HTTPStatus.BAD_REQUEST))
     mock_post = _mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
     base64_report = reports_service._request_base64_report(
-        PATIENT_SER_NUM,
-        LOGO_PATH,
-        'en',
+        QuestionnaireReportRequestData(
+            patient_id=PATIENT_SER_NUM,
+            logo_path=LOGO_PATH,
+            language='en',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
@@ -193,15 +167,17 @@ def test_request_base64_report_bad_request(mocker: MockerFixture) -> None:
 
 
 def test_request_base64_report_json_key_error(mocker: MockerFixture) -> None:
-    """Ensure response json key failure is handled and does not result in error."""
+    """Ensure response json key failure is handled and does not result in an error."""
     generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
     mock_post = _mock_requests_post(mocker, generated_report_data)
     mock_post.return_value._content = json.dumps({}).encode(ENCODING)
 
     base64_report = reports_service._request_base64_report(
-        PATIENT_SER_NUM,
-        LOGO_PATH,
-        'en',
+        QuestionnaireReportRequestData(
+            patient_id=PATIENT_SER_NUM,
+            logo_path=LOGO_PATH,
+            language='en',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -209,15 +185,17 @@ def test_request_base64_report_json_key_error(mocker: MockerFixture) -> None:
 
 
 def test_request_base64_report_json_decode_error(mocker: MockerFixture) -> None:
-    """Ensure response json decode failure is handled and does not result in error."""
+    """Ensure response json decode failure is handled and does not result in an error."""
     generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
     mock_post = _mock_requests_post(mocker, generated_report_data)
     mock_post.return_value._content = 'test string'.encode(ENCODING)
 
     base64_report = reports_service._request_base64_report(
-        PATIENT_SER_NUM,
-        LOGO_PATH,
-        'en',
+        QuestionnaireReportRequestData(
+            patient_id=PATIENT_SER_NUM,
+            logo_path=LOGO_PATH,
+            language='en',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -230,9 +208,11 @@ def test_request_base64_report_is_string(mocker: MockerFixture) -> None:
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service._request_base64_report(
-        PATIENT_SER_NUM,
-        LOGO_PATH,
-        'en',
+        QuestionnaireReportRequestData(
+            patient_id=PATIENT_SER_NUM,
+            logo_path=LOGO_PATH,
+            language='en',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -240,7 +220,7 @@ def test_request_base64_report_is_string(mocker: MockerFixture) -> None:
 
 
 def test_request_base64_report_not_string(mocker: MockerFixture) -> None:
-    """Ensure returned base64EncodedReport non-string value is handled and does not result in error."""
+    """Ensure returned base64EncodedReport non-string value is handled and does not result in an error."""
     generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
     mock_post = _mock_requests_post(mocker, generated_report_data)
     data = _create_generated_report_data(str(HTTPStatus.OK))
@@ -248,9 +228,11 @@ def test_request_base64_report_not_string(mocker: MockerFixture) -> None:
     mock_post.return_value._content = json.dumps(data).encode(ENCODING)
 
     base64_report = reports_service._request_base64_report(
-        PATIENT_SER_NUM,
-        LOGO_PATH,
-        'en',
+        QuestionnaireReportRequestData(
+            patient_id=PATIENT_SER_NUM,
+            logo_path=LOGO_PATH,
+            language='en',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -267,9 +249,11 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
     mock_post.return_value.status_code = HTTPStatus.OK
 
     reports_service._request_base64_report(
-        PATIENT_SER_NUM,
-        LOGO_PATH,
-        'en',
+        QuestionnaireReportRequestData(
+            patient_id=PATIENT_SER_NUM,
+            logo_path=LOGO_PATH,
+            language='en',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -277,7 +261,7 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
     headers = {'Content-Type': 'application/json'}
     pload = json.dumps({
         'patient_id': PATIENT_SER_NUM,
-        'logo_base64': reports_service._encode_image_to_base64(LOGO_PATH),
+        'logo_base64': Base64Util().encode_image_to_base64(LOGO_PATH),
         'language': 'en',
     })
     mock_post.assert_called_once_with(
@@ -296,27 +280,31 @@ def test_questionnaire_report(mocker: MockerFixture) -> None:
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
-        patient.patientsernum,
-        LOGO_PATH,
-        'en',
+        QuestionnaireReportRequestData(
+            patient_id=patient.patientsernum,
+            logo_path=LOGO_PATH,
+            language='en',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
-    assert reports_service._is_base64(base64_report)
+    assert Base64Util().is_base64(base64_report)
     assert base64_report == BASE64_ENCODED_REPORT
 
 
 def test_questionnaire_report_error(mocker: MockerFixture) -> None:
-    """Ensure function failure is handled and does not result in error."""
+    """Ensure function failure is handled and does not result in an error."""
     patient = LegacyPatientFactory()
     generated_report_data = _create_generated_report_data(str(HTTPStatus.BAD_REQUEST))
     mock_post = _mock_requests_post(mocker, generated_report_data)
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
     base64_report = reports_service.generate_questionnaire_report(
-        patient.patientsernum,
-        LOGO_PATH,
-        'en',
+        QuestionnaireReportRequestData(
+            patient_id=patient.patientsernum,
+            logo_path=LOGO_PATH,
+            language='en',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
@@ -324,15 +312,17 @@ def test_questionnaire_report_error(mocker: MockerFixture) -> None:
 
 
 def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
-    """Ensure invalid patient id is handled and does not result in error."""
+    """Ensure invalid patient id is handled and does not result in an error."""
     LegacyPatientFactory()
     generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
-        INVALID_PATIENT_SER_NUM,
-        LOGO_PATH,
-        'en',
+        QuestionnaireReportRequestData(
+            patient_id=INVALID_PATIENT_SER_NUM,
+            logo_path=LOGO_PATH,
+            language='en',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -340,15 +330,17 @@ def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
 
 
 def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
-    """Ensure invalid logo path is handled and does not result in error."""
+    """Ensure invalid logo path is handled and does not result in an error."""
     patient = LegacyPatientFactory()
     generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
-        patient.patientsernum,
-        Path('invalid/logo/path'),
-        'en',
+        QuestionnaireReportRequestData(
+            patient_id=patient.patientsernum,
+            logo_path=Path('invalid/logo/path'),
+            language='en',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -356,15 +348,17 @@ def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
 
 
 def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
-    """Ensure invalid language is handled and does not result in error."""
+    """Ensure invalid language is handled and does not result in an error."""
     patient = LegacyPatientFactory()
     generated_report_data = _create_generated_report_data(str(HTTPStatus.OK))
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
-        patient.patientsernum,
-        LOGO_PATH,
-        'invalid language',
+        QuestionnaireReportRequestData(
+            patient_id=patient.patientsernum,
+            logo_path=LOGO_PATH,
+            language='invalid language',
+        ),
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
