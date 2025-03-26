@@ -150,6 +150,26 @@ class TestCreatePharmacyView:
         assert models.PharmacyRoute.objects.count() == 3
         assert models.PharmacyEncodedOrder.objects.count() == 3
 
+    def test_pharmacy_route_to_internal_value(
+        self,
+        api_client: APIClient,
+        interface_engine_user: User,
+    ) -> None:
+        """Ensure administration_method is properly None-ed if all subfields are blank."""
+        patient = Patient(
+            ramq='TEST01161972',
+            uuid=PATIENT_UUID,
+        )
+        api_client.force_login(interface_engine_user)
+        #  Homer's pharmacy example has the case of blank administration_method subfields in RXR
+        response = api_client.post(
+            reverse('api:patient-pharmacy-create', kwargs={'uuid': str(patient.uuid)}),
+            data=self._load_hl7_fixture('homer_pharmacy.hl7v2'),
+            content_type='application/hl7-v2+er7',
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        assert not response.data['pharmacy_encoded_order_physician_prescription_order']['pharmacy_route']['administration_method']  # noqa: E501
+
     def _load_hl7_fixture(self, filename: str) -> str:
         """Load a HL7 fixture for testing.
 

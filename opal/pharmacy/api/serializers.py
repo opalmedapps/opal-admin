@@ -68,7 +68,7 @@ class PharmacyRouteSerializer(serializers.ModelSerializer[PharmacyRoute]):
 
         This is required because for the majority of pharmacy data (and in the RxTFC docs), `administration_method`
         is required and present in the HL7.
-        But in some special instances, the hospital can send data with a admin_method that has all blank sub-fields
+        But in some special instances, the hospital can send data with an admin_method that has all blank sub-fields
 
         This will be parsed as a dictionary with keys pointing to blanks, which is technically not null. So we have to
         check for that situation and None the entire administration_method object to avoid a validation error.
