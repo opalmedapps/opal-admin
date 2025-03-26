@@ -3,7 +3,6 @@ from hashlib import sha512
 from http import HTTPStatus
 
 from django.contrib.auth.models import AbstractUser
-from django.core import mail
 from django.urls import reverse
 
 from pytest_django.fixtures import SettingsWrapper
@@ -91,7 +90,6 @@ class TestApiEmailVerification:
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email_verification = caregiver_factory.EmailVerification(caregiver=caregiver_profile)
-        settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
         response = api_client.put(
             reverse(
                 'api:verify-email-code',
@@ -103,8 +101,6 @@ class TestApiEmailVerification:
         email_verification.refresh_from_db()
         assert response.status_code == HTTPStatus.OK
         assert email_verification.is_verified
-        assert len(mail.outbox) == 1
-        assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
 
     def test_save_verify_email_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test save verify email success."""
