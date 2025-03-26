@@ -558,8 +558,8 @@ def fetch_users_latest_login_year_summary(
 
 # INDIVIDUAL REPORTS
 def fetch_labs_summary_per_patient(
-    start_date: dt.date = dt.date.min,
-    end_date: dt.date = dt.date.max,
+    start_date: dt.date,
+    end_date: dt.date,
 ) -> list[dict[str, Any]]:
     """Fetch the individual received lab results statistics from the `DailyPatientDataReceived` model.
 
@@ -592,8 +592,8 @@ def fetch_labs_summary_per_patient(
 
 
 def fetch_logins_summary_per_user(
-    start_date: dt.date = dt.date.min,
-    end_date: dt.date = dt.date.max,
+    start_date: dt.date,
+    end_date: dt.date,
 ) -> list[dict[str, Any]]:
     """Fetch individual user login statistics from the `DailyUserAppActivity` model.
 
@@ -625,8 +625,8 @@ def fetch_logins_summary_per_user(
 
 
 def fetch_patient_demographic_diagnosis_summary(
-    start_date: dt.date = dt.date.min,
-    end_date: dt.date = dt.date.max,
+    start_date: dt.date,
+    end_date: dt.date,
 ) -> list[dict[str, Any]]:
     """Fetch demographic statistics and the latest diagnosis for each individual patient.
 
@@ -657,6 +657,8 @@ def fetch_patient_demographic_diagnosis_summary(
     demographics_and_diagnosis = legacy_models.LegacyPatientControl.objects.filter(
         models.Q(patient__legacydiagnosis__diagnosis_ser_num__in=latest_diagnosis_sernum_list)
         | models.Q(patient__legacydiagnosis__diagnosis_ser_num__isnull=True),
+        patient__last_updated__date__gte=start_date,
+        patient__last_updated__date__lte=end_date,
     ).annotate(
         patient_ser_num=models.F('patient__patientsernum'),
         age=models.F('patient__age'),

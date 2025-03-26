@@ -2836,7 +2836,7 @@ def test_fetch_users_latest_login_year_summary_multiple_annual_records() -> None
 
 def test_fetch_labs_summary_per_patient_empty() -> None:
     """Ensure fetch_labs_summary_per_patient successfully fetches an empty result without errors."""
-    patient_lab_summary = stats_queries.fetch_labs_summary_per_patient()
+    patient_lab_summary = stats_queries.fetch_labs_summary_per_patient(dt.date.min, dt.date.max)
     assert not patient_lab_summary
 
 
@@ -2866,7 +2866,7 @@ def test_fetch_labs_summary_per_patient_success() -> None:
         labs_received=10,
         action_date=dt.date(2024, 8, 10),
     )
-    patient_lab_summary = stats_queries.fetch_labs_summary_per_patient()
+    patient_lab_summary = stats_queries.fetch_labs_summary_per_patient(dt.date.min, dt.date.max)
     assert patient_lab_summary == [
         {
             'patient_ser_num': 55,
@@ -2887,7 +2887,7 @@ def test_fetch_labs_summary_per_patient_success() -> None:
 
 def test_fetch_logins_summary_per_user_empty() -> None:
     """Ensure fetch_logins_summary_per_user successfully fetches an empty result without errors."""
-    average_login_summary = stats_queries.fetch_logins_summary_per_user()
+    average_login_summary = stats_queries.fetch_logins_summary_per_user(dt.date.min, dt.date.max)
     assert not average_login_summary
 
 
@@ -2914,7 +2914,7 @@ def test_fetch_logins_summary_per_user_success() -> None:
         count_logins=5,
         action_date=dt.datetime(2024, 8, 20),
     )
-    average_login_report = stats_queries.fetch_logins_summary_per_user()
+    average_login_report = stats_queries.fetch_logins_summary_per_user(dt.date.min, dt.date.max)
     assert average_login_report == [
         {
             'user_id': marge_caregiver.user.id,
@@ -2961,7 +2961,7 @@ def test_fetch_logins_summary_per_user_multiple_logins() -> None:
         count_logins=5,
         action_date=dt.datetime(2024, 8, 20),
     )
-    average_login_summary = stats_queries.fetch_logins_summary_per_user()
+    average_login_summary = stats_queries.fetch_logins_summary_per_user(dt.date.min, dt.date.max)
     assert average_login_summary == [
         {
             'user_id': marge_caregiver.user.id,
@@ -2974,7 +2974,7 @@ def test_fetch_logins_summary_per_user_multiple_logins() -> None:
 
 def test_fetch_patient_demographic_diagnosis_summary_empty() -> None:
     """Ensure fetch_patient_demographic_diagnosis_summary successfully fetches an empty result without errors."""
-    demographic_diagnosis_summary = stats_queries.fetch_patient_demographic_diagnosis_summary()
+    demographic_diagnosis_summary = stats_queries.fetch_patient_demographic_diagnosis_summary(dt.date.min, dt.date.min)
     assert not demographic_diagnosis_summary
 
 
@@ -3005,7 +3005,7 @@ def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
         creation_date=timezone.now(),
     )
     legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat2, description_en='Test Diagnosis3')
-    demographic_diagnosis_summary = stats_queries.fetch_patient_demographic_diagnosis_summary()
+    demographic_diagnosis_summary = stats_queries.fetch_patient_demographic_diagnosis_summary(dt.date.min, dt.date.max)
     assert len(demographic_diagnosis_summary) == 2
     assert demographic_diagnosis_summary[0]['patient_ser_num'] == 51
     assert demographic_diagnosis_summary[1]['patient_ser_num'] == 52
