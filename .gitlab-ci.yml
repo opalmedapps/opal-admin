@@ -8,7 +8,6 @@ variables:
   MARIADB_DATABASE: test_$DB_NAME
   MARIADB_USER: $DB_USER
   MARIADB_PASSWORD: $DB_PASSWORD
-  SECURE_LOG_LEVEL: "debug"
 
 default:
   image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
@@ -313,6 +312,9 @@ include:
   # Dependency Scanning: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/
   # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/Dependency-Scanning.latest.gitlab-ci.yml
   - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
+  # Container Scanning: https://docs.gitlab.com/ee/user/application_security/container_scanning/
+  # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/Container-Scanning.latest.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
   # SAST Scanning: https://docs.gitlab.com/ee/user/application_security/sast/
   # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/SAST.latest.gitlab-ci.yml
   - template: Jobs/SAST.latest.gitlab-ci.yml
@@ -341,3 +343,8 @@ gemnasium-python-dependency_scanning:
     # remove the first line ("-r ...")
     - tail -n +2 requirements/development.txt >> requirements.txt
     - tail -n +2 requirements/production.txt >> requirements.txt
+
+# Container Scanning
+container_scanning:
+  variables:
+    CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
