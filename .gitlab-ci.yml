@@ -348,4 +348,4 @@ gemnasium-python-dependency_scanning:
 # https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
 container_scanning:
   variables:
-    CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    CS_IMAGE: python:3.11.0a1-alpine
