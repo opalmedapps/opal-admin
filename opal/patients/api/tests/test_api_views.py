@@ -757,6 +757,64 @@ class TestPatientDemographicView:
         assert relationships[0].reason == 'Date of death submitted from ADT'
         assert relationships[1].reason == 'Opal Account Inactivated'
 
+    def test_demographic_update_deceased_patient_with_care_receiver(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint prevents self access and access to the care receivers in case of the patient's death."""
+        deceased_patient = Patient(ramq='TEST01161972')
+        patinet_in_care = Patient(ramq='TEST01161973')
+        deceased_patient_caregiver = CaregiverProfile()
+
+        Relationship(
+            patient=deceased_patient,
+            caregiver=deceased_patient_caregiver,
+            type=patient_models.RelationshipType.objects.self_type(),
+        ).save()
+        Relationship(
+            patient=patinet_in_care,
+            caregiver=deceased_patient_caregiver,
+            type=patient_models.RelationshipType.objects.guardian_caregiver(),
+        ).save()
+
+        HospitalPatient(
+            patient=deceased_patient,
+            mrn='9999996',
+            site=Site(code='RVH'),
+        )
+        HospitalPatient(
+            patient=deceased_patient,
+            mrn='9999997',
+            site=Site(code='MGH'),
+        )
+
+        client = self.get_client_with_permissions(api_client)
+        payload = self.get_valid_input_data()
+        payload['date_of_death'] = datetime.now().replace(
+            microsecond=0,
+        ).astimezone().isoformat()
+
+        response = client.put(
+            reverse('api:patient-demographic-update'),
+            data=payload,
+            format='json',
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        assertJSONEqual(
+            raw=json.dumps(response.json()),
+            expected_data=payload,
+        )
+
+        relationships = patient_models.Relationship.objects.all()
+        assert relationships[0].status == patient_models.RelationshipStatus.EXPIRED
+        assert relationships[1].status == patient_models.RelationshipStatus.EXPIRED
+        assert relationships[0].end_date
+        assert relationships[1].end_date
+        assert relationships[0].reason == 'Date of death submitted from ADT'
+        assert relationships[1].reason == 'Opal Account Inactivated'
+
 
 class TestPatientCaregiversView:
     """Class wrapper for patient caregivers endpoint tests."""

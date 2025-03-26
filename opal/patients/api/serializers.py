@@ -2,7 +2,7 @@
 from typing import Any, Dict, Optional
 
 from django.db import transaction
-from django.db.models import Q as Q_OBJECT
+from django.db.models import Q  # noqa: WPS347
 from django.utils.translation import gettext
 
 from rest_framework import serializers
@@ -207,7 +207,7 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
         """Inactivate all the relationships for a deceased patient.
 
         Args:
-            patient (Patient): the deceased patient object
+            patient: the deceased patient object
         """
         # Look up the `Relationships` to the updating patient with a `SELF` role type
         self_relationship = patient.relationships.filter(
@@ -220,7 +220,7 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
         # Set end_date, reason, and status for the deceased patient's relationships
         # The updating relationships should contain records for the patient OR the patient's caregiver profile
         Relationship.objects.filter(
-            Q_OBJECT(patient__id=patient.id) | Q_OBJECT(caregiver__id=patient_caregiver_id),
+            Q(patient__id=patient.id) | Q(caregiver__id=patient_caregiver_id),
         ).update(
             end_date=patient.date_of_death,
             reason=gettext('Opal Account Inactivated'),
@@ -228,8 +228,9 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
         )
 
         # Add the "Date of death submitted from ADT" relationship termination reason only for the `SELF` role
-        if self_relationship:
-            self_relationship.end_date = patient.date_of_death
-            self_relationship.reason = gettext('Date of death submitted from ADT')
-            self_relationship.status = RelationshipStatus.EXPIRED
-            self_relationship.save()
+        Relationship.objects.filter(
+            Q(patient__id=patient.id) | Q(caregiver__id=patient_caregiver_id),
+            type__role_type=RoleType.SELF,
+        ).update(
+            reason=gettext('Date of death submitted from ADT'),
+        )
