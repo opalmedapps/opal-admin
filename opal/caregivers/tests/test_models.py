@@ -89,7 +89,7 @@ def test_registrationcode_code_unique() -> None:
         factories.RegistrationCode(relationship=registration_code.relationship)
 
 
-def test_registrationcode_code_length_gt() -> None:
+def test_registrationcode_code_length_gt_max() -> None:
     """Ensure the length of registration code is not greater than 12."""
     registration_code = factories.RegistrationCode()
     registration_code.code = 'code1234567890'
@@ -107,7 +107,7 @@ def test_registrationcode_email_code_length_gt() -> None:
         registration_code.clean_fields()
 
 
-def test_registrationcode_codes_length_lt() -> None:
+def test_registrationcode_codes_length_lt_min() -> None:
     """Ensure the length of registration code is not less than 12."""
     registration_code = factories.RegistrationCode(
         code='123456',
@@ -121,7 +121,7 @@ def test_registrationcode_codes_length_lt() -> None:
         registration_code.clean_fields()
 
 
-def test_registrationcode_creation_date() -> None:
+def test_registrationcode_creation_date_is_today() -> None:
     """Ensure the creation date is tody when creating a new registration code."""
     registration_code = factories.RegistrationCode()
     assert str(registration_code.creation_date) == str(datetime.date.today())
