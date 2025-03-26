@@ -1,14 +1,14 @@
 """This module provides views for any health-data related functionality."""
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext
 from django.views import generic
 
 import pandas as pd
-from plotly import graph_objects as go
+from plotly import express as px
 
 from ..patients.models import Patient
 from .models import QuantitySample, QuantitySampleType
@@ -37,98 +37,68 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
         """
         context = super().get_context_data(**kwargs)
         patient = get_object_or_404(Patient, id=self.kwargs['id'])
-        x_axis = str(_('Date'))
+
+        graphs = {}
+        for sample_type in QuantitySampleType:
+            graphs[sample_type.label.split(' (')[0]] = self._generate_plot(
+                title=str(sample_type.label),
+                label_x=gettext('Date'),
+                label_y=str(sample_type.label),
+                data=QuantitySample.objects.order_by('start_date').filter(
+                    patient=patient,
+                    type=sample_type,
+                ),
+            )
+
         context.update(
             {
                 'patient': patient,
-                'bm_graph': self._generate_plot(
-                    title=str(_('Body Mass')),
-                    xlab=x_axis,
-                    ylab=str(QuantitySampleType.BODY_MASS.label),
-                    data=QuantitySample.objects.filter(
-                        patient=patient,
-                        type__in=[QuantitySampleType.BODY_MASS],
-                    ),
-                ),
-                'bt_graph': self._generate_plot(
-                    title=str(_('Body Temperature')),
-                    xlab=x_axis,
-                    ylab=str(QuantitySampleType.BODY_TEMPERATURE.label),
-                    data=QuantitySample.objects.filter(
-                        patient=patient,
-                        type__in=[QuantitySampleType.BODY_TEMPERATURE],
-                    ),
-                ),
-                'hr_graph': self._generate_plot(
-                    title=str(_('Heart Rate')),
-                    xlab=x_axis,
-                    ylab=str(QuantitySampleType.HEART_RATE.label),
-                    data=QuantitySample.objects.filter(
-                        patient=patient,
-                        type__in=[QuantitySampleType.HEART_RATE],
-                    ),
-                ),
-                'hrv_graph': self._generate_plot(
-                    title=str(_('Heart Rate Variability')),
-                    xlab=x_axis,
-                    ylab=str(QuantitySampleType.HEART_RATE_VARIABILITY.label),
-                    data=QuantitySample.objects.filter(
-                        patient=patient,
-                        type__in=[QuantitySampleType.HEART_RATE_VARIABILITY],
-                    ),
-                ),
-                'os_graph': self._generate_plot(
-                    title=str(_('Oxygen Saturation')),
-                    xlab=x_axis,
-                    ylab=str(QuantitySampleType.OXYGEN_SATURATION),
-                    data=QuantitySample.objects.filter(
-                        patient=patient,
-                        type__in=[QuantitySampleType.OXYGEN_SATURATION],
-                    ),
-                ),
+                'graphs': graphs,
             },
         )
         return context
 
-    def _generate_plot(self, title: str, xlab: str, ylab: str, data: QuerySet) -> Any:  # noqa: WPS210
+    def _generate_plot(self, title: str, label_x: str, label_y: str, data: QuerySet[QuantitySample]) -> Optional[str]:
         """Generate a plotly chart for the given sample type.
 
         Args:
             title: Plot title
-            xlab: x axis label
-            ylab: y axis label
+            label_x: x axis label
+            label_y: y axis label
             data: QuantitySample queryset
 
         Returns:
             Html string representation of the plot
         """
         if data:
-            df = pd.DataFrame(list(data.values()))
-            x_data = df.start_date.sort_values(ascending=True)  # All lines in a given plot to be shown on same x axis
-            devices = df.device.unique()  # One set of values for each unique device identifier
+            df = pd.DataFrame(data.values('start_date', 'value', 'device'))
 
-            layout = go.Layout(
+            #  Plotly chart customization: https://plotly.com/python/line-charts/
+            figure = px.line(
+                df,
+                x='start_date',
+                y='value',
                 title=title,
-                xaxis={'title': xlab},
-                yaxis={'title': ylab},
-                legend={'title': 'Device'},
+                color='device',
+                markers=True,
+                labels={
+                    'start_date': label_x,
+                    'value': label_y,
+                    'device': gettext('Device'),
+                },
+                hover_data=['value', 'device'],
             )
 
-            # Graph objects are instances of the automatically generated hierarchy of python classes in Plotly
-            #   Their benefit over the Plotly express functions is the access to render or them in various formats
-            #   for example in our case here where we want to export the plot as html
-            #   https://plotly.com/python/graph-objects/
-            fig = go.Figure(layout=layout)
+            figure.update_layout({
+                'hovermode': 'x unified',
+                'dragmode': False,
+                'plot_bgcolor': '#ffffff',
+                'paper_bgcolor': '#ffffff',
+                'yaxis': {
+                    'gridcolor': '#f2f2f2',
+                    'rangemode': 'tozero',
+                },
+            })
 
-            # We will have one line for each unique device
-            for device in devices:
-                fig.add_trace(
-                    go.Scatter(
-                        x=x_data,
-                        y=list(df.loc[df['device'] == device]['value']),
-                        mode='lines+markers',
-                        name=device,
-                    ),
-                )
-            return fig.to_html()
-        return ''
+            return figure.to_html()  # type: ignore[no-any-return]
+        return None

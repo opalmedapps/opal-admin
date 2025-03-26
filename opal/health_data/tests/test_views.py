@@ -17,11 +17,11 @@ from ..models import QuantitySampleType
 pytestmark = pytest.mark.django_db
 
 MISSING_DATA_WARNINGS = (
-    'No data found for body mass.',
-    'No data found for body temperature.',
-    'No data found for heart rate.',
-    'No data found for heart rate variability.',
-    'No data found for oxygen saturation.',
+    'No data found for Body Mass',
+    'No data found for Body Temperature',
+    'No data found for Heart Rate',
+    'No data found for Heart Rate Variability',
+    'No data found for Oxygen Saturation',
 )
 
 
