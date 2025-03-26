@@ -25,12 +25,12 @@ class IndexTemplateView(TemplateView):
 
 
 # EXPORT REPORTS LIST QUESTIONNAIRES
-class ExportReportListTemplateView(PermissionRequiredMixin, TemplateView):
+class QuestionnaireReportListTemplateView(PermissionRequiredMixin, TemplateView):
     """This `TemplateView` provides a basic rendering for viewing the list of available questionnaires."""
 
     model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
-    template_name = 'questionnaires/export_reports/exportreports-list.html'
+    template_name = 'questionnaires/export_reports/reports-list.html'
 
     def get_context_data(self, **kwargs: Any) -> Any:
         """Override class method and append questionnaire list to context.
@@ -47,10 +47,10 @@ class ExportReportListTemplateView(PermissionRequiredMixin, TemplateView):
 
 
 # EXPORT REPORTS QUERY SELECTED QUESTIONNAIRE
-class ExportReportQueryTemplateView(PermissionRequiredMixin, TemplateView):
+class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateView):
     """This `TemplateView` provides a basic rendering for selecting query parameters."""
 
-    template_name = 'questionnaires/export_reports/exportreports-query.html'
+    template_name = 'questionnaires/export_reports/reports-filter.html'
     model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     logger = logging.getLogger(__name__)
@@ -91,10 +91,10 @@ class ReportTable(tables.Table):
 
 
 # EXPORT REPORTS VIEW REPORT
-class ExportReportViewReportTemplateView(PermissionRequiredMixin, TemplateView):
+class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateView):
     """This `TemplateView` provides a basic rendering for viewing the selected report."""
 
-    template_name = 'questionnaires/export_reports/exportreports-viewreport.html'
+    template_name = 'questionnaires/export_reports/reports-detail.html'
     model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     logger = logging.getLogger(__name__)
@@ -127,10 +127,10 @@ class ExportReportViewReportTemplateView(PermissionRequiredMixin, TemplateView):
 
 
 # EXPORT REPORTS VIEW REPORT (Downloaded csv)
-class ExportReportDownloadCSVTemplateView(PermissionRequiredMixin, TemplateView):
+class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, TemplateView):
     """This view returns the same page after downloading the csv to client side."""
 
-    template_name = 'questionnaires/export_reports/exportreports-viewreport.html'
+    template_name = 'questionnaires/export_reports/reports-detail.html'
     model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     logger = logging.getLogger(__name__)
@@ -167,10 +167,10 @@ class ExportReportDownloadCSVTemplateView(PermissionRequiredMixin, TemplateView)
 
 
 # EXPORT REPORTS VIEW REPORT (Downloaded xlsx)
-class ExportReportDownloadXLSXTemplateView(PermissionRequiredMixin, TemplateView):
+class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, TemplateView):
     """This view returns the same page after downloading the xlsx to client side."""
 
-    template_name = 'questionnaires/export_reports/exportreports-viewreport.html'
+    template_name = 'questionnaires/export_reports/reports-detail.html'
     model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     logger = logging.getLogger(__name__)

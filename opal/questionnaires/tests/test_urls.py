@@ -5,31 +5,31 @@ import pytest
 pytestmark = pytest.mark.django_db
 
 
-def test_exportreports_list() -> None:
+def test_reports_list() -> None:
     """Ensure exportreports list is defined."""
-    assert reverse('questionnaires:exportreports-list') == '/questionnaires/exportreports-list/'
-    assert resolve('/questionnaires/exportreports-list/').view_name == 'questionnaires:exportreports-list'
+    assert reverse('questionnaires:reports-list') == '/questionnaires/reports/'
+    assert resolve('/questionnaires/reports/').view_name == 'questionnaires:reports-list'
 
 
-def test_exportreports_query() -> None:
+def test_reports_filter() -> None:
     """Ensure exportreports query is defined."""
-    assert reverse('questionnaires:exportreports-query') == '/questionnaires/exportreports-query/'
-    assert resolve('/questionnaires/exportreports-query/').view_name == 'questionnaires:exportreports-query'
+    assert reverse('questionnaires:reports-filter') == '/questionnaires/reports/filter/'
+    assert resolve('/questionnaires/reports/filter/').view_name == 'questionnaires:reports-filter'
 
 
-def test_exportreports_viewreport() -> None:
+def test_reports_detail() -> None:
     """Ensure exportreports view report is defined."""
-    assert reverse('questionnaires:exportreports-viewreport') == '/questionnaires/exportreports-viewreport/'
-    assert resolve('/questionnaires/exportreports-viewreport/').view_name == 'questionnaires:exportreports-viewreport'
+    assert reverse('questionnaires:reports-detail') == '/questionnaires/reports/detail/'
+    assert resolve('/questionnaires/reports/detail/').view_name == 'questionnaires:reports-detail'
 
 
-def test_exportreports_downloadcsv() -> None:
+def test_reports_downloadcsv() -> None:
     """Ensure exportreports downloadcsv is defined."""
-    assert reverse('questionnaires:exportreports-downloadcsv') == '/questionnaires/exportreports-downloadcsv/'
-    assert resolve('/questionnaires/exportreports-downloadcsv/').view_name == 'questionnaires:exportreports-downloadcsv'
+    assert reverse('questionnaires:reports-downloadcsv') == '/questionnaires/reports/downloadcsv/'
+    assert resolve('/questionnaires/reports/downloadcsv/').view_name == 'questionnaires:reports-downloadcsv'
 
 
-def test_exportreports_downloadxlsx() -> None:
+def test_reports_downloadxlsx() -> None:
     """Ensure exportreports downloadxlsx is defined."""
-    assert reverse('questionnaires:exportreports-downloadxlsx') == '/questionnaires/exportreports-downloadxlsx/'
-    assert resolve('/questionnaires/exportreports-downloadxlsx/').view_name == 'questionnaires:exportreports-downloadxlsx'  # noqa: E501
+    assert reverse('questionnaires:reports-downloadxlsx') == '/questionnaires/reports/downloadxlsx/'
+    assert resolve('/questionnaires/reports/downloadxlsx/').view_name == 'questionnaires:reports-downloadxlsx'

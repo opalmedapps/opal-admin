@@ -41,23 +41,23 @@ def test_views_use_correct_template(user_client: Client, admin_user: AbstractUse
 def test_list_select_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure that a form exists in the reports page and it contains the correct URL."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:exportreports-list'))
+    response = user_client.get(reverse('questionnaires:reports-list'))
     soup = BeautifulSoup(response.content, 'html.parser')
     forms = soup.find_all('form')
 
     assert response.status_code == HTTPStatus.OK
-    assertURLEqual(forms[0].get('action'), reverse('questionnaires:exportreports-query'))
+    assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-filter'))
 
 
 def test_query_viewreport_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure that a form exists in the reports page and it contains the correct URL."""
     user_client.force_login(admin_user)
-    response = user_client.post(reverse('questionnaires:exportreports-query'), data={'questionnaireid': 11})
+    response = user_client.post(reverse('questionnaires:reports-filter'), data={'questionnaireid': 11})
     soup = BeautifulSoup(response.content, 'html.parser')
     forms = soup.find_all('form')
 
     assert response.status_code == HTTPStatus.OK
-    assertURLEqual(forms[0].get('action'), reverse('questionnaires:exportreports-viewreport'))
+    assertURLEqual(forms[0].get('action'), reverse('questionnaires:reports-detail'))
 
 
 def test_export_report_hidden_unauthenticated(user_client: Client, django_user_model: User) -> None:
@@ -86,7 +86,7 @@ def test_export_report_visible_authenticated(user_client: Client, admin_user: Ab
 def test_get_exportreports_query_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure no GET requests can be made to the page."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:exportreports-query'))
+    response = user_client.get(reverse('questionnaires:reports-filter'))
 
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
@@ -94,7 +94,7 @@ def test_get_exportreports_query_unauthorized(user_client: Client, admin_user: A
 def test_get_viewreport_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure no GET requests can be made to the page."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:exportreports-viewreport'))
+    response = user_client.get(reverse('questionnaires:reports-detail'))
 
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
@@ -102,7 +102,7 @@ def test_get_viewreport_unauthorized(user_client: Client, admin_user: AbstractUs
 def test_get_downloadcsv_viewreport_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure no GET requests can be made to the page."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:exportreports-downloadcsv'))
+    response = user_client.get(reverse('questionnaires:reports-downloadcsv'))
 
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
@@ -110,6 +110,6 @@ def test_get_downloadcsv_viewreport_unauthorized(user_client: Client, admin_user
 def test_get_downloadxlsx_viewreport_unauthorized(user_client: Client, admin_user: AbstractUser) -> None:
     """Ensure no GET requests can be made to the page."""
     user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:exportreports-downloadxlsx'))
+    response = user_client.get(reverse('questionnaires:reports-downloadxlsx'))
 
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED

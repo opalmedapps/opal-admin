@@ -14,7 +14,7 @@
               {% render_table reporttable %}
           </div>
 
-            <form action="{% url 'questionnaires:exportreports-downloadcsv' %}" method="post" id="form">
+            <form action="{% url 'questionnaires:reports-downloadcsv' %}" method="post" id="form">
                 {% csrf_token %}
                 <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
                 <div class="btn-toolbar mb-4">
@@ -26,7 +26,7 @@
 
             <div id="xlsx_options_div" style="display: none;">
                 <br>
-                <form action="{% url 'questionnaires:exportreports-downloadxlsx' %}" method="post" id="form">
+                <form action="{% url 'questionnaires:reports-downloadxlsx' %}" method="post" id="form">
                     {% csrf_token %}
                     <input type="hidden" name="questionnaireid" value="{{ questionnaireID  }}"/>
                     <h4>{% translate "Please select how to organize the tabs:" %}</h4>

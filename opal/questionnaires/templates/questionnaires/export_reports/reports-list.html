@@ -16,7 +16,7 @@
             <div class="col-sm-1">
             </div>
             <div class="col-sm-6">
-                <form action="{% url 'questionnaires:exportreports-query' %}" method="post" id="form">
+                <form action="{% url 'questionnaires:reports-filter' %}" method="post" id="form">
                     {% csrf_token %}
                     <div class="form-group row">
                         <label class="col-sm-2 col-form-label" for="questionnaire_id">{% translate "Questionnaires" %}</label>

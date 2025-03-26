@@ -10,32 +10,32 @@ from . import views
 app_name = 'questionnaires'
 
 urlpatterns = [
-    # Questionnaires index
+    # Questionnaires placeholder index page for future functionality
     path('', views.IndexTemplateView.as_view(), name='index'),
     # Export Reports
     path(
-        'exportreports-list/',
-        views.ExportReportListTemplateView.as_view(),
-        name='exportreports-list',
+        'reports/',
+        views.QuestionnaireReportListTemplateView.as_view(),
+        name='reports-list',
     ),
     path(
-        'exportreports-query/',
-        views.ExportReportQueryTemplateView.as_view(),
-        name='exportreports-query',
+        'reports/filter/',
+        views.QuestionnaireReportFilterTemplateView.as_view(),
+        name='reports-filter',
     ),
     path(
-        'exportreports-viewreport/',
-        views.ExportReportViewReportTemplateView.as_view(),
-        name='exportreports-viewreport',
+        'reports/detail/',
+        views.QuestionnaireReportDetailTemplateView.as_view(),
+        name='reports-detail',
     ),
     path(
-        'exportreports-downloadcsv/',
-        views.ExportReportDownloadCSVTemplateView.as_view(),
-        name='exportreports-downloadcsv',
+        'reports/downloadcsv/',
+        views.QuestionnaireReportDownloadCSVTemplateView.as_view(),
+        name='reports-downloadcsv',
     ),
     path(
-        'exportreports-downloadxlsx/',
-        views.ExportReportDownloadXLSXTemplateView.as_view(),
-        name='exportreports-downloadxlsx',
+        'reports/downloadxlsx/',
+        views.QuestionnaireReportDownloadXLSXTemplateView.as_view(),
+        name='reports-downloadxlsx',
     ),
 ]
