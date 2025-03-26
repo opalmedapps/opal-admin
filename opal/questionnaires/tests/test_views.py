@@ -232,7 +232,7 @@ def test_report_filter_missing_key(admin_client: Client) -> None:
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_update_request_event_filter_template(user_client: Client) -> None:
+def test_update_request_event_filter_template(user_client: Client, questionnaire_data: None) -> None:
     """Ensure RequestEvent object is correctly updated on call to filter template."""
     test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
     test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling

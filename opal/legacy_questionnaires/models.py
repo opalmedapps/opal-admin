@@ -548,6 +548,33 @@ class LegacyQuestionSection(models.Model):
         managed = False
 
 
+class LegacySlider(models.Model):
+    """Slider model from the legacy database QuestionnaireDB."""
+
+    id = models.BigAutoField(db_column='ID', primary_key=True)
+    question_id = models.ForeignKey(LegacyQuestion, models.DO_NOTHING, db_column='questionId')
+    min_value = models.FloatField(db_column='minValue')
+    max_value = models.FloatField(db_column='maxValue')
+    min_caption = models.ForeignKey(
+        LegacyDictionary,
+        models.RESTRICT,
+        db_column='minCaption',
+        to_field='content_id',
+    )
+    max_caption = models.ForeignKey(
+        LegacyDictionary,
+        models.RESTRICT,
+        db_column='maxCaption',
+        to_field='content_id',
+        related_name='slider_maxcaption_set',
+    )
+    increment = models.FloatField()
+
+    class Meta:
+        managed = False
+        db_table = 'slider'
+
+
 class LegacyAnswerSection(models.Model):
     """AnswerSection model from the legacy database QuestionnaireDB."""
 

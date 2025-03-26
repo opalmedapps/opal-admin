@@ -949,10 +949,12 @@ def test_create_access_request_new_patient_databank_disabled(
     assert patient.ramq == 'SIMM86600199'
     assert patient.date_of_death is None
     assert HospitalPatient.objects.count() == 0
+    assert patient.legacy_id is not None
+
     # Ensure records are not created
     message = 'LegacyQuestionnairePatient matching query does not exist.'
     with assertRaisesMessage(ObjectDoesNotExist, message):
-        LegacyQuestionnairePatient.objects.get(  # type: ignore[misc]
+        LegacyQuestionnairePatient.objects.get(
             external_id=patient.legacy_id,
         )
     message = 'LegacyEducationalMaterial matching query does not exist.'
