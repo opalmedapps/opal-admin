@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-23 21:38-0400\n"
+"POT-Creation-Date: 2024-11-18 12:09-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,6 +21,60 @@ msgstr ""
 #: opal/usage_statistics/apps.py
 msgid "Usage Statistics"
 msgstr "Statistiques d'utilisation"
+
+#: opal/usage_statistics/common.py
+msgid "Day"
+msgstr "Jour"
+
+#: opal/usage_statistics/common.py
+msgid "Month"
+msgstr "Mois"
+
+#: opal/usage_statistics/common.py
+msgid "Year"
+msgstr "Année"
+
+#: opal/usage_statistics/common.py
+msgid "Grouped registration codes, caregivers, patients, device identifiers"
+msgstr ""
+"Regroupement des codes d'enregistrement, proches aidants, patients, "
+"identifiants d'appareils"
+
+#: opal/usage_statistics/common.py
+msgid "Grouped patients received data"
+msgstr "Données reçues des patients groupés"
+
+#: opal/usage_statistics/common.py
+msgid "Grouped patient/user app activity"
+msgstr "Activité de l'application des utilisateurs/patients groupés"
+
+#: opal/usage_statistics/forms.py
+msgid "Start Date"
+msgstr "Date de début"
+
+#: opal/usage_statistics/forms.py
+msgid "End Date"
+msgstr "Date de fin"
+
+#: opal/usage_statistics/forms.py
+msgid "Group By"
+msgstr "Grouper par"
+
+#: opal/usage_statistics/forms.py
+msgid "Report Type"
+msgstr "Type de rapport"
+
+#: opal/usage_statistics/forms.py
+msgid "Download CSV"
+msgstr "Télécharger CSV"
+
+#: opal/usage_statistics/forms.py
+msgid "Download XLSX"
+msgstr "Télécharger XLSX"
+
+#: opal/usage_statistics/forms.py
+msgid "Start date cannot be later than end date."
+msgstr "La date de début ne peut pas être postérieure à la date de fin."
 
 #: opal/usage_statistics/models.py
 msgid "User who triggered this action"
