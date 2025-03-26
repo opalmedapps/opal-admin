@@ -38,8 +38,8 @@ class HospitalPatientSerializer(DynamicFieldsSerializer):
     """
     Serializer for converting and validating `HospitalPatient` objects/data.
 
-    The serializer inherits from core.api.serializers.DynamicFieldsSerializer,
-    and also provides HospitalPatient info and the site code according to the 'fields' arguments.
+    The serializer inherits from `core.api.serializers.DynamicFieldsSerializer`,
+    and also provides `HospitalPatient` info and the site code according to the 'fields' arguments.
     """
 
     site_code = serializers.CharField(source='site.code')
@@ -189,10 +189,7 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
 
         # Update the `User` model with the new demographic information
         # Look up the `Relationships` to the updating patient with a `SELF` role type
-        relationship = Relationship.objects.select_related(
-            'caregiver__user',
-        ).filter(
-            patient=instance,
+        relationship = instance.relationships.filter(
             type__role_type=RoleType.SELF,
         ).first()
 
@@ -214,9 +211,9 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
         self,
         validated_hospital_patients: List[Dict[str, Any]],
     ) -> None:
-        """Check if at least one MRN/Site pair exists.
+        """Check if at least one MRN/Site pair exists in the database.
 
-        If a pair does not exist in the database, it should contain `is_active` field.
+        If a new given pair does not exist in the database, it should contain `is_active` field.
 
         Args:
             validated_hospital_patients: list of dictionaries that contain `HospitalPatient` records

@@ -157,6 +157,8 @@ class PatientDemographicView(UpdateAPIView):
     permission_classes = [IsAuthenticated, UpdateModelPermissions]
     queryset = Patient.objects.prefetch_related(
         'hospital_patients__site',
+        'relationships__type',
+        'relationships__caregiver__user',
     )
     serializer_class = PatientDemographicSerializer
     pagination_class = None
