@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-24 13:58+0000\n"
+"POT-Creation-Date: 2022-10-28 18:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,6 +29,14 @@ msgstr "Numéro de dossier médical"
 #: opal/patients/constants.py
 msgid "Medicare Card Number (RAMQ)"
 msgstr "Numéro d'assurance maladie (RAMQ)"
+
+#: opal/patients/constants.py
+msgid "New Opal User"
+msgstr "Nouvel utilisateur d'Opal"
+
+#: opal/patients/constants.py
+msgid "Existing Opal User"
+msgstr "Utilisateur Opal existant"
 
 #: opal/patients/forms.py
 msgid "At which hospital is the patient?"
@@ -51,20 +59,56 @@ msgid "Correct?"
 msgstr "Correct?"
 
 #: opal/patients/forms.py
-msgid "Caregiver relationship type"
-msgstr "Type de relation avec le proche aidant"
+msgid "Relationship types"
+msgstr "Types de relations"
 
 #: opal/patients/forms.py
 msgid "Has the requestor filled out the request form?"
 msgstr "Le demandeur a-t-il rempli le formulaire de demande?"
 
 #: opal/patients/forms.py
-msgid "Generate QR Code"
-msgstr "Générer un code QR"
-
-#: opal/patients/forms.py
 msgid "Form request is required."
 msgstr "La demande de formulaire est obligatoire."
+
+#: opal/patients/forms.py
+msgid "New User or Existing User?"
+msgstr "Nouvel utilisateur ou utilisateur existant?"
+
+#: opal/patients/forms.py
+msgid "Email Address"
+msgstr "Corriel"
+
+#: opal/patients/forms.py
+msgid "Phone Number"
+msgstr "Numéro de téléphone"
+
+#: opal/patients/forms.py
+msgid "Find Account"
+msgstr "Trouver un compte"
+
+#: opal/patients/forms.py
+msgid ""
+"Opal user was not found in your database. "
+"This may be an out-of-hospital account. "
+"Please proceed to generate a new QR code. "
+"Inform the user they must register at the Registration website."
+msgstr ""
+"L'utilisateur Opal n'a pas été trouvé dans votre base de données. "
+"Il peut s'agir d'un compte hors hôpital. "
+"Veuillez procéder à la génération d'un nouveau code QR. "
+"Informez l'utilisateur qu'il doit s'inscrire sur le site Web d'inscription."
+
+#: opal/patients/forms.py
+msgid "Create self relationship for patient"
+msgstr "Créer une relation à soi pour le patient"
+
+#: opal/patients/forms.py
+msgid "ID Checked?"
+msgstr "ID vérifié?"
+
+#: opal/patients/forms.py
+msgid "Generate Access Request"
+msgstr "Générer une demande d'accès"
 
 #: opal/patients/models.py
 msgid "Name"
@@ -250,6 +294,10 @@ msgstr "Aucun type de relation défini."
 #: opal/patients/tables.py
 msgid "No patient could be found."
 msgstr "Aucun patient n'a pu être retrouvé."
+
+#: opal/patients/tables.py
+msgid "No existing user could be found."
+msgstr "Aucun utilisateur existant n'a pu être trouvé."
 
 #: opal/patients/templates/patients/access_request/access_request.html
 msgid "New Patient Data Access Request"

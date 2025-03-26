@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-13 14:26+0000\n"
+"POT-Creation-Date: 2022-10-28 18:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,6 +26,14 @@ msgstr "Annuler"
 msgid "Enter a valid RAMQ number consisting of 4 letters followed by 8 digits"
 msgstr ""
 "Entrez un numéro RAMQ valide composé de 4 lettres suivies de 8 chiffres"
+
+#: opal/core/validators.py
+msgid ""
+"Enter a valid phone number having the format: +<countryCode><phoneNumber> "
+"(for example +15141234567) with an optional extension \"x123\""
+msgstr ""
+"Saisissez un numéro de téléphone valide au format: +<countryCode><phoneNumber> "
+"(par exemple +15141234567) avec une extension optionnelle \"x123\""
 
 #: opal/core/views.py opal/templates/base_generic.html
 msgid "OpalAdmin v2"
