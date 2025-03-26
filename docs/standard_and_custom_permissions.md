@@ -83,17 +83,35 @@ Use the template tag [`{{ perms }}`](https://docs.djangoproject.com/en/dev/topic
 The [`PermissionDenied`]((https://docs.djangoproject.com/en/3.2/topics/testing/tools/#exceptions)) exception is raised with any permission, whether built-in or custom. Hence, we can use it to test if this exception is raised. In the references below, there is more than one suggestion to test. However, the most compact and straight forward way to test is the following: In the `test_views.py` file add the following:
 
 ```python
-from django.test import TestCase, RequestFactory
 from django.core.exceptions import PermissionDenied
+from django.test import RequestFactory
+from django.urls import reverse
+from django.contrib.auth.models import Permission
 
-class TestPermission(TestCase):
-    def test_permission_view(self):
-        user = UserFactory()
-        path = reverse("my_view")
-        request = RequestFactory().get(path)
-        request.user = user
-        with pytest.raises(PermissionDenied) as e_info:
-            MyView.as_view()(request)
+    # FAIL CASE: to raise permission denied permission when user does not have right privilege 
+    def test_site_permission_required(user_client: Client, django_user_model: User) -> None:
+       """Ensure that `site` permission denied error is raised when not having privilege"""
+       user = django_user_model.objects.create(username='test_site_user')
+       user_client.force_login(user)
+       response = user_client.get(reverse('hospital-settings:site-list'))
+       request = RequestFactory().get(response)
+       request.user = user
+   
+       with pytest.raises(PermissionDenied):
+           SiteListView.as_view()(request)
+           
+    # PASS CASE: to not raise permission denied permission when user has right privilege 
+    def test_site_permission_required(user_client: Client, django_user_model: User) -> None:
+       """Ensure that `site` cannot be accessed without the required permission."""
+       user = django_user_model.objects.create(username='test_site_user')
+       user_client.force_login(user)
+       permission = Permission.objects.get(codename='new_perm')
+       user.user_permissions.add(permission)
+       response = user_client.get(reverse('hospital-settings:site-list'))
+       request = RequestFactory().get(response)
+       request.user = user
+       SiteListView.as_view()(request)
+
 ```
 
 ### References
