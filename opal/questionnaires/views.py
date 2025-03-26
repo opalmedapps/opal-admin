@@ -262,7 +262,7 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         report_dict = get_temp_table()
         df = pd.DataFrame.from_dict(report_dict)
         buffer = BytesIO()
-        print(df)
+
         if tabs == 'none':
             # return everything as one xlsx sheet, no dellineation by sheet
             df.to_excel(buffer, sheet_name='Sheet1', index=False, header=True)
