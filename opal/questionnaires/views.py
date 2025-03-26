@@ -163,9 +163,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
             return HttpResponse(status=HTTPStatus.BAD_REQUEST)
 
         # Update questionnaire following list if user selected option
-        toggle = False
-        if ('following' in request.POST.keys()):
-            toggle = True
+        toggle = 'following' in request.POST.keys()
 
         QuestionnaireProfile.update_questionnaires_following(
             request.POST['questionnaireid'],
