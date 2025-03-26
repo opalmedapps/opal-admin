@@ -26,10 +26,10 @@ def fetch_population_summary() -> dict[str, Any]:
     return caregivers_models.RegistrationCode.objects.select_related(
         'relationship__patient',
         'relationship__caregiver__user',
-        'relationship__caregiver__devices',
     ).filter(
         created_at__date=timezone.now().date(),
     ).aggregate(
+        patient_signed_up=models.Count('id'),
         incomplete_registration=models.Count(
             'id',
             filter=models.Q(status__in=incomplete_registration_statuses),
@@ -73,17 +73,5 @@ def fetch_population_summary() -> dict[str, Any]:
         limit_access=models.Count(
             'id',
             filter=models.Q(relationship__patient__data_access=patients_models.DataAccessType.NEED_TO_KNOW),
-        ),
-        iOS=models.Count(
-            'id',
-            models.Q(relationship__caregiver__devices__type=caregivers_models.DeviceType.IOS),
-        ),
-        android=models.Count(
-            'id',
-            models.Q(relationship__caregiver__devices__type=caregivers_models.DeviceType.ANDROID),
-        ),
-        browser=models.Count(
-            'id',
-            models.Q(relationship__caregiver__devices__type=caregivers_models.DeviceType.BROWSER),
         ),
     )
