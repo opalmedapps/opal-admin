@@ -19,7 +19,15 @@ class LegacyHospitalMapSerializer(DynamicFieldsSerializer):
 
     class Meta:
         model = LegacyHospitalMap
-        fields = ['hospitalmapsernum', 'mapname_en', 'mapname_fr']
+        fields = [
+            'hospitalmapsernum',
+            'mapurl_en',
+            'mapurl_fr',
+            'mapname_en',
+            'mapname_fr',
+            'mapdescription_en',
+            'mapdescription_fr',
+        ]
 
 
 class LegacyPatientSerializer(DynamicFieldsSerializer):
@@ -73,7 +81,14 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer):
 
     hospitalmap = LegacyHospitalMapSerializer(
         source='aliasexpressionsernum.aliassernum.hospitalmapsernum',
-        fields=('mapname_en', 'mapname_fr'),
+        fields=(
+            'mapurl_en',
+            'mapurl_fr',
+            'mapname_en',
+            'mapname_fr',
+            'mapdescription_en',
+            'mapdescription_fr',
+        ),
         many=False,
         read_only=True,
     )
