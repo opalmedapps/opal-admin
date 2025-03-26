@@ -1305,7 +1305,7 @@ def test_relationships_response_contains_menu(user_client: Client, django_user_m
     permission = Permission.objects.get(codename='can_manage_relationships')
     user.user_permissions.add(permission)
 
-    response = user_client.get('/hospital-settings/')
+    response = user_client.get(reverse('hospital-settings:index'))
 
     assertContains(response, 'Pending Requests')
 
@@ -1315,7 +1315,7 @@ def test_relationships_pending_response_no_menu(user_client: Client, django_user
     user = django_user_model.objects.create(username='test_relationship_user')
     user_client.force_login(user)
 
-    response = user_client.get('/hospital-settings/')
+    response = user_client.get(reverse('hospital-settings:index'))
 
     assertNotContains(response, 'Pending Requests')
 
@@ -1368,7 +1368,7 @@ def test_relationshiptype_perm_required_success(
 
 def test_relationshiptype_response_contains_menu(relationshiptype_user: Client, django_user_model: User) -> None:
     """Ensures that pending relationshiptypes is displayed for users with permission."""
-    response = relationshiptype_user.get('/hospital-settings/')
+    response = relationshiptype_user.get(reverse('hospital-settings:index'))
 
     assertContains(response, 'Relationship Types')
 
@@ -1378,7 +1378,7 @@ def test_relationshiptype_response_no_menu(user_client: Client, django_user_mode
     user = django_user_model.objects.create(username='test_relationshiptype_user')
     user_client.force_login(user)
 
-    response = user_client.get('/hospital-settings/')
+    response = user_client.get(reverse('hospital-settings:index'))
 
     assertNotContains(response, 'Relationship Types')
 
