@@ -410,7 +410,6 @@ DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 # Crispy forms
 #
 # Use Twitter Bootstrap (version 4) as a default template for the project
-CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap4'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # Django Tables2
