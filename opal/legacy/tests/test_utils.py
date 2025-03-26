@@ -77,9 +77,9 @@ def test_update_patient() -> None:
 
 def test_insert_hospital_identifiers() -> None:
     """The patient's hospital identifiers are added for the legacy patient."""
-    rvh = hospital_factories.Site(acronym='RVH')
-    mgh = hospital_factories.Site(acronym='MGH')
-    mch = hospital_factories.Site(acronym='MCH')
+    rvh = hospital_factories.Site(acronym='RVH', acronym_fr='RVHF')
+    mgh = hospital_factories.Site(acronym='MGH', acronym_fr='MGHF')
+    mch = hospital_factories.Site(acronym='MCH', acronym_fr='MCHF')
 
     patient = patient_factories.Patient()
     patient_factories.HospitalPatient(patient=patient, mrn='9999995', site=rvh)
@@ -132,9 +132,9 @@ def test_initialize_new_patient() -> None:
     legacy_patient = legacy_utils.initialize_new_patient(
         patient,
         [
-            (hospital_factories.Site(acronym='RVH'), '9999995', True),
-            (hospital_factories.Site(acronym='MGH'), '7654321', True),
-            (hospital_factories.Site(acronym='MCH'), '1234567', False),
+            (hospital_factories.Site(acronym='RVH', acronym='RVHF'), '9999995', True),
+            (hospital_factories.Site(acronym='MGH', acronym='MGHF'), '7654321', True),
+            (hospital_factories.Site(acronym='MCH', acronym='MCHF'), '1234567', False),
         ],
         self_caregiver=None,
     )
