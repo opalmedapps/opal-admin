@@ -26,7 +26,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210, WPS231
         """
-        Handle migrate Patients legacy DB to the new backend printout number of patients imported.
+        Handle migrate OAUsers legacy DB to the new backend printout number of users imported.
 
         Return 'None'.
 
