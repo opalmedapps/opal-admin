@@ -63,7 +63,7 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
     relationship2 = Relationship(
         patient=patient,
         caregiver=caregiver2,
-        status='CON',
+        status=patient_models.RelationshipStatus.CONFIRMED,
         type=patient_models.RelationshipType.objects.self_type(),
     )
     api_client.credentials(HTTP_APPUSERID=caregiver2.user.username)

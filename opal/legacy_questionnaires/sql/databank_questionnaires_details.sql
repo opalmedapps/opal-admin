@@ -41,5 +41,6 @@ CREATE TEMPORARY TABLE tempAnswerDetails(
 	   AND A.typeId=t.ID
 	   AND t.description=d.contentId
 	   AND d.languageId=2
+	   AND qstnr.purposeId <> 4
 	)
 ;

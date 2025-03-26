@@ -24,10 +24,10 @@ class AppAppointmentsView(APIView):
         Returns:
             Http response with the data needed to display the home view.
         """
-        user_name = request.headers['Appuserid']
+        username = request.headers['Appuserid']
         return Response({
             'daily_appointments': LegacyAppointmentDetailedSerializer(
-                models.LegacyAppointment.objects.get_daily_appointments(user_name),
+                models.LegacyAppointment.objects.get_daily_appointments(username),
                 many=True,
             ).data,
         })
