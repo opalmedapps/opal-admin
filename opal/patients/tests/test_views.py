@@ -1,14 +1,18 @@
 from http import HTTPStatus
-from typing import Tuple
+from typing import Any, Tuple
 
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.forms.models import model_to_dict
-from django.test import Client
+from django.http import HttpRequest
+from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
 from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 
-from .. import factories, models, tables
+from opal.hospital_settings.models import Site
+
+from .. import factories, forms, models, tables, views
 
 
 def test_relationshiptypes_list_table(user_client: Client) -> None:
@@ -270,3 +274,122 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:
 
         elif 'search' in step:
             assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')
+
+
+class TestAccessRequestView(views.AccessRequestView):
+    """
+    This view is to test AccessRequestView.
+
+    It patches dispatch to return the view instance as well for testing.
+
+    It requires since the WizardView needs to be fully set up.
+    """
+
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Tuple[Any, 'TestAccessRequestView']:
+        """
+        Process the request.
+
+        Args:
+            request: a `HttpRequest` instance
+            args: additional keyword arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the object of HttpResponse
+        """
+        response = super().dispatch(request, *args, **kwargs)
+        return response, self
+
+
+def _init_session() -> HttpRequest:
+    """
+    Initialize the session.
+
+    Returns:
+        the request
+    """
+    request = RequestFactory().get('/')
+    # adding session
+    middleware = SessionMiddleware()
+    middleware.process_request(request)
+    request.session.save()
+    return request
+
+
+@pytest.mark.django_db()
+def test_unexpected_step() -> None:
+    """Test unexpected step 'search'."""
+    request = _init_session()
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance.get_form_initial('search') == {}  # noqa: WPS520
+
+
+@pytest.mark.django_db()
+def test_expected_step_without_session_storage() -> None:
+    """Test expected step 'site' without session storage of saving user selection."""
+    request = _init_session()
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance.get_form_initial('site') == {}  # noqa: WPS520
+
+
+@pytest.mark.django_db()
+def test_expected_step_with_valid_id_in_session() -> None:
+    """Test expected step 'site' with session storage of saving user selection."""
+    request = _init_session()
+    request.session['site_selection'] = 2
+    # adding Site records
+    factories.Site(pk=1)
+    factories.Site(pk=2)
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance.get_form_initial('site') == {
+        'sites': Site.objects.filter(pk=2).first(),
+    }
+
+
+@pytest.mark.django_db()
+def test_expected_step_with_invalid_id_in_session() -> None:
+    """Test expected step 'site' with session storage of saving user selection."""
+    request = _init_session()
+    request.session['site_selection'] = 3
+    # adding Site records
+    factories.Site(pk=1)
+    factories.Site(pk=2)
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance.get_form_initial('site') == {}  # noqa: WPS520
+
+
+@pytest.mark.django_db()
+def test_process_step_select_site_form() -> None:
+    """Test expected form 'SelectSiteForm'."""
+    request = _init_session()
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    site = factories.Site()
+    form_data = (
+        {
+            'site-sites': site.pk,
+        }
+    )
+    form = forms.SelectSiteForm(data=form_data)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance.process_step(form) == form_data
+    assert request.session['site_selection'] == site.pk
