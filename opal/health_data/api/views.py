@@ -140,7 +140,6 @@ class MarkQuantitySampleAsViewedView(APIView):
         QuantitySample.objects.filter(
             patient=patient,
             viewed_at=None,
-            viewed_by='',
         ).update(
             viewed_at=timezone.now(),
             viewed_by=request.user.get_username(),

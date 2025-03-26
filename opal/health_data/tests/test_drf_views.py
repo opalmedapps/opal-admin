@@ -1,3 +1,4 @@
+from datetime import timedelta
 from decimal import Decimal
 from http import HTTPStatus
 from typing import Any, Union
@@ -218,20 +219,55 @@ def test_viewed_health_data_update_for_specific_patient(api_client: APIClient, o
     assert response.status_code == status.HTTP_200_OK
     assert QuantitySample.objects.count() == 3
     assert QuantitySample.objects.exclude(
-        viewed_at__isnull=True,
-        viewed_by__exact='',
+        viewed_at=None,
+        viewed_by='',
     ).count() == 2
 
     client_user_id = api_client.session.get('_auth_user_id', '')
     user = User.objects.get(id=client_user_id)
     assert QuantitySample.objects.exclude(
-        viewed_at__isnull=True,
-        viewed_by__exact='',
+        viewed_at=None,
+        viewed_by='',
     )[0].viewed_by == user.username
     assert QuantitySample.objects.exclude(
-        viewed_at__isnull=True,
-        viewed_by__exact='',
+        viewed_at=None,
+        viewed_by='',
     )[0].viewed_at
+
+
+def test_viewed_health_data_mark_only_new_records(api_client: APIClient, orms_user: User) -> None:
+    """Ensure that the `/health-data/viewed/` endpoint marks as viewed only new quantity records (not old ones)."""
+    api_client.force_login(orms_user)
+    marge_patient = patient_factories.Patient(legacy_id=51, ramq='9999996')
+
+    current_time = timezone.now()
+    previous_day_time = current_time - timedelta(days=1)
+    health_data_factories.QuantitySample(patient=marge_patient)
+    health_data_factories.QuantitySample(patient=marge_patient)
+    health_data_factories.QuantitySample(
+        patient=marge_patient,
+        viewed_at=previous_day_time,
+        viewed_by='previous_day_user',
+    )
+
+    response = api_client.patch(
+        reverse('api:patient-viewed-health-data-update', kwargs={'uuid': marge_patient.uuid}),
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    client_user_id = api_client.session.get('_auth_user_id', '')
+    user = User.objects.get(id=client_user_id)
+
+    # Ensure the existing viewed record was not changed
+    assert QuantitySample.objects.filter(
+        viewed_at=previous_day_time,
+        viewed_by='previous_day_user',
+    ).count() == 1
+
+    assert QuantitySample.objects.filter(
+        viewed_by=user.username,
+    ).count() == 2
 
 
 def test_unviewed_health_data_unauthorized(api_client: APIClient) -> None:
