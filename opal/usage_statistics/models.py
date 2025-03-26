@@ -189,4 +189,7 @@ class DailyPatientDataReceived(models.Model):
         Returns:
             String representing the patient data received.
         """
-        return f'{self.patient} received data on {self.date_added}'
+        return '{patient} received data on {date_added}'.format(
+            patient=str(self.patient),
+            date_added=self.date_added.strftime('%Y-%m-%d'),
+        )
