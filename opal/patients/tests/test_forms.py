@@ -545,6 +545,32 @@ def test_accessrequestsearchform_search_patient_ramq_fail(mocker: MockerFixture)
     assert err_msg in form.errors['__all__']
 
 
+def test_accessrequestsearchform_search_patient_missing_info(mocker: MockerFixture) -> None:
+    """Ensure that `_search_patient` function add error to form when no data is provided."""
+    oie_service = mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+    form_data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'medical_number': 'RAMQ12345678',
+    }
+    err_msg = 'No patient could be found.'
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+    form.oie_service = oie_service
+    form._search_patient(
+        card_type='',
+        medical_number='',
+        site=None,
+    )
+
+    # asserting that correct error message is added to non-field form errors list
+    assert err_msg in form.errors['__all__']
+
+
 def test_accessrequestsearchform_mrn_fail_oie(mocker: MockerFixture) -> None:
     """
     Ensure that error is added if patient is not found in `Patient` model and in `OIE`.
