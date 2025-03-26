@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-12 21:17+0300\n"
+"POT-Creation-Date: 2023-06-13 11:23-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -133,55 +133,55 @@ msgstr "Cordialement"
 msgid "The Opal team"
 msgstr "L’Équipe Opal"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_base.html
 msgid "Go back to Legacy OpalAdmin"
 msgstr "Retourner à l'ancien OpalAdmin"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_items.html
 msgid "Home"
 msgstr "Accueil"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_items.html
 msgid "Home Page"
 msgstr "Page d'accueil"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_items.html
 msgid "Hospital Settings"
 msgstr "Paramètres Hospitalier"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_items.html
 msgid "Institutions"
 msgstr "Établissements"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_items.html
 msgid "Sites"
 msgstr "Sites"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_items.html
 msgid "Patients"
 msgstr "Patients"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_items.html
 msgid "Relationship Types"
 msgstr "Types de Relations"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_items.html
 msgid "Opal Registration"
 msgstr "Inscription à Opal"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_items.html
 msgid "Manage Caregiver Access"
 msgstr "Gestion d'accès des proches aidants"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_items.html
 msgid "Questionnaires"
 msgstr "Questionnaires"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_items.html
 msgid "Export Reports"
 msgstr "Exportation de Rapports"
 
-#: opal/templates/sidebar.html
+#: opal/templates/sidebar_items.html
 msgid "Log Out"
 msgstr "Se déconnecter"
 
