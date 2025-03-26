@@ -374,6 +374,44 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     )
 
 
+def test_empty_value_in_response_by_mrn(mocker: MockerFixture) -> None:
+    """Ensure that None value in response returned from find_patient_by_mrn."""
+    oie_patient_data_copy = OIE_PATIENT_DATA.copy()
+    oie_patient_data_copy.update(deathDateTime='', ramqExpiration='')
+    # mock find_patient_by_mrn and pretend it was successful
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'success',
+            'data': oie_patient_data_copy,
+        },
+    )
+
+    response = oie_service.find_patient_by_mrn(MRN, SITE_CODE)
+    assert response['status'] == 'success'
+    assert response['data'] == OIEPatientData(
+        date_of_birth=datetime.strptime(
+            str(OIE_PATIENT_DATA['dateOfBirth']),
+            '%Y-%m-%d %H:%M:%S',
+        ),
+        first_name=str(OIE_PATIENT_DATA['firstName']),
+        last_name=str(OIE_PATIENT_DATA['lastName']),
+        sex=str(OIE_PATIENT_DATA['sex']),
+        alias=str(OIE_PATIENT_DATA['alias']),
+        deceased=bool(OIE_PATIENT_DATA['deceased']),
+        death_date_time=None,
+        ramq=str(OIE_PATIENT_DATA['ramq']),
+        ramq_expiration=None,
+        mrns=[
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+        ],
+    )
+
+
 def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_mrn return None."""
     # mock find_patient_by_mrn and pretend it was failed
@@ -409,7 +447,7 @@ def test_find_patient_by_mrn_invalid_site(mocker: MockerFixture) -> None:
 
 def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_ramq return the expected OIE data structure."""
-    # mock find_patient_by_mrn and pretend it was successful
+    # mock find_patient_by_ramq and pretend it was successful
     _mock_requests_post(
         mocker,
         {
@@ -439,6 +477,44 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
             str(OIE_PATIENT_DATA['ramqExpiration']),
             '%Y-%m-%d %H:%M:%S',
         ),
+        mrns=[
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+        ],
+    )
+
+
+def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
+    """Ensure that None value in response returned from find_patient_by_ramq."""
+    oie_patient_data_copy = OIE_PATIENT_DATA.copy()
+    oie_patient_data_copy.update(deathDateTime='', ramqExpiration='')
+    # mock find_patient_by_ramq and pretend it was successful
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'success',
+            'data': oie_patient_data_copy,
+        },
+    )
+
+    response = oie_service.find_patient_by_ramq(RAMQ_VALID)
+    assert response['status'] == 'success'
+    assert response['data'] == OIEPatientData(
+        date_of_birth=datetime.strptime(
+            str(OIE_PATIENT_DATA['dateOfBirth']),
+            '%Y-%m-%d %H:%M:%S',
+        ),
+        first_name=str(OIE_PATIENT_DATA['firstName']),
+        last_name=str(OIE_PATIENT_DATA['lastName']),
+        sex=str(OIE_PATIENT_DATA['sex']),
+        alias=str(OIE_PATIENT_DATA['alias']),
+        deceased=bool(OIE_PATIENT_DATA['deceased']),
+        death_date_time=None,
+        ramq=str(OIE_PATIENT_DATA['ramq']),
+        ramq_expiration=None,
         mrns=[
             OIEMRNData(
                 site='MGH',
