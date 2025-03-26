@@ -43,7 +43,7 @@ def test_groups_list_nopermission_fail(api_client: APIClient, django_user_model:
 
 
 def test_groups_list_permission_pass(api_client: APIClient, django_user_model: User) -> None:
-    """Test the failure of the retrieving list of groups due to wrong permissions."""
+    """Test the pass of the retrieving list of groups when right permissions are granted."""
     user = django_user_model.objects.create(username='test_user')
     group_view_perm = Permission.objects.get(codename='view_group')
     user.user_permissions.add(group_view_perm)
