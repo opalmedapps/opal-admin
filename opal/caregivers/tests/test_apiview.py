@@ -1,6 +1,7 @@
 """Test module for registration api endpoints."""
 
 from hashlib import sha512
+from http import HTTPStatus
 
 from django.urls import reverse
 
@@ -12,12 +13,12 @@ from opal.users.models import Caregiver, User
 
 
 def test_get_caregiver_patient_list_no_patient(api_client: APIClient, admin_user: User) -> None:
-    """Test patient list endpoint to return an empty list if their is not relationship."""
+    """Test patient list endpoint to return an empty list if there is no relationship."""
     api_client.force_login(user=admin_user)
     caregiver = caregiver_factory.Caregiver()
     api_client.credentials(HTTP_APPUSERID=caregiver.username)
     response = api_client.get(reverse('api:caregivers-patient-list'))
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert not response.data
 
 
@@ -29,7 +30,7 @@ def test_get_caregiver_patient_list_patient_id(api_client: APIClient, admin_user
     caregiver = Caregiver.objects.get()
     api_client.credentials(HTTP_APPUSERID=caregiver.username)
     response = api_client.get(reverse('api:caregivers-patient-list'))
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert len(response.data) == 1
     assert relationship_type.id == relationship.type_id
     assert relationship.patient_id == response.data[0]['patient_id']
@@ -57,7 +58,7 @@ def test_regitration_encryption_return_values(api_client: APIClient, admin_user:
     patient_factory.HospitalPatient(patient=registration_code.relationship.patient)
     request_hash = sha512(registration_code.code.encode()).hexdigest()
     response = api_client.get(reverse('api:registration-by-hash', kwargs={'hash': request_hash}))
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.data['code'] == registration_code.code
 
 
@@ -68,4 +69,4 @@ def test_regitration_encryption_with_invalid_hash(api_client: APIClient, admin_u
     patient_factory.HospitalPatient(patient=registration_code.relationship.patient)
     invalid_hash = sha512('badcode'.encode()).hexdigest()
     response = api_client.get(reverse('api:registration-by-hash', kwargs={'hash': invalid_hash}))
-    assert response.status_code == 404
+    assert response.status_code == HTTPStatus.NOT_FOUND

@@ -1,4 +1,4 @@
-"""This module is an API view that return the encryption value required to handle registration listener's requests."""
+"""This module is an API view that returns the encryption value required to handle listener's registration requests."""
 from django.db.models.functions import SHA512
 
 from rest_framework import status
@@ -31,7 +31,7 @@ class GetRegistrationEncryptionInfoView(RetrieveAPIView):
 
 
 class GetCaregiverPatientsList(APIView):
-    """Class to return a list of patient for a given caregiver."""
+    """Class to return a list of patients for a given caregiver."""
 
     permission_classes = [IsAuthenticated]
 
@@ -43,7 +43,7 @@ class GetCaregiverPatientsList(APIView):
             request: Http request made by the listener needed to retrive `Appuserid`.
 
         Returns:
-            Http response with the list of patient for a given caregiver.
+            Http response with the list of patients for a given caregiver.
         """
         user_id = request.headers.get('Appuserid')
         if user_id:

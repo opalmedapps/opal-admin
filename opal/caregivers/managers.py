@@ -3,17 +3,17 @@ from django.db import models
 
 
 class CaregiverManager(models.Manager):
-    """Caregivers manager class."""
+    """Manager class for the `Caregiver` model."""
 
     def get_patient_list_for_caregiver(self, user_id: str) -> models.QuerySet:
         """
-        Query manager to get a list of patient for a given caregiver.
+        Query manager to get a list of patients for a given caregiver.
 
         Args:
-            user_id: User id making the requets
+            user_id: User id making the request
 
         Returns:
-            Queryset to get the list of patient
+            Queryset to get the list of patients
 
         """
         return self.prefetch_related(

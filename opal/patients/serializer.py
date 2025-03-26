@@ -22,7 +22,7 @@ class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):
 
 
 class CaregiverPatientSerializer(serializers.ModelSerializer):
-    """Serializer for the list of patient for a given caregiver."""
+    """Serializer for the list of patients for a given caregiver."""
 
     patient_id = serializers.IntegerField(source='patient.id')
     patient_legacy_id = serializers.IntegerField(source='patient.legacy_id')
