@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-22 13:20-0500\n"
+"POT-Creation-Date: 2022-11-24 15:20-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: opal/patients/admin.py
+msgid "Operator cannot delete relationship type with this role"
+msgstr "Il est interdit de supprimer un type de relation avec ce rôle."
 
 #: opal/patients/apps.py opal/patients/models.py
 msgid "Patients"
@@ -72,11 +76,13 @@ msgstr "Type de relation avec le proche aidant"
 
 #: opal/patients/models.py
 msgid ""
-"A \"Self\" role type indicates a patient who owns the data that is being "
-"accessed."
+"Role types track the category of relationship between a caregiver and "
+"patient. A \"Self\" role type indicates a patient who owns the data that is "
+"being accessed."
 msgstr ""
-"Un rôle de type “Self” indique que le patient est le propriétaire des "
-"données demandées."
+"Les types de rôle permettent de suivre la catégorie de relation entre un "
+"proche aidantet et un patient.Un rôle de type “Self” indique que le patient "
+"est le propriétaire des données demandées."
 
 #: opal/patients/models.py
 msgid "Caregiver Relationship Type"
@@ -85,10 +91,6 @@ msgstr "Type de relation avec le proche aidant"
 #: opal/patients/models.py
 msgid "Caregiver Relationship Types"
 msgstr "Types de relations avec le proche aidant"
-
-#: opal/patients/models.py
-msgid "Operator cannot delete relationship type with this role"
-msgstr "Il est interdit de supprimer un type de relation avec ce rôle."
 
 #: opal/patients/models.py
 msgid ""

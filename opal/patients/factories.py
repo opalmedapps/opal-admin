@@ -31,7 +31,6 @@ class RelationshipType(DjangoModelFactory):
     description_fr = lazy_attribute(lambda type: f'{type.description} FR')
     start_age = 14
     form_required = False
-    role_type = models.RoleType.CAREGIVER
 
 
 class Patient(DjangoModelFactory):

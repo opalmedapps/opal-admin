@@ -106,24 +106,6 @@ def test_relationshiptype_default_role() -> None:
     assert relationship_type.role_type == RoleType.CAREGIVER
 
 
-def test_relationshiptype_self_role_delete_error() -> None:
-    """Ensure operator can not delete a self role type."""
-    relationship_type = factories.RelationshipType()
-    relationship_type.role_type = RoleType.SELF
-    message = "{'deletion': ['Operator cannot delete relationship type with this role']}"
-    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
-        relationship_type.delete()
-
-
-def test_relationshiptype_parent_role_delete_error() -> None:  # noqa: WPS118
-    """Ensure operator can not delete a parent/guardian role type."""
-    relationship_type = factories.RelationshipType()
-    relationship_type.role_type = RoleType.PARENTGUARDIAN
-    message = "{'deletion': ['Operator cannot delete relationship type with this role']}"
-    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
-        relationship_type.delete()
-
-
 def test_patient_str() -> None:
     """Ensure the `__str__` method is defined for the `Patient` model."""
     patient = Patient(first_name='First Name', last_name='Last Name')
@@ -418,9 +400,9 @@ def test_relationshiptype_duplicate_self_role() -> None:
     roletype_self_copy = factories.RelationshipType()
     roletype_self_copy.role_type = RoleType.SELF
 
-    message = "{'uniqueness': ['Operator cannot create multiple copies of relationship types with this role']}"
+    message = "['Operator cannot create multiple copies of relationship types with this role']"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
-        roletype_self_copy.save()
+        roletype_self_copy.clean()
 
 
 def test_relationshiptype_duplicate_parent_role() -> None:
@@ -432,6 +414,6 @@ def test_relationshiptype_duplicate_parent_role() -> None:
     roletype_parent_copy = factories.RelationshipType()
     roletype_parent_copy.role_type = RoleType.PARENTGUARDIAN
 
-    message = "{'uniqueness': ['Operator cannot create multiple copies of relationship types with this role']}"
+    message = "['Operator cannot create multiple copies of relationship types with this role']"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
-        roletype_parent_copy.save()
+        roletype_parent_copy.clean()

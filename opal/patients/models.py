@@ -1,11 +1,7 @@
 """Module providing models for the patients app."""
-from typing import Any
-
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinLengthValidator, MinValueValidator
 from django.db import models
-from django.db.models.signals import pre_delete, pre_save
-from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
 from opal.caregivers.models import CaregiverProfile
@@ -19,6 +15,7 @@ from . import constants
 class RoleType(models.TextChoices):
     """Choices for role type within the [opal.patients.models.RelationshipType][] model."""
 
+    # 'self' is a reserved keyword in Python requiring a noqa here.
     SELF = 'SELF', _('Self')  # noqa: WPS117
     CAREGIVER = 'CAREGIVER', _('Caregiver')
     PARENTGUARDIAN = 'PARENTGUARDIAN', _('Parent/Guardian')
@@ -62,7 +59,7 @@ class RelationshipType(models.Model):
         choices=RoleType.choices,
         default=RoleType.CAREGIVER,
         max_length=14,
-        help_text=_('A "Self" role type indicates a patient who owns the data that is being accessed.'),
+        help_text=_('Role types track the category of relationship between a caregiver and patient. A "Self" role type indicates a patient who owns the data that is being accessed.'),  # noqa: E501
     )
 
     class Meta:
@@ -78,56 +75,24 @@ class RelationshipType(models.Model):
         """
         return self.name
 
+    def clean(self) -> None:
+        """Validate the model being saved does not add an extra SELF or PARENTGUARDIAN role type.
 
-@receiver(pre_delete, sender=RelationshipType)
-def relationshiptype_pre_delete(sender: RelationshipType, instance: RelationshipType, **kwargs: Any) -> None:
-    """Validate the model being deleted is not of type 'self' or 'parentguardian'.
+        If additional restricted role types are added in the future, add them to the RoleType lists here.
 
-    Args:
-        sender: The model base type (required by Django signals in the function args)
-        instance: The model instance itself
-        kwargs: Signal key word arguments
-
-    Raises:
-        ValidationError: If an operator attempts to delete self or parent guardian - roled relationshiptype.
-    """
-    if (instance.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}):
-        raise ValidationError(
-            {'deletion': _('Operator cannot delete relationship type with this role')},
-        )
-
-
-@receiver(pre_save, sender=RelationshipType)
-def relationshiptype_pre_save(sender: RelationshipType, instance: RelationshipType, **kwargs: Any) -> None:
-    """Validate the model being saved does not add an extra SELF or PARENTGUARDIAN role type.
-
-    Args:
-        sender: The model base type (required by Django signals in the function args)
-        instance: The model instance itself
-        kwargs: Signal key word arguments
-
-    Raises:
-        ValidationError: If a new relationshiptype is being created/edited to have role_type self/parentguardian.
-    """
-    if (instance.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}):
-        existing_restricted_relationshiptypes = RelationshipType.objects.filter(
-            role_type__in=[RoleType.SELF, RoleType.PARENTGUARDIAN],
-        )
-
-        # Iterate over existing restricted types and check if instance is allowed to be saved.
-        for relationshiptype in existing_restricted_relationshiptypes:
-            if (
-                all(
-                    [
-                        relationshiptype.role_type == restrict_type,
-                        instance != relationshiptype,
-                        instance.role_type == restrict_type,
-                    ] for restrict_type in (RoleType.SELF, RoleType.PARENTGUARDIAN)
-                )
-            ):
-                raise ValidationError(
-                    {'uniqueness': _('Operator cannot create multiple copies of relationship types with this role')},
-                )
+        Raises:
+            ValidationError: If a new relationshiptype is being created/edited to have role_type self/parentguardian.
+        """
+        if (self.role_type in {RoleType.SELF, RoleType.PARENTGUARDIAN}):
+            existing_restricted_relationshiptypes = RelationshipType.objects.filter(
+                role_type__in=[RoleType.SELF, RoleType.PARENTGUARDIAN],
+            )
+            # Iterate over existing restricted types and check if instance is allowed to be saved.
+            for relationshiptype in existing_restricted_relationshiptypes:
+                if (self.role_type == relationshiptype.role_type):
+                    raise ValidationError(
+                        _('Operator cannot create multiple copies of relationship types with this role'),
+                    )
 
 
 class SexType(models.TextChoices):
