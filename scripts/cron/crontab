@@ -9,3 +9,6 @@
 
 # Run process to mark relationships as expired daily at midnight + 1 min (shortly after people's age changes).
 1 0 * * * /usr/local/bin/python /app/manage.py expire_relationships > /dev/null
+
+# Run expire outdated registration codes check daily at 8am.
+0 8 * * * /usr/local/bin/python /app/manage.py expire_outdated_registration_codes > /dev/null
