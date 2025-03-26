@@ -1,6 +1,6 @@
 # Django
 #
-django==4.2.13
+django==4.2.14
 django-environ==0.11.2  # https://github.com/joke2k/django-environ
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions
 django-modeltranslation==0.18.11  # https://django-modeltranslation.readthedocs.io/en/latest/
@@ -34,13 +34,13 @@ mysqlclient==2.2.4 # https://github.com/PyMySQL/mysqlclient
 argon2-cffi==23.1.0  # https://github.com/hynek/argon2_cffi
 requests==2.32.3  # https://github.com/psf/requests
 # required for ImageFields
-Pillow==10.3.0  # https://pypi.org/project/Pillow
+Pillow==10.4.0  # https://pypi.org/project/Pillow
 whitenoise[Brotli]==6.7.0  # http://whitenoise.evans.io/en/stable/index.html
 
 # Export Report functionality
 #
 pandas==2.2.2  # https://pypi.org/project/pandas/
-openpyxl==3.1.4  # https://pypi.org/project/openpyxl/
+openpyxl==3.1.5  # https://pypi.org/project/openpyxl/
 
 # Interactive data visualization
 #
