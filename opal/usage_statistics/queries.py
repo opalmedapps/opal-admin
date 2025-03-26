@@ -635,7 +635,7 @@ def fetch_patient_demographic_diagnosis_summary(
     Returns:
         demographic information and latest diagnosis per patient.
     """
-    # TODO: update the query when Diagnosis model is implemented into new backend system
+    # TODO: QSCCD-2254 - update the query when Diagnosis model is implemented in django-backend
     demographics_and_diagnosis = legacy_models.LegacyPatientControl.objects.annotate(
         patient_ser_num=models.F('patient__patientsernum'),
         age=models.F('patient__age'),
