@@ -11,7 +11,7 @@ from opal.users.models import User
 
 class DailyUserPatientActivity(models.Model):
     """
-    An instance of daily app activity by a user on behalf of a patient.
+    Daily application activity by a user on behalf of a patient.
 
     One record per user + patient per day (Maximum).
     """
@@ -82,7 +82,7 @@ class DailyUserPatientActivity(models.Model):
 
 class DailyUserAppActivity(models.Model):
     """
-    An instance of daily app (non-chart) activity per user.
+    Daily application (non-chart) activity per user.
 
     One record per user per day (Maximum).
     """
