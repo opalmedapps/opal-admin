@@ -20,34 +20,34 @@ class ReportService():
     def generate_questionnaire_report(
         self,
         patient_id: int,
-        logo_path: str,
+        logo_path: Path,
         language: str,
     ) -> str:
         """Create PDF report in encoded base64 string format.
 
         Args:
             patient_id (int): the ID of an Opal patient
-            logo_path (str): file path of the logo image
+            logo_path (Path): file path of the logo image
             language (str): report's language (English or French)
 
         Returns:
             str: encoded base64 string of the generated PDF report
         """
-        base64_report = self._request_base64_report(patient_id, logo_path, language)
+        base64_report = self._request_base64_report(patient_id, Path(logo_path), language)
 
         return base64_report if self._is_base64(base64_report) is True else ''
 
     def _request_base64_report(
         self,
         patient_id: int,
-        logo_path: str,
+        logo_path: Path,
         language: str,
     ) -> str:
         """Generate a PDF report by making an HTTP call to the legacy PHP endpoint.
 
         Args:
             patient_id (int): the ID of an Opal patient
-            logo_path (str): file path of the logo image
+            logo_path (Path): file path of the logo image
             language (str): report's language (English or French)
 
         Returns:
@@ -63,7 +63,7 @@ class ReportService():
 
         try:
             response = requests.post(
-                settings.LEGACY_QUESTIONNAIRES_REPORT_URL,
+                url=settings.LEGACY_QUESTIONNAIRES_REPORT_URL,
                 headers=headers,
                 data=pload,
             )
@@ -83,24 +83,24 @@ class ReportService():
         # Check if ['data']['base64EncodedReport'] is a string and return its value. If not a string, return empty one.
         return base64_report if isinstance(base64_report, str) else ''
 
-    def _encode_image_to_base64(self, logo_path: str) -> str:
+    def _encode_image_to_base64(self, logo_path: Path) -> str:
         """Create base64 string of a given image.
 
         Args:
-            logo_path (str): file path of the logo image
+            logo_path (Path): file path of the logo image
 
         Returns:
             str: encoded base64 string of the logo image
         """
         try:
             # Return an empty string if a given file is not an image
-            if imghdr.what(Path(logo_path)) is None:
+            if imghdr.what(logo_path) is None:
                 return ''
         except IOError:
             return ''
 
         try:
-            with Path(logo_path).open(mode='rb') as image_file:
+            with logo_path.open(mode='rb') as image_file:
                 data = base64.b64encode(image_file.read())
         except IOError:
             return ''
