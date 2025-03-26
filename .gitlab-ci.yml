@@ -355,7 +355,10 @@ gemnasium-python-dependency_scanning:
     DS_PIP_DEPENDENCY_PATH: ".venv"
   # the scanner actually installs the dependencies via pip and therefore requires the mysql client to be installed
   before_script:
-    - which python
-    - python --version
-    - python3 --version
-    - apt update && apt install -y libmariadb-dev pkg-config
+    # install dependencies for mysqlclient
+    - apt update && apt-get install -y libmariadb-dev pkg-config
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install --upgrade pip
+    - pip install -r requirements/development.txt
+    - pip install -r requirements/production.txt
