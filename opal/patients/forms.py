@@ -516,6 +516,7 @@ class ExistingUserForm(forms.Form):
         # If no, create the relationship record with the value 'Self'
         # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done
         # TODO: I'll refactor this part based on new mockup to make it happens after generating access request
+        # TODO: I'll check patient and caregiver record and create them if not exist and then create relationship
         if not relationships and str(self.relationship_type) == 'Self':
             Relationship.objects.create(
                 patient=Patient.objects.get(ramq=self.patient_record.ramq),
