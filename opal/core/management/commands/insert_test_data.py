@@ -340,8 +340,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
             legacy_id=58,
             mrns=mrn_data['Wednesday Addams'],
         )
-
-    if is_pediatric:
+    else:
         lisa = _create_patient(
             first_name='Lisa',
             last_name='Simpson',
@@ -515,8 +514,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
             start_date=_relative_date(today, -3),
             end_date=_relative_date(pebbles.date_of_birth, 14),
         )
-
-    if is_pediatric:
+    else:
         # Marge --> Lisa: Guardian/Parent
         _create_relationship(
             patient=lisa,
