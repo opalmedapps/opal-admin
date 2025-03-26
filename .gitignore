@@ -184,4 +184,9 @@ Temporary Items
 .idea/
 
 # Database certificates
-certs/ca.pem
+certs/*
+!certs/openssl-server.cnf
+!certs/v3.ext
+
+# Multiple compose files
+docker-compose.override.yml
