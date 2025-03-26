@@ -179,13 +179,13 @@ test_patient_multiform_url_template_data: list[Tuple] = [
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_initial_call(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
 ) -> None:
     """Ensure that steps are called initially."""
     url = reverse(url_name)
-    response = user_client.get(url)
+    response = registration_user.get(url)
     wizard = response.context['wizard']
 
     assert response.status_code == HTTPStatus.OK
@@ -197,7 +197,7 @@ def test_initial_call(
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_post_error(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
 ) -> None:
@@ -206,7 +206,7 @@ def test_form_post_error(
     step_one_data = {
         'access_request_view-current_step': 'site',
     }
-    response = user_client.post(url, step_one_data)
+    response = registration_user.post(url, step_one_data)
 
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
@@ -241,7 +241,7 @@ def _wizard_step_data(site: Site) -> Tuple[dict, dict, dict, dict, dict]:
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_post_mgmt_data_missing(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
 ) -> None:
@@ -254,21 +254,21 @@ def test_form_post_mgmt_data_missing(
         if 'current_step' in key:
             wizard_step_one_data.pop(key)
 
-    response = user_client.post(url, wizard_step_one_data)
+    response = registration_user.post(url, wizard_step_one_data)
     # view should return HTTP 400 Bad Request
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_post_success(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
 ) -> None:
     """Ensure that the form submission with POST is successful."""
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
-    response = user_client.post(url, wizard_step_data[0])
+    response = registration_user.post(url, wizard_step_data[0])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'search'
     assert response.context['wizard']['steps'].step0 == 1
@@ -278,22 +278,22 @@ def test_form_post_success(
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_stepback(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
 ) -> None:
     """Ensure that the form can go back to the previous step."""
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
-    response = user_client.get(url)
+    response = registration_user.get(url)
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
 
-    response = user_client.post(url, wizard_step_data[0])
+    response = registration_user.post(url, wizard_step_data[0])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'search'
 
-    response = user_client.post(url, {
+    response = registration_user.post(url, {
         'wizard_goto_step': response.context['wizard']['steps'].prev,
     })
     assert response.status_code == HTTPStatus.OK
@@ -302,7 +302,7 @@ def test_form_stepback(
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_finish(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
     mocker: MockerFixture,
@@ -318,22 +318,22 @@ def test_form_finish(
 
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
-    response = user_client.get(url)
+    response = registration_user.get(url)
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
     assert response.context['header_title'] == 'Hospital Information'
 
-    response = user_client.post(url, wizard_step_data[0])
+    response = registration_user.post(url, wizard_step_data[0])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'search'
     assert response.context['header_title'] == 'Patient Details'
 
-    response = user_client.post(url, wizard_step_data[1])
+    response = registration_user.post(url, wizard_step_data[1])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'confirm'
     assert response.context['header_title'] == 'Patient Details'
 
-    response = user_client.post(url, wizard_step_data[2])
+    response = registration_user.post(url, wizard_step_data[2])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'relationship'
     assert response.context['header_title'] == 'Requestor Details'
@@ -341,7 +341,7 @@ def test_form_finish(
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_form_error_in_template(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
     mocker: MockerFixture,
@@ -379,12 +379,12 @@ def test_form_error_in_template(
 
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
-    response = user_client.get(url)
+    response = registration_user.get(url)
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
     assert response.context['header_title'] == 'Hospital Information'
 
-    response = user_client.post(url, wizard_step_data[1])
+    response = registration_user.post(url, wizard_step_data[1])
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'confirm'
     assert response.context['header_title'] == 'Patient Details'
@@ -392,7 +392,10 @@ def test_form_error_in_template(
     assertTemplateUsed(response, template)
 
 
-def test_access_request_done_redirects_temp(user_client: Client, mocker: MockerFixture) -> None:  # noqa: C901 WPS231
+def test_access_request_done_redirects_temp(  # noqa: C901 WPS231
+    registration_user: Client,
+    mocker: MockerFixture,
+) -> None:
     """Ensure that when the page is submitted it redirects to the final page."""
     mocker.patch(
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
@@ -422,7 +425,7 @@ def test_access_request_done_redirects_temp(user_client: Client, mocker: MockerF
         ('existing', {'is_correct': True, 'is_id_checked': True}),
         ('password', {'confirm_password': 'testpassword'}),
     ]
-    response = user_client.get(url)
+    response = registration_user.get(url)
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['steps'].current == 'site'
 
@@ -432,7 +435,7 @@ def test_access_request_done_redirects_temp(user_client: Client, mocker: MockerF
             for key, value in step_data.items()
         }
         step_data['access_request_view-current_step'] = step
-        response = user_client.post(url, step_data, follow=True)
+        response = registration_user.post(url, step_data, follow=True)
         assert response.status_code == HTTPStatus.OK
 
         if 'site' in step:  # noqa: WPS223
@@ -462,7 +465,12 @@ class _TestAccessRequestView(AccessRequestView):
     It requires since the WizardView needs to be fully set up.
     """
 
-    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Tuple[Any, '_TestAccessRequestView']:
+    def dispatch(   # type: ignore[override]
+        self,
+        request: HttpRequest,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Tuple[Any, '_TestAccessRequestView']:
         """
         Process the request.
 
@@ -490,14 +498,17 @@ class _TestAccessRequestView(AccessRequestView):
         return None  # noqa: WPS324
 
 
-def _init_session() -> HttpRequest:
+def _init_session(registration_user: Client) -> HttpRequest:
     """
     Initialize the session.
 
     Returns:
         the request
     """
-    request = RequestFactory().get('/')
+    response = registration_user.get(reverse('patients:access-request'))
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+    request.user = response.context['user']
+
     # adding session
     middleware = SessionMiddleware(_TestAccessRequestView.dummy_get_response)  # type: ignore[arg-type]
     middleware.process_request(request)
@@ -506,9 +517,9 @@ def _init_session() -> HttpRequest:
 
 
 @pytest.mark.django_db()
-def test_unexpected_step() -> None:
+def test_unexpected_step(registration_user: Client) -> None:
     """Test unexpected step 'confirm'."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -518,9 +529,9 @@ def test_unexpected_step() -> None:
 
 
 @pytest.mark.django_db()
-def test_search_step_with_valid_id_in_session() -> None:
+def test_search_step_with_valid_id_in_session(registration_user: Client) -> None:
     """Test expected step 'search' with session storage of saving user selection."""
-    request = _init_session()
+    request = _init_session(registration_user)
     request.session['site_selection'] = 2
     # adding Site records
     factories.Site(pk=1)
@@ -536,9 +547,9 @@ def test_search_step_with_valid_id_in_session() -> None:
 
 
 @pytest.mark.django_db()
-def test_search_step_with_invalid_id_in_session() -> None:
+def test_search_step_with_invalid_id_in_session(registration_user: Client) -> None:
     """Test expected step 'search' with an invalid session storage of saving user selection."""
-    request = _init_session()
+    request = _init_session(registration_user)
     request.session['site_selection'] = 3
     # adding Site records
     factories.Site(pk=1)
@@ -552,9 +563,9 @@ def test_search_step_with_invalid_id_in_session() -> None:
 
 
 @pytest.mark.django_db()
-def test_expected_step_without_session_storage() -> None:
+def test_expected_step_without_session_storage(registration_user: Client) -> None:
     """Test expected step 'site' without session storage of saving user selection."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -564,9 +575,9 @@ def test_expected_step_without_session_storage() -> None:
 
 
 @pytest.mark.django_db()
-def test_site_step_with_valid_id_in_session() -> None:
+def test_site_step_with_valid_id_in_session(registration_user: Client) -> None:
     """Test expected step 'site' with session storage of saving user selection."""
-    request = _init_session()
+    request = _init_session(registration_user)
     request.session['site_selection'] = 2
     # adding Site records
     factories.Site(pk=1)
@@ -582,9 +593,9 @@ def test_site_step_with_valid_id_in_session() -> None:
 
 
 @pytest.mark.django_db()
-def test_site_step_with_invalid_id_in_session() -> None:
+def test_site_step_with_invalid_id_in_session(registration_user: Client) -> None:
     """Test expected step 'site' with an invalid session storage of saving user selection."""
-    request = _init_session()
+    request = _init_session(registration_user)
     request.session['site_selection'] = 3
     # adding Site records
     factories.Site(pk=1)
@@ -598,9 +609,9 @@ def test_site_step_with_invalid_id_in_session() -> None:
 
 
 @pytest.mark.django_db()
-def test_process_step_select_site_form() -> None:
+def test_process_step_select_site_form(registration_user: Client) -> None:
     """Test expected form 'SelectSiteForm'."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -620,7 +631,7 @@ def test_process_step_select_site_form() -> None:
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_new_user_form_by_user_choice(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
     mocker: MockerFixture,
@@ -644,14 +655,14 @@ def test_new_user_form_by_user_choice(
         ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
         ('account', {'user_type': 0}),
     ]
-    response = user_client.get(url)
+    response = registration_user.get(url)
     for step, step_data in form_data:
         step_data = {
             '{0}-{1}'.format(step, key): value
             for key, value in step_data.items()
         }
         step_data['access_request_view-current_step'] = step
-        response = user_client.post(url, step_data, follow=True)
+        response = registration_user.post(url, step_data, follow=True)
 
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['form'].__class__ == forms.NewUserForm
@@ -659,7 +670,7 @@ def test_new_user_form_by_user_choice(
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_existing_user_form_by_user_choice(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
     mocker: MockerFixture,
@@ -683,14 +694,14 @@ def test_existing_user_form_by_user_choice(
         ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
         ('account', {'user_type': 1}),
     ]
-    response = user_client.get(url)
+    response = registration_user.get(url)
     for step, step_data in form_data:
         step_data = {
             '{0}-{1}'.format(step, key): value
             for key, value in step_data.items()
         }
         step_data['access_request_view-current_step'] = step
-        response = user_client.post(url, step_data, follow=True)
+        response = registration_user.post(url, step_data, follow=True)
 
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['form'].__class__ == forms.ExistingUserForm
@@ -700,7 +711,7 @@ def test_existing_user_form_by_user_choice(
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_new_user_case_in_password_step(
-    user_client: Client,
+    registration_user: Client,
     url_name: str,
     template: str,
     mocker: MockerFixture,
@@ -726,23 +737,23 @@ def test_new_user_case_in_password_step(
         ('account', {'user_type': 0}),
         ('requestor', {'first_name': 'Marge', 'last_name': 'Simpson', 'is_id_checked': True}),
     ]
-    response = user_client.get(url)
+    response = registration_user.get(url)
     for step, step_data in form_data:
         step_data = {
             '{0}-{1}'.format(step, key): value
             for key, value in step_data.items()
         }
         step_data['access_request_view-current_step'] = step
-        response = user_client.post(url, step_data, follow=True)
+        response = registration_user.post(url, step_data, follow=True)
 
     assert response.status_code == HTTPStatus.OK
     assert response.context['wizard']['form'].__class__ == forms.ConfirmPasswordForm
 
 
 @pytest.mark.django_db()
-def test_create_caregiver_profile_existing_user() -> None:
+def test_create_caregiver_profile_existing_user(registration_user: Client) -> None:
     """Test create caregiver profile for the existing user."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -764,9 +775,9 @@ def test_create_caregiver_profile_existing_user() -> None:
 
 
 @pytest.mark.django_db()
-def test_create_caregiver_profile_failed() -> None:
+def test_create_caregiver_profile_failed(registration_user: Client) -> None:
     """Test create caregiver profile failed for the existing user."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -785,9 +796,9 @@ def test_create_caregiver_profile_failed() -> None:
 
 
 @pytest.mark.django_db()
-def test_create_caregiver_profile_new_user() -> None:
+def test_create_caregiver_profile_new_user(registration_user: Client) -> None:
     """Test create caregiver profile for the new user."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -812,9 +823,9 @@ def test_create_caregiver_profile_new_user() -> None:
 
 
 @pytest.mark.django_db()
-def test_create_patient() -> None:
+def test_create_patient(registration_user: Client) -> None:
     """Test create patient instance."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -835,9 +846,9 @@ def test_create_patient() -> None:
 
 
 @pytest.mark.django_db()
-def test_get_current_relationship() -> None:
+def test_get_current_relationship(registration_user: Client) -> None:
     """Test get an existing relationship instance."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -877,9 +888,9 @@ def test_get_current_relationship() -> None:
 
 
 @pytest.mark.django_db()
-def test_create_new_relationship() -> None:
+def test_create_new_relationship(registration_user: Client) -> None:
     """Test create a new relationship instance."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -947,9 +958,9 @@ def test_create_new_relationship() -> None:
 
 
 @pytest.mark.django_db()
-def test_process_form_data() -> None:
+def test_process_form_data(registration_user: Client) -> None:
     """Test process the list form data and then return a dictionay form data."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -985,9 +996,9 @@ def test_process_form_data() -> None:
 
 
 @pytest.mark.django_db()
-def test_qr_code_class_type() -> None:
+def test_qr_code_class_type(registration_user: Client) -> None:
     """Test QR-code image stream class type."""
-    request = _init_session()
+    request = _init_session(registration_user)
 
     test_view = _TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -1559,6 +1570,46 @@ def test_relationshiptype_response_no_menu(user_client: Client, django_user_mode
     response = user_client.get(reverse('hospital-settings:index'))
 
     assertNotContains(response, 'Relationship Types')
+
+
+# can perform registration permissions
+
+
+def test_registration_permission_required_success(registration_user: Client) -> None:
+    """Ensure that registration can be performed with the required permission."""
+    response = registration_user.get(reverse('patients:access-request'))
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_registration_permission_required_fail(user_client: Client, django_user_model: User) -> None:
+    """Ensure that registration permission denied error is raised when not having privilege."""
+    user = django_user_model.objects.create(username='test_registration_user')
+    user_client.force_login(user)
+
+    response = user_client.get(reverse('patients:access-request'))
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+
+    request.user = user
+    with pytest.raises(PermissionDenied):
+        AccessRequestView.as_view()(request)
+
+
+def test_registration_response_contains_menu(registration_user: Client) -> None:
+    """Ensures that Opal Registration is displayed for users with permission."""
+    response = registration_user.get(reverse('patients:access-request'))
+
+    assertContains(response, 'Opal Registration')
+
+
+def test_registration_response_no_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that Opal Registration is not displayed for users without permission."""
+    user = django_user_model.objects.create(username='test_registration_user')
+    user_client.force_login(user)
+
+    response = user_client.get(reverse('hospital-settings:index'))
+
+    assertNotContains(response, 'Opal Registration')
 
 
 def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, django_user_model: User) -> None:

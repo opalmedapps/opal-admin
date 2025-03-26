@@ -78,7 +78,7 @@ class RelationshipTypeDeleteView(
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class AccessRequestView(SessionWizardView):  # noqa: WPS214
+class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WPS214
     """
     Form wizard view providing the steps for a caregiver's patient access request.
 
@@ -87,6 +87,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
     """
 
     model = Site
+    permission_required = ('patients.can_perform_registration',)
     form_list = [
         ('site', forms.SelectSiteForm),
         ('search', forms.SearchForm),
