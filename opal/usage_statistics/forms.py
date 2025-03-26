@@ -14,7 +14,7 @@ from . import constants
 
 
 class UsageStatisticsExportFormMixin(forms.Form):
-    """Form mixin that provide common fields and functionality for the usage statistics forms."""
+    """Form mixin that provides common fields and functionality for the usage statistics forms."""
 
     start_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
