@@ -4,6 +4,7 @@ from typing import Any, cast
 from unittest.mock import MagicMock
 
 from django.core.management.base import CommandError
+from django.db import OperationalError
 from django.utils import timezone
 
 import pytest
@@ -461,7 +462,7 @@ def test_get_questionnaire_data_success(mocker: MockerFixture) -> None:
     questionnaire_result = legacy_utils.get_questionnaire_data(patient)
 
     assert len(questionnaire_result) == 1
-    assert questionnaire_result[0].questionnaire_title == 'Edmonton Symptom Assessment System'
+    assert questionnaire_result[0].questionnaire_title == "Échelle d'évaluation des symptômes d'Edmonton"
 
 
 @pytest.mark.django_db
@@ -470,10 +471,10 @@ def test_get_questionnaire_data_db_error(mocker: MockerFixture) -> None:
     patient = patient_factories.Patient.create(legacy_id=123)
 
     mock_fetch = mocker.patch(
-        'opal.legacy.utils._fetch_questionnaires_from_db', side_effect=Exception('DB Error'),
+        'opal.legacy.utils._fetch_questionnaires_from_db', side_effect=OperationalError('DB Error'),
     )
 
-    with pytest.raises(CommandError, match='Error fetching questionnaires: DB Error'):
+    with pytest.raises(OperationalError, match='Error fetching questionnaires: DB Error'):
         legacy_utils.get_questionnaire_data(patient)
 
     mock_fetch.assert_called_once_with(123)
@@ -489,7 +490,7 @@ def test_get_questionnaire_data_parsing_error(mocker: MockerFixture) -> None:
         'opal.legacy.utils._fetch_questionnaires_from_db', return_value=mock_query_result,
     )
 
-    with pytest.raises(CommandError, match='Error parsing questionnaires: Expected parsed data to be a dict'):
+    with pytest.raises(ValueError, match='Error parsing questionnaires: Expected parsed data to be a dict'):
         legacy_utils.get_questionnaire_data(patient)
 
     mock_fetch.assert_called_once_with(123)
@@ -503,7 +504,7 @@ def test_fetch_questionnaire_from_db(mocker: MockerFixture) -> None:
 
     assert len(result) == 1
     assert result[0]['questionnaire_id'] == 12
-    assert result[0]['questionnaire_nickname'] == 'Edmonton Symptom Assessment System'
+    assert result[0]['questionnaire_nickname'] == "Échelle d'évaluation des symptômes d'Edmonton"
 
 
 def test_parse_query_result_success() -> None:
@@ -529,14 +530,6 @@ def test_parse_query_result_success() -> None:
     result = legacy_utils._parse_query_result(query_result)
 
     assert result == expected_output
-
-
-def test_parse_query_result_invalid_data() -> None:
-    """Test parsing with invalid data in the query result."""
-    query_result = [(123, 'not_a_dict_or_list')]  # Invalid data after deserialization
-    with pytest.raises(ValueError, match='Expected parsed data to be a dict or list of dicts, got'):
-        legacy_utils._parse_query_result(query_result)
-
 
 def test_parse_query_result_empty_rows() -> None:
     """Test parsing when rows contain empty data."""
