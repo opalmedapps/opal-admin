@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-24 10:44-0500\n"
+"POT-Creation-Date: 2022-11-24 11:03-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,43 +39,46 @@ msgstr "Anglais"
 msgid "French"
 msgstr "Français"
 
-#: opal/templates/email/verification_code_en.html
-#: opal/templates/email/verification_code_en.txt
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
 msgid "Dear"
 msgstr "Cher"
 
-#: opal/templates/email/verification_code_en.html
-#: opal/templates/email/verification_code_en.txt
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
 msgid "Welcome to Opal"
 msgstr "Bienvenue dans le groupe Opal"
 
-#: opal/templates/email/verification_code_en.html
-#: opal/templates/email/verification_code_en.txt
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
 msgid "Thank you for deciding to register with Opal"
 msgstr "Merci de vous avoir enregistré avec l’application Opal"
 
-#: opal/templates/email/verification_code_en.html
-#: opal/templates/email/verification_code_en.txt
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
 msgid ""
 "To verify your email address, enter the code below on the verification page"
-msgstr "Pour effectuer la vérification de votre adresse courriel, veuillez entrer le code si bas, sur la page de vérification"
+msgstr ""
+"Pour effectuer la vérification de votre adresse courriel, veuillez entrer le "
+"code si bas, sur la page de vérification"
 
-#: opal/templates/email/verification_code_en.html
-#: opal/templates/email/verification_code_en.txt
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
 msgid ""
 "This code will expire 10 minutes after the email is sent. Once the code "
 "expires you will need to request a new verification code"
 msgstr ""
-"Ce code expire 10 minutes après l'envoi du présent courriel. Une fois le code expiré, "
-"il vous faudra procéder à une autre demande pour obtenir un nouveau code de vérification"
+"Ce code expire 10 minutes après l'envoi du présent courriel. Une fois le "
+"code expiré, il vous faudra procéder à une autre demande pour obtenir un "
+"nouveau code de vérification"
 
-#: opal/templates/email/verification_code_en.html
-#: opal/templates/email/verification_code_en.txt
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
 msgid "Yours"
 msgstr "Cordialement"
 
-#: opal/templates/email/verification_code_en.html
-#: opal/templates/email/verification_code_en.txt
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
 msgid "The Opal team"
 msgstr "L’Équipe Opal"
 
