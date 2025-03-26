@@ -56,16 +56,13 @@ def test_search_form_valid(
 
 
 # tuple with invalid medical card type and medical number
-# will update the test data once the validator is done in another ticket
 test_invalid_medical_card_type_and_number: list[Tuple] = [
-    ('stm', ''),
-    ('', ''),
-    ('mrn', '   '),
+    ('ramq', 'ramq99996666'),
 ]
 
 
 @pytest.mark.parametrize(('card_type', 'card_number'), test_invalid_medical_card_type_and_number)
-def test_search_form_invalid(
+def test_search_form_invalid_ramq_field(
     card_type: str,
     card_number: str,
 ) -> None:
@@ -76,3 +73,4 @@ def test_search_form_invalid(
     }
     form = SearchForm(data=form_data)
     assert not form.is_valid()
+    assert form.errors['medical_number'] == ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']
