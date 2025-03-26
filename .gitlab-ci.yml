@@ -97,7 +97,7 @@ test:
     # create second DB for legacy DB
     - apt update && apt-get install -y default-mysql-client
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
-    - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "select * from information_schema.user_privileges;"
+    - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "SHOW GRANTS FOR '$MARIADB_USER'@'%';"
     - pytest --version
     - coverage run -m pytest --junitxml=report.xml
   artifacts:
