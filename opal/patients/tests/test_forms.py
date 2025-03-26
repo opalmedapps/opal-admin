@@ -1505,7 +1505,6 @@ def test_accessrequestrequestorform_existing_relationship() -> None:
         },
     )
 
-    # assert all fields are disabled
     assert not form.is_valid()
     assert form.non_field_errors()[0] == 'This Opal user already exists.'
 
