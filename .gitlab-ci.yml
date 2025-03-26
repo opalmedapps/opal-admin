@@ -51,6 +51,9 @@ setup:
   # If you want to also cache the installed packages, you have to install
   # them in a virtualenv and cache it as well.
   cache:
+    # pin artifacts to the branch
+    # see: https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#use-cicd-variables-to-define-the-artifacts-name
+    name: $CI_COMMIT_REF_SLUG
     paths:
       - .cache/pip
       - .venv/
