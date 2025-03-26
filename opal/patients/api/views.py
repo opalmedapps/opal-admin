@@ -151,7 +151,6 @@ class CaregiverRelationshipView(ListAPIView):
     """REST API `ListAPIView` returning list of caregivers for a given patient."""
 
     serializer_class = CaregiverRelationshipSerializer
-    pagination_class = None
     permission_classes = [IsAuthenticated, CaregiverSelfPermissions]
 
     def get_queryset(self) -> QuerySet[Relationship]:
@@ -177,7 +176,6 @@ class PatientDemographicView(UpdateAPIView):
         'relationships__caregiver__user',
     )
     serializer_class = PatientDemographicSerializer
-    pagination_class = None
 
     def get_object(self) -> Patient:
         """Perform a custom lookup for a `Patient` object.

@@ -21,7 +21,6 @@ class CreatePathologyView(generics.CreateAPIView):
     queryset = GeneralTest.objects.none()
     serializer_class = PathologySerializer
     permission_classes = [CreateModelPermissions]
-    pagination_class = None
 
     def perform_create(self, serializer: serializers.BaseSerializer[GeneralTest]) -> None:
         """
