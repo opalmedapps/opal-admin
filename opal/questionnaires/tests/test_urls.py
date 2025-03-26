@@ -8,7 +8,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_reports_list() -> None:
-    """Ensure exportreports list is defined."""
+    """Ensure export URL is defined."""
     user = User_Factory()
     path = f'/questionnaires/reports/{user.username}'
     assert reverse('questionnaires:reports-list', kwargs={'username': user.username}) == path

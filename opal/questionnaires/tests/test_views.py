@@ -47,7 +47,7 @@ def test_reportlist_urls_exist(user_client: Client, admin_user: AbstractUser) ->
 
 
 def test_filter_report_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
-    """Ensure that a form exists in the reports page and it contains the correct URL."""
+    """Ensure that a form exists in the reports list page pointing to the filter page."""
     user_client.force_login(admin_user)
     response = user_client.get(reverse('questionnaires:reports-list', kwargs={'username': admin_user.username}))
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -58,7 +58,7 @@ def test_filter_report_form_exists(user_client: Client, admin_user: AbstractUser
 
 
 def test_detail_report_form_exists(user_client: Client, admin_user: AbstractUser) -> None:
-    """Ensure that a form exists in the reports page and it contains the correct URL."""
+    """Ensure that a form exists in the reports filter page pointing to the detail page."""
     user_client.force_login(admin_user)
     response = user_client.post(
         path=reverse('questionnaires:reports-filter'),
@@ -72,7 +72,7 @@ def test_detail_report_form_exists(user_client: Client, admin_user: AbstractUser
 
 
 def test_download_forms_exist(user_client: Client, admin_user: AbstractUser) -> None:
-    """Ensure that a form exists in the reports page and it contains the correct URL."""
+    """Ensure that forms exists in the reports detail page and they point to the two download options."""
     user_client.force_login(admin_user)
     response = user_client.post(
         path=reverse('questionnaires:reports-detail'),
