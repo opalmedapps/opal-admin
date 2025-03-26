@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load extra_filters %}
 
 {%  if urlname_view %}
   {% url urlname_view record.id as view_url %}
@@ -6,9 +7,12 @@
     {% translate "View" %}
   {% /button %}
 {% else %}
-  {% url urlname_update record.id as update_url %}
+  {# use a fragment since assigning a URL to a variable suppresses missing URL errors #}
+  {% fragment as update_url %}
+    {% url urlname_update record.id %}
+  {% endfragment %}
   {# Defined in one line due to some weirdness with coverage that detects it as not covered otherwise. #}
-  {% #button icon="pencil-alt" href=update_url add_class="btn-sm" %}
+  {% #button icon="pencil-alt" href=update_url|strip add_class="btn-sm" %}
     {% translate "Edit" %}
   {% /button %}
 {% endif %}
