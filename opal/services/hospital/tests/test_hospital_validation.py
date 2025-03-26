@@ -154,6 +154,14 @@ def test_patient_response_status_non_exists() -> None:
     assert errors == ['Patient response data does not have the attribute status']
 
 
+def test_patient_response_status_unexpected() -> None:
+    """Ensure a patient response with unexpected status returns an error message."""
+    errors = oie_validator.is_patient_response_valid({
+        'status': 'other',
+    })
+    assert errors == ['New patient response data has an unexpected "status" value: other']
+
+
 # check_patient_data
 
 def test_check_patient_data_valid() -> None:
