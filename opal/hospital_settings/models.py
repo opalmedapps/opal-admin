@@ -35,10 +35,7 @@ class Site(Location):
     """A site belonging to an ``Institution`` with its specific properties."""
 
     parking_url = models.URLField(_('Parking Info'))
-    direction_url = models.URLField(
-        verbose_name=_('Direction Info'),
-        blank=True,
-    )
+    direction_url = models.URLField(_('Direction Info'))
     institution = models.ForeignKey(
         to=Institution,
         on_delete=models.CASCADE,
