@@ -1,4 +1,5 @@
 """Test module for the `users` app REST API viewsets endpoints."""
+import secrets
 from collections.abc import Callable
 from http import HTTPStatus
 
@@ -110,6 +111,7 @@ def test_userviewset_add_group_update_user_pass(api_client: APIClient, admin_use
         ),
         data=data,
     )
+
     # test if retrieve gets all user groups and if the user groups are updated
     assert response_put.status_code == HTTPStatus.OK
     assert len(response_put.data['groups']) == 2
@@ -217,6 +219,98 @@ def test_api_remove_group_from_user_pass(api_client: APIClient, admin_user: User
     }
 
 
+def test_userviewset_create_user_password(admin_api_client: APIClient) -> None:
+    """The user is created with the correct password hash."""
+    password = '123456Opal!!'  # noqa: S105
+    data = {
+        'username': 'testuser',
+        'password': password,
+        'password2': password,
+    }
+
+    response = admin_api_client.post(reverse('api:users-list'), data=data)
+
+    assert response.status_code == HTTPStatus.CREATED
+
+    user = User.objects.get(username='testuser')
+    assert user.check_password(password)
+    # ensure the password was not stored raw
+    assert user.password != password
+
+
+def test_userviewset_create_user_no_password(admin_api_client: APIClient) -> None:
+    """The user is created with no password."""
+    data = {
+        'username': 'testuser',
+    }
+
+    response = admin_api_client.post(reverse('api:users-list'), data=data)
+
+    assert response.status_code == HTTPStatus.CREATED
+
+    user = User.objects.get(username='testuser')
+    assert user.password == ''  # noqa: S105
+
+
+def test_userviewset_create_user_password_mismatch(admin_api_client: APIClient) -> None:
+    """The serializer fails when the passwords don't match."""
+    data = {
+        'username': 'testuser',
+        'password': '123456Opal!!',
+        'password2': 'bar',
+    }
+
+    response = admin_api_client.post(reverse('api:users-list'), data=data)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "The two password fields don't match" in response.content.decode()
+
+
+def test_userviewset_create_user_password_invalid(admin_api_client: APIClient) -> None:
+    """The serializer fails when the password violates the password requirements."""
+    data = {
+        'username': 'testuser',
+        'password': '12345Opal!!',
+        'password2': '12345Opal!!',
+    }
+
+    response = admin_api_client.post(reverse('api:users-list'), data=data)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert 'This password is too short' in response.content.decode()
+
+
+@pytest.mark.xfail
+def test_userviewset_create_user_deactivated(admin_api_client: APIClient) -> None:
+    """The user is created with no password."""
+    user_factories.ClinicalStaff(username='testuser', is_active=False)
+
+    data = {
+        'username': 'testuser',
+    }
+
+    response = admin_api_client.post(reverse('api:users-list'), data=data)
+
+    assert response.status_code == HTTPStatus.CREATED
+
+    user = User.objects.get(username='testuser')
+    assert user.is_active
+
+
+def test_userviewset_create_user_no_group(admin_api_client: APIClient) -> None:
+    """The user is created with no groups."""
+    data = {
+        'username': 'testuser',
+    }
+
+    response = admin_api_client.post(reverse('api:users-list'), data=data)
+
+    assert response.status_code == HTTPStatus.CREATED
+
+    user = User.objects.get(username='testuser')
+    assert user.groups.count() == 0
+
+
 def test_userviewset_create_user_in_group_pass(
     api_client: APIClient,
     user_with_permission: Callable[[str], User],
@@ -269,6 +363,57 @@ def test_userviewset_create_user_in_multiple_groups_pass(api_client: APIClient, 
     assert response_post.status_code == HTTPStatus.CREATED
     assert created_user.username == 'test_user'
     assert created_user.groups.count() == 2
+
+
+def test_userviewset_update_user_password(admin_api_client: APIClient) -> None:
+    """The user can be updated with a new password."""
+    user: ClinicalStaff = user_factories.ClinicalStaff(username='testuser')
+    assert user.check_password('thisisatest')
+
+    token = secrets.token_urlsafe(9)
+    data = {
+        'username': 'testuser',
+        'password': token,
+        'password2': token,
+        'groups': [],
+    }
+
+    response = admin_api_client.put(
+        reverse(
+            'api:users-detail',
+            kwargs={'username': user.username},
+        ),
+        data=data,
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+    user.refresh_from_db()
+    user.check_password(token)
+    assert user.password != token, 'password stored raw'
+
+
+def test_userviewset_update_user_password_unchanged(admin_api_client: APIClient) -> None:
+    """The user can be updated without changing the password."""
+    user: ClinicalStaff = user_factories.ClinicalStaff(username='testuser')
+
+    data = {
+        'username': 'testuser',
+        'groups': [],
+    }
+
+    response = admin_api_client.put(
+        reverse(
+            'api:users-detail',
+            kwargs={'username': user.username},
+        ),
+        data=data,
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+    user.refresh_from_db()
+    user.check_password('thisisatest')
 
 
 def test_userviewset_update_user_in_group_with_permission(

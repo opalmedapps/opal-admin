@@ -17,7 +17,7 @@ from config.settings.base import USER_MANAGER_GROUP_NAME
 
 from ...core.drf_permissions import FullDjangoModelPermissions
 from ..models import ClinicalStaff
-from .serializers import UpdateClinicalStaffUserSerializer, UserClinicalStaffSerializer
+from .serializers import UpdateClinicalStaffGroupSerializer, UserClinicalStaffSerializer
 
 
 class UserViewSet(  # noqa: WPS215 (too many base classes)
@@ -38,10 +38,10 @@ class UserViewSet(  # noqa: WPS215 (too many base classes)
     default_serializer_class = UserClinicalStaffSerializer
     serializer_classes = {
         'create': UserClinicalStaffSerializer,
-        'retrieve': UpdateClinicalStaffUserSerializer,
+        'retrieve': UpdateClinicalStaffGroupSerializer,
         'update': UserClinicalStaffSerializer,
-        'set_manager_user': UpdateClinicalStaffUserSerializer,
-        'unset_manager_user': UpdateClinicalStaffUserSerializer,
+        'set_manager_user': UpdateClinicalStaffGroupSerializer,
+        'unset_manager_user': UpdateClinicalStaffGroupSerializer,
     }
     permission_classes = (FullDjangoModelPermissions,)
 
