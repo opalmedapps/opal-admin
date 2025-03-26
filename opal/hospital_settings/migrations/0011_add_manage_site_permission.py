@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-    """Add `new permission` to the `Site` model."""
+    """Add `can_manage_sites` to the `Site` model."""
 
     dependencies = [
         ('hospital_settings', '0010_add_manage_institution_permission'),

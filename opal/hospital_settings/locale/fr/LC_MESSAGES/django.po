@@ -49,7 +49,7 @@ msgstr "Adresse courriel d'assistance"
 
 #: opal/hospital_settings/models.py
 msgid "Can manage institutions"
-msgstr "Peut gérer des institutions"
+msgstr "Peut gérer des sites"
 
 #: opal/hospital_settings/models.py
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html
