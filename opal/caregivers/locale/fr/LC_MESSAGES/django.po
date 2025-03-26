@@ -176,8 +176,8 @@ msgstr "Vérifié"
 
 #: opal/caregivers/models.py
 msgid "Email Verification"
-msgstr "Vérifications par e-mail"
+msgstr "Vérification par e-mail"
 
 #: opal/caregivers/models.py
 msgid "Email Verifications"
-msgstr "Vérification par e-mail"
+msgstr "Vérifications par e-mail"
