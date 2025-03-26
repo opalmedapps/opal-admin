@@ -33,12 +33,12 @@ class Command(BaseCommand):
         )
 
         for relationship in relationships_to_check:
-            if relationship.patient.date_of_birth is None or relationship.type.end_age is None:
+            if relationship.patient.date_of_birth is None:
                 continue
 
             patient_age = Patient.calculate_age(date_of_birth=relationship.patient.date_of_birth)
 
-            if patient_age >= relationship.type.end_age:
+            if patient_age >= relationship.type.end_age:  # type: ignore[operator]
                 relationship.status = RelationshipStatus.EXPIRED
                 relationship.save()
                 number_of_updates += 1
