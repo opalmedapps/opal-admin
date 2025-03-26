@@ -2,6 +2,8 @@ import io
 import zipfile
 from typing import Any
 
+from django.utils.text import Truncator
+
 from openpyxl import load_workbook
 
 from .. import utils
@@ -381,7 +383,8 @@ def test_dict_to_xlsx_long_sheet_name() -> None:
     }
     xlsx_bytes = utils.dict_to_xlsx(data)
     workbook = load_workbook(io.BytesIO(xlsx_bytes))
-    truncated_sheet_name = long_sheet_name[:utils.SHEET_TITLE_MAX_LENGTH]
+    truncator = Truncator(long_sheet_name)
+    truncated_sheet_name = truncator.chars(num=utils.SHEET_TITLE_MAX_LENGTH)
     assert truncated_sheet_name in workbook.sheetnames
 
 

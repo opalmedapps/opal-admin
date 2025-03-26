@@ -9,6 +9,8 @@ import uuid
 import zipfile
 from typing import Any, TypeAlias
 
+from django.utils.text import Truncator
+
 import qrcode
 from openpyxl import Workbook
 from qrcode.image import svg
@@ -173,7 +175,8 @@ def _add_sheet_to_workbook(workbook: Workbook, sheet_name: str, rows: SheetData)
         rows: the data rows to add to the sheet.
     """
     sheet_name = re.sub(FORBIDDEN_CHARACTERS, '', sheet_name)
-    sheet_name = sheet_name[:SHEET_TITLE_MAX_LENGTH] if len(sheet_name) > SHEET_TITLE_MAX_LENGTH else sheet_name
+    truncator = Truncator(sheet_name)
+    sheet_name = truncator.chars(num=SHEET_TITLE_MAX_LENGTH)
     worksheet = workbook.create_sheet(title=sheet_name)
     # If sheet data is empty, continue to next sheet
     if not rows:
