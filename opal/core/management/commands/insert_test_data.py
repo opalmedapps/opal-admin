@@ -280,7 +280,17 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
     is_pediatric = institution_option == InstitutionOption.ohigph
 
     # patients
-    if not is_pediatric:
+    if is_pediatric:
+        lisa = _create_patient(
+            first_name='Lisa',
+            last_name='Simpson',
+            date_of_birth=_create_date(8, 5, 9),
+            sex=Patient.SexType.FEMALE,
+            ramq='SIML14550999',
+            legacy_id=54,
+            mrns=mrn_data['Lisa Simpson'],
+        )
+    else:
         marge = _create_patient(
             first_name='Marge',
             last_name='Simpson',
@@ -339,16 +349,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
             ramq='ADAW09021399',
             legacy_id=58,
             mrns=mrn_data['Wednesday Addams'],
-        )
-    else:
-        lisa = _create_patient(
-            first_name='Lisa',
-            last_name='Simpson',
-            date_of_birth=_create_date(8, 5, 9),
-            sex=Patient.SexType.FEMALE,
-            ramq='SIML14550999',
-            legacy_id=54,
-            mrns=mrn_data['Lisa Simpson'],
         )
 
     # Bart exists at both institutions
@@ -427,7 +427,18 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
     # relationships
     date_bart_fourteen = _relative_date(bart.date_of_birth, 14)
 
-    if not is_pediatric:
+    if is_pediatric:
+        # Marge --> Lisa: Guardian/Parent
+        _create_relationship(
+            patient=lisa,
+            caregiver=user_marge,
+            relationship_type=type_parent,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -1),
+            start_date=_relative_date(today, -3),
+            end_date=_relative_date(lisa.date_of_birth, 14),
+        )
+    else:
         # Marge --> Marge: Self
         _create_relationship(
             patient=marge,
@@ -513,17 +524,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: C
             request_date=_relative_date(today, -1),
             start_date=_relative_date(today, -3),
             end_date=_relative_date(pebbles.date_of_birth, 14),
-        )
-    else:
-        # Marge --> Lisa: Guardian/Parent
-        _create_relationship(
-            patient=lisa,
-            caregiver=user_marge,
-            relationship_type=type_parent,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -1),
-            start_date=_relative_date(today, -3),
-            end_date=_relative_date(lisa.date_of_birth, 14),
         )
 
     # The rest of the relationships exist at both institutions
