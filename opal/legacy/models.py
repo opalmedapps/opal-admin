@@ -59,7 +59,7 @@ class LegacyNotification(models.Model):
     notificationsernum = models.AutoField(db_column='NotificationSerNum', primary_key=True)
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
-    readby = models.JSONField(db_column='ReadBy', default=[])
+    readby = models.JSONField(db_column='ReadBy', default=list)
     objects: managers.LegacyNotificationManager = managers.LegacyNotificationManager()
 
     class Meta:
@@ -86,7 +86,7 @@ class LegacyAppointment(models.Model):
     checkin = models.IntegerField(db_column='Checkin')
     status = models.CharField(db_column='Status', max_length=100)
     readstatus = models.IntegerField(db_column='ReadStatus')
-    readby = models.JSONField(db_column='ReadBy', default=[])
+    readby = models.JSONField(db_column='ReadBy', default=list)
     objects: managers.LegacyAppointmentManager = managers.LegacyAppointmentManager()
 
     class Meta:
@@ -138,7 +138,7 @@ class LegacyDocument(models.Model):
     documentsernum = models.AutoField(db_column='DocumentSerNum', primary_key=True)
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
-    readby = models.JSONField(db_column='ReadBy', default=[])
+    readby = models.JSONField(db_column='ReadBy', default=list)
     objects: managers.LegacyDocumentManager = managers.LegacyDocumentManager()
 
     class Meta:
@@ -166,7 +166,7 @@ class LegacyEducationalMaterial(models.Model):
     educationalmaterialsernum = models.AutoField(db_column='EducationalMaterialSerNum', primary_key=True)
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
-    readby = models.JSONField(db_column='ReadBy', default=[])
+    readby = models.JSONField(db_column='ReadBy', default=list)
     objects: managers.LegacyEducationalMaterialManager = managers.LegacyEducationalMaterialManager()
 
     class Meta:
