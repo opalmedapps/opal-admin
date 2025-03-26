@@ -86,12 +86,11 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             Column(InlineSubmit(
                 name='',
                 label=gettext('Search Specific Patient'),
-                # need to use a trick to make the primary button look like secondary
-                extra_css='active' if self.is_bound else 'btn-secondary inactive',
+                extra_css=None if self.is_bound else 'btn-secondary',
             )),
             Column(InlineReset(
                 label=gettext('Show Pending Requests'),
-                extra_css='' if self.is_bound else 'btn-primary active',
+                extra_css=None if self.is_bound else 'btn-primary',
             )),
         )
 
