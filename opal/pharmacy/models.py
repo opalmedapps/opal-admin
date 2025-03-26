@@ -57,7 +57,7 @@ class PhysicianPrescriptionOrder(AbstractQuantityTiming):
         Returns:
             string representation
         """
-        return f'Physician Order {self.id} for Patient {self.patient.id}'
+        return f'Filler number {self.filler_order_number}, {self.ordered_by} order for {self.patient}'
 
 
 class PharmacyEncodedOrder(AbstractQuantityTiming):
@@ -120,7 +120,7 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
         Returns:
             string representation
         """
-        return f'Pharmacy Order {self.id} for Prescription {self.physician_prescription_order_id}'
+        return f'Pharmacy encoded prescription of filler order {self.physician_prescription_order.filler_order_number}'
 
 
 class CodedElement(models.Model):
@@ -196,7 +196,7 @@ class PharmacyRoute(models.Model):
         Returns:
             string representation
         """
-        return f'Route for Order {self.pharmacy_encoded_order_id}'
+        return f'Route for filler order {self.pharmacy_encoded_order.physician_prescription_order.filler_order_number}'
 
 
 class ComponentType(models.TextChoices):
@@ -241,4 +241,6 @@ class PharmacyComponent(models.Model):
         Returns:
             string representation
         """
-        return f'{self.get_component_type_display()} Component for Order {self.pharmacy_encoded_order.id}'
+        return 'Component for filler order {0}'.format(
+            self.pharmacy_encoded_order.physician_prescription_order.filler_order_number,
+        )
