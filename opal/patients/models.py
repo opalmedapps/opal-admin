@@ -124,7 +124,11 @@ class Relationship(models.Model):
         Returns:
             the relationship of the User and Patient
         """
-        return '{patient} <--> {caregiver}'.format(patient=str(self.patient), caregiver=str(self.caregiver))
+        return '{patient} <--> {caregiver} [{type}]'.format(
+            patient=str(self.patient),
+            caregiver=str(self.caregiver),
+            type=str(self.type),
+        )
 
     def clean(self) -> None:
         """Validate if start date is earlier than end date.
