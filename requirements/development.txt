@@ -23,6 +23,14 @@ types-fpdf2==2.8.1.20241011
 types-requests==2.32.0.20241016
 types-python-dateutil==2.9.0.20241003
 
+# Static image generation
+#
+kaleido==1.0.0rc0  # https://pypi.org/project/kaleido/1.0.0rc0
+
+# Remote control of browser
+#
+choreographer==0.99.7  # https://pypi.org/project/choreographer/
+
 # Code quality
 #
 flake8==6.1.0  # https://github.com/PyCQA/flake8

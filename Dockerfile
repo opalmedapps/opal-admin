@@ -24,7 +24,10 @@ RUN apk upgrade --no-cache \
   # mysqlclient runtime dependencies
   && apk add --no-cache mariadb-dev \
   # Translation dependencies
-  && apk add --no-cache gettext
+  && apk add --no-cache gettext \
+  # Chromium
+  && apk add --no-cache chromium
+
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
