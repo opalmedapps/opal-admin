@@ -147,9 +147,9 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         email = input_serializer.validated_data['email']
         #  Check whether the email is already registered
         if User.objects.filter(email=email).exists():
-            user = User.objects.get(email=email)
-            self._send_registered_email(email, user)
-            return Response()
+            raise drf_serializers.ValidationError(
+                _('The email is already registered.'),
+            )
 
         verification_code = generate_random_number(constants.VERIFICATION_CODE_LENGTH)
         caregiver = registration_code.relationship.caregiver

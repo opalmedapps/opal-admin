@@ -228,7 +228,7 @@ class TestApiEmailVerification:
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email = admin_user.email
 
-        api_client.post(
+        response = api_client.post(
             reverse(
                 'api:verify-email',
                 kwargs={'code': registration_code.code},
@@ -237,11 +237,13 @@ class TestApiEmailVerification:
             format='json',
         )
 
-        assert len(mail.outbox) == 1
-        assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
-        assert mail.outbox[0].to == [email]
-        assert 'Dear' in mail.outbox[0].body
-        assert mail.outbox[0].subject == 'Your existing Opal account'
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.data == [
+            ErrorDetail(
+                string='The email is already registered.',
+                code='invalid',
+            ),
+        ]
 
     def test_registration_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test registration code not exists."""
