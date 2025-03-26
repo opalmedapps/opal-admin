@@ -8,6 +8,9 @@ from django.utils import timezone
 
 SPLIT_LENGTH = 120
 
+# datetimes in legacy are in the DB in the local timezone
+# whereas Django inserts them as UTC
+# therefore, datetimes need to be converted to UTC to compare them
 LEGACY_PATIENT_QUERY = """
     SELECT
         P.PatientSerNum AS LegacyID,
@@ -52,7 +55,6 @@ LEGACY_CAREGIVER_QUERY = """
         P.PatientSerNum AS LegacyID,
         P.FirstName AS FirstName,
         P.LastName AS LastName,
-        CONVERT(P.TelNum, CHAR) AS Phone,
         LOWER(P.Email) AS Email,
         LOWER(P.Language) AS Language,
         U.Username as Username
@@ -90,7 +92,6 @@ DJANGO_CAREGIVER_QUERY = """
         CC.legacy_id AS LegacyID,
         UU.first_name AS FirstName,
         UU.last_name AS LastName,
-        UU.phone_number AS Phone,
         LOWER(UU.email) AS Email,
         LOWER(UU.language) AS Language,
         UU.username as Username

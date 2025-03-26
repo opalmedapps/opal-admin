@@ -809,9 +809,9 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         ) in error
 
         assert 'opal.caregivers_caregiverprofile  <===>  OpalDB.Patient(UserType="Caregiver"):' in error
-        assert "(51, 'Homer', 'Simpson', '', 'test@test.com', 'en', 'test_username')" in error
+        assert "(51, 'Homer', 'Simpson', 'test@test.com', 'en', 'test_username')" in error
         assert (
-            "(51, 'Homer', 'Simpson', '5149995555', 'test@test.com', 'en', 'username')"
+            "(51, 'Homer', 'Simpson', 'test@test.com', 'en', 'username')"
         ) in error
         assert '{0}\n\n\n'.format(120 * '-')
 
