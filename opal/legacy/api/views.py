@@ -59,18 +59,18 @@ class AppChartView(ListAPIView):
         Returns:
             Http response with the data needed to display the chart view.
         """
-        patient_sernum = kwargs['patient_sernum']
+        legacy_id = kwargs['legacy_id']
         unread_count = {
-            'unread_appointment_count': models.LegacyAppointment.objects.get_unread_queryset(patient_sernum).count(),
-            'unread_document_count': models.LegacyDocument.objects.get_unread_queryset(patient_sernum).count(),
+            'unread_appointment_count': models.LegacyAppointment.objects.get_unread_queryset(legacy_id).count(),
+            'unread_document_count': models.LegacyDocument.objects.get_unread_queryset(legacy_id).count(),
             'unread_txteammessage_count': models.LegacyTxTeamMessage.objects.get_unread_queryset(
-                patient_sernum,
+                legacy_id,
             ).count(),
             'unread_educationalmaterial_count': models.LegacyEducationalMaterial.objects.get_unread_queryset(
-                patient_sernum,
+                legacy_id,
             ).count(),
             'unread_questionnaire_count': models.LegacyQuestionnaire.objects.get_unread_queryset(
-                patient_sernum,
+                legacy_id,
             ).count(),
         }
 
