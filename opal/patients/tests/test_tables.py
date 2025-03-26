@@ -11,7 +11,7 @@ from pytest_mock import MockerFixture
 
 from opal.services.hospital.hospital_data import OIEMRNData
 
-from .. import factories, models, tables
+from .. import constants, factories, models, tables
 
 pytestmark = pytest.mark.django_db
 
@@ -126,7 +126,7 @@ def test_relationships_table_readonly_url(relationship_user: Client) -> None:
     )
 
     form_data = {
-        'card_type': 'mrn',
+        'card_type': constants.MedicalCard.MRN.name,
         'site': hospital_patient.site.id,
         'medical_number': hospital_patient.mrn,
     }
@@ -157,7 +157,7 @@ def test_relationships_table_update_url(relationship_user: Client) -> None:
     )
 
     form_data = {
-        'card_type': 'mrn',
+        'card_type': constants.MedicalCard.MRN.name,
         'site': hospital_patient.site.id,
         'medical_number': hospital_patient.mrn,
     }

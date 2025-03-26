@@ -2,7 +2,7 @@
 import base64
 import io
 import json
-from collections import Counter, OrderedDict
+from collections import OrderedDict
 from datetime import date
 from http import HTTPStatus
 from typing import Any, Dict, List, Optional, Tuple, Type
@@ -40,6 +40,7 @@ from .filters import ManageCaregiverAccessFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .utils import create_access_request
+from .validators import has_multiple_mrns_with_same_site_code, is_deceased
 
 _StorageValue = str | dict[str, Any]
 
@@ -174,10 +175,6 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                     current_forms.append(next_form_class(**self._get_form_kwargs(next_step)))
                 else:
                     return self._done(current_forms)
-            else:
-                print("some forms are invalid (or the next button wasn't clicked)")
-                for form in current_forms:
-                    print(form.errors)
 
             context_data = self.get_context_data(
                 current_forms=current_forms,
@@ -240,11 +237,8 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
         if current_step == 'confirm' or next_step == 'confirm':
             # populate relationship type (in case it is just the ID)
             relationship_form.full_clean()
-            user_type = relationship_form.cleaned_data['user_type']
-            # might be helpful to use an enum like done with MedicalCard
-            is_existing_user = user_type == '1'
 
-            if is_existing_user:
+            if relationship_form.existing_user_selected(relationship_form.cleaned_data):
                 context_data['next_button_text'] = 'Submit Access Request'
 
         # TODO: might not be needed anymore
@@ -254,8 +248,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
 
     def _done(self, current_forms: list[Form]) -> HttpResponse:  # noqa: WPS210 (too many local variables)
         patient_form: forms.AccessRequestConfirmPatientForm = current_forms[1]  # type: ignore[assignment]
-        # at this point the patient cannot be None
-        patient: Patient | OIEPatientData = patient_form.patient  # type: ignore[assignment]
+        patient = patient_form.patient
 
         relationship_form: forms.AccessRequestRequestorForm = current_forms[2]  # type: ignore[assignment]
         # populate relationship type (in case it is just the ID)
@@ -363,11 +356,10 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
         if step == 'search':
             # form type is the search form which has the patient attribute
             patient = form.patient  # type: ignore[attr-defined]
-            # TODO: patient could also be an actual Patient instance, need to add support
-            # convert it to a dictionary to be able to serialize it into JSON
             if isinstance(patient, Patient):
                 storage['patient'] = patient.pk  # type: ignore[assignment]
             else:
+                # convert it to a dictionary to be able to serialize it into JSON
                 data_dict = patient._asdict()  # noqa: WPS437
                 data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]  # noqa: WPS437
                 # use DjangoJSONEncoder which supports date/datetime
@@ -397,7 +389,6 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
             patient_data: str = storage.get('patient', '[]')  # type: ignore[assignment]
             if isinstance(patient_data, int):
                 patient = Patient.objects.get(pk=patient_data)
-                date_of_birth = patient.date_of_birth
             else:
                 patient_json = json.loads(patient_data)
                 date_of_birth = date.fromisoformat(patient_json['date_of_birth'])
@@ -409,14 +400,9 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
                 patient_json['date_of_birth'] = date_of_birth
                 patient = OIEPatientData(**patient_json)
 
-            if step == 'patient':
-                kwargs.update({
-                    'patient': patient,
-                })
-            else:
-                kwargs.update({
-                    'date_of_birth': date_of_birth,
-                })
+            kwargs.update({
+                'patient': patient,
+            })
         elif step == 'confirm':
             kwargs.update({
                 'username': self.request.user.username,
@@ -872,20 +858,6 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
                 processed_form_date[key] = value
         return processed_form_date
 
-    def _has_multiple_mrns_with_same_site_code(self, patient_record: OIEPatientData) -> bool:
-        """
-        Check if the number of MRN records with the same site code is greater than 1.
-
-        Args:
-            patient_record: patient record search by RAMQ or MRN
-
-        Returns:
-            True if the number of MRN records with the same site code is greater than 1
-        """
-        mrns = patient_record.mrns
-        key_counts = Counter(mrn_dict.site for mrn_dict in mrns)
-        return any(count > 1 for (site, count) in key_counts.items())
-
     def _is_searched_patient_deceased(self, patient_record: OIEPatientData) -> bool:
         """
         Check if the searched patient is deceased.
@@ -913,12 +885,12 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         Returns:
             the template context for step 'confirm'
         """
-        if self._is_searched_patient_deceased(patient_record):
+        if is_deceased(patient_record):
             context.update({
                 'error_message': _('Unable to complete action with this patient. Please contact Medical Records.'),
             })
 
-        elif self._has_multiple_mrns_with_same_site_code(patient_record):
+        elif has_multiple_mrns_with_same_site_code(patient_record):
             context.update({
                 'error_message': _('Please note multiple MRNs need to be merged by medical records.'),
             })

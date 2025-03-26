@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-28 21:03-0400\n"
+"POT-Creation-Date: 2023-06-05 11:52-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,7 +50,7 @@ msgstr "Utilisateur Opal existant"
 msgid "Card Type"
 msgstr "Type de Carte"
 
-#: opal/patients/filters.py
+#: opal/patients/filters.py opal/patients/forms.py
 msgid "Choose..."
 msgstr "Choisir..."
 
@@ -69,6 +69,29 @@ msgstr "Rechercher l'accès des patients"
 #: opal/patients/filters.py
 msgid "Show Pending Requests"
 msgstr "Afficher les demandes en attente"
+
+#: opal/patients/forms.py
+msgid "Not required"
+msgstr "Non requis"
+
+#: opal/patients/forms.py opal/patients/tables.py
+msgid "No patient could be found."
+msgstr "Aucun patient n'a pu être retrouvé."
+
+#: opal/patients/forms.py opal/patients/views.py
+msgid ""
+"Unable to complete action with this patient. Please contact Medical Records."
+msgstr ""
+"Impossible de compléter la requête pour ce patient. Veuillez contacter le "
+"département des archives médicales."
+
+#: opal/patients/forms.py
+msgid ""
+"Patient has more than one active MRN at the same hospital, please contact "
+"Medical Records."
+msgstr ""
+"Le patient a plus d'un MRN actif, veuillez consulter département des "
+"archives médicales."
 
 #: opal/patients/forms.py
 msgid "Relationship to the patient"
@@ -95,10 +118,6 @@ msgstr "Adresse courriel"
 #: opal/patients/forms.py
 msgid "Phone Number"
 msgstr "Numéro de téléphone"
-
-#: opal/patients/forms.py
-msgid "A request form is required for the selected relationship."
-msgstr ""
 
 #: opal/patients/forms.py
 msgid ""
@@ -492,10 +511,6 @@ msgid "MRN"
 msgstr "MRN"
 
 #: opal/patients/tables.py
-msgid "No patient could be found."
-msgstr "Aucun patient n'a pu être retrouvé."
-
-#: opal/patients/tables.py
 msgid "No existing user could be found."
 msgstr "Aucun utilisateur existant n'a pu être trouvé."
 
@@ -672,13 +687,6 @@ msgstr "Patient de l'hôpital"
 #: opal/patients/views.py
 msgid "Confirm access to patient data"
 msgstr "Confirmer l'accès aux données du patient"
-
-#: opal/patients/views.py
-msgid ""
-"Unable to complete action with this patient. Please contact Medical Records."
-msgstr ""
-"Impossible de compléter la requête pour ce patient. Veuillez contacter le "
-"département des archives médicales."
 
 #: opal/patients/views.py
 msgid "Please note multiple MRNs need to be merged by medical records."
