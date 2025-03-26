@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * feat: add a pathology PDF generator for producing reports (!791)
 * feat: add usage_statistics app to store users' and patients' activity statistics (!1100)
 * feat: add management command for populating statistics to DailyUserAppActivity and DailyUserPatientActivity models (!1133)
+* feat: finalize management command for sending five types of databank data (!1180)
 
 ### Documentation
 
