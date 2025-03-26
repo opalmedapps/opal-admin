@@ -133,6 +133,7 @@ class Device(models.Model):
     class Meta:
         verbose_name = _('Device')
         verbose_name_plural = _('Devices')
+        unique_together = [['caregiver_id', 'device_id']]
 
         constraints = [
             models.CheckConstraint(
