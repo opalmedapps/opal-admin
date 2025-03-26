@@ -23,7 +23,10 @@ def test_relationshiptypes_list(user_client: Client) -> None:
     response = user_client.get(reverse('patients:relationshiptype-list'))
     response.content.decode('utf-8')
 
-    assertQuerysetEqual(response.context['relationshiptype_list'], models.RelationshipType.objects.order_by('id'))
+    assertQuerysetEqual(
+        response.context['relationshiptype_list'].order_by('name'),
+        models.RelationshipType.objects.all(),
+    )
 
     for relationship_type in types:
         assertContains(response, f'<td >{relationship_type.name}</td>')
