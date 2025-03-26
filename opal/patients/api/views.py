@@ -12,6 +12,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView,
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer
 from rest_framework.views import APIView
 
 from opal.caregivers import models as caregiver_models
@@ -242,26 +243,21 @@ class PatientUpdateView(UpdateAPIView):
     lookup_url_kwarg = 'legacy_id'
     lookup_field = 'legacy_id'
 
-    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Update the patient data_access.
+    def get_serializer(self, *args: Any, **kwargs: Any) -> Any:
+        """Return the serializer instance that should be used for validating.
+
+        And deserializing input, and for serializing output.
 
         Args:
-            request: request object with parameters to update or create
             args: varied amount of non-keyword arguments
             kwargs: varied amount of keyword arguments
 
         Returns:
-            HTTP `Response` success or failure
+            BaseSerializer
         """
-        serializer = self.serializer_class(fields=('data_access',), data=request.data)
-        serializer.is_valid(raise_exception=True)
-        patient_data = serializer.validated_data
-        legacy_id = self.kwargs['legacy_id']
-        patient = get_object_or_404(self.get_queryset().filter(legacy_id=legacy_id))
-        patient.data_access = patient_data['data_access']
-        patient.save()
-
-        return Response()
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        return serializer_class(fields=('data_access',), *args, **kwargs)
 
 
 class PatientExistsView(APIView):
