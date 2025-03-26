@@ -284,7 +284,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         """
         factory = svg.SvgImage
         img = qrcode.make(
-            '{0}#!/?code={1}'.format(settings.OPAL_USER_REGISTRATION_URL, registration_code),
+            '{0}{1}'.format(settings.OPAL_USER_REGISTRATION_URL, registration_code),
             image_factory=factory,
             box_size=constants.QR_CODE_BOX_SIZE,
         )
