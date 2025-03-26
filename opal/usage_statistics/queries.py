@@ -681,13 +681,6 @@ def fetch_patient_labs_statistics_report() -> list[dict[str, Any]]:
         number_test=models.Count('last_lab_received'),
         number_lab_received=models.Sum('labs_received'),
         average_labs_per_test=models.F('number_lab_received') / models.F('number_test'),
-    ).values(
-        'patient_sernum',
-        'first_received',
-        'last_received',
-        'number_test',
-        'number_lab_received',
-        'average_labs_per_test',
     ).order_by('patient_sernum')
     return list(lab_report.all())
 
