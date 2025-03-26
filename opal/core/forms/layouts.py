@@ -125,7 +125,7 @@ class FormActions(CrispyFormActions):
         )
 
 
-class Field(Layout):
+class Field(CrispyFormField):
     """Default field look and feel."""
 
     default_wrapper_class = 'fw-bold'
