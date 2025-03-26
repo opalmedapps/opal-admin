@@ -20,8 +20,8 @@ def test_get_questionnaire_databank_data() -> None:
     See opal/tests/sql/test_QuestionnaireDB.sql
     """
     # Prepare patients and last cron run time
-    non_consenting_patient = factories.LegacyPatientFactory(external_id=52)
-    consenting_patient = factories.LegacyPatientFactory(external_id=51)
+    non_consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=52)
+    consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=51)
     last_cron_sync_time = datetime(2023, 1, 1, 0, 0, 5)
 
     # Fetch the data
@@ -69,7 +69,7 @@ def test_new_questionnaires_patient_caregiver() -> None:
     """
     caregiver = caregiver_factories.Caregiver(username='test_new_questionnaires')
     caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
-    legacy_patient = factories.LegacyPatientFactory()
+    legacy_patient = factories.LegacyQuestionnairePatientFactory()
     patient = patient_factories.Patient(legacy_id=legacy_patient.external_id)
     relationship_type = patient_factories.RelationshipType(
         can_answer_questionnaire=True,
@@ -143,7 +143,7 @@ def test_new_questionnaires_return_empty_without_rependont_matching() -> None:
     """
     caregiver = caregiver_factories.Caregiver(username='test_new_questionnaires')
     caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
-    legacy_patient = factories.LegacyPatientFactory()
+    legacy_patient = factories.LegacyQuestionnairePatientFactory()
     patient = patient_factories.Patient(legacy_id=legacy_patient.external_id)
     relationship_type = patient_factories.RelationshipType(
         can_answer_questionnaire=False,

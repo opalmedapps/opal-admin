@@ -9,8 +9,8 @@ from django.utils import timezone
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Site
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
-from opal.legacy_questionnaires.models import LegacyPatient as QDB_LegacyPatient
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as QDB_LegacyQuestionnaire
+from opal.legacy_questionnaires.models import LegacyQuestionnairePatient
 from opal.patients.models import Patient, Relationship
 
 from .models import (  # noqa: WPS235
@@ -45,7 +45,7 @@ ACCESS_LEVEL_MAPPING = MappingProxyType({
 DatabankControlRecords: TypeAlias = Union[
     tuple[
         LegacyEducationalMaterialControl,
-        QDB_LegacyPatient,
+        LegacyQuestionnairePatient,
         QDB_LegacyQuestionnaire,
         LegacyQuestionnaireControl,
     ],
@@ -435,7 +435,7 @@ def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRe
     ).first()
 
     # If the questionnaireDB patient population event hasnt run yet, create the patient record
-    qdb_patient, _ = QDB_LegacyPatient.objects.get_or_create(
+    qdb_patient, created = LegacyQuestionnairePatient.objects.get_or_create(
         external_id=django_patient.legacy_id,
         defaults={
             'hospital_id': -1,
@@ -445,6 +445,8 @@ def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRe
             'deleted_by': '',
         },
     )
+    print(qdb_patient)
+    print(created)
     # Exit if we fail to locate the consent form or the educational material in the db
     if not (qdb_questionnaire_control and info_sheet and questionnaire_control):
         return None

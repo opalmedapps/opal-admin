@@ -20,7 +20,7 @@ from opal.core import constants
 from opal.legacy import factories as legacy_factories
 from opal.legacy.models import LegacyEducationalMaterialControl
 from opal.legacy_questionnaires import factories
-from opal.legacy_questionnaires.models import LegacyPatient, LegacyQuestionnaire
+from opal.legacy_questionnaires.models import LegacyQuestionnaire, LegacyQuestionnairePatient
 from opal.users.models import User
 
 LEGACY_TEST_PATIENT_ID = 51
@@ -335,33 +335,49 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
 
 @pytest.fixture(scope='session', autouse=True)
 def django_db_setup(django_db_setup: None, django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004, WPS442
-    """Add test_QuestionnaireDB setup by executing code in tests/sql.
+    """
+    Set up the QuestionnaireDB manually using an SQL file with the schema.
 
     Args:
         django_db_setup: pytest django's original DB setup fixture
         django_db_blocker: pytest fixture to allow database access here only
     """
-    # load test questionnaire db sql
-    with Path('opal/tests/sql/test_QuestionnaireDB.sql').open(encoding='ISO-8859-1') as handle:
+    with Path('opal/tests/sql/questionnairedb_schema.sql').open(encoding='ISO-8859-1') as handle:
         sql_content = handle.read()
-        handle.close()
 
     with django_db_blocker.unblock():
         with connections['questionnaire'].cursor() as conn:
             conn.execute(sql_content)
-            conn.close()
+
+
+@pytest.fixture
+def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004
+    """
+    Initialize the QuestionnaireDB with data.
+
+    Existing data will be deleted.
+
+    Args:
+        django_db_blocker: pytest fixture to allow database access here only
+    """
+    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='ISO-8859-1') as handle:
+        sql_data = handle.read()
+
+    with django_db_blocker.unblock():
+        with connections['questionnaire'].cursor() as conn:
+            conn.execute(sql_data)
 
 
 @pytest.fixture
 def databank_consent_questionnaire_and_response(  # noqa: WPS210
-) -> tuple[LegacyPatient, LegacyQuestionnaire]:
+) -> tuple[LegacyQuestionnairePatient, LegacyQuestionnaire]:
     """Add a full databank consent questionnaire and simple response to test setup.
 
     Returns:
         The corresponding legacy patient record who is linked to this answer, and the questionnaire
     """
     # Legacy patient record
-    consenting_patient = factories.LegacyPatientFactory(external_id=LEGACY_TEST_PATIENT_ID)
+    consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=LEGACY_TEST_PATIENT_ID)
     # Questionnaire content, content ids must be non overlapping with existing test_QuestionnaireDB SQL
     middle_name_content = factories.LegacyDictionaryFactory(
         content_id=LEGACY_DICTIONARY_CONTENT_ID,
@@ -471,3 +487,13 @@ def set_databank_disabled(settings: LazySettings) -> None:  # noqa: PT004
         settings: the fixture providing access to the Django settings
     """
     settings.DATABANK_ENABLED = False
+
+
+@pytest.fixture(autouse=True)
+def set_databank_enabled(settings: LazySettings) -> None:  # noqa: PT004
+    """Fixture disables the databank for the unit test.
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.DATABANK_ENABLED = True

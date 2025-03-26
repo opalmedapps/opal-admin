@@ -95,7 +95,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         """Test fetching the existing data of patients who have consented."""
         django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
         legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
-        legacy_questionnaire_factories.LegacyPatientFactory(external_id=51)
+        legacy_questionnaire_factories.LegacyQuestionnairePatientFactory(external_id=51)
         # Must set the last sync date to before the hardcoded last_updated date in our test_QuestionnaireDB.sql data
         last_sync = datetime(2022, 1, 1)
         databank_patient = databank_factories.DatabankConsent(

@@ -320,7 +320,7 @@ def test_fetch_databank_control_records(
     # Setup patient records
     django_patient = patient_factories.Patient(ramq='SIMB04100199')
     factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
-    legacy_qdb_patient = questionnaire_factories.LegacyPatientFactory(external_id=django_patient.legacy_id)
+    legacy_qdb_patient = questionnaire_factories.LegacyQuestionnairePatientFactory(external_id=django_patient.legacy_id)
     consent_form = databank_consent_questionnaire_data[0]
     info_sheet = databank_consent_questionnaire_data[1]
     result = legacy_utils.fetch_databank_control_records(django_patient)
@@ -403,7 +403,7 @@ def test_create_databank_patient_consent_data(
     info_sheet = databank_consent_questionnaire_data[1]
     response = legacy_utils.create_databank_patient_consent_data(django_patient)
 
-    qdb_patient = questionnaire_models.LegacyPatient.objects.get(
+    qdb_patient = questionnaire_models.LegacyQuestionnairePatient.objects.get(
         external_id=django_patient.legacy_id,
     )
     inserted_answer_questionnaire = questionnaire_models.LegacyAnswerQuestionnaire.objects.get(

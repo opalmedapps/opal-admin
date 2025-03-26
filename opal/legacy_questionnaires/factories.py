@@ -29,6 +29,8 @@ class LegacyDictionaryFactory(DjangoModelFactory):
     table = SubFactory(LegacyDefinitionTableFactory)
     language_id = 1
     creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    created_by = 'TestUser'
+    updated_by = 'TestUser'
 
 
 class LegacyPurposeFactory(DjangoModelFactory):
@@ -71,11 +73,12 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     legacyname = 'Test Questionnaire'
 
 
-class LegacyPatientFactory(DjangoModelFactory):
+class LegacyQuestionnairePatientFactory(DjangoModelFactory):
     """Patient factory from the legacy questionnaire database."""
 
     class Meta:
-        model = models.LegacyPatient
+        model = models.LegacyQuestionnairePatient
+        django_get_or_create = ('external_id',)
 
     external_id = 51
     hospital_id = -1
@@ -92,7 +95,7 @@ class LegacyAnswerQuestionnaireFactory(DjangoModelFactory):
         model = models.LegacyAnswerQuestionnaire
 
     questionnaire = SubFactory(LegacyQuestionnaireFactory)
-    patient = SubFactory(LegacyPatientFactory)
+    patient = SubFactory(LegacyQuestionnairePatientFactory)
     status = 0
     creation_date = timezone.make_aware(datetime(2022, 9, 27))
     deleted_by = 'Test User'
@@ -265,7 +268,7 @@ class LegacyAnswerFactory(DjangoModelFactory):
     type = SubFactory(LegacyTypeFactory)  # noqa: A003
     answer_section = SubFactory(LegacyAnswerSectionFactory)
     language = SubFactory(LegacyLanguageFactory)
-    patient = SubFactory(LegacyPatientFactory)
+    patient = SubFactory(LegacyQuestionnairePatientFactory)
     answered = Faker('boolean')
     skipped = Faker('boolean')
     deleted = Faker('boolean')

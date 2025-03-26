@@ -30,8 +30,8 @@ from opal.legacy.models import (
     LegacyUserType,
 )
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
-from opal.legacy_questionnaires.models import LegacyPatient as qdb_LegacyPatient
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as qdb_LegacyQuestionnaire
+from opal.legacy_questionnaires.models import LegacyQuestionnairePatient
 from opal.patients import factories as patient_factories
 from opal.patients.models import (
     PREDEFINED_ROLE_TYPES,
@@ -890,7 +890,7 @@ def test_create_access_request_new_patient_and_databank_consent(
     consent_form = databank_consent_questionnaire_data[0]
     info_sheet = databank_consent_questionnaire_data[1]
     # Search for the expected databank records
-    qdb_patient = qdb_LegacyPatient.objects.get(  # type: ignore[misc]
+    qdb_patient = LegacyQuestionnairePatient.objects.get(  # type: ignore[misc]
         external_id=patient.legacy_id,
     )
     inserted_answer_questionnaire = LegacyAnswerQuestionnaire.objects.get(
@@ -947,7 +947,7 @@ def test_create_access_request_new_patient_databank_disabled(
     # Ensure records are not created
     message = 'LegacyPatient matching query does not exist.'
     with assertRaisesMessage(ObjectDoesNotExist, message):
-        qdb_LegacyPatient.objects.get(  # type: ignore[misc]
+        LegacyQuestionnairePatient.objects.get(  # type: ignore[misc]
             external_id=patient.legacy_id,
         )
     message = 'LegacyEducationalMaterial matching query does not exist.'

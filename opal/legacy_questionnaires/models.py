@@ -53,7 +53,9 @@ class LegacyDictionary(models.Model):
     content = models.CharField(db_column='content', max_length=255)
     deleted = models.SmallIntegerField(db_column='deleted', default=0)
     creation_date = models.DateTimeField(db_column='creationDate')
+    created_by = models.CharField(db_column='createdBy', max_length=255)
     last_updated = models.DateTimeField(auto_now=True, db_column='lastUpdated')
+    updated_by = models.CharField(db_column='updatedBy', max_length=255)
 
     class Meta:
         managed = False
@@ -164,7 +166,7 @@ class LegacyQuestionnaire(models.Model):
         db_table = 'questionnaire'
 
 
-class LegacyPatient(models.Model):
+class LegacyQuestionnairePatient(models.Model):
     """Patient model from the legacy database QuestionnaireDB.
 
     The patients in this table relate to OpalDB.Patient instances through the externalId.
@@ -175,7 +177,7 @@ class LegacyPatient(models.Model):
     external_id = models.IntegerField(db_column='externalId')
     deleted = models.SmallIntegerField(db_column='deleted', default=0)
     creation_date = models.DateTimeField(db_column='creationDate')
-    deleted_by = models.CharField(db_column='deletedBy', max_length=255)
+    deleted_by = models.CharField(db_column='deletedBy', max_length=255, blank=True)
     created_by = models.CharField(db_column='createdBy', max_length=255)
     updated_by = models.CharField(db_column='updatedBy', max_length=255)
     last_updated = models.DateTimeField(auto_now=True, db_column='lastUpdated')
@@ -200,7 +202,7 @@ class LegacyAnswerQuestionnaire(models.Model):
         to_field='id',
     )
     patient = models.ForeignKey(
-        LegacyPatient,
+        LegacyQuestionnairePatient,
         models.DO_NOTHING,
         db_column='patientId',
         to_field='id',
@@ -569,7 +571,7 @@ class LegacyAnswer(models.Model):
         to_field='id',
     )
     patient = models.ForeignKey(
-        LegacyPatient,
+        LegacyQuestionnairePatient,
         models.DO_NOTHING,
         db_column='patientId',
         to_field='id',
