@@ -57,7 +57,6 @@ class Command(BaseCommand):  # noqa: WPS214
             help='Specify maximum wait time per-api call to the OIE [seconds]. Default 120.',
         )
 
-    @transaction.atomic
     def handle(self, *args: Any, **options: Any) -> None:  # noqa: WPS231
         """
         Handle sending patients de-identified data to the databank.
