@@ -167,7 +167,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         if ('following' in request.POST.keys()):
             toggle = True
 
-        self._update_questionnaires_following(
+        QuestionnaireProfile.update_questionnaires_following(
             request.POST['questionnaireid'],
             request.POST['questionnairename'],
             requestor,
@@ -201,29 +201,6 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         )
 
         return self.render_to_response(context)
-
-    def _update_questionnaires_following(self, qid: str, qname: str, user: User, toggle: bool) -> None:
-        """Update the questionnaires following list for specific user.
-
-        Args:
-            qid: questionnaire id number
-            qname: questionnaire title
-            user: requesting user object
-            toggle: add or remove qid from list
-        """
-        questionnaires_following, _ = QuestionnaireProfile.objects.get_or_create(
-            user=user,
-        )
-
-        if (toggle):
-            questionnaires_following.questionnaire_list[qid] = {
-                'title': qname,
-                'lastviewed': datetime.now().strftime('%Y-%m-%d'),
-            }
-            questionnaires_following.save()
-        elif qid in questionnaires_following.questionnaire_list:
-            questionnaires_following.questionnaire_list.pop(qid)
-            questionnaires_following.save()
 
 
 # EXPORT REPORTS VIEW REPORT (Downloaded csv)

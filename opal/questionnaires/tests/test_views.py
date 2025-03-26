@@ -49,7 +49,7 @@ def test_dashboard_forms_exist(user_client: Client) -> None:
     test_questionnaire_profile.user.save()
     user_client.force_login(test_questionnaire_profile.user)
 
-    response = user_client.get(reverse('questionnaires:reports-dashboard'))
+    response = user_client.get(reverse('questionnaires:reports'))
     soup = BeautifulSoup(response.content, 'html.parser')
     forms = soup.find_all('form')
     links = soup.find_all('a', href=re.compile('^/questionnaires/reports/list/'))
