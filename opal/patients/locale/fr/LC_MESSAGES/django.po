@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-14 01:08+0000\n"
+"POT-Creation-Date: 2023-04-25 18:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -151,10 +151,10 @@ msgstr "Confirmer"
 msgid "The password you entered is incorrect. Please try again."
 msgstr "Le mot de passe que vous avez entré est incorrect. Veuillez réessayer."
 
-#: opal/patients/forms.py opal/patients/models.py
-#: opal/patients/templates/patients/relationship_type/form.html
-msgid "Relationship Type"
-msgstr "Type de relation avec le proche aidant"
+#: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
+#: opal/patients/templates/patients/relationships/edit_relationship.html
+msgid "Relationship"
+msgstr "Relation"
 
 #: opal/patients/forms.py
 msgid "Save"
@@ -330,6 +330,11 @@ msgid "Revoked"
 msgstr "Révoqué"
 
 #: opal/patients/models.py
+#: opal/patients/templates/patients/relationship_type/form.html
+msgid "Relationship Type"
+msgstr "Type de relation avec le proche aidant"
+
+#: opal/patients/models.py
 msgid "Relationship Status"
 msgstr "Statut de la relation"
 
@@ -352,11 +357,6 @@ msgstr "Date de fin de relation"
 #: opal/patients/models.py
 msgid "Can manage relationships"
 msgstr "Types de relations avec le proche aidant"
-
-#: opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/relationships/edit_relationship.html
-msgid "Relationship"
-msgstr "Relation"
 
 #: opal/patients/models.py
 msgid "Relationships"
