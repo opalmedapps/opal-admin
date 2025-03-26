@@ -464,8 +464,16 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         mrns_and_sites_multiline = '\n'.join(
             [f'{site_mrn["site_code"]}# : {site_mrn["mrn"]}' for site_mrn in sites_and_mrns],
         )
-        site_city = f'{str(self.pathology_data.site_city)} ({str(self.pathology_data.site_province)}) {str(self.pathology_data.site_postal_code)}' if str(self.pathology_data.site_city) else ''  # noqa: E501, WPS221
-        site_phone = f'Tél. : {str(self.pathology_data.site_phone)}' if str(self.pathology_data.site_phone) else ''  # noqa: E501, WPS221
+        site_city = ''
+        if self.pathology_data.site_city:
+            site_city = (
+                f'{self.pathology_data.site_city} '
+                + f'({self.pathology_data.site_province}) '
+                + f'{self.pathology_data.site_postal_code}'
+            )
+        site_phone = ''
+        if self.pathology_data.site_phone:
+            site_phone = f'Tél. : {self.pathology_data.site_phone}'
         return [
             {
                 'name': 'site_logo',
@@ -497,7 +505,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': str(self.pathology_data.site_name),
+                'text': self.pathology_data.site_name,
                 'priority': 0,
                 'multiline': False,
             },
@@ -514,7 +522,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': str(self.pathology_data.site_building_address),
+                'text': self.pathology_data.site_building_address,
                 'priority': 0,
                 'multiline': False,
             },
