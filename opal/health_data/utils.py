@@ -39,7 +39,7 @@ def build_all_quantity_sample_charts(patient: Patient) -> dict[str, Optional[str
             data=QuantitySample.objects.order_by('start_date').filter(
                 patient=patient,
                 type=sample_type,
-            ).values('start_date', 'value', 'device', 'device'),
+            ).values('start_date', 'value', 'device'),
         )
 
         if df.empty:
