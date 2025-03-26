@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
     """Add `data_access` to the `Patient` model to reflect the patient's desired level for data access."""
 
     dependencies = [
-        ('patients', '0021_alter_relationshiptype_names'),
+        ('patients', '0022_alter_relationship_names'),
     ]
 
     operations = [
