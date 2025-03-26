@@ -21,6 +21,11 @@ urlpatterns = [
         views.ManagePendingUpdateView.as_view(),
         name='relationships-pending-update',
     ),
+    path(
+        'relationships/pending/<int:pk>/readonly/',
+        views.ManagePendingReadOnlyView.as_view(),
+        name='relationships-pending-readonly',
+    ),
     # Relationship Types Pages
     path(
         'relationship-types/',
