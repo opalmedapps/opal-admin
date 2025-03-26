@@ -1,6 +1,5 @@
 """This module provides views for hospital-specific settings."""
 import base64
-import datetime as dt
 import io
 import json
 from collections import Counter, OrderedDict
@@ -37,7 +36,7 @@ from opal.users.models import Caregiver
 
 from . import constants
 from .filters import ManageCaregiverAccessFilter
-from .forms import RelationshipAccessForm, RelationshipTypeUpdateForm
+from .forms import RelationshipAccessForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 
 
@@ -92,13 +91,13 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
         'search': forms.NewAccessRequestForm,
         'patient': forms.AccessRequestConfirmPatientForm,
         'relationship': forms.RequestorDetailsForm,
-        'requestor': forms.AccessRequestUserForm,
+        'confirm': forms.ConfirmPasswordForm,
     })
     texts = {
         'search': 'Find Patient',
         'patient': 'Confirm Patient Data',
         'relationship': 'Continue',
-        'requestor': 'Create Access Request',
+        'confirm': 'Confirm',
     }
     _current_step_name = 'current_step'
     _session_key_name = 'access_request'
@@ -154,14 +153,12 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
 
         cleaned_data = form.cleaned_data
         for key, value in cleaned_data.items():
+            # convert model instances to their primary key
+            # to support serializing them to JSON
             if isinstance(value, Model):
-                cleaned_data[key] = value.id
-
-        print(cleaned_data)
+                cleaned_data[key] = value.pk
 
         storage[f'step_{step}'] = cleaned_data
-        # print(form.cleaned_data)
-        # print(form.data)
 
         if step == 'search':
             patient = form.patient
@@ -169,7 +166,6 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
             data_dict = patient._asdict()
             data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]
             storage['patient'] = json.dumps(data_dict, cls=DjangoJSONEncoder)
-            print(storage['patient'])
 
         self.request.session.modified = True
 
@@ -188,30 +184,37 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
             patient_json: str = storage.get('patient', '[]')  # type: ignore[assignment]
             patient = json.loads(patient_json)
             kwargs.update({
-                'date_of_birth': date.fromisoformat(patient['date_of_birth'])
+                'date_of_birth': date.fromisoformat(patient['date_of_birth']),
             })
-
-        print(kwargs)
 
         return kwargs
 
     def get_forms(self, current_step: str) -> list[Form]:
-        forms = []
+        form_list = []
         for step, form_class in self.forms.items():
-            print(step == current_step)
             data = self.request.POST if step == current_step else self.get_saved_form_data(step)
-            print(data)
+            # initial needs to be the data to make previous forms (with disabled fields) valid (validation then uses the initial data)
+            initial = data
+
+            # use initial instead of data to avoid validating a form when up-validate is used
+            # if step == current_step and 'X-Up-Validate' in self.request.headers:
+            #     data = None
+            #     initial = {
+            #         key.replace(f'{current_step}-', ''): value
+            #         for key, value in self.request.POST.items()
+
+            #     }
+
             disable_fields = step != current_step
-            form = form_class(data=data, initial=data, **self.get_form_kwargs(step))
+            form = form_class(data=data, initial=initial, **self.get_form_kwargs(step))
+
             if disable_fields:
-                print(f'disable form fields for step {step}')
-                print(form.data)
                 form.disable_fields()
-            forms.append(form)
+            form_list.append(form)
             if step == current_step:
                 break
 
-        return forms
+        return form_list
 
     def next_step(self, current_step: str) -> Optional[str]:
         keys = list(self.forms.keys())
@@ -241,20 +244,14 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
             next_step = current_step
             # get all current forms and validate them
             current_forms = self.get_forms(current_step)
-            print(current_forms)
 
             if all(form.is_valid() for form in current_forms):
-                print('all valid')
                 # store data for current step in session
                 current_form = current_forms[-1]
-                print(type(current_form))
-                print(current_form.cleaned_data)
                 self.store_form_data(current_form, current_step)
                 current_form.disable_fields(current_form.cleaned_data)
 
-                # print(current_form)
                 next_step = self.next_step(current_step)
-                print(next_step)
 
                 if next_step:
                     next_form_class = self.forms[next_step]
@@ -292,18 +289,12 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):
 
         for current_form in current_forms:
             prefix = self.get_the_prefix(current_form.__class__)
-            print(prefix)
-            # print(current_form)
             context_data[f'{prefix}_form'] = current_form
 
         disable_next = False
 
         if len(current_forms) >= 2 and current_forms[0].is_valid():
             patient_form = current_forms[1]
-            print('patient form')
-            print(patient_form.patient)
-            print(patient_form.is_valid())
-            print(patient_form.errors)
             if patient_form.patient:
                 patients = [patient_form.patient]
             else:

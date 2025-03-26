@@ -5,18 +5,24 @@ from typing import Any, Dict, Optional, Union
 from django import forms
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
+from django.forms.fields import Field
 from django.urls import reverse_lazy
+from django.utils.safestring import SafeString
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import HTML, ButtonHolder, Column, Fieldset, Hidden, Layout, Reset, Row, Submit
+from crispy_forms.layout import HTML, ButtonHolder, Column, Div
+from crispy_forms.layout import Field as CrispyField
+from crispy_forms.layout import Fieldset, Hidden, Layout, Reset, Row, Submit
+from crispy_forms.utils import TEMPLATE_PACK, render_field
+from dynamic_forms import DynamicField, DynamicFormMixin
 
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 
 from ..core import validators
-from ..core.form_layouts import CancelButton
+from ..core.form_layouts import CancelButton, InlineSubmit
 from ..services.hospital.hospital import OIEService
 from ..users.models import Caregiver, User
 from . import constants
@@ -25,6 +31,7 @@ from .tables import PatientTable
 
 
 class DisableFieldsMixin:
+    fields: dict[str, Field]
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -32,9 +39,6 @@ class DisableFieldsMixin:
         self.has_existing_data = False
 
     def disable_fields(self, existing_data: Optional[dict[str, Any]] = None):
-        print('disable all form fields')
-        print(self.__class__)
-        print(existing_data)
         if existing_data:
             self.initial = existing_data
         for _field_name, field in self.fields.items():
@@ -47,22 +51,42 @@ class AccessRequestManagementForm(forms.Form):
     current_step = forms.CharField(widget=forms.HiddenInput())
 
 
-class NewAccessRequestForm(DisableFieldsMixin, forms.Form):
+class DynamicLayoutField(CrispyField):
+    def get_rendered_fields(self, form, context, template_pack=TEMPLATE_PACK, **kwargs):
+        print(self.fields)
+        return SafeString(
+            ''.join(
+                render_field(field, form, context, template_pack=template_pack, **kwargs)
+                for field in self.fields
+                if field in form
+            )
+        )
 
+
+class NewAccessRequestForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
     card_type = forms.ChoiceField(
-        widget=forms.Select(),
+        widget=forms.Select(attrs={'up-validate': ''}),
         choices=constants.MEDICAL_CARDS,
-        label=_('Type of Card'),
+        # initial=constants.MedicalCard.ramq.name,
+        label=_('Card Type'),
     )
-    site = forms.ModelChoiceField(
+    site = DynamicField(
+        forms.ModelChoiceField,
         queryset=Site.objects.all(),
         # initial=Site.objects.first(),
         label=_('Hospital'),
-        required=False,
+        # include=lambda form: form['card_type'].value() == constants.MedicalCard.mrn.name,
+        required=lambda form: form['card_type'].value() == constants.MedicalCard.mrn.name,
+        disabled=lambda form: form['card_type'].value() != constants.MedicalCard.mrn.name,
     )
+    # site = forms.ModelChoiceField(
+    #     queryset=Site.objects.all(),
+    #     label=_('Hospital'),
+    #     required=True,
+    # )
     medical_number = forms.CharField(
-        # widget=forms.TextInput(),
-        label=_('Patient Card Number'),
+        widget=forms.TextInput(attrs={'up-validate': '.content'}),
+        label=_('Identification Number'),
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -75,6 +99,7 @@ class NewAccessRequestForm(DisableFieldsMixin, forms.Form):
         """
         super().__init__(*args, **kwargs)
 
+        print(kwargs)
         # store response for patient searched in hospital
         self.patient: Union[OIEPatientData, int, None] = None
 
@@ -83,11 +108,11 @@ class NewAccessRequestForm(DisableFieldsMixin, forms.Form):
         self.helper.disable_csrf = True
 
         self.helper.layout = Layout(
-            Row(
-                Column('card_type'),
-                Column('site'),
-                Column('medical_number'),
-                css_class='justify-content-start',
+            Div(
+                'card_type',
+                'site',
+                'medical_number',
+                css_class='d-md-flex flex-row justify-content-start gap-3',
             ),
             # ButtonHolder(
             #     # add empty label to move the submit button down
@@ -96,6 +121,9 @@ class NewAccessRequestForm(DisableFieldsMixin, forms.Form):
             #     Submit('search', _('Search Patient')),
             # ),
         )
+
+        # if 'site' not in self.fields:
+        #     self.helper.layout[0].pop(1)
 
     def clean_medical_number(self):
         # validate in specific field method even though it is reliant on card_type
@@ -120,8 +148,8 @@ class NewAccessRequestForm(DisableFieldsMixin, forms.Form):
         print('clean')
         print(self.cleaned_data)
 
-        print('get patient')
         if medical_number:
+            print('get patient')
             self.patient = self._fake_oie_response()
 
         return cleaned_data
@@ -192,19 +220,66 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
 
         return cleaned_data
 
-class AccessRequestNewUserForm(DisableFieldsMixin, forms.Form):
-    first_name = forms.CharField(label=_('First Name'))
-    last_name = forms.CharField(label=_('Last Name'))
+
+class TabRadioSelect(CrispyField):
+    template = 'patients/radioselect_tabs.html'
 
 
-class AccessRequestUserForm(DisableFieldsMixin, forms.Form):
-    first_name = forms.CharField(label=_('First Name'), required=False)
-    last_name = forms.CharField(label=_('Last Name'), required=False)
+class RequestorDetailsForm(DisableFieldsMixin, DynamicFormMixin, forms.Form):
+    """This `RequestorDetailsForm` provides a radio button to choose the relationship to the patient."""
 
-    email = forms.CharField(label=_('Email Address'), required=False)
-    phone_number = forms.CharField(label=_('Phone Number'), initial='+1', required=False)
+    relationship_type = forms.ModelChoiceField(
+        queryset=RelationshipType.objects.all(),
+        widget=AvailableRadioSelect,
+        # widget=forms.RadioSelect,
+        label=_('Relationship to the patient'),
+    )
 
-    def __init__(self, *args, **kwargs) -> None:
+    form_filled = forms.BooleanField(
+        label=_('The requestor filled out the request form'),
+        required=False,
+    )
+
+    id_checked = forms.BooleanField(label='Requestor ID checked')
+
+    user_type = forms.ChoiceField(
+        choices=constants.TYPE_USERS,
+        initial=0,
+        widget=forms.RadioSelect(attrs={'up-validate': ''}),
+    )
+
+    first_name = DynamicField(
+        forms.CharField,
+        label=_('First Name'),
+        required=lambda form: form['user_type'].value() == '0',
+    )
+    last_name = DynamicField(
+        forms.CharField,
+        label=_('Last Name'),
+        required=lambda form: form['user_type'].value() == '0',
+    )
+
+    user_email = DynamicField(
+        forms.CharField,
+        label=_('Email Address'),
+        required=lambda form: form['user_type'].value() == '1',
+    )
+    user_phone = DynamicField(
+        forms.CharField,
+        label=_('Phone Number'),
+        initial='+1',
+        required=lambda form: form['user_type'].value() == '1',
+    )
+
+    def __init__(self, date_of_birth: date, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout for card type select box and card number input box.
+
+        Args:
+            date_of_birth: patient's date of birth
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
         super().__init__(*args, **kwargs)
 
         self.helper = FormHelper()
@@ -214,51 +289,56 @@ class AccessRequestUserForm(DisableFieldsMixin, forms.Form):
         self.helper.layout = Layout(
             Row(
                 Column(
-                    Fieldset('New User', 'first_name', 'last_name'),
+                    'relationship_type',
                 ),
                 Column(
-                    Fieldset('Existing User', 'email', 'phone_number', Submit('search_user', 'Search')),
+                    Fieldset(
+                        'Validation',
+                        'form_filled',
+                        'id_checked',
+                    ),
                 ),
             ),
+            TabRadioSelect('user_type'),
+            # empty div to be filled below depending on the chosen user type
+            Div(css_class='mb-4 p-3 border-start border-end border-bottom'),
         )
 
-    def clean_phone_number(self):
-        phone_number = self.cleaned_data['phone_number']
-        email = self.cleaned_data['email']
+        user_type = self['user_type'].value()
 
-        if phone_number != self.fields['phone_number'].initial or email:
-            validators.validate_phone_number(phone_number)
+        if user_type == '1':
+            self.helper.layout[2].append(Layout(
+                Row(
+                    Column('user_email', css_class='col-auto'),
+                    Column('user_phone', css_class='col-auto'),
+                    Column(InlineSubmit('search_user', 'Find User')),
+                ),
+            ))
+        # handle current value being None
+        else:
+            self.helper.layout[2].extend(Layout(
+                Row(
+                    Column('first_name', css_class='col-auto'),
+                    Column('last_name', css_class='col-auto'),
+                ),
+            ))
 
-    def clean(self) -> dict[str, Any]:
+        age = Patient.calculate_age(date_of_birth=date_of_birth)
+        available_choices = RelationshipType.objects.filter_by_patient_age(
+            patient_age=age,
+        ).values_list('id', flat=True)
+        self.fields['relationship_type'].widget.available_choices = available_choices
+
+    def clean(self) -> None:
+        """Validate if relationship type requested requires a form."""
         super().clean()
-        cleaned_data = self.cleaned_data
+        print(f'{self.__class__.__name__}.clean')
+        relationship_type = self.cleaned_data.get('relationship_type')
+        form_filled = self.cleaned_data.get('form_filled')
 
-        first_name = cleaned_data.get('first_name')
-        last_name = cleaned_data.get('last_name')
-        email = cleaned_data.get('email')
-        phone_number = cleaned_data.get('phone_number')
-
-        new_user_fields = [first_name, last_name]
-        existing_user_fields = [email, phone_number]
-        all_fields = new_user_fields + existing_user_fields
-
-        new_user_fields_filled = any(field is not None for field in new_user_fields)
-        existing_user_fields_filled = any(field is not None for field in existing_user_fields)
-
-        if new_user_fields_filled and existing_user_fields_filled:
-            self.add_error(None, 'Provide either a new or existing user')
-
-        if new_user_fields_filled:
-            for field in new_user_fields:
-                if not field:
-                    self.add_error(None, f'field {field} missing')
-        # phone_number always has at least value "+1" (initial)
-        if all(current_field is None for current_field in all_fields):
-            self.add_error(None, 'Provide either a new or existing user')
-
-        self.add_error(None, 'stop')
-
-        return cleaned_data
+        if relationship_type:
+            if relationship_type.form_required and not form_filled:
+                self.add_error('form_filled', _('A request form is required for the selected relationship.'))
 
 
 class SelectSiteForm(forms.Form):
@@ -475,90 +555,6 @@ class AvailableRadioSelect(forms.RadioSelect):
         return option_dict
 
 
-class RequestorDetailsForm(DisableFieldsMixin, forms.Form):
-    """This `RequestorDetailsForm` provides a radio button to choose the relationship to the patient."""
-
-    relationship_type = forms.ModelChoiceField(
-        queryset=RelationshipType.objects.all(),
-        widget=AvailableRadioSelect,
-        # widget=forms.RadioSelect,
-        label=_('Relationship to the patient'),
-    )
-
-    form_filled = forms.BooleanField(
-        label=_('The requestor filled out the request form'),
-        required=False,
-    )
-
-    id_checked = forms.BooleanField(label='Requestor ID checked')
-
-    # has_account = forms.ChoiceField(
-    #     choices=constants.TYPE_USERS,
-    #     widget=forms.RadioSelect,
-    #     label=_('Does the requestor already have an Opal account at this institution?'),
-    #     help_text='Note: The account will not be found if the requestor already registered at another institution.',
-    # )
-
-    def __init__(self, date_of_birth: date, *args: Any, **kwargs: Any) -> None:
-        """
-        Initialize the layout for card type select box and card number input box.
-
-        Args:
-            date_of_birth: patient's date of birth
-            args: additional arguments
-            kwargs: additional keyword arguments
-        """
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.form_tag = False
-        self.helper.disable_csrf = True
-
-        self.helper.layout = Layout(
-            Row(
-                Column(
-                    'relationship_type',
-                ),
-                Column(
-                    Fieldset(
-                        'Validation',
-                        'form_filled',
-                        'id_checked',
-                    ),
-                    # HTML('<p>Validation</p>'),
-                ),
-            ),
-            # 'has_account',
-            # Row(
-            #     Column('relationship_type', css_class='form-group col-md-6 mb-0'),
-            #     css_class='form-row',
-            # ),
-            # Row(
-            #     Column('form_filled', css_class='form-group col-md-6 mb-0'),
-            #     css_class='form-row',
-            # ),
-            # ButtonHolder(
-            #     Submit('wizard_goto_step', _('Next')),
-            # ),
-        )
-
-        age = Patient.calculate_age(date_of_birth=date_of_birth)
-        available_choices = RelationshipType.objects.filter_by_patient_age(
-            patient_age=age,
-        ).values_list('id', flat=True)
-        self.fields['relationship_type'].widget.available_choices = available_choices
-
-    def clean(self) -> None:
-        """Validate if relationship type requested requires a form."""
-        super().clean()
-        print(f'{self.__class__.__name__}.clean')
-        relationship_type = self.cleaned_data.get('relationship_type')
-        form_filled = self.cleaned_data.get('form_filled')
-        # print(type(relationship_type))
-        if relationship_type:
-            if relationship_type.form_required and not form_filled:
-                self.add_error('form_filled', _('A request form is required for the selected relationship.'))
-
-
 class RequestorAccountForm(forms.Form):
     """This `RequestorAccountForm` provides a select box to select existed user or new user."""
 
@@ -734,7 +730,7 @@ class ConfirmExistingUserForm(forms.Form):
         )
 
 
-class NewUserForm(DisableFieldsMixin, forms.Form):
+class NewUserForm(forms.Form):
     """This `NewUserForm` provides a layout to new users."""
 
     first_name = forms.CharField(
@@ -747,7 +743,7 @@ class NewUserForm(DisableFieldsMixin, forms.Form):
         label=_('Last Name'),
     )
 
-    # is_id_checked = forms.BooleanField(required=True, label=_('ID Checked?'))
+    is_id_checked = forms.BooleanField(required=True, label=_('ID Checked?'))
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
@@ -767,10 +763,10 @@ class NewUserForm(DisableFieldsMixin, forms.Form):
                 Column('first_name'),
                 Column('last_name'),
             ),
-            # 'is_id_checked',
-            # ButtonHolder(
-            #     Submit('wizard_goto_step', _('Generate QR Code')),
-            # ),
+            'is_id_checked',
+            ButtonHolder(
+                Submit('wizard_goto_step', _('Generate QR Code')),
+            ),
         )
 
 

@@ -1,0 +1,26 @@
+{% load crispy_forms_filters %}
+{% load l10n %}
+
+<ul class="nav nav-tabs">
+
+    {% for group, options, index in field|optgroups %}
+      {% for option in options %}
+        <li class="nav-item{% if inline_class %} form-check-inline{% endif %}">
+          <input type="{{option.type}}" class="d-none" name="{{ field.html_name }}" value="{{ option.value|unlocalize }}" {% include "bootstrap5/layout/attrs.html" with widget=option %}>
+          <label for="{{ option.attrs.id }}" class="nav-link{% if option.attrs.checked %} active{% endif %}">
+              {{ option.label|unlocalize }}
+          </label>
+          {% if field.errors and forloop.last and not inline_class and forloop.parentloop.last %}
+              {% include 'bootstrap5/layout/field_errors_block.html' %}
+          {% endif %}
+        </li>
+      {% endfor %}
+    {% endfor %}
+
+  </ul>
+{% if field.errors and inline_class %}
+    {% for error in field.errors %}
+        <p id="error_{{ forloop.counter }}_{{ field.auto_id }}" class="text-danger mb-0"><small><strong>{{ error }}</strong></small></p>
+    {% endfor %}
+{% endif %}
+{% include 'bootstrap5/layout/help_text.html' %}
