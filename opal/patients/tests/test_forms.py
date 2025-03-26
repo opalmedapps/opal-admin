@@ -795,6 +795,65 @@ def test_accessrequestsearchform_no_test_patient(mocker: MockerFixture) -> None:
     assert form.non_field_errors()[0] == 'Patient is not a test patient.'
 
 
+def test_accessrequestconfirmpatientform_init() -> None:
+    """Ensure that the form is bound for early evaluation."""
+    form = forms.AccessRequestConfirmPatientForm(patient=OIE_PATIENT_DATA)
+
+    assert form.is_bound
+
+
+def test_accessrequestconfirmpatientform_is_deceased_oie() -> None:
+    """Ensure that proper error message is added to form error list when oie patient is deceased."""
+    oie_patient = OIE_PATIENT_DATA._replace(deceased=True)
+    form = forms.AccessRequestConfirmPatientForm(patient=oie_patient)
+    err_msg = 'Unable to complete action with this patient. Please contact Medical Records.'
+
+    form.is_valid()
+
+    assert form.non_field_errors()[0] == err_msg
+
+
+def test_accessrequestconfirmpatientform_is_deceased_patient_model() -> None:
+    """Ensure that proper error message is added to form error list when `Patient` model patient is deceased."""
+    patient = factories.Patient(date_of_death=timezone.now())
+
+    form = forms.AccessRequestConfirmPatientForm(patient=patient)
+    err_msg = 'Unable to complete action with this patient. Please contact Medical Records.'
+
+    form.is_valid()
+
+    assert form.non_field_errors()[0] == err_msg
+
+
+def test_accessrequestconfirmpatientform_has_multiple_mrns_oie() -> None:
+    """Ensure that proper error message is added to form error list when oie patient has more than one `MRN`."""
+    oie_patient = OIE_PATIENT_DATA._replace(
+        mrns=[
+            OIEMRNData(
+                site='MCH',
+                mrn='9999993',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MCH',
+                mrn='9999994',
+                active=True,
+            ),
+            OIEMRNData(
+                site='RVH',
+                mrn='9999993',
+                active=True,
+            ),
+        ],
+    )
+    form = forms.AccessRequestConfirmPatientForm(patient=oie_patient)
+    err_msg = 'Patient has more than one active MRN at the same hospital, please contact Medical Records.'
+
+    form.is_valid()
+
+    assert form.non_field_errors()[0] == err_msg
+
+
 def test_accessrequestrequestorform_form_filled_default() -> None:
     """Ensure the form_filled dynamic field can handle an empty value to initialize."""
     form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA)
@@ -1126,7 +1185,7 @@ def test_accessrequestrequestorform_existing_user_validate_self() -> None:
 
 
 def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() -> None:
-    """Ensure `clean()` can handle a name mismatch for self relationships."""
+    """Ensure `clean()` can handle a name mismatch for self relationships for existing users."""
     CaregiverProfile(
         user__first_name='Ned',
         user__last_name='Flanders',
@@ -1152,6 +1211,24 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() 
     )
 
 
+def test_accessrequestrequestorform_new_user_validate_self_name_mismatch() -> None:
+    """Ensure the form will ignore provided names for a self relationship."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.NEW.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'first_name': 'Hans',
+            'last_name': 'Wurst',
+        },
+    )
+
+    assert form.is_valid()
+    assert form.cleaned_data['first_name'] == OIE_PATIENT_DATA.first_name
+    assert form.cleaned_data['last_name'] == OIE_PATIENT_DATA.last_name
+
+
 def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch_new_patient() -> None:
     """Ensure `clean()` can handle a name mismatch for self relationships when the patient is new."""
     caregiver = factories.CaregiverProfile(
@@ -1171,7 +1248,6 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch_ne
     form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA, data=data)
 
     assert not form.is_valid()
-    print(form.errors)
     assert len(form.non_field_errors()) == 1
     assert form.non_field_errors()[0] == (
         'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
@@ -1335,18 +1411,40 @@ def test_accessrequestrequestorform_self_names_prefilled_empty_initial() -> None
 
 
 def test_accessrequestrequestorform_self_names_prefilled_other_initial() -> None:
-    """Ensure the name fields are filled with the patient's name even if the initial data contains empty strings."""
+    """Ensure the name fields are filled with the patient's name even if the initial data contains data."""
     form = forms.AccessRequestRequestorForm(
         patient=OIE_PATIENT_DATA,
-        data={'relationship_type': RelationshipType.objects.self_type().pk},
         # this happens when switching to self due to the up-validate request handling
-        initial={'first_name': 'Hans', 'last_name': 'Wurst'},
+        initial={
+            'relationship_type': str(RelationshipType.objects.self_type().pk),
+            'first_name': 'Hans',
+            'last_name': 'Wurst',
+        },
     )
 
     assert form.fields['first_name'].initial == OIE_PATIENT_DATA.first_name
-    assert form['first_name'].value() == 'Hans'
+    assert form['first_name'].value() == OIE_PATIENT_DATA.first_name
     assert form.fields['last_name'].initial == OIE_PATIENT_DATA.last_name
-    assert form['last_name'].value() == 'Wurst'
+    assert form['last_name'].value() == OIE_PATIENT_DATA.last_name
+
+
+def test_accessrequestrequestorform_non_self_names_prefilled_other_initial() -> None:
+    """Ensure the name fields are not filled with any value when it's not self anymore."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={},
+        # this happens when switching from self due to the up-validate request handling
+        initial={
+            'relationship_type': str(RelationshipType.objects.guardian_caregiver().pk),
+            'first_name': OIE_PATIENT_DATA.first_name,
+            'last_name': OIE_PATIENT_DATA.last_name,
+        },
+    )
+
+    assert form.fields['first_name'].initial is None
+    assert form['first_name'].value() is None
+    assert form.fields['last_name'].initial is None
+    assert form['last_name'].value() is None
 
 
 def test_accessrequestrequestorform_disable_fields() -> None:
@@ -1359,65 +1457,6 @@ def test_accessrequestrequestorform_disable_fields() -> None:
     # assert all fields are disabled
     for _field_name, field in form.fields.items():
         assert field.disabled
-
-
-def test_accessrequestconfirmpatientform_init() -> None:
-    """Ensure that the form is bound for early evaluation."""
-    form = forms.AccessRequestConfirmPatientForm(patient=OIE_PATIENT_DATA)
-
-    assert form.is_bound
-
-
-def test_accessrequestconfirmpatientform_is_deceased_oie() -> None:
-    """Ensure that proper error message is added to form error list when oie patient is deceased."""
-    oie_patient = OIE_PATIENT_DATA._replace(deceased=True)
-    form = forms.AccessRequestConfirmPatientForm(patient=oie_patient)
-    err_msg = 'Unable to complete action with this patient. Please contact Medical Records.'
-
-    form.is_valid()
-
-    assert form.non_field_errors()[0] == err_msg
-
-
-def test_accessrequestconfirmpatientform_is_deceased_patient_model() -> None:
-    """Ensure that proper error message is added to form error list when `Patient` model patient is deceased."""
-    patient = factories.Patient(date_of_death=timezone.now())
-
-    form = forms.AccessRequestConfirmPatientForm(patient=patient)
-    err_msg = 'Unable to complete action with this patient. Please contact Medical Records.'
-
-    form.is_valid()
-
-    assert form.non_field_errors()[0] == err_msg
-
-
-def test_accessrequestconfirmpatientform_has_multiple_mrns_oie() -> None:
-    """Ensure that proper error message is added to form error list when oie patient has more than one `MRN`."""
-    oie_patient = OIE_PATIENT_DATA._replace(
-        mrns=[
-            OIEMRNData(
-                site='MCH',
-                mrn='9999993',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MCH',
-                mrn='9999994',
-                active=True,
-            ),
-            OIEMRNData(
-                site='RVH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
-    form = forms.AccessRequestConfirmPatientForm(patient=oie_patient)
-    err_msg = 'Patient has more than one active MRN at the same hospital, please contact Medical Records.'
-
-    form.is_valid()
-
-    assert form.non_field_errors()[0] == err_msg
 
 
 def test_accessrequestconfirmform() -> None:
