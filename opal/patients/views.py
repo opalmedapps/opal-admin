@@ -82,7 +82,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         ('confirm', forms.ConfirmPatientForm),
         ('relationship', forms.RequestorDetailsForm),
         ('account', forms.RequestorAccountForm),
-        ('existing', forms.ExistingUserForm),
+        ('requestor', forms.ExistingUserForm),
         ('finished', forms.ConfirmExistingUserForm),
     ]
     form_title_list = {
@@ -91,7 +91,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         'confirm': _('Patient Details'),
         'relationship': _('Requestor Details'),
         'account': _('Requestor Details'),
-        'existing': _('Requestor Details'),
+        'requestor': _('Requestor Details'),
         'finished': _('Requestor Details'),
     }
     template_list = {
@@ -100,7 +100,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         'confirm': 'patients/access_request/access_request.html',
         'relationship': 'patients/access_request/access_request.html',
         'account': 'patients/access_request/access_request.html',
-        'existing': 'patients/access_request/access_request.html',
+        'requestor': 'patients/access_request/access_request.html',
         'finished': 'patients/access_request/access_request.html',
     }
 
@@ -149,6 +149,32 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         context.update({'header_title': self.form_title_list[self.steps.current]})
         return context
 
+    def get_form(self, step: str = None, data: Any = None, files: Any = None) -> Any:
+        """
+        Initialize the form for a given `step`.
+
+        Args:
+            step: a form step
+            data: form `data` argument
+            files: form `files` argument
+
+        Returns:
+            the form
+        """
+        form = super().get_form(step, data, files)
+        if step is None:
+            step = self.steps.current
+
+        if step == 'requestor':
+            user_type = self.get_cleaned_data_for_step('account')['user_type']
+            # If new user is selected, the current form will be replaced by `NewUserForm`.
+            # The last step `finished` will be ignored.
+            if user_type == '0':
+                form_class = forms.NewUserForm
+                form = form_class(data)
+                self.condition_dict = {'finished': False}
+        return form
+
     def get_form_initial(self, step: str) -> dict[str, str]:
         """
         Return a dictionary which will be passed to the form for `step` as `initial`.
@@ -190,7 +216,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         if step == 'relationship':
             patient_record = self.get_cleaned_data_for_step('search')['patient_record']
             kwargs['date_of_birth'] = patient_record.date_of_birth
-        elif step == 'existing':
+        elif step == 'requestor':
             relationship_type = self.get_cleaned_data_for_step('relationship')['relationship_type']
             kwargs['relationship_type'] = relationship_type
             patient_record = self.get_cleaned_data_for_step('search')['patient_record']
