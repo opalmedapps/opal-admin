@@ -1,5 +1,5 @@
 mkdocs-material==8.3.9  # https://github.com/squidfunk/mkdocs-material
 mkdocstrings[python-legacy]==0.19.0  # https://github.com/mkdocstrings/mkdocstrings/
 mkdocs-autorefs==0.4.1  # https://github.com/mkdocstrings/autorefs
-mkdocs-gen-files==0.3.4  # https://github.com/oprypin/mkdocs-gen-files
+mkdocs-gen-files==0.3.5  # https://github.com/oprypin/mkdocs-gen-files
 mkdocs-literate-nav==0.4.1  # https://github.com/oprypin/mkdocs-literate-nav
