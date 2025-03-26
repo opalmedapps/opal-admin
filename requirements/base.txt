@@ -22,7 +22,11 @@ slippers==0.5.0  # https://github.com/mixxorz/slippers
 
 # MySQL/MariaDB
 #
-mysqlclient==2.1.1 # https://github.com/PyMySQL/mysqlclient
+# mysqlclient==2.1.1 # https://github.com/PyMySQL/mysqlclient
+# NOTE! mysqcliet dependency has a bug related to the SSL connections through the MariaDB connector
+# This pull request fixes the issue: https://github.com/PyMySQL/mysqlclient/pull/609
+# TODO: Use mysqlclient=x.x.x once the SSL issue is fixed and released
+mysqlclient @ git+https://github.com/mschoettle/mysqlclient.git@fix-sslmode-typo
 
 # Other
 #

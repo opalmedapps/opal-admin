@@ -177,6 +177,36 @@ DATABASES = {
     },
 }
 
+# Use SSL for all the database connections if USE_SSL_FOR_DATABASES is set to True
+if env.bool('USE_SSL_FOR_DATABASES'):
+    # Use OPTIONS setting to set extra parameters when connecting to the database.
+    # The parameters vary depending on the database backend.
+    # For more information see MySQL attributes/options (according to Django's docs, same options for MariaDB):
+    #    - https://docs.djangoproject.com/en/4.2/ref/databases/#connecting-to-the-database
+    #    - https://mysqlclient.readthedocs.io/user_guide.html#functions-and-attributes
+    options_settings = {
+        # For the "ssl_mode" parameters see MySQL's documentation:
+        # https://dev.mysql.com/doc/refman/8.0/en/connection-options.html#option_general_ssl-mode
+        # NOTE!!! ssl_mode setting is used by mysqlclient dependency that has a bug related to the MariaDB connector.
+        # As a temporary fix, we build the dependency from this PR: https://github.com/PyMySQL/mysqlclient/pull/609
+        # The following links might be helpful in case we need to modify the sources of the dependency again:
+        #    - https://dev.mysql.com/doc/c-api/8.0/en/mysql-options.html
+        #    - https://mariadb.com/kb/en/mysql_optionsv/
+        'ssl_mode': 'VERIFY_IDENTITY',
+        # See mysql_ssl_set MySQL C API where the parameter names are keys used by the "ssl" setting.
+        # https://dev.mysql.com/doc/c-api/8.0/en/mysql-ssl-set.html
+        # The current setup is using one-way SSL/TLS.
+        # https://mariadb.com/kb/en/securing-connections-for-client-and-server/#enabling-one-way-tls-for-mariadb-clients
+        # TODO: two-way SSL/TLS
+        'ssl': {
+            'ca': env.str('SSL_CA'),
+        },
+    }
+
+    DATABASES['default']['OPTIONS'] = options_settings
+    DATABASES['legacy']['OPTIONS'] = options_settings
+    DATABASES['questionnaire']['OPTIONS'] = options_settings
+
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DATABASE_ROUTERS
 DATABASE_ROUTERS = ['opal.core.dbrouters.LegacyDbRouter']
 

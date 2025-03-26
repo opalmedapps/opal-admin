@@ -5,9 +5,8 @@
 !.envs/*.sample
 staticfiles/
 
-# test data
-docker/nginx-data/
-
+# test and log data
+docker/*
 # Auto-generated:
 
 # ---> Python
@@ -183,3 +182,6 @@ Temporary Items
 
 # ---> PyCharm
 .idea/
+
+# Database certificates
+certs/ca.pem

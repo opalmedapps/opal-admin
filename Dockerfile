@@ -9,6 +9,9 @@ RUN apt-get update \
   && apt-get install -y build-essential \
   # install git
   && apt-get install git -y \
+  # pkg-config dependency for the mysqlclient
+  # remove it once mysqlclient releases the SSL fix: https://github.com/PyMySQL/mysqlclient
+  && apt-get install -y pkg-config \
   # mysqlclient dependencies
   && apt-get install -y default-libmysqlclient-dev \
   # argon2-cffi dependencies
