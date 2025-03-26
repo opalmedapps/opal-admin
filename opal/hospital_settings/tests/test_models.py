@@ -81,10 +81,8 @@ def test_institution_adulthood_age_required() -> None:
 
 def test_institution_adulthood_age_min_value() -> None:
     """Make sure the institution adulthood age is greater than or equal to 0."""
-    institution = factories.Institution(adulthood_age=-1)
-
-    with assertRaisesMessage(ValidationError, 'Ensure this value is greater than or equal to 0.'):
-        institution.full_clean()
+    with assertRaisesMessage(DataError, "Out of range value for column 'adulthood_age' at row 1"):
+        factories.Institution(adulthood_age=-1)
 
 
 def test_institution_adulthood_age_max_value() -> None:
@@ -103,10 +101,8 @@ def test_institution_non_interpretable_delay_field_required() -> None:
 
 def test_institution_non_interpretable_delay_field_min_value() -> None:
     """Make sure the institution non interpretable lab result delay is greater than or equal to 0."""
-    institution = factories.Institution(non_interpretable_lab_result_delay=-1)
-
-    with assertRaisesMessage(ValidationError, 'Ensure this value is greater than or equal to 0.'):
-        institution.full_clean()
+    with assertRaisesMessage(DataError, "Out of range value for column 'non_interpretable_lab_result_delay' at row 1"):
+        factories.Institution(non_interpretable_lab_result_delay=-1)
 
 
 def test_institution_non_interpretable_delay_field_max_value() -> None:
@@ -125,10 +121,8 @@ def test_institution_interpretable_delay_field_required() -> None:
 
 def test_institution_interpretable_delay_field_min_value() -> None:
     """Make sure the institution interpretable lab result delay is greater than or equal to 0."""
-    institution = factories.Institution(interpretable_lab_result_delay=-1)
-
-    with assertRaisesMessage(ValidationError, 'Ensure this value is greater than or equal to 0.'):
-        institution.full_clean()
+    with assertRaisesMessage(DataError, "Out of range value for column 'interpretable_lab_result_delay' at row 1"):
+        factories.Institution(interpretable_lab_result_delay=-1)
 
 
 def test_institution_interpretable_delay_field_max_value() -> None:
