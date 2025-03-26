@@ -58,7 +58,7 @@ class OpenScienceIdentity():
         Returns:
             The hex representation of hashlib's pbkdf2 derivation
         """
-        self._validate()
+        self._clean_and_validate()
         sig_key = self._signature_key()
         LOGGER.info('All attributes successfully cleaned & validated')
         salt = sig_key[::-1]
@@ -70,7 +70,7 @@ class OpenScienceIdentity():
             self._pbkdf2_key_length,
         ).hex()
 
-    def _clean_attribute(self, attr_name: str) -> str:
+    def _clean_general_attribute(self, attr_name: str) -> str:
         """Generalized cleaning method for any attribute.
 
         Args:
@@ -84,6 +84,19 @@ class OpenScienceIdentity():
             # Cache the result to avoid needing to re-clean data during algorithm execution
             self._cache[attr_name] = self._plain_alpha(attr_value)
         return self._cache[attr_name]
+
+    def _is_valid_date(self) -> None:
+        """Implement special cleaning logic for date_of_birth attribute."""
+        if self.patient_data.date_of_birth:
+            try:
+                dob = date.fromisoformat(self.patient_data.date_of_birth)
+            except ValueError:
+                self.invalid_attributes.append('date_of_birth')
+                return
+            # Additional check for 'realistic' date_of_birth
+            today = date.today()
+            if dob.year < 1900 or today.year < dob.year:  # noqa: WPS432
+                self.invalid_attributes.append('date_of_birth')
 
     def _plain_alpha(self, string: str) -> str:
         """Clean the input string by lowercasing, transliterating, and filtering by alphanumerics.
@@ -106,36 +119,23 @@ class OpenScienceIdentity():
 
         return ''.join(char.lower() for char in transliterated_string if char.isalnum())
 
-    def _valid(self) -> bool:
-        """Implement the validity functions for each class attribute.
-
-        Returns:
-            boolean whether all identity attributes are valid.
-        """
-        for attr in self._identity_attributes:
-            cleaned_value = self._clean_attribute(attr)
-            if not cleaned_value or (attr == 'gender' and cleaned_value not in self._gender_values):
-                self.invalid_attributes.append(attr)
-
-        # Validate date_of_birth using date.fromisoformat()
-        if self.patient_data.date_of_birth:
-            try:
-                date.fromisoformat(self.patient_data.date_of_birth)
-            except ValueError:
-                self.invalid_attributes.append('date_of_birth')
-
-        if self.invalid_attributes:
-            raise ValueError(f"Invalid identity components {', '.join(self.invalid_attributes)}")
-
-        return not self.invalid_attributes
-
-    def _validate(self) -> None:
-        """Check for identity attribute validity and raise error if not valid.
+    def _clean_and_validate(self) -> None:
+        """Implement the validity and cleaning functions for each class attribute.
 
         Raises:
             ValueError: if any identify attributes are missing or otherwise invalid.
         """
-        if not self._valid():
+        # General cleaning and validation for all attributes, gender must be in specified list
+        for attr in self._identity_attributes:
+            cleaned_value = self._clean_general_attribute(attr)
+            if not cleaned_value or (attr == 'gender' and cleaned_value not in self._gender_values):
+                self.invalid_attributes.append(attr)
+
+        # Special validation rules for date_of_birth
+        self._is_valid_date()
+
+        # Raise error if any validation fails
+        if self.invalid_attributes:
             raise ValueError(f"Invalid identity components {', '.join(self.invalid_attributes)}")
 
     def _signature_key(self) -> str:
@@ -148,11 +148,11 @@ class OpenScienceIdentity():
             bar separated password string
         """
         components = [
-            self._clean_attribute('gender'),
-            self._clean_attribute('first_name'),
-            self._clean_attribute('middle_name'),
-            self._clean_attribute('last_name'),
-            self._clean_attribute('date_of_birth'),
-            self._clean_attribute('city_of_birth'),
+            self._clean_general_attribute('gender'),
+            self._clean_general_attribute('first_name'),
+            self._clean_general_attribute('middle_name'),
+            self._clean_general_attribute('last_name'),
+            self._clean_general_attribute('date_of_birth'),
+            self._clean_general_attribute('city_of_birth'),
         ]
         return '|'.join(components)

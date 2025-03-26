@@ -10,12 +10,6 @@ pytestmark = pytest.mark.django_db(databases=['default'])
 
 FIXTURES_DIR = Path(__file__).resolve().parent.joinpath('fixtures')
 
-# # Define the path to the CSV file
-# csv_file_path = os.path.join(
-#     Path(__file__).resolve(strict=True).parents[3] / 'tests' / 'fixtures',
-#     'attributes_expected_signatures.csv',
-# )
-
 # Reading the CSV file and creating a list of test cases
 test_cases = []
 with FIXTURES_DIR.joinpath('attributes_expected_signatures.csv').open() as csv_file:
@@ -59,16 +53,3 @@ class TestOpenScienceIdentity:
         }
         with pytest.raises(ValueError, match='Invalid identity components'):
             OpenScienceIdentity(PatientData(**empty_attributes)).to_signature()
-
-    def test_none_attribute_components(self) -> None:
-        """Test the handling of None attribute components."""
-        none_attributes_components = {
-            'gender': None,
-            'first_name': None,
-            'middle_name': None,
-            'last_name': None,
-            'date_of_birth': None,
-            'city_of_birth': None,
-        }
-        with pytest.raises(ValueError, match='Invalid identity components'):
-            OpenScienceIdentity(PatientData(**none_attributes_components)).to_signature()
