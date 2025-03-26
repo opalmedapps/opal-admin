@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='caregiverprofile',
             name='uuid',
-            field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='universally unique identifier'),
+            field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID'),
         ),
     ]

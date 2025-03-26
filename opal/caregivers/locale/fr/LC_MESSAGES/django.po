@@ -23,7 +23,7 @@ msgid "Caregivers"
 msgstr "Proches aidants"
 
 #: opal/caregivers/models.py
-msgid "universally unique identifier"
+msgid "UUID"
 msgstr ""
 
 #: opal/caregivers/models.py
