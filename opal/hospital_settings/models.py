@@ -1,5 +1,6 @@
 """This module provides models for hospital-specific settings."""
 
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -25,6 +26,11 @@ class Location(models.Model):
 
 class Institution(Location):
     """A hospital institution."""
+
+    term_of_use = models.FileField(
+        upload_to='uploads/% Y/% m/% d/',
+        validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
+    )
 
     class Meta:
         ordering = ['name']
