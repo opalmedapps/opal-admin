@@ -422,8 +422,6 @@ TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
 ORMS_GROUP_NAME = 'ORMS Users'
 # base URL to ORMS (no trailing slash)
 ORMS_HOST = env.url('ORMS_HOST').geturl()
-ORMS_USER = env('ORMS_USER')
-ORMS_PASSWORD = env('ORMS_PASSWORD')
 
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'

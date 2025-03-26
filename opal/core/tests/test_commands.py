@@ -32,7 +32,7 @@ class TestInsertTestData(CommandTestMixin):
 
         assert Institution.objects.count() == 1
         assert Institution.objects.get().code == 'MUHC'
-        assert Site.objects.count() == 4
+        assert Site.objects.count() == 5
         assert Patient.objects.count() == 5
         assert HospitalPatient.objects.count() == 6
         assert CaregiverProfile.objects.count() == 4
@@ -94,7 +94,7 @@ class TestInsertTestData(CommandTestMixin):
 
         # new data was created
         assert Institution.objects.count() == 1
-        assert Site.objects.count() == 4
+        assert Site.objects.count() == 5
         assert Patient.objects.count() == 5
         assert HospitalPatient.objects.count() == 6
         assert CaregiverProfile.objects.count() == 4
@@ -181,6 +181,17 @@ class TestInitializeData(CommandTestMixin):
         assert f'listener token: {listener_token.key}' in stdout
         assert f'interface-engine token: {interface_engine_token.key}' in stdout
         assert f'opaladmin-backend-legacy token: {legacy_backend_token}' in stdout
+
+    def test_insert_muhc_deployment(self) -> None:
+        """Ensure that initial data is inserted and includes sites and muhc institution given flag."""
+        stdout, _stderr = self._call_command('initialize_data', '--muhc-deployment')
+
+        assert Group.objects.count() == 7
+        assert User.objects.count() == 3
+        assert Token.objects.count() == 3
+        assert SecurityQuestion.objects.count() == 6
+        assert Institution.objects.count() == 1
+        assert Site.objects.count() == 5
 
     def test_insert_existing_data_group(self) -> None:
         """An error is shown if a group already exists."""
