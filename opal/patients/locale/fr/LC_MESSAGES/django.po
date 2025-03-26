@@ -294,6 +294,14 @@ msgid "Unknown"
 msgstr "Inconnu"
 
 #: opal/patients/models.py
+msgid "All"
+msgstr "Tout"
+
+#: opal/patients/models.py
+msgid "Need To Know"
+msgstr "L'essentiel"
+
+#: opal/patients/models.py
 msgid "UUID"
 msgstr "UUID"
 
@@ -313,6 +321,10 @@ msgstr "Sexe"
 #: opal/patients/models.py
 msgid "RAMQ Number"
 msgstr "Numéro de RAMQ"
+
+#: opal/patients/models.py
+msgid "Data Access Level"
+msgstr "Niveau d'accès aux données"
 
 #: opal/patients/models.py
 msgid "Caregivers"

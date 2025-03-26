@@ -102,10 +102,19 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
         fields=('id', 'name', 'can_answer_questionnaire', 'role_type'),
         many=False,
     )
+    data_access = serializers.CharField(source='patient.data_access')
 
     class Meta:
         model = Relationship
-        fields = ['patient_id', 'patient_legacy_id', 'first_name', 'last_name', 'status', 'relationship_type']
+        fields = [
+            'patient_id',
+            'patient_legacy_id',
+            'first_name',
+            'last_name',
+            'status',
+            'relationship_type',
+            'data_access',
+        ]
 
 
 class CaregiverRelationshipSerializer(serializers.ModelSerializer):

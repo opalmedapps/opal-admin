@@ -55,6 +55,11 @@ urlpatterns = [
         caregivers_views.GetCaregiverPatientsList.as_view(),
         name='caregivers-patient-list',
     ),
+    path(
+        'caregivers/profile/',
+        caregivers_views.CaregiverProfileView.as_view(),
+        name='caregivers-profile',
+    ),
     path(  # Only use this endpoint between the Listener and the backend
         'caregivers/<str:username>/security-questions/',
         SecurityAnswerViewSet.as_view({'get': 'list'}),

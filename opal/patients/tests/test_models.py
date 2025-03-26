@@ -231,6 +231,13 @@ def test_patient_non_existing_legacy_id() -> None:
     assert Patient.objects.count() == 2
 
 
+def test_patient_access_level_default() -> None:
+    """Ensure that the default data access level is ALL."""
+    patient = factories.Patient()
+
+    assert patient.data_access == Patient.DataAccessType.ALL
+
+
 def test_relationship_str() -> None:
     """Ensure the `__str__` method is defined for the `Relationship` model."""
     patient = factories.Patient(first_name='Kobe', last_name='Briant')
