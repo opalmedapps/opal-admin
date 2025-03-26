@@ -8,7 +8,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Layout, Row, Submit
 
 from . import constants
-from .models import Relationship, Site
+from .models import Relationship, RelationshipStatus, Site
 
 
 class ManageCaregiverAccessForm(forms.Form):
@@ -67,6 +67,7 @@ class RelationshipPendingAccessForm(forms.ModelForm):
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
         label=Relationship._meta.get_field('end_date').verbose_name,  # noqa: WPS437
     )
+    status = forms.ChoiceField()
 
     class Meta:
         model = Relationship
@@ -86,6 +87,7 @@ class RelationshipPendingAccessForm(forms.ModelForm):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
+        self.fields['status'].choices = filter_on_initial(RelationshipStatus.PENDING)
         self.helper = FormHelper(self)
         self.helper.layout = Layout(
             'start_date',
@@ -93,3 +95,26 @@ class RelationshipPendingAccessForm(forms.ModelForm):
             'status',
             'reason',
         )
+
+
+def filter_on_initial(initial: str) -> list:
+    """
+    Filter available choices in the options field of the form based on initial value.
+
+    Args:
+        initial: initial selected value of the option field
+
+    Returns:
+        list of choices
+
+    """
+    if initial == RelationshipStatus.PENDING:
+        return [('PEN', 'Pending'), ('DEN', 'Denied'), ('CON', 'Confirmed')]
+    elif initial == RelationshipStatus.CONFIRMED:
+        return [('CON', 'Confirmed'), ('PEN', 'Pending'), ('DEN', 'Denied'), ('REV', 'Revoked')]
+    elif initial == RelationshipStatus.DENIED:
+        return [('DEN', 'Denied'), ('CON', 'Confirmed'), ('PEN', 'Pending')]
+    elif initial == RelationshipStatus.REVOKED:
+        return [('REV', 'Revoked'), ('CON', 'Confirmed')]
+    # for initial value = Expired
+    return [('EXP', 'Expired')]
