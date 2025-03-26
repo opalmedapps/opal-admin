@@ -1117,6 +1117,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             last_name='test',
             is_active=False,
         )
+        Institution(support_email='support@testhospital.com')
         registration_code = caregiver_factories.RegistrationCode(
             relationship__caregiver__legacy_id=None,
             relationship__caregiver__user=skeleton,
@@ -1161,7 +1162,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_register_success(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration register success."""
-        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         registration_code, _ = self._build_access_request(email_verified=True)
 
@@ -1185,7 +1185,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         mocker: MockerFixture,
     ) -> None:
         """The skeleton user is updated and the legacy data updated."""
-        Institution(support_email='support@testhospital.com')
         mock_create = mocker.spy(legacy_utils, name='create_caregiver_user')
 
         api_client.force_login(user=admin_user)
@@ -1227,7 +1226,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         mocker: MockerFixture,
     ) -> None:
         """The legacy patient is updated due to the self relationship."""
-        Institution(support_email='support@testhospital.com')
         mock_create = mocker.spy(legacy_utils, name='create_caregiver_user')
         # need an existing legacy patient
         legacy_patient = LegacyPatient(
@@ -1321,7 +1319,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         admin_user: User,
     ) -> None:
         """Ensure the legacy data for a self-relationship is added correctly."""
-        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         registration_code, _ = self._build_access_request(new_patient=True, email_verified=True, self_relationship=True)
 
@@ -1353,7 +1350,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         mocker: MockerFixture,
     ) -> None:
         """The legacy user and patient are updated due to the self relationship."""
-        Institution(support_email='support@testhospital.com')
         mock_create = mocker.spy(legacy_utils, name='change_caregiver_user_to_patient')
         legacy_patient = legacy_utils.create_dummy_patient(
             'Marge',
@@ -1426,7 +1422,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
 
     def test_registration_with_existing_user(self, api_client: APIClient, admin_user: User) -> None:
         """Test registration without security answers don't cause the serializer to fail."""
-        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
 
         # Build existing caregiver
@@ -1521,7 +1516,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
 
     def test_remove_skeleton_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration register remove skeleton caregiver."""
-        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         # Build existing caregiver
         caregiver = user_factories.Caregiver(
@@ -1552,7 +1546,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
 
     def test_existing_caregiver_keeps_securityanswers(self, api_client: APIClient, admin_user: User) -> None:
         """When registering with an existing caregiver, the existing security answers are kept."""
-        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         # Build existing caregiver
         caregiver = user_factories.Caregiver(
@@ -1691,7 +1684,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         settings: SettingsWrapper,
     ) -> None:
         """Test that the confirmation email is sent for new caregiver."""
-        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         registration_code, _ = self._build_access_request(email_verified=True, new_patient=False)
 
@@ -1720,7 +1712,6 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         settings: SettingsWrapper,
     ) -> None:
         """Test that the confirmation email is sent for existing caregiver."""
-        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
 
         # Build existing caregiver
