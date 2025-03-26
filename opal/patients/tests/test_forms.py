@@ -937,7 +937,7 @@ def test_accessrequestrequestorform_relationship_type_existing_self() -> None:
     assert disabled_options == disabled_types
 
 
-def test_accessrequestrequestorform_relationship_type_descrition() -> None:
+def test_requestor_form_relationship_type_description() -> None:
     """Ensure that the relationship type descriptions are set correctly to AvailableRadioSelect."""
     patient = factories.Patient()
     factories.Relationship(patient=patient, type=RelationshipType.objects.self_type())
