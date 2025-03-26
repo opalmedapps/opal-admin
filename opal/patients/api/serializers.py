@@ -2,12 +2,14 @@
 from typing import Any, Dict, Optional
 
 from django.db import transaction
+from django.db.models import Q  # noqa: WPS347
+from django.utils.translation import gettext
 
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.hospital_settings.models import Site
-from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
+from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 
 
 class PatientSerializer(DynamicFieldsSerializer):
@@ -190,4 +192,45 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
             )
             user.save()
 
+        # Prevent caregiver and self access to the deceased patient's data by setting relationship status to expired
+        if instance.date_of_death:
+            self._inactivate_patient_relationships(
+                patient=instance,
+            )
+
         return instance
+
+    def _inactivate_patient_relationships(
+        self,
+        patient: Patient,
+    ) -> None:
+        """Inactivate all the relationships for a deceased patient.
+
+        Args:
+            patient: the deceased patient object
+        """
+        # Look up the `Relationships` to the updating patient with a `SELF` role type
+        self_relationship = patient.relationships.filter(
+            type__role_type=RoleType.SELF,
+        ).first()
+
+        # Find patient's caregiver profile's ID (if patient was taking care of other patients including themselves)
+        patient_caregiver_id = self_relationship.caregiver.id if self_relationship else None
+
+        # Set end_date, reason, and status for the deceased patient's relationships
+        # The updating relationships should contain records for the patient OR the patient's caregiver profile
+        Relationship.objects.filter(
+            Q(patient__id=patient.id) | Q(caregiver__id=patient_caregiver_id),
+        ).update(
+            end_date=patient.date_of_death,
+            reason=gettext('Opal Account Inactivated'),
+            status=RelationshipStatus.EXPIRED,
+        )
+
+        # Add the "Date of death submitted from ADT" relationship termination reason only for the `SELF` role
+        Relationship.objects.filter(
+            Q(patient__id=patient.id) | Q(caregiver__id=patient_caregiver_id),
+            type__role_type=RoleType.SELF,
+        ).update(
+            reason=gettext('Date of death submitted from ADT'),
+        )

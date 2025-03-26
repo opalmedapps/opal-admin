@@ -526,7 +526,7 @@ class ManageRelationshipUpdateMixin(UpdateView[Relationship, ModelForm[Relations
     """
 
     model = Relationship
-    template_name = 'patients/relationships/edit_relationships.html'
+    template_name = 'patients/relationships/edit_relationship.html'
     form_class = RelationshipAccessForm
 
     def get_form_kwargs(self) -> Dict[str, Any]:
@@ -595,14 +595,14 @@ class ManageSearchUpdateView(ManageRelationshipUpdateMixin):
         """
         context = super().get_context_data(**kwargs)
         # to pass url to crispy form to be able to re-use the same form for different purposes
-        default_success_url = reverse_lazy('patients:relationships-search')
-        referer = self.request.META.get('HTTP_REFERER')
+        default_success_url = reverse_lazy('patients:relationships-search-list')
+        referrer = self.request.META.get('HTTP_REFERER')
         # to maintain the value of `cancel_url` when there is a validation error
         if context['view'].request.method == 'POST':
             context['cancel_url'] = context['form'].cleaned_data['cancel_url']
         # provide previous link with parameters to update on clicking cancel button
-        elif referer:
-            context['cancel_url'] = referer
+        elif referrer:
+            context['cancel_url'] = referrer
         else:
             context['cancel_url'] = default_success_url
         return context
@@ -617,7 +617,7 @@ class ManageSearchUpdateView(ManageRelationshipUpdateMixin):
         if self.request.POST.get('cancel_url', False):
             return self.request.POST['cancel_url']
 
-        return reverse_lazy('patients:relationships-search')
+        return reverse_lazy('patients:relationships-search-list')
 
 
 # The order of `MultiTableMixin` and `FilterView` classes is important!
@@ -631,7 +631,7 @@ class CaregiverAccessView(MultiTableMixin, FilterView):
     )
     filterset_class = ManageCaregiverAccessFilter
     tables = [tables.PatientTable, tables.RelationshipCaregiverTable]
-    success_url = reverse_lazy('patients:relationships-search')
+    success_url = reverse_lazy('patients:relationships-search-list')
     template_name = 'patients/relationships/relationship_filter.html'
 
     def get_tables_data(self) -> List[QuerySet[Any]]:

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-27 17:23-0400\n"
+"POT-Creation-Date: 2023-03-31 13:57-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,7 +24,6 @@ msgid "Hospital Settings"
 msgstr "Paramètres Hospitalier"
 
 #: opal/hospital_settings/forms.py
-#: opal/hospital_settings/templates/hospital_settings/site/site_form.html
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -108,21 +107,6 @@ msgstr "Aucun site n'est définie."
 msgid "Delete Institution"
 msgstr "Supprimer l'établissement"
 
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html
-#, python-format
-msgid "Are you sure you want to delete the following institution: %(object)s?"
-msgstr "Voulez-vous vraiment supprimer l'établissement suivant: %(object)s ?"
-
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_confirm_delete.html
-msgid "Yes"
-msgstr "Oui"
-
-#: opal/hospital_settings/templates/hospital_settings/institution/institution_confirm_delete.html
-#: opal/hospital_settings/templates/hospital_settings/site/site_confirm_delete.html
-msgid "Delete"
-msgstr "Supprimer"
-
 #: opal/hospital_settings/templates/hospital_settings/institution/institution_form.html
 #: opal/hospital_settings/templates/hospital_settings/site/site_form.html
 msgid "Update"
@@ -140,15 +124,6 @@ msgstr "Nouvel établissement"
 #: opal/hospital_settings/templates/hospital_settings/site/site_confirm_delete.html
 msgid "Delete Site"
 msgstr "Supprimer le site"
-
-#: opal/hospital_settings/templates/hospital_settings/site/site_confirm_delete.html
-#, python-format
-msgid "Are you sure you want to delete the following site: %(object)s?"
-msgstr "Voulez-vous vraiment supprimer le site suivant: %(object)s ?"
-
-#: opal/hospital_settings/templates/hospital_settings/site/site_form.html
-msgid "Cancel"
-msgstr "Annuler"
 
 #: opal/hospital_settings/templates/hospital_settings/site/site_list.html
 msgid "New Site"

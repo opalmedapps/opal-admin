@@ -1,42 +1,40 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load i18n %}
 
-  {% block content-header-page-name %}{% translate "Export Reports" %}{% endblock %}
+{% block heading %}
+  {% translate "Export Reports" %}
+{% endblock %}
 
-  {% block content %}
-    {% if perms.questionnaires.export_report %} <!-- Restrict access to authorized persons (See models ==> ExportReportPermission)  -->
-        <div class="container-fluid">
-          <div class="row justify-content-md-center">
-            <div class="col-sm-4">
-                <h4>{% translate "Select questionnaire" %}</h4>
-                <p>{% translate "Use the dropdown menu on the right to select the questionnaire you want to query, then press select." %}</p>
-            </div>
-            <div class="col-sm-1">
-            </div>
-            <div class="col-sm-6">
-                <form action="{% url 'questionnaires:reports-filter' %}" method="post" id="form" novalidate>
-                    {% csrf_token %}
-                    <div class="form-group row">
-                        <label class="col-sm-2 col-form-label" for="questionnaire_id">{% translate "Questionnaires" %}</label>
-                        <div class="col-sm-10">
-                            <select name="questionnaireid" class="form-control" id="questionnaireid" required>
+{% block content %}
+    <div class="row justify-content-md-center">
+      <div class="col-sm-4">
+          <h4>{% translate "Select questionnaire" %}</h4>
+          <p>{% translate "Use the dropdown menu on the right to select the questionnaire you want to query, then press select." %}</p>
+      </div>
+      <div class="col-sm-1">
+      </div>
+      <div class="col-sm-6">
+          <form action="{% url 'questionnaires:reports-filter' %}" method="post" id="form" novalidate>
+              {% csrf_token %}
+              <div class="form-group row">
+                  <label class="col-sm-2 col-form-label" for="questionnaire_id">{% translate "Questionnaires" %}</label>
+                  <div class="col-sm-10">
+                      <select name="questionnaireid" class="form-control" id="questionnaireid" required>
 
-                                {% for q in questionnaire_list %}
-                                    <option value="{{ q.ID }}">{{ q.ID }} - {{ q.name }}</option>
-                                {% endfor %}
-                            </select>
-                            <small class="form-text text-muted">  {% translate "ID - Name" %}</small>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="btn-toolbar mb-4">
-                            <button type="submit" class="btn btn-primary mr-2">{% translate "Select" %}</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-          </div>
-        </div>
-    {% endif %}
-  {% endblock %}
+                          {% for q in questionnaire_list %}
+                              <option value="{{ q.ID }}">{{ q.ID }} - {{ q.name }}</option>
+                          {% endfor %}
+                      </select>
+                      <small class="form-text text-muted">  {% translate "ID - Name" %}</small>
+                  </div>
+              </div>
+              <div class="form-group row">
+                  {% #button_toolbar %}
+                      <button type="submit" class="btn btn-primary me-2">{% translate "Select" %}</button>
+                  {% /button_toolbar %}
+              </div>
+          </form>
+      </div>
+    </div>
+{% endblock %}

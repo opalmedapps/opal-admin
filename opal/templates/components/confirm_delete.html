@@ -1,0 +1,12 @@
+{% load i18n %}
+
+<div class="callout callout-danger">
+  <h5 class="mb-4">
+    {% blocktranslate %}Are you sure you want to delete "{{ object }}"?{% endblocktranslate %}
+  </h5>
+
+  <form action="" method="POST" novalidate>
+    {% csrf_token %}
+    {% form_actions cancel_url=cancel_url submit_type="delete" %}
+  </form>
+</div>

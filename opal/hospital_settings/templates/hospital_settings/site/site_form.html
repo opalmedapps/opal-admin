@@ -1,31 +1,23 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load i18n %}
 
 {% load crispy_forms_tags %}
 
-{% block content-header-page-name %}
-  {% if object %}{% translate "Update" %}{% else %}{% translate "Create" %}{% endif %} {% translate "Site" %}
+{% block heading %}
+  {% if object %}
+    {% translate "Update" %}
+  {% else %}
+    {% translate "Create" %}
+  {% endif %}
+  {% translate "Site" %}
 {% endblock %}
 
 {% block content %}
-  <section class="content">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                      <form method="post" novalidate>
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <a class="btn btn-secondary mr-2" href="{% url 'hospital-settings:site-list' %}">
-                          {% translate "Cancel" %}
-                        </a>
-                        <input type="submit" class="btn btn-primary" value="{% translate "Save" %}">
-                      </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-  </section>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form|crispy }}
+
+    {% url 'hospital-settings:site-list' as cancel_url %}
+    {% form_actions cancel_url=cancel_url %}
+  </form>
 {% endblock %}
