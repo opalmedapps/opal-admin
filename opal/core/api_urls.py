@@ -48,7 +48,7 @@ urlpatterns = [
         name='caregiver-permissions',
     ),
     path(
-        'patients/legacy/<int:legacy_patient_id>/caregivers/',
+        'patients/legacy/<int:legacy_id>/caregivers/',
         CaregiverRelationshipView.as_view(),
         name='caregivers-list',
     ),
