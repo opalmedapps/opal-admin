@@ -94,7 +94,7 @@ from django.test import RequestFactory
 from django.urls import reverse
 from django.contrib.auth.models import Permission
 
-    # FAIL CASE: to raise permission denied permission when user does not have right privilege 
+    # FAIL CASE: to raise permission denied exception when user does not have right privilege 
     def test_site_permission_required_fail(user_client: Client, django_user_model: User) -> None:
        """Ensure that `site` permission denied error is raised when not having privilege"""
        user = django_user_model.objects.create(username='test_site_user')
