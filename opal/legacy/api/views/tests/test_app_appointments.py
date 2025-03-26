@@ -114,10 +114,11 @@ class TestAppAppointmentsView:
         assert daily_appointments.count() == 0
 
     def test_get_daily_appointments_details(self, mocker: MockerFixture) -> None:
-        """Test daily appointment according to their dates."""
+        """Test daily appointment details."""
         relationship = patient_factories.Relationship(status='CON')
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
-        alias = factories.LegacyAliasFactory()
+        hospital_map = factories.LegacyHospitalMapFactory()
+        alias = factories.LegacyAliasFactory(hospitalmapsernum=hospital_map)
         alias_expression = factories.LegacyAliasexpressionFactory(aliassernum=alias)
         # create an appointment close to the end of the day
         factories.LegacyAppointmentFactory(
@@ -141,7 +142,6 @@ class TestAppAppointmentsView:
             many=True,
         ).data
 
-        print(daily_appointments)
         assert len(daily_appointments) == 1
         assert 'patient' in daily_appointments[0]
         assert 'alias' in daily_appointments[0]
