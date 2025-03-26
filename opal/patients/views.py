@@ -808,7 +808,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
                 request,
                 'patients/relationships/view_relationship.html',
                 {
-                    'table': tables.PatientTable([self.get_object().patient]),
+                    'table': tables.PatientTable([relationship_record.patient]),
                     'relationship': relationship_record,
                     'cancel_url': cancel_url,
                 },
@@ -837,7 +837,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
                 request,
                 'patients/relationships/view_relationship.html',
                 {
-                    'table': tables.PatientTable([self.get_object().patient]),
+                    'table': tables.PatientTable([relationship_record.patient]),
                     'relationship': relationship_record,
                     'cancel_url': self.get_success_url(),
                 },
@@ -862,7 +862,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
                 return super().post(request, **kwargs)
 
         return self.render_to_response({
-            'table': tables.PatientTable([self.get_object().patient]),
+            'table': tables.PatientTable([relationship_record.patient]),
             'form': form,
             'cancel_url': request.POST.get('cancel_url'),
         })
