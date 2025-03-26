@@ -33,6 +33,6 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
         """
         return self.filter(
             legacyanswerquestionnaire__status=0,                             # 0 = New questionnaires
-            legacyanswerquestionnaire__patientid__externalid=patient_sernum,
-            purposeid=purpose_id,                                            # questionnaire purpose
+            legacyanswerquestionnaire__patient__external_id=patient_sernum,
+            purpose=purpose_id,                                            # questionnaire purpose
         )
