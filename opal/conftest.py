@@ -260,7 +260,7 @@ def _set_orms_enabled(settings: LazySettings) -> None:
 
 @pytest.fixture
 def _set_orms_disabled(settings: LazySettings) -> None:
-    """Fixture enables ORMS by default for all unit tests.
+    """Fixture disables ORMS for the unit test.
 
     Args:
         settings: the fixture providing access to the Django settings
