@@ -26,6 +26,7 @@ from django_tables2 import SingleTableMixin, SingleTableView
 from opal.caregivers.models import CaregiverProfile
 from opal.core.utils import qr_code
 from opal.core.views import CreateUpdateView, UpdateView
+from opal.hospital_settings.models import Institution
 from opal.patients import forms, tables
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 
@@ -191,10 +192,12 @@ class AccessRequestConfirmationView(PermissionRequiredMixin, AccessRequestStorag
 
         if registration_code:
             code_url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!code={registration_code}'
+            valid_period = Institution.objects.get().registration_code_valid_period
             context.update({
                 'registration_code': registration_code,
                 'registration_url': settings.OPAL_USER_REGISTRATION_URL,
                 'qr_code': base64.b64encode(qr_code(code_url)).decode(),
+                'valid_period': valid_period,
             })
 
         return context

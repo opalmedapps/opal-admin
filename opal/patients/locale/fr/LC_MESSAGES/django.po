@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-06 00:18+0000\n"
+"POT-Creation-Date: 2023-10-06 17:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -597,8 +597,12 @@ msgid "Do not print this page!"
 msgstr "N'imprimez pas cette page !"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
-msgid "Inform the requestor that the code is valid for 72 hours."
-msgstr "Informez le demandeur que le code est valable pour 72 heures."
+msgid "Inform the requestor that the code is valid for "
+msgstr "Informez le demandeur que le code est valable pour "
+
+#: opal/patients/templates/patients/access_request/confirmation_code.html
+msgid " hours."
+msgstr " heures."
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid ""
