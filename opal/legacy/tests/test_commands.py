@@ -15,7 +15,7 @@ from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, RelationshipStatus, RoleType
 from opal.users import factories as user_factories
-from opal.utils.tests.test_commands import CommandTestMixin
+from opal.utils.commands import CommandTestMixin
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 

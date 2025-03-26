@@ -1,3 +1,4 @@
+"""Utility classes used by management commands or in the testing of management commands."""
 from io import StringIO
 from typing import Any
 
