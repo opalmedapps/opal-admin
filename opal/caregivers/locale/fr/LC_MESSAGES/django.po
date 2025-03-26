@@ -104,7 +104,7 @@ msgstr "Appareil de confiance"
 
 #: opal/caregivers/models.py
 msgid "Push Token"
-msgstr ""
+msgstr "Jeton de notification directe"
 
 #: opal/caregivers/models.py
 msgid "Last Modified"
