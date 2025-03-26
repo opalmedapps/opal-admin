@@ -20,7 +20,7 @@ from opal.core import constants
 from opal.legacy import factories as legacy_factories
 from opal.legacy.models import LegacyEducationalMaterialControl
 from opal.legacy_questionnaires import factories
-from opal.legacy_questionnaires.models import LegacyPatient, LegacyQuestionnaire
+from opal.legacy_questionnaires.models import LegacyQuestionnaire, LegacyQuestionnairePatient
 from opal.users.models import User
 
 LEGACY_TEST_PATIENT_ID = 51
@@ -299,7 +299,7 @@ def is_legacy_model(model: type[Model]) -> bool:
     Returns:
         `True`, if it is a legacy model, `False` otherwise
     """
-    return model._meta.app_label == 'legacy' and not model._meta.managed  # noqa: WPS437
+    return model._meta.app_label in {'legacy', 'legacy_questionnaires'} and not model._meta.managed  # noqa: WPS437
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -335,58 +335,93 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
 
 @pytest.fixture(scope='session', autouse=True)
 def django_db_setup(django_db_setup: None, django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004, WPS442
-    """Add test_QuestionnaireDB setup by executing code in tests/sql.
+    """
+    Set up the QuestionnaireDB manually using an SQL file with the schema.
 
     Args:
         django_db_setup: pytest django's original DB setup fixture
         django_db_blocker: pytest fixture to allow database access here only
     """
-    # load test questionnaire db sql
-    with Path('opal/tests/sql/test_QuestionnaireDB.sql').open(encoding='ISO-8859-1') as handle:
+    with Path('opal/tests/sql/questionnairedb_functions.sql').open(encoding='ISO-8859-1') as handle:
         sql_content = handle.read()
-        handle.close()
 
     with django_db_blocker.unblock():
         with connections['questionnaire'].cursor() as conn:
             conn.execute(sql_content)
-            conn.close()
 
 
 @pytest.fixture
-def databank_consent_questionnaire_and_response(  # noqa: WPS210
-) -> tuple[LegacyPatient, LegacyQuestionnaire]:
+def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004
+    """
+    Initialize the QuestionnaireDB with data.
+
+    Data inserted includes the creation of questionnaires with related questions and dictionary entires.
+    Additionally, instances of questionnaire answers:
+
+    * Completed ESAS questionnaires for patientId 1, 2; in progress for patientId 3
+    * Completed Patient Satisfaction Questionnaire for patientId 3
+    * New Bowel Function Questionnaire for patientId 3
+    * New Quality of Life - Head and Neck Cancer for patientId 2
+    * New BREAST-Q Reconstruction Module Preoperative Scales
+      and BREAST-Q Reconstruction Module Postoperative Scales for patientId 1
+
+    Args:
+        django_db_blocker: pytest fixture to allow database access here only
+    """
+    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='ISO-8859-1') as handle:
+        sql_data = handle.read()
+
+    with django_db_blocker.unblock():
+        with connections['questionnaire'].cursor() as conn:
+            conn.execute(sql_data)
+
+
+@pytest.fixture
+def databank_consent_questionnaire_and_response(  # noqa: WPS210, WPS213
+) -> tuple[LegacyQuestionnairePatient, LegacyQuestionnaire]:
     """Add a full databank consent questionnaire and simple response to test setup.
 
     Returns:
         The corresponding legacy patient record who is linked to this answer, and the questionnaire
     """
     # Legacy patient record
-    consenting_patient = factories.LegacyPatientFactory(external_id=LEGACY_TEST_PATIENT_ID)
+    consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=LEGACY_TEST_PATIENT_ID)
+    consenting_patient.full_clean()
     # Questionnaire content, content ids must be non overlapping with existing test_QuestionnaireDB SQL
     middle_name_content = factories.LegacyDictionaryFactory(
         content_id=LEGACY_DICTIONARY_CONTENT_ID,
         content='Middle name',
         language_id=2,
     )
+    middle_name_content.full_clean()
     middle_name_question = factories.LegacyQuestionFactory(display=middle_name_content)
+    middle_name_question.full_clean()
     cob_content = factories.LegacyDictionaryFactory(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 1,
         content='City of birth',
         language_id=2,
     )
+    cob_content.full_clean()
     cob_question = factories.LegacyQuestionFactory(display=cob_content)
+    cob_question.full_clean()
     consent_purpose_content = factories.LegacyDictionaryFactory(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 2,
         content='Consent',
         language_id=2,
     )
+    consent_purpose_content.full_clean()
     consent_purpose = factories.LegacyPurposeFactory(title=consent_purpose_content)
+    consent_purpose.full_clean()
+    # Questionnaire
     questionnaire_title = factories.LegacyDictionaryFactory(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 3,
         content='Databank Consent Questionnaire',
         language_id=2,
     )
+    questionnaire_title.full_clean()
     consent_questionnaire = factories.LegacyQuestionnaireFactory(purpose=consent_purpose, title=questionnaire_title)
+    consent_questionnaire.full_clean()
+    # Questionnaire sections
     section = factories.LegacySectionFactory(questionnaire=consent_questionnaire)
     factories.LegacyQuestionSectionFactory(question=middle_name_question, section=section)
     factories.LegacyQuestionSectionFactory(question=cob_question, section=section)
@@ -395,6 +430,7 @@ def databank_consent_questionnaire_and_response(  # noqa: WPS210
         questionnaire=consent_questionnaire,
         patient=consenting_patient,
     )
+    answer_questionnaire.full_clean()
     answer_section = factories.LegacyAnswerSectionFactory(answer_questionnaire=answer_questionnaire, section=section)
     cob_answer = factories.LegacyAnswerFactory(
         question=cob_question,
@@ -460,6 +496,7 @@ def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEd
         name_en='Information and Consent Factsheet - QSCC Databank',
         name_fr="Fiche d'information sur l'information et le consentement - Banque de données du CQSI",
     )
+
     return (consent_questionnaire, info_sheet)
 
 

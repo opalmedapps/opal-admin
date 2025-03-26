@@ -25,10 +25,12 @@ class LegacyDictionaryFactory(DjangoModelFactory):
         model = models.LegacyDictionary
 
     content = 'Edmonton Symptom Assessment Survey'
-    content_id = 999999999
+    content_id = Sequence(lambda number: number + 1)
     table = SubFactory(LegacyDefinitionTableFactory)
     language_id = 1
     creation_date = timezone.make_aware(datetime(2022, 9, 27))
+    created_by = 'TestUser'
+    updated_by = 'TestUser'
 
 
 class LegacyPurposeFactory(DjangoModelFactory):
@@ -65,17 +67,17 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
     instruction = SubFactory(LegacyDictionaryFactory)
     logo = 'pathtologo'
     deleted_by = 'Test User'
-    creationdate = timezone.make_aware(datetime(2022, 9, 27))
+    creation_date = timezone.make_aware(datetime(2022, 9, 27))
     created_by = 'Test User'
     updated_by = 'Test User'
-    legacyname = 'Test Questionnaire'
+    legacy_name = 'Test Questionnaire'
 
 
-class LegacyPatientFactory(DjangoModelFactory):
+class LegacyQuestionnairePatientFactory(DjangoModelFactory):
     """Patient factory from the legacy questionnaire database."""
 
     class Meta:
-        model = models.LegacyPatient
+        model = models.LegacyQuestionnairePatient
         django_get_or_create = ('external_id',)
 
     external_id = 51
@@ -93,7 +95,7 @@ class LegacyAnswerQuestionnaireFactory(DjangoModelFactory):
         model = models.LegacyAnswerQuestionnaire
 
     questionnaire = SubFactory(LegacyQuestionnaireFactory)
-    patient = SubFactory(LegacyPatientFactory)
+    patient = SubFactory(LegacyQuestionnairePatientFactory)
     status = 0
     creation_date = timezone.make_aware(datetime(2022, 9, 27))
     deleted_by = 'Test User'
@@ -266,7 +268,7 @@ class LegacyAnswerFactory(DjangoModelFactory):
     type = SubFactory(LegacyTypeFactory)  # noqa: A003
     answer_section = SubFactory(LegacyAnswerSectionFactory)
     language = SubFactory(LegacyLanguageFactory)
-    patient = SubFactory(LegacyPatientFactory)
+    patient = SubFactory(LegacyQuestionnairePatientFactory)
     answered = Faker('boolean')
     skipped = Faker('boolean')
     deleted = Faker('boolean')

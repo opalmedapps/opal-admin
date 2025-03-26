@@ -41,8 +41,8 @@ from opal.legacy.models import (  # noqa: WPS235
     LegacyUserType,
 )
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
-from opal.legacy_questionnaires.models import LegacyPatient as qdb_LegacyPatient
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as qdb_LegacyQuestionnaire
+from opal.legacy_questionnaires.models import LegacyQuestionnairePatient
 from opal.patients import factories as patient_factories
 from opal.patients import utils
 from opal.patients.factories import Relationship
@@ -1788,7 +1788,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         patient.refresh_from_db()
 
         # Search for the expected databank records
-        qdb_patient = qdb_LegacyPatient.objects.get(  # type: ignore[misc]
+        qdb_patient = LegacyQuestionnairePatient.objects.get(  # type: ignore[misc]
             external_id=patient.legacy_id,
         )
         inserted_answer_questionnaire = LegacyAnswerQuestionnaire.objects.get(
@@ -1848,9 +1848,9 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         patient.refresh_from_db()
 
         # Ensure records are not created
-        message = 'LegacyPatient matching query does not exist.'
+        message = 'LegacyQuestionnairePatient matching query does not exist.'
         with assertRaisesMessage(ObjectDoesNotExist, message):
-            qdb_LegacyPatient.objects.get(  # type: ignore[misc]
+            LegacyQuestionnairePatient.objects.get(  # type: ignore[misc]
                 external_id=patient.legacy_id,
             )
         message = 'LegacyEducationalMaterial matching query does not exist.'
@@ -1904,9 +1904,9 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert legacy_patient.language == LegacyLanguage.FRENCH
 
         # We expect consent records to not be created
-        message = 'LegacyPatient matching query does not exist.'
+        message = 'LegacyQuestionnairePatient matching query does not exist.'
         with assertRaisesMessage(ObjectDoesNotExist, message):
-            qdb_LegacyPatient.objects.get(
+            LegacyQuestionnairePatient.objects.get(
                 external_id=patient.legacy_id,
             )
         message = 'LegacyEducationalMaterial matching query does not exist.'

@@ -87,7 +87,7 @@ def test_filter_report_form_exists(admin_client: Client) -> None:
     assertContains(response, reverse('questionnaires:reports-filter'))
 
 
-def test_detail_report_form_exists(user_client: Client) -> None:
+def test_detail_report_form_exists(user_client: Client, questionnaire_data: None) -> None:
     """Ensure that a form exists in the reports filter page pointing to the detail page."""
     test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
     test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
@@ -232,7 +232,7 @@ def test_report_filter_missing_key(admin_client: Client) -> None:
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_update_request_event_filter_template(user_client: Client) -> None:
+def test_update_request_event_filter_template(user_client: Client, questionnaire_data: None) -> None:
     """Ensure RequestEvent object is correctly updated on call to filter template."""
     test_questionnaire_profile = QuestionnaireProfileFactory()  # Get test user & profile from factory
     test_questionnaire_profile.user.is_superuser = True  # Permission to view report tooling
@@ -310,7 +310,7 @@ def test_detail_template_download_csv(admin_client: Client) -> None:
     assert int(headers.get('Content-Length', 0)) > 0
 
 
-def test_detail_template_download_xlsx(admin_client: Client) -> None:
+def test_detail_template_download_xlsx(admin_client: Client, questionnaire_data: None) -> None:
     """Ensure downloading of xlsx data works as expected."""
     # trigger generation of temp tables
     response = admin_client.post(
