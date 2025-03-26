@@ -94,8 +94,7 @@ markdownlint:
   stage: Static Analysis
   image:
     name: davidanson/markdownlint-cli2:v0.5.1
-    entrypoint:
-      - /bin/sh
+    entrypoint: [""]
   # this is not a Python script so we don't need to do all this extra stuff
   before_script:
     - markdownlint-cli2 --version
