@@ -140,6 +140,19 @@ def test_invalid_announcement_datatype() -> None:
     assert unread_serializer.errors == {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']}
 
 
+def test_invalid_announcement_field_min_value() -> None:
+    """Test if the announcement serializer field value type is invalid."""
+    unread_count = {
+        'unread_announcement_count': '-1',
+    }
+    unread_serializer = AnnouncementUnreadCountSerializer(data=unread_count)
+    assert not unread_serializer.is_valid()
+    assert unread_serializer.data == unread_count
+    assert unread_serializer.errors == {
+        'unread_announcement_count': ['Ensure this value is greater than or equal to 0.'],
+    }
+
+
 def test_announcement_data_access_before_save() -> None:
     """Test if the announcement serializer data is saved without error."""
     unread_count = {

@@ -29,4 +29,4 @@ class UnreadCountSerializer(serializers.Serializer):
 class AnnouncementUnreadCountSerializer(serializers.Serializer):
     """Serializer for the unread count of Announcement queryset."""
 
-    unread_announcement_count = serializers.IntegerField()
+    unread_announcement_count = serializers.IntegerField(min_value=0)
