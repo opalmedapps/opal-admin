@@ -86,7 +86,7 @@ class RegistrationRegisterView(APIView):
 
         # update patient legacy_id
         try:
-            validation_error = self._update_patient_legacy_id(
+            self._update_patient_legacy_id(
                 registration_code.relationship.patient,
                 register_data['relationship']['patient']['legacy_id'],
             )
@@ -96,7 +96,7 @@ class RegistrationRegisterView(APIView):
         # update caregiver
         if not validation_error:
             try:
-                validation_error = self._update_caregiver(
+                self._update_caregiver(
                     registration_code.relationship.caregiver.user,
                     register_data['relationship']['caregiver'],
                 )
