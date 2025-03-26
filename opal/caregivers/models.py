@@ -210,12 +210,6 @@ class RegistrationCode(models.Model):
         default=0,
     )
 
-    email_verification_code = models.CharField(
-        verbose_name=_('Email Verification Code'),
-        max_length=6,
-        validators=[MinLengthValidator(6)],
-    )
-
     class Meta:
         verbose_name = _('Registration Code')
         verbose_name_plural = _('Registration Codes')
