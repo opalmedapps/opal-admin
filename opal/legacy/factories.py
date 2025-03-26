@@ -29,17 +29,17 @@ class LegacyPatientFactory(DjangoModelFactory):
         django_get_or_create = ('patientsernum',)
 
     patientsernum = 51
-    firstname = 'Marge'
-    lastname = 'Simpson'
-    telnum = '5149995555'
-    dateofbirth = timezone.make_aware(datetime(2018, 1, 1))
+    first_name = 'Marge'
+    last_name = 'Simpson'
+    tel_num = '5149995555'
+    date_of_birth = timezone.make_aware(datetime(2018, 1, 1))
     sex = 'Male'
-    ssn = '123456'
-    registrationdate = timezone.make_aware(datetime(2018, 1, 1))
+    ramq = '123456'
+    registration_date = timezone.make_aware(datetime(2018, 1, 1))
     language = 'EN'
     email = 'test@test.com'
     # All
-    accesslevel = '3'
+    access_level = '3'
     last_updated = timezone.now()
     patient_aria_ser = Sequence(lambda number: number + 1)
 

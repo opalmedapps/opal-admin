@@ -196,7 +196,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         assert patient.sex == Patient.SexType.MALE
         assert patient.first_name == legacy_patient.firstname
         assert patient.last_name == legacy_patient.lastname
-        assert patient.ramq == legacy_patient.ssn
+        assert patient.ramq == legacy_patient.ramq
 
     @pytest.mark.parametrize(('data_access', 'legacy_data_access'), [
         (Patient.DataAccessType.ALL, '3'),
@@ -518,12 +518,12 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create legacy patient
         legacy_patient = legacy_factories.LegacyPatientFactory(
             patientsernum=99,
-            ssn='RAMQ12345678',
-            firstname='First Name',
-            lastname='Last Name',
-            dateofbirth=timezone.make_aware(datetime(2018, 1, 1)),
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
             sex='Male',
-            telnum='5149995555',
+            tel_num='5149995555',
             email='opal@example.com',
             language='en',
         )
@@ -556,12 +556,12 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create a second legacy patient
         second_legacy_patient = legacy_factories.LegacyPatientFactory(
             patientsernum=98,
-            ssn='RAMQ87654321',
-            firstname='Second First Name',
-            lastname='Second Last Name',
-            dateofbirth=timezone.make_aware(datetime(1950, 2, 3)),
+            ramq='RAMQ87654321',
+            first_name='Second First Name',
+            last_name='Second Last Name',
+            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
             sex='Female',
-            telnum='5149991111',
+            tel_num='5149991111',
             email='second.opal@example.com',
             language='fr',
         )
@@ -607,15 +607,15 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         # create legacy patient
         legacy_patient = legacy_factories.LegacyPatientFactory(
             patientsernum=99,
-            ssn='RAMQ12345678',
-            firstname='First Name',
-            lastname='Last Name',
-            dateofbirth=timezone.make_aware(datetime(2018, 1, 1)),
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
             sex='Male',
-            telnum='5149995555',
+            tel_num='5149995555',
             email='opal@example.com',
             language='en',
-            accesslevel='1',
+            access_level='1',
         )
         caregiver_factories.CaregiverProfile(
             user=user_factories.Caregiver(

@@ -1,3 +1,7 @@
+import datetime as dt
+
+from django.utils import timezone
+
 import pytest
 
 from opal.legacy import factories, models
@@ -29,6 +33,19 @@ def test_update_legacy_user_type() -> None:
     legacy_user.refresh_from_db()
 
     assert legacy_user.usertype == 'Patient'
+
+
+def test_create_patient() -> None:
+    legacy_utils.create_patient(
+        'Marge',
+        'Simpson',
+        models.LegacySexType.FEMALE,
+        timezone.make_aware(dt.datetime(1986, 10, 5)),
+        'marge@opalmedapps.ca',
+        models.LegacyLanguage.FRENCH,
+        'SIMM86600599',
+        models.LegacyAccessLevel.NEED_TO_KNOW,
+    )
 
 
 def test_insert_hospital_identifiers() -> None:

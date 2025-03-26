@@ -50,14 +50,14 @@ class Command(BaseCommand):
 
             else:
                 # If patient does not exist in the new backend migrate it
-                data_access = DATA_ACCESS_MAPPING.get(legacy_patient.accesslevel, Patient.DataAccessType.NEED_TO_KNOW)
+                data_access = DATA_ACCESS_MAPPING.get(legacy_patient.access_level, Patient.DataAccessType.NEED_TO_KNOW)
                 migrated_patient = Patient.objects.create(
                     legacy_id=legacy_patient.patientsernum,
-                    date_of_birth=legacy_patient.dateofbirth,
+                    date_of_birth=legacy_patient.date_of_birth,
                     sex=SexType[legacy_patient.sex.upper()],
-                    first_name=legacy_patient.firstname,
-                    last_name=legacy_patient.lastname,
-                    ramq=legacy_patient.ssn,
+                    first_name=legacy_patient.first_name,
+                    last_name=legacy_patient.last_name,
+                    ramq=legacy_patient.ramq,
                     data_access=data_access,
                 )
                 self.stdout.write(

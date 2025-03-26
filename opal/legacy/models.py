@@ -45,23 +45,47 @@ class LegacySexType(models.TextChoices):
     UNKNOWN = 'Unknown'
 
 
+class LegacyLanguage(models.TextChoices):
+    """The possible language values."""
+
+    ENGLISH = 'EN'
+    FRENCH = 'FR'
+
+
+class LegacyAccessLevel(models.TextChoices):
+    """The possible access level values."""
+
+    NEED_TO_KNOW = '1'
+    ALL = '3'
+
+
 class LegacyPatient(models.Model):
     """Patient model from the legacy database."""
 
     patientsernum = models.AutoField(db_column='PatientSerNum', primary_key=True)
-    firstname = models.CharField(db_column='FirstName', max_length=50)
-    lastname = models.CharField(db_column='LastName', max_length=50)
+    first_name = models.CharField(db_column='FirstName', max_length=50)
+    last_name = models.CharField(db_column='LastName', max_length=50)
     email = models.CharField(db_column='Email', max_length=50)
-    registrationdate = models.DateTimeField(db_column='RegistrationDate')
-    language = models.CharField(db_column='Language', max_length=2)
-    telnum = models.BigIntegerField(db_column='TelNum', blank=True, null=True)
-    dateofbirth = models.DateTimeField(db_column='DateOfBirth')
+    registration_date = models.DateTimeField(db_column='RegistrationDate', auto_now_add=True)
+    language = models.CharField(
+        db_column='Language',
+        max_length=2,
+        choices=LegacyLanguage.choices,
+    )
+    tel_num = models.BigIntegerField(db_column='TelNum', blank=True, null=True)
+    date_of_birth = models.DateTimeField(db_column='DateOfBirth')
     death_date = models.DateTimeField(db_column='DeathDate', blank=True, null=True)
-    ssn = models.CharField(db_column='SSN', max_length=16)
-    accesslevel = models.CharField(db_column='AccessLevel', max_length=1, default='1')
+    ramq = models.CharField(db_column='SSN', max_length=16)
+    access_level = models.CharField(
+        db_column='AccessLevel',
+        max_length=1,
+        default=LegacyAccessLevel.NEED_TO_KNOW,
+        choices=LegacyAccessLevel.choices,
+    )
     sex = models.CharField(db_column='Sex', max_length=25, choices=LegacySexType.choices)
+    age = models.IntegerField(db_column='Age', blank=True, null=True)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
-    patient_aria_ser = models.IntegerField(db_column='PatientAriaSer')
+    patient_aria_ser = models.IntegerField(db_column='PatientAriaSer', default=0)
 
     objects: managers.LegacyPatientManager = managers.LegacyPatientManager()
 
