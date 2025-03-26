@@ -20,7 +20,7 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
     def test_no_app_statistics(self) -> None:
         """Ensure that the command does not fail when there is no app statistics."""
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
-        assert stdout == 'Successfully populated statistics data to DailyUserAppActivity model\n'
+        assert stdout == 'Successfully populated daily statistics data\n'
 
     def test_populate_previous_day_user_statistics(self) -> None:
         """Ensure that the command successfully populates the previous day app statistics."""
@@ -132,5 +132,5 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
             ),
         ])
         stdout, _stderr = self._call_command('update_daily_usage_statistics')
-        assert stdout == 'Successfully populated statistics data to DailyUserAppActivity model\n'
+        assert stdout == 'Successfully populated daily statistics data\n'
         assert DailyUserAppActivity.objects.count() == 1

@@ -479,13 +479,13 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
 class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']):
     """LegacyPatientActivityLog model manager."""
 
-    def get_aggregated_app_activities(
+    def get_aggregated_user_app_activities(
         self,
         start_datetime_period: datetime,
         end_datetime_period: datetime,
     ) -> ValuesQuerySet['LegacyPatientActivityLog', dict[str, Any]]:
         """
-        Retrieve aggregated application activity statistics for a given time period.
+        Retrieve aggregated application activity statistics per user for a given time period.
 
         The statistics are fetched from the legacy `PatientActivityLog` (a.k.a. PAL) table.
 
@@ -500,47 +500,15 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
         Returns:
             Annotated `LegacyPatientActivityLog` records
         """
-        # NOTE: It seems like an activity triggered from the Notifications page is recorded differently from when
-        #       the activity is initialized in the chart.
-        #       If Marge clicks on a TxTeamMessage notification from her Home page,
-        #       the PAL shows Request==GetOneItem, Parameters=={"category":"TxTeamMessages","serNum":"3"}.
-        #       Whereas if Marge clicks a TxTeamMessage from her chart page,
-        #       PAL shows Request=Read, Parameters={"Field":"TxTeamMessages","Id":"1"}
         return self.filter(
             date_time__gte=start_datetime_period,
             date_time__lt=end_datetime_period,
         ).values(
-            'target_patient_id',
             'username',
         ).annotate(
             last_login=models.Max('date_time', filter=models.Q(request='Login')),
             count_logins=models.Count('activity_ser_num', filter=models.Q(request='Login')),
-            # NOTE: the count includes both successful and failed check-ins
-            count_checkins=models.Count('activity_ser_num', filter=models.Q(request='Checkin')),
-            count_documents=models.Count('activity_ser_num', filter=models.Q(request='DocumentContent')),
-            # educ is tricky... the different educ types get logged different in PAL table
-            # Package --> Request==Log, Parameters={"Activity":"EducationalMaterialSerNum","ActivityDetails":"6"}
-            #  + for each content Request==Log,
-            #       and Parameters={"Activity":"EducationalMaterialControlSerNum","ActivityDetails":"649"}
-            #         + etc
-            # Factsheet --> Request=Log, Parameters={"Activity":"EducationalMaterialSerNum","ActivityDetails":"11"}
-            # Booklet --> Log + {"Activity":"EducationalMaterialSerNum","ActivityDetails":"4"}
-            #         + for each chapter Request=Read, Parameters={"Field":"EducationalMaterial","Id":"4"}
-            # Might have to use PatientActionLog to properly determine educaitonal material count?
-            # Could consider counting each type separately here then aggregating below in the model creation?
-            count_educational_materials=models.Count(
-                'activity_ser_num',
-                filter=models.Q(request='Log', parameters__contains='EducationalMaterialSerNum'),
-            ),
             count_feedback=models.Count('activity_ser_num', filter=models.Q(request='Feedback')),
-            count_questionnaires_complete=models.Count(
-                'activity_ser_num',
-                filter=models.Q(request='QuestionnaireUpdateStatus', parameters__contains='"new_status":"2"'),
-            ),
-            count_labs=models.Count(
-                'activity_ser_num',
-                filter=models.Q(request='PatientTestTypeResults') | models.Q(request='PatientTestDateResults'),
-            ),
             count_update_security_answers=models.Count(
                 'activity_ser_num',
                 filter=models.Q(request='UpdateSecurityQuestionAnswer'),
