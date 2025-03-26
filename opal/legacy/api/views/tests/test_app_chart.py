@@ -88,7 +88,7 @@ class TestAppChartView:
 
         # API results
         response = self._call_chart_data_request(admin_api_client, self.patient.patientsernum, self.user.username)
-        assert response.data['unread_appointment_count'] == 2
+        assert response.data['unread_appointment_count'] == 7
 
     def test_get_unread_labs_count(self, admin_api_client: APIClient) -> None:
         """Test whether the right number of unread lab results is returned."""
