@@ -1,0 +1,97 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-01-10 00:41-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: opal/health_data/models.py
+msgid "Patient"
+msgstr "Patient"
+
+#: opal/health_data/models.py
+msgid "Health Data Store"
+msgstr "Banque de données de santé"
+
+#: opal/health_data/models.py
+msgid "Health Data Stores"
+msgstr "Banques de données de santé"
+
+#: opal/health_data/models.py
+msgid "Clinician"
+msgstr "Clinicien"
+
+#: opal/health_data/models.py
+msgid "Start Date"
+msgstr ""Date de début"
+
+#: opal/health_data/models.py
+msgid "Device"
+msgstr "Appareil"
+
+#: opal/health_data/models.py
+msgid "The device that was used to take the measurement"
+msgstr "Translation missing"
+
+#: opal/health_data/models.py
+msgid "Source"
+msgstr "Source"
+
+#: opal/health_data/models.py
+msgid ""
+"The source that provided this sample, for example, the patient if it is "
+"patient-reported data"
+msgstr "Translation missing"
+
+#: opal/health_data/models.py
+msgid "Added At"
+msgstr "Ajouté à"
+
+#: opal/health_data/models.py
+msgid "Body Mass (kg)"
+msgstr "Translation missing"
+
+#: opal/health_data/models.py
+msgid "Body Temperature (°C)"
+msgstr "Translation missing"
+
+#: opal/health_data/models.py
+msgid "Heart Rate (bpm)"
+msgstr "Translation missing"
+
+#: opal/health_data/models.py
+msgid "Heart Rate Variability (ms)"
+msgstr "Translation missing"
+
+#: opal/health_data/models.py
+msgid "Oxygen Saturation (%)"
+msgstr "Translation missing"
+
+#: opal/health_data/models.py
+msgid "Value"
+msgstr "Valeur"
+
+#: opal/health_data/models.py
+msgid "Type"
+msgstr "Type"
+
+#: opal/health_data/models.py
+msgid "Quantity Sample"
+msgstr "Échantillon de quantité"
+
+#: opal/health_data/models.py
+msgid "Quantity Samples"
+msgstr "Échantillons de quantité"
