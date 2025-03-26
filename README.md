@@ -23,7 +23,7 @@ These configuration parameters are read by `docker compose` and by `settings.py`
 
 !!! note
     The legacy database is currently provided by the [`db-docker`](https://gitlab.com/opalmedapps/db-docker/). For information on the legacy database, please see the [Legacy DB Connection](legacy_db) page.
-    Make sure the confgiguration of the legacy database in your `.env` file matches the value of the one in your `db-docker` setup.
+    Make sure the configuration of the legacy database in your `.env` file matches the value of the one in your `db-docker` setup.
 
 ### Docker
 
