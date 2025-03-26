@@ -156,6 +156,7 @@ class TestApiRetrieveRegistrationDetails:
                 'date_of_birth': datetime.strftime(patient.date_of_birth, '%Y-%m-%d'),
                 'sex': patient.sex,
                 'ramq': patient.ramq,
+                'uuid': str(patient.uuid),
             },
             'hospital_patients': [
                 {
@@ -169,7 +170,7 @@ class TestApiRetrieveRegistrationDetails:
 class TestApiRegistrationCompletion:
     """Test class tests the api registration/<str: code>/register."""
 
-    valid_input_data = dict({
+    valid_input_data = {
         'patient': {
             'legacy_id': 1,
         },
@@ -187,7 +188,7 @@ class TestApiRegistrationCompletion:
                 'answer': 'maybe',
             },
         ],
-    })
+    }
 
     def test_register_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test api registration register success."""
