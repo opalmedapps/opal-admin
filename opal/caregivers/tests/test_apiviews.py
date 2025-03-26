@@ -4,6 +4,7 @@ from http import HTTPStatus
 
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
+from django.utils import timezone
 
 from pytest_django.fixtures import SettingsWrapper
 from rest_framework.exceptions import ErrorDetail
@@ -82,7 +83,6 @@ class TestApiEmailVerification:
         self,
         api_client: APIClient,
         admin_user: AbstractUser,
-        settings: SettingsWrapper,
     ) -> None:
         """Test verify verification code success."""
         api_client.force_login(user=admin_user)
@@ -91,6 +91,7 @@ class TestApiEmailVerification:
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email_verification = caregiver_factory.EmailVerification(caregiver=caregiver_profile)
+        assert len(caregiver_model.EmailVerification.objects.all()) == 1
         response = api_client.post(
             reverse(
                 'api:verify-email-code',
@@ -105,6 +106,7 @@ class TestApiEmailVerification:
         caregiver_profile.user.refresh_from_db()
         assert response.status_code == HTTPStatus.OK
         assert caregiver_profile.user.email != user_email
+        assert len(caregiver_model.EmailVerification.objects.all()) == 0
 
     def test_save_verify_email_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test save verify email success."""
@@ -124,6 +126,32 @@ class TestApiEmailVerification:
         email_verification = caregiver_model.EmailVerification.objects.get(email=email)
         assert response.status_code == HTTPStatus.OK
         assert email_verification
+
+    def test_resend_verify_email_within_ten_sec(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test resend verify email within 10 sec."""
+        api_client.force_login(user=admin_user)
+        caregiver_profile = caregiver_factory.CaregiverProfile()
+        relationship = patient_factory.Relationship(caregiver=caregiver_profile)
+        registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
+        email_verification = caregiver_factory.EmailVerification(
+            caregiver=caregiver_profile,
+            sent_at=timezone.now(),
+        )
+        response = api_client.post(
+            reverse(
+                'api:verify-email',
+                kwargs={'code': registration_code.code},
+            ),
+            data={'email': email_verification.email},
+            format='json',
+        )
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.data == {
+            'detail': ErrorDetail(
+                string='Please wait 10 seconds before requesting a new verification code.',
+                code='invalid',
+            ),
+        }
 
     def test_registration_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test registration code not exists."""
