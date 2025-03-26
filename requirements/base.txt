@@ -48,3 +48,7 @@ plotly==5.16.1  # https://pypi.org/project/plotly/
 # twilio for sending SMS
 #
 twilio==8.8.0  # https://github.com/twilio/twilio-python
+
+# fpdf2 for generating PDF documents
+#
+fpdf2==2.7.5
