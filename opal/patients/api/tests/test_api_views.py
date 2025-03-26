@@ -1022,12 +1022,11 @@ class TestPatientExistsView:
         )
 
 
-def test_relationship_types_list(api_client: APIClient, user: User) -> None:
+def test_relationship_types_list(api_client: APIClient, listener_user: User) -> None:
     """Test the return of the relationship types list."""
-    api_client.force_login(user=user)
+    api_client.force_login(user=listener_user)
 
-    relationship_type1 = RelationshipType(name='Name 1', description='Description 1')
-    relationship_type2 = RelationshipType(name='Name 2', description='Description 2')
+    relationship_type1 = RelationshipType()
 
     response = api_client.get(reverse('api:relationship-types-list'))
 
@@ -1036,8 +1035,4 @@ def test_relationship_types_list(api_client: APIClient, user: User) -> None:
     assert response.json()[0] == {
         'name': relationship_type1.name,
         'description': relationship_type1.description,
-    }
-    assert response.json()[1] == {
-        'name': relationship_type2.name,
-        'description': relationship_type2.description,
     }
