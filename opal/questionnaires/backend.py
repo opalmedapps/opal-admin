@@ -209,7 +209,7 @@ def get_tempC() -> list[dict]:
     :return: list of all rows of the query as dictionaries
     """
     # TODO: remove testing only
-    return [{'patient_id': 16, 'question_id': 859, 'question': 'Please enter any comments you have about the Opal app.  These can be comments about what you like, or suggestions about what could be added or improved.', 'answer': 'J aime bcp l App , j ai hâte de voir d autre fonctions qui seront disponible, diagnostic, notes du médecin etc..', 'creation_date': datetime.date(2018, 11, 25), 'last_updated': datetime.date(2018, 11, 25)}, {'patient_id': 16, 'question_id': 853, 'question': 'How useful is the Opal app?', 'answer': '4', 'creation_date': datetime.date(2018, 11, 25), 'last_updated': datetime.date(2018, 11, 25)}]
+    return [{'patient_id': 16, 'question_id': 859, 'question': 'Please enter any comments you have about the Opal app.  These can be comments about what you like, or suggestions about what could be added or improved.', 'answer': 'J aime bcp l App , j ai hâte de voir d autre fonctions qui seront disponible, diagnostic, notes du médecin etc..', 'creation_date': datetime.date(2018, 11, 25), 'last_updated': datetime.date(2018, 11, 25)}, {'patient_id': 17, 'question_id': 853, 'question': 'How useful is the Opal app?', 'answer': '4', 'creation_date': datetime.date(2018, 11, 25), 'last_updated': datetime.date(2018, 11, 25)}]
     with connections['QuestionnaireDB'].cursor() as c:
         c.execute(
             f'SELECT patientId, questionId, question, Answer, creationDate,	lastUpdated FROM tempC ORDER BY lastUpdated ASC'

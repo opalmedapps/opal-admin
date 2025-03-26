@@ -1,6 +1,7 @@
 """This module provides views for questionnaire settings."""
 import datetime
 import logging
+import tempfile
 from http import HTTPStatus
 from typing import Any
 
@@ -32,7 +33,7 @@ class QuestionnaireReportListTemplateView(PermissionRequiredMixin, TemplateView)
     permission_required = ('questionnaires.export_report')
     template_name = 'questionnaires/export_reports/reports-list.html'
 
-    def get_context_data(self, **kwargs: Any) -> Any:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         """Override class method and append questionnaire list to context.
 
         Args:
@@ -75,7 +76,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
                 return HttpResponse(status=HTTPStatus.BAD_REQUEST)
             questionnaire_detail = get_questionnaire_detail(qid)
             context.update(questionnaire_detail)
-            return super().render_to_response(context)  # noqa: WPS613
+            return self.render_to_response(context)
         self.logger.error('Missing post key: questionnaireid')
         return HttpResponse(status=HTTPStatus.BAD_REQUEST)
 
@@ -120,7 +121,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
             },
         )
 
-        return super().render_to_response(context)  # noqa: WPS613
+        return self.render_to_response(context)
 
 
 # EXPORT REPORTS VIEW REPORT (Downloaded csv)
@@ -148,21 +149,18 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
 
         """
         qid = request.POST.get('questionnaireid')
-        path = settings.REPORT_FILE_PATH
         datesuffix = datetime.datetime.now().strftime('%Y-%m-%d')
         filename = f'questionnaire-{qid}-{datesuffix}.csv'
-        filename_long = smart_str(f'{path}/{filename}')
         report_dict = get_tempC()
         df = pd.DataFrame.from_dict(report_dict)
 
-        df.to_csv(filename_long, index=False, header=True)
-        with open(filename_long, 'rb') as handle:
-            file_content = handle.read()
-        return HttpResponse(
-            file_content,
-            content_type='text/csv',
-            headers={'Content-Disposition': f'attachment; filename = {filename}'},
-        )
+        with tempfile.NamedTemporaryFile() as temp_file:
+            df.to_csv(temp_file.name, index=False, header=True)
+            return HttpResponse(
+                temp_file.read(),
+                content_type='text/csv',
+                headers={'Content-Disposition': f'attachment; filename = {filename}'},
+            )
 
 
 # EXPORT REPORTS VIEW REPORT (Downloaded xlsx)

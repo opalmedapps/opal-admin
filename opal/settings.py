@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/dev/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
-import os
 from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
@@ -386,4 +385,4 @@ DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4.html'
 # ------------------------------------------------------------------------------
 # List of accounts to be excluded from the questionnaires list when not in debug mode
 TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS')
-REPORT_FILE_PATH = os.path.join(MEDIA_ROOT, 'tmp/questionnaire-files')
+REPORT_FILE_PATH = MEDIA_ROOT.joinpath('tmp/questionnaire-files')
