@@ -1,7 +1,10 @@
 image: python:3.9.13-slim-bullseye
 
 services:
-  - mariadb:10.7.1-focal
+  - name: mariadb:10.7.1-focal
+    alias: db
+  - name: mariadb:10.7.1-focal
+    alias: legacy-db
 
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
@@ -9,7 +12,7 @@ services:
 # only cache local items.
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+  MARIADB_ROOT_PASSWORD: $ROOT_PASSWORD
   # ensure that user has permissions for test DB to be used by pytest
   MARIADB_DATABASE: test_$DB_NAME
   MARIADB_USER: $DB_USER
@@ -27,14 +30,14 @@ before_script:
   # set up env file for DB service
   # use sample env file
   - mv .env.sample .env
-  - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=mariadb/" .env
+  - sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=db/" .env
   - sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
   - sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
   - sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$DB_PASSWORD/" .env
   # set up legacy DB connection
   # reuse the same database as for the other tests to make it easier
-  - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
-  - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
+  - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=legacy-db/" .env
+  # - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
   - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=$DB_NAME/" .env
   - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
   - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
