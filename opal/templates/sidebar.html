@@ -1,0 +1,88 @@
+{% load static %}
+{% load i18n %}
+
+<nav class="d-flex flex-column flex-shrink-0 p-3 border-end" style="width: 300px;">
+  <a href="" class="d-flex align-items-center pb-3 mb-3 link-dark text-decoration-none border-bottom">
+    <img src="{% static 'images/opal_purple.png' %}" alt="opal ADMIN logo" class="bi pe-none me-2 align-middle" width="32" height="32" style="opacity: .8" />
+    <span class="fs-4 fw-semibold text-body">OpalAdmin 2.0</span>
+    &nbsp;<span class="badge text-bg-primary">new</span>
+  </a>
+  <p>
+    <a href="/" class="text-secondary">Go back to Legacy OpalAdmin</a>
+  </p>
+
+  <ul class="list-unstyled ps-0 mb-auto">
+    {% #menu_group group_id="home" title=_("Home") request=request %}
+      {% #menu_item url_name="start" request=request %}
+        {% translate "Home Page" %}
+      {% /menu_item %}
+    {% /menu_group %}
+
+    {% comment %}Hospital Settings{% endcomment %}
+    {% if perms.hospital_settings.can_manage_institutions or perms.hospital_settings.can_manage_sites %}
+      {% #menu_group app_name="hospital-settings" group_id="settings" title=_("Hospital Settings") request=request %}
+        {% if perms.hospital_settings.can_manage_institutions %}
+          {% #menu_item url_name="hospital-settings:institution-list" request=request %}
+            {% translate "Institutions" %}
+          {% /menu_item %}
+        {% endif %}
+        {% if perms.hospital_settings.can_manage_sites %}
+          {% #menu_item url_name="hospital-settings:site-list" request=request %}
+            {% translate "Sites" %}
+          {% /menu_item %}
+        {% endif %}
+      {% /menu_group %}
+    {% endif %}
+
+    {% comment %}Patients{% endcomment %}
+    {% #menu_group app_name="patients" group_id="patients" title=_("Patients") request=request %}
+      {% if perms.patients.can_manage_relationshiptypes %}
+        {% #menu_item url_name="patients:relationshiptype-list" request=request %}
+          {% translate "Relationship Types" %}
+        {% /menu_item %}
+      {% endif %}
+      {% if perms.hospital_settings.can_manage_sites %}
+        {% #menu_item url_name="patients:access-request" request=request %}
+          {% translate "New Access Request" %}
+        {% /menu_item %}
+      {% endif %}
+      {% if perms.patients.can_manage_relationships %}
+        {% #menu_item url_name="patients:relationships-pending-list" request=request %}
+          {% translate "Pending Access Requests" %}
+        {% /menu_item %}
+      {% endif %}
+      {% #menu_item url_name="patients:relationships-search" request=request %}
+        {% translate "Manage Caregiver Access" %}
+      {% /menu_item %}
+    {% /menu_group %}
+
+    {% comment %}Questionnaires{% endcomment %}
+    {% if perms.questionnaires.export_report %}
+      {% #menu_group app_name="questionnaires" group_id="questionnaires" title=_("Questionnaires") request=request %}
+        {% #menu_item url_name="questionnaires:reports" request=request %}
+          {% translate "Export Reports" %}
+        {% /menu_item %}
+      {% /menu_group %}
+    {% endif %}
+  </ul>
+
+  <div class="dropdown pt-3 border-top">
+    <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="fa-solid fa-user-circle fa-xl me-2"></i>
+    <strong>{{ request.user.username }}</strong>
+  </a>
+  <ul class="dropdown-menu text-small shadow">
+    <li>
+      <a class="dropdown-item" href="#">Profile</a>
+    </li>
+    <li>
+      <hr class="dropdown-divider" />
+    </li>
+    <li>
+      <form id="logout-form" method="post" action="{% url 'admin:logout' %}" novalidate>
+        {% csrf_token %}
+        <button class="dropdown-item" type="submit">{% translate "Log Out" %}</button>
+      </form>
+    </li>
+  </ul>
+</nav>
