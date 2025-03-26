@@ -133,7 +133,7 @@ class TestInitializeData(CommandTestMixin):
         """Ensure that initial data is inserted when there is no existing data."""
         stdout, _stderr = self._call_command('initialize_data')
 
-        assert Group.objects.count() == 4
+        assert Group.objects.count() == 7
         assert User.objects.count() == 3
         assert Token.objects.count() == 3
         assert SecurityQuestion.objects.count() == 6
