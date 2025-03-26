@@ -1,7 +1,7 @@
 """Module which provides HL7-parsing into JSON data for any generic HL7 segment-structured message."""
 from collections import defaultdict
 from datetime import datetime
-from typing import IO, Any, Mapping
+from typing import IO, Any, Callable, Mapping, TypeAlias
 
 from django.utils import timezone
 
@@ -10,7 +10,11 @@ from hl7apy.parser import parse_message
 from rest_framework import exceptions
 from rest_framework.parsers import BaseParser
 
-from opal.hospital_settings.models import Site
+ParserFunction: TypeAlias = Callable[[Segment], dict[str, Any]]
+
+FORMAT_DATE = '%Y%m%d'
+FORMAT_DATETIME_SHORT = '%Y%m%d%H%M'
+FORMAT_DATETIME_COMPLETE = '%Y%m%d%H%M%S'
 
 
 def parse_pid_segment(segment: Segment) -> dict[str, Any]:
@@ -28,12 +32,10 @@ def parse_pid_segment(segment: Segment) -> dict[str, Any]:
     return {
         'first_name': segment.pid_5.pid_5_2.to_er7(),
         'last_name': segment.pid_5.pid_5_1.to_er7(),
-        'date_of_birth': datetime.strptime(segment.pid_7.to_er7(), '%Y%m%d').date(),
+        'date_of_birth': datetime.strptime(segment.pid_7.to_er7(), FORMAT_DATE).date(),
         'sex': segment.pid_8.to_er7(),
         'ramq': segment.pid_2.pid_2_1.to_er7(),
-        'mrn_sites': remove_invalid_sites(
-            [(mrn_site.pid_3_1.to_er7(), mrn_site.pid_3_4.to_er7()) for mrn_site in segment.pid_3],
-        ),
+        'mrn_sites': [(mrn_site.pid_3_1.to_er7(), mrn_site.pid_3_4.to_er7()) for mrn_site in segment.pid_3],
         'address_street': segment.pid_11.pid_11_1.to_er7(),
         'address_city': segment.pid_11.pid_11_3.to_er7(),
         'address_province': segment.pid_11.pid_11_4.to_er7(),
@@ -85,10 +87,10 @@ def parse_orc_segment(segment: Segment) -> dict[str, Any]:
         'order_interval_pattern': segment.orc_7.orc_7_2_1.to_er7(),
         'order_interval_duration': segment.orc_7.orc_7_2_2.to_er7(),
         'order_duration': segment.orc_7.orc_7_3.to_er7(),
-        'order_start_datetime': format_datetime_from_er7(segment.orc_7.orc_7_4.to_er7(), '%Y%m%d%H%M%S'),
-        'order_end_datetime': format_datetime_from_er7(segment.orc_7.orc_7_5.to_er7(), '%Y%m%d%H%M'),
+        'order_start_datetime': parse_datetime_from_er7(segment.orc_7.orc_7_4.to_er7(), FORMAT_DATETIME_SHORT),
+        'order_end_datetime': parse_datetime_from_er7(segment.orc_7.orc_7_5.to_er7(), FORMAT_DATETIME_SHORT),
         'order_priority': segment.orc_7.orc_7_6.to_er7(),
-        'entered_at': format_datetime_from_er7(segment.orc_9.orc_9_1.to_er7(), '%Y%m%d%H%M%S'),
+        'entered_at': parse_datetime_from_er7(segment.orc_9.orc_9_1.to_er7(), FORMAT_DATETIME_COMPLETE),
         'entered_by_id': segment.orc_10.orc_10_1.to_er7(),
         'entered_by_family_name': segment.orc_10.orc_10_2.to_er7(),
         'entered_by_given_name': segment.orc_10.orc_10_3.to_er7(),
@@ -98,7 +100,7 @@ def parse_orc_segment(segment: Segment) -> dict[str, Any]:
         'ordered_by_id': segment.orc_12.orc_12_1.to_er7(),
         'order_by_family_name': segment.orc_12.orc_12_2.to_er7(),
         'order_by_given_name': segment.orc_12.orc_12_3.to_er7(),
-        'effective_at': format_datetime_from_er7(segment.orc_15.orc_15_1.to_er7(), '%Y%m%d%H%M%S'),
+        'effective_at': parse_datetime_from_er7(segment.orc_15.orc_15_1.to_er7(), FORMAT_DATETIME_COMPLETE),
     }
 
 
@@ -119,8 +121,8 @@ def parse_rxe_segment(segment: Segment) -> dict[str, Any]:
         'pharmacy_interval_pattern': segment.rxe_1.rxe_1_2_1.to_er7(),
         'pharmacy_interval_duration': segment.rxe_1.rxe_1_2_2.to_er7(),
         'pharmacy_duration': segment.rxe_1.rxe_1_3.to_er7(),
-        'pharmacy_start_datetime': format_datetime_from_er7(segment.rxe_1.rxe_1_4.to_er7(), '%Y%m%d%H%M'),
-        'pharmacy_end_datetime': format_datetime_from_er7(segment.rxe_1.rxe_1_5.to_er7(), '%Y%m%d%H%M'),
+        'pharmacy_start_datetime': parse_datetime_from_er7(segment.rxe_1.rxe_1_4.to_er7(), FORMAT_DATETIME_SHORT),
+        'pharmacy_end_datetime': parse_datetime_from_er7(segment.rxe_1.rxe_1_5.to_er7(), FORMAT_DATETIME_SHORT),
         'pharmacy_priority': segment.rxe_1.rxe_1_6.to_er7(),
         'give_identifier': segment.rxe_2.rxe_2_1.to_er7(),
         'give_text': segment.rxe_2.rxe_2_2.to_er7(),
@@ -219,7 +221,7 @@ def parse_nte_segment(segment: Segment) -> dict[str, Any]:
     }
 
 
-def format_datetime_from_er7(field: str, isoformat: str) -> datetime:
+def parse_datetime_from_er7(field: str, isoformat: str) -> datetime:
     """Convert HL7-er7 format to timezone-aware datetime.
 
     Args:
@@ -244,43 +246,19 @@ def fix_breaking_characters(field: str) -> str:
     return field.replace('\\E\\.br\\E\\', '\n')  # noqa: WPS342
 
 
-def remove_invalid_sites(
-    mrn_site_list: list[tuple[str, str]],
-) -> list[tuple[str, str]] | None:
-    """Remove any identifiers using an invalid hospital site.
-
-    Example before and after:
-    [('1111111', 'MGH'), ('2222222', 'MCH'), ('9999996', 'RVH'), ('3333333', 'LAC'), ('12345678', 'HNAM_PERSONID')]
-    [('1111111', 'MGH'), ('2222222', 'MCH'), ('9999996', 'RVH'), ('3333333', 'LAC')]
-
-    Args:
-        mrn_site_list: Patient identifiers list from PID segment
-
-    Returns:
-        Filtered list containing only 'registered' sites, or None
-    """
-    # Extract the english acronym from the valid site list
-    valid_sites = {site_tuple[0] for site_tuple in Site.objects.all().values_list('acronym')}
-    # Filter out the invalid patient mrn_site identifiers
-    return [mrn_site for mrn_site in mrn_site_list if mrn_site[1] in valid_sites]
-
-
 class HL7Parser(BaseParser):
     """Parse HL7-v2 messages and return dictionary data."""
 
     media_type = 'application/hl7-v2+er7'
-
-    def __init__(self) -> None:
-        """Initialize the segment parsing functions."""
-        self.segment_parsers: dict[str, function] = {
-            'PID': parse_pid_segment,
-            'PV1': parse_pv1_segment,
-            'ORC': parse_orc_segment,
-            'RXE': parse_rxe_segment,
-            'RXC': parse_rxc_segment,
-            'RXR': parse_rxr_segment,
-            'NTE': parse_nte_segment,
-        }
+    segment_parsers: dict[str, ParserFunction] = {
+        'PID': parse_pid_segment,
+        'PV1': parse_pv1_segment,
+        'ORC': parse_orc_segment,
+        'RXE': parse_rxe_segment,
+        'RXC': parse_rxc_segment,
+        'RXR': parse_rxr_segment,
+        'NTE': parse_nte_segment,
+    }
 
     def parse(  # noqa: WPS210, WPS234
         self,
@@ -302,7 +280,7 @@ class HL7Parser(BaseParser):
             dictionary object containing the parsed HL7v2 message
         """
         # Initialize the message_dict to hold parsed data
-        message_dict = defaultdict(list)
+        message_dict: dict[str, Any] = defaultdict(list)
 
         # Read the incoming stream into a string
         try:
@@ -330,9 +308,9 @@ class HL7Parser(BaseParser):
             # If a parsing function is defined, use it to parse the segment
             if parse_function and segment_name == 'PID':
                 # Only 1 PID segment is ever expected
-                message_dict[segment_name] = parse_function(segment)  # type: ignore[operator]
+                message_dict[segment_name] = parse_function(segment)
             elif parse_function:
                 # Other segment types can have multiple
-                message_dict[segment_name].append(parse_function(segment))  # type: ignore[operator]
+                message_dict[segment_name].append(parse_function(segment))
 
         return message_dict

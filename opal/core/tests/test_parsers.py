@@ -7,14 +7,18 @@ import pytest
 from rest_framework import exceptions
 
 from opal.core.drf_parsers.hl7_parser import HL7Parser
-from opal.hospital_settings import factories as institution_factories
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 FIXTURES_DIR = Path(__file__).resolve().parent.joinpath('fixtures')
 
 
-class TestHL7Parser:
+class TestHL7Parser:  # noqa: WPS338
     """Class wrapper for HL7Parser tests."""
+
+    @pytest.fixture(autouse=True)
+    def _before_each(self) -> None:
+        """Fixture for creating an HL7Parser instance."""
+        self.parser = HL7Parser()
 
     def test_parse_pid_segment(self) -> None:
         """Test parsing a PID segment."""
@@ -36,7 +40,7 @@ class TestHL7Parser:
             'phone_number': '(555)123-4567',
             'primary_language': 'English',
             'marital_status': '',
-            'mrn_sites': '[]',
+            'mrn_sites': "[('1111111', 'MGH'), ('2222222', 'MCH'), ('9999996', 'RVH'), ('3333333', 'LAC'), ('12345678', 'HNAM_PERSONID')]",  # noqa: E501
         }
         # Use the utility method to assert the PID segment data
         self._assert_segment_data(parsed_data['PID'], expected_values, 'PID')
@@ -235,21 +239,6 @@ class TestHL7Parser:
         with pytest.raises(exceptions.ParseError):
             self.parser.parse(stream)  # type: ignore[arg-type]
 
-    def test_remove_invalid_sites(self) -> None:
-        """Test parsing a message with invalid sites."""
-        stream = self._load_hl7_fixture('marge_PID.hl7v2')
-        institution_factories.Site(acronym='RVH')
-        institution_factories.Site(acronym='MGH')
-        parsed_data = self.parser.parse(stream)
-        parsed_sites = {mrn_site[1] for mrn_site in parsed_data['PID'].get(  # type: ignore[attr-defined]
-            'mrn_sites',
-            [],
-        )}
-        assert 'RVH' in parsed_sites, 'RVH should be present in parsed data'
-        assert 'MGH' in parsed_sites, 'MGH should be present in parsed data'
-        assert 'MCH' not in parsed_sites, 'MCH should not be present in parsed data'
-        assert 'HNAM_ORDERID' not in parsed_sites, 'HNAM_ORDERID should not be present in parsed data'
-
     def test_fix_breaking_characters(self) -> None:
         """Test parsing a message with breaking characters."""
         stream = self._load_hl7_fixture('marge_RXE.hl7v2')
@@ -282,8 +271,3 @@ class TestHL7Parser:
         """
         with (FIXTURES_DIR / filename).open('r') as file:
             return StringIO(file.read())
-
-    @pytest.fixture(autouse=True)
-    def _before_each(self) -> None:
-        """Fixture for creating an HL7Parser instance."""
-        self.parser = HL7Parser()
