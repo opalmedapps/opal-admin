@@ -549,6 +549,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
     type = forms.ModelChoiceField(  # noqa: A003
         queryset=RelationshipType.objects.none(),
         label=_('Relationship'),
+        empty_label=None,
     )
     start_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
@@ -629,12 +630,12 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             patient_age=Patient.calculate_age(date_of_birth=date_of_birth),
         )
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
-        initial_index = [
+        initial_index = (
             index
             for index, item in enumerate(available_choices)
             if item == self.instance.type
-        ]
-        self.fields['type'].initial = available_choices[initial_index[0]]
+        )
+        self.fields['type'].initial = available_choices[next(initial_index)]
 
         self.helper = FormHelper()
         self.helper.attrs = {'novalidate': ''}

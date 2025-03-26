@@ -59,7 +59,7 @@ def test_relationshippending_missing_startdate() -> None:
         'start_date',
         'end_date',
     ])
-    print(form_data)
+
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
