@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-06 14:44-0500\n"
+"POT-Creation-Date: 2024-11-12 10:26-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,6 +56,10 @@ msgid "End Date"
 msgstr "Date de fin"
 
 #: opal/usage_statistics/forms.py
+msgid "Start Date cannot be later than End Date."
+msgstr "La date de début ne peut pas être postérieure à la date de fin."
+
+#: opal/usage_statistics/forms.py
 msgid "Group By"
 msgstr "Grouper par"
 
@@ -70,10 +74,6 @@ msgstr "Télécharger csv"
 #: opal/usage_statistics/forms.py
 msgid "Download xlsx"
 msgstr "Télécharger xlsx"
-
-#: opal/usage_statistics/forms.py
-msgid "Start Date cannot be later than End Date."
-msgstr "La date de début ne peut pas être postérieure à la date de fin."
 
 #: opal/usage_statistics/models.py
 msgid "User who triggered this action"
