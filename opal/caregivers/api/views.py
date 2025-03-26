@@ -8,6 +8,7 @@ from django.db.models.functions import SHA512
 from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.translation import get_language_from_request
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers as drf_serializers
@@ -175,20 +176,27 @@ class ApiEmailVerificationView(APIView):
                     'sent_at': timezone.now(),
                 },
             )
-        self._send_email(email_verification, caregiver.user)
+        language = get_language_from_request(request)
+        self._send_email(email_verification, caregiver.user, language)
         return Response()
 
-    def _send_email(self, email_verification: EmailVerification, user: User) -> None:
+    def _send_email(
+        self,
+        email_verification: EmailVerification,
+        user: User,
+        language: str,
+    ) -> None:
         """
         Send verification email to the user with an template according to the user language.
 
         Args:
             email_verification: object EmailVerification.
             user: object User.
+            language: language code from the request data.
         """
         email_subject = _('Opal Verification Code')
 
-        template_plain = 'email/verification_code_{0}.txt'.format(user.language)
+        template_plain = 'email/verification_code_{0}.txt'.format(language)
         msg_plain = render_to_string(
             template_plain,
             {
@@ -197,7 +205,7 @@ class ApiEmailVerificationView(APIView):
                 'last_name': user.last_name,
             },
         )
-        template_html = 'email/verification_code_{0}.html'.format(user.language)
+        template_html = 'email/verification_code_{0}.html'.format(language)
         msg_html = render_to_string(
             template_html,
             {

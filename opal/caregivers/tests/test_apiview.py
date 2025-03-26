@@ -13,7 +13,6 @@ from rest_framework.test import APIClient
 from opal.caregivers import factories as caregiver_factory
 from opal.caregivers import models as caregiver_model
 from opal.patients import factories as patient_factory
-from opal.users import factories as user_factory
 from opal.users.models import Caregiver, User
 
 
@@ -123,6 +122,7 @@ class TestApiEmailVerification:
             ),
             data={'email': email},
             format='json',
+            HTTP_ACCEPT_LANGUAGE='en',
         )
         email_verification = caregiver_model.EmailVerification.objects.get(email=email)
         assert response.status_code == HTTPStatus.OK
@@ -140,8 +140,7 @@ class TestApiEmailVerification:
     ) -> None:
         """Test save verify email success."""
         api_client.force_login(user=admin_user)
-        user = user_factory.User(language='fr')
-        caregiver_profile = caregiver_factory.CaregiverProfile(user=user)
+        caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email = 'test@muhc.mcgill.ca'
@@ -153,6 +152,7 @@ class TestApiEmailVerification:
             ),
             data={'email': email},
             format='json',
+            HTTP_ACCEPT_LANGUAGE='fr',
         )
         email_verification = caregiver_model.EmailVerification.objects.get(email=email)
         assert response.status_code == HTTPStatus.OK
