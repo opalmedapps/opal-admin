@@ -335,6 +335,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ],
     # require specific model permissions (including view) to access API
     'DEFAULT_PERMISSION_CLASSES': [

@@ -1,5 +1,6 @@
 import sys
 from importlib import reload
+from urllib.parse import unquote
 
 from django.urls import NoReverseMatch, Resolver404, resolve, reverse
 
@@ -53,3 +54,31 @@ def test_api_app_chart_defined(settings: SettingsWrapper) -> None:
     app_chart_path = '/{api_root}/app/chart/'.format(api_root=settings.API_ROOT)
     assert reverse('api:app-chart') == app_chart_path
     assert resolve(app_chart_path).view_name == 'api:app-chart'
+
+
+def test_api_security_questions_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API security questions endpoints are defined."""
+    app_chart_path = '/{api_root}/security-questions/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:security-questions') == app_chart_path
+    assert resolve(app_chart_path).view_name == 'api:security-questions'
+
+
+def test_api_random_security_question_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API carigiver security questions random endpoints are defined."""
+    app_chart_path = '/{api_root}/caregivers/security-questions/random/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:random-question') == app_chart_path
+    assert resolve(app_chart_path).view_name == 'api:random-question'
+
+
+def test_api_carigiver_security_questions_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API carigiver security questions are defined."""
+    app_chart_path = '/{api_root}/caregivers/security-questions/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:update-question') == app_chart_path
+    assert resolve(app_chart_path).view_name == 'api:update-question'
+
+
+def test_api_verify_secruity_answer_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the REST API carigiver security questions verify endpoints are defined."""
+    app_chart_path = '/{api_root}/caregivers/security-questions/<question_id>/verify'.format(api_root=settings.API_ROOT)
+    assert unquote(reverse('api:verify-answer', kwargs={'question_id': '<question_id>'})) == app_chart_path
+    assert resolve(app_chart_path).view_name == 'api:verify-answer'
