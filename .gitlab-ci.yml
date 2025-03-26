@@ -1,4 +1,4 @@
-image: python:3.9.14-slim-bullseye
+image: python:3.9.15-slim-bullseye
 
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies

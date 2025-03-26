@@ -62,12 +62,12 @@ urlpatterns = [
     path('registration/<str:code>/', RetrieveRegistrationDetailsView.as_view(), name='registration-code'),
     path(
         'registration/<str:code>/verify-email/',
-        caregivers_views.ApiEmailVerificationView.as_view(),
+        caregivers_views.ApiVerifyEmailView.as_view(),
         name='verify-email',
     ),
     path(
         'registration/<str:code>/verify-email-code/',
-        caregivers_views.ApiEmailVerificationView.as_view(),
+        caregivers_views.ApiVerifyEmailCodeView.as_view(),
         name='verify-email-code',
     ),
     path(
@@ -89,6 +89,11 @@ urlpatterns = [
         'caregivers/<uuid:uuid>/security-questions/<int:pk>/verify/',
         SecurityAnswerViewSet.as_view({'post': 'verify_answer'}),
         name='caregivers-securityquestions-verify',
+    ),
+    path(
+        'institutions/<int:pk>/terms-of-use/',
+        settings_views.InstitutionViewSet.as_view({'get': 'retrieve_terms_of_use'}),
+        name='institutions-terms-of-use',
     ),
     path('', include(router.urls)),
 ]

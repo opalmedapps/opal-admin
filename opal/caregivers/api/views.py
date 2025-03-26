@@ -1,11 +1,9 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
-
-import random
-
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models.functions import SHA512
 from django.db.models.query import QuerySet
+from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -20,9 +18,12 @@ from rest_framework.views import APIView
 
 from opal.caregivers.api.serializers import EmailVerificationSerializer, RegistrationEncryptionInfoSerializer
 from opal.caregivers.models import EmailVerification, RegistrationCode, RegistrationCodeStatus
+from opal.core.utils import generate_random_number
 from opal.patients.api.serializers import CaregiverPatientSerializer
 from opal.patients.models import Relationship
 from opal.users.models import User
+
+from .. import constants
 
 
 class GetRegistrationEncryptionInfoView(RetrieveAPIView):
@@ -68,12 +69,8 @@ class GetCaregiverPatientsList(APIView):
         return response
 
 
-class ApiEmailVerificationView(APIView):
-    """Class to save and verify the user's email and email verification code."""
-
-    permission_classes = [IsAuthenticated]
-    min_number = 100000
-    max_number = 999999
+class ApiVerifyEmailBasicView(APIView):
+    """Basic Class for the verifiy email apis."""
 
     def get_queryset(self) -> QuerySet[RegistrationCode]:
         """
@@ -82,7 +79,7 @@ class ApiEmailVerificationView(APIView):
         Returns:
             The queryset of RegistrationCode
         """
-        code = self.kwargs['code']
+        code = self.kwargs.get('code') if hasattr(self, 'kwargs') else None
         return RegistrationCode.objects.select_related(
             'relationship__caregiver',
             'relationship__caregiver__user',
@@ -90,70 +87,36 @@ class ApiEmailVerificationView(APIView):
             'relationship__caregiver__email_verifications',
         ).filter(code=code, status=RegistrationCodeStatus.NEW)
 
-    def put(self, request: Request, code: str) -> Response:
-        """
-        Handle GET requests from `registration/<str:code>/verify-email-code/`.
 
-        Args:
-            request: Http request made by the listener needed to retrive `Appuserid`.
-            code: registration code.
+class ApiVerifyEmailView(ApiVerifyEmailBasicView):
+    """Class to save the user's email and email verification code.
 
-        Raises:
-            ValidationError: The object not found.
+    And send email to the user with the verification code.
+    """
 
-        Returns:
-            Http response with the verification result of the email code.
-        """
-        registration_code = None
-        try:
-            registration_code = self.get_queryset().get()
-        except RegistrationCode.DoesNotExist:
-            raise drf_serializers.ValidationError({'detail': _('Registration code is invalid.')})
-
-        input_serializer = EmailVerificationSerializer(data=request.data, fields=('code',), partial=True)
-        input_serializer.is_valid(raise_exception=True)
-
-        verification_code = input_serializer.validated_data['code']
-        try:
-            email_verification = registration_code.relationship.caregiver.email_verifications.get(
-                code=verification_code,
-            )
-        except EmailVerification.DoesNotExist:
-            raise drf_serializers.ValidationError({'detail': _('Verification code is invalid.')})
-        else:
-            email_verification.is_verified = True
-            email_verification.save()
-            user = registration_code.relationship.caregiver.user
-            user.email = email_verification.email
-            user.save()
-
-        return Response()
+    permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
         """
         Handle POST requests from `registration/<str:code>/verify-email/`.
 
         Args:
-            request: Http request made by the listener needed to retrive `Appuserid`.
+            request: Http request made by the listener.
             code: registration code.
 
         Raises:
-            ValidationError: The object not found.
+            ValidationError: resend email after 10 seconds.
 
         Returns:
-            Http response with the result message of the api.
+            Http response with empty message.
         """
-        registration_code = None
-        try:
-            registration_code = self.get_queryset().get()
-        except RegistrationCode.DoesNotExist:
-            raise drf_serializers.ValidationError({'detail': _('Registration code is invalid.')})
+        registration_code = get_object_or_404(self.get_queryset())
 
-        input_serializer = EmailVerificationSerializer(data=request.data, fields=('email',), partial=True)
+        input_serializer = EmailVerificationSerializer(data=request.data, fields=('email',))
         input_serializer.is_valid(raise_exception=True)
 
         email = input_serializer.validated_data['email']
-        verification_code = random.randint(self.min_number, self.max_number)  # noqa: S311
+        verification_code = generate_random_number(constants.VERIFICATION_CODE_LENGTH)
         caregiver = registration_code.relationship.caregiver
         try:
             email_verification = registration_code.relationship.caregiver.email_verifications.get(
@@ -166,16 +129,22 @@ class ApiEmailVerificationView(APIView):
                 email=email,
                 sent_at=timezone.now(),
             )
+            self._send_email(email_verification, caregiver.user, request.LANGUAGE_CODE)
         else:
-            input_serializer.update(
-                email_verification,
-                {
-                    'code': verification_code,
-                    'is_verified': False,
-                    'sent_at': timezone.now(),
-                },
-            )
-        self._send_email(email_verification, caregiver.user, request.LANGUAGE_CODE)
+            time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
+            if time_delta.total_seconds() >= constants.TIME_DELAY:
+                input_serializer.update(
+                    email_verification,
+                    {
+                        'code': verification_code,
+                        'is_verified': False,
+                        'sent_at': timezone.now(),
+                    },
+                )
+                self._send_email(email_verification, caregiver.user, request.LANGUAGE_CODE)
+            else:
+                raise drf_serializers.ValidationError({'detail': _('Resend email after 10 seconds.')})
+
         return Response()
 
     def _send_email(
@@ -219,3 +188,41 @@ class ApiEmailVerificationView(APIView):
             [email_verification.email],
             html_message=msg_html,
         )
+
+
+class ApiVerifyEmailCodeView(ApiVerifyEmailBasicView):
+    """Class to verify the user's email with received verification code."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
+        """
+        Handle POST requests from `registration/<str:code>/verify-email-code/`.
+
+        Args:
+            request: Http request made by the listener.
+            code: registration code.
+
+        Returns:
+            Http response with empty message.
+        """
+        registration_code = get_object_or_404(self.get_queryset())
+
+        input_serializer = EmailVerificationSerializer(data=request.data, fields=('code', 'email'))
+        input_serializer.is_valid(raise_exception=True)
+
+        verification_code = input_serializer.validated_data['code']
+        email = input_serializer.validated_data['email']
+
+        email_verification = get_object_or_404(
+            registration_code.relationship.caregiver.email_verifications,
+            code=verification_code,
+            email=email,
+        )
+
+        email_verification.delete()
+        user = registration_code.relationship.caregiver.user
+        user.email = email_verification.email
+        user.save()
+
+        return Response()

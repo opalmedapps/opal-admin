@@ -87,20 +87,24 @@ class TestApiEmailVerification:
         """Test verify verification code success."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
+        user_email = caregiver_profile.user.email
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         email_verification = caregiver_factory.EmailVerification(caregiver=caregiver_profile)
-        response = api_client.put(
+        response = api_client.post(
             reverse(
                 'api:verify-email-code',
                 kwargs={'code': registration_code.code},
             ),
-            data={'code': email_verification.code},
+            data={
+                'code': email_verification.code,
+                'email': email_verification.email,
+            },
             format='json',
         )
-        email_verification.refresh_from_db()
+        caregiver_profile.user.refresh_from_db()
         assert response.status_code == HTTPStatus.OK
-        assert email_verification.is_verified
+        assert caregiver_profile.user.email != user_email
 
     def test_save_verify_email_en_success(  # noqa: WPS218
         self,
@@ -165,7 +169,7 @@ class TestApiEmailVerification:
         assert mail.outbox[0].subject == 'Code de vérification Opal'
 
     def test_registration_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
-        """Test verify verification code success."""
+        """Test registration code not exists."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
@@ -179,11 +183,16 @@ class TestApiEmailVerification:
             data={'email': email},
             format='json',
         )
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data == {'detail': 'Registration code is invalid.'}
+        assert response.status_code == HTTPStatus.NOT_FOUND
+        assert response.data == {
+            'detail': ErrorDetail(
+                string='Not found.',
+                code='not_found',
+            ),
+        }
 
     def test_registration_code_registered(self, api_client: APIClient, admin_user: AbstractUser) -> None:
-        """Test verify verification code success."""
+        """Test registration code is already registered."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
@@ -200,8 +209,13 @@ class TestApiEmailVerification:
             data={'email': email},
             format='json',
         )
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data == {'detail': 'Registration code is invalid.'}
+        assert response.status_code == HTTPStatus.NOT_FOUND
+        assert response.data == {
+            'detail': ErrorDetail(
+                string='Not found.',
+                code='not_found',
+            ),
+        }
 
     def test_verify_code_format_incorrect(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test verification code format is incorrect."""
@@ -209,12 +223,12 @@ class TestApiEmailVerification:
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
-        response = api_client.put(
+        response = api_client.post(
             reverse(
                 'api:verify-email-code',
                 kwargs={'code': registration_code.code},
             ),
-            data={'code': '1111'},
+            data={'code': '1111', 'email': 'opal@muhc.mcgill.ca'},
             format='json',
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -227,26 +241,26 @@ class TestApiEmailVerification:
             ],
         }
 
-    def test_verify_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
-        """Test verify verification code success."""
+    def test_verify_code_invalid(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test verification code invalid."""
         api_client.force_login(user=admin_user)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
         caregiver_factory.EmailVerification(caregiver=caregiver_profile)
-        response = api_client.put(
+        response = api_client.post(
             reverse(
                 'api:verify-email-code',
                 kwargs={'code': registration_code.code},
             ),
-            data={'code': '111666'},
+            data={'code': '111666', 'email': 'opal@muhc.mcgill.ca'},
             format='json',
         )
-        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert response.status_code == HTTPStatus.NOT_FOUND
         assert response.data == {
             'detail': ErrorDetail(
-                string='Verification code is invalid.',
-                code='invalid',
+                string='Not found.',
+                code='not_found',
             ),
         }
 
