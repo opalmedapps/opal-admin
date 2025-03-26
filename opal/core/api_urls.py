@@ -99,7 +99,7 @@ urlpatterns = [
     path(
         'caregivers/<str:username>/',
         caregivers_views.RetrieveCaregiverUsernameView.as_view(),
-        name='caregivers-username-verify',
+        name='caregivers-detail',
     ),
 
     # INSTITUTIONS ENDPOINTS
