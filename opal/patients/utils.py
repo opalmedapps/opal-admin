@@ -46,7 +46,7 @@ def update_caregiver(user: User, info: dict) -> None:
 
     Args:
         user: User object
-        info: Caregiver info to be updated
+        info: User info to be updated
     """
     user.language = info['user']['language']
     user.phone_number = info['user']['phone_number']
