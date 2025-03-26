@@ -1,4 +1,4 @@
-"""This module provides forms for the `patients` app."""
+"""This module provides forms for the `patients` app."""  # noqa: WPS402
 import logging
 from datetime import timedelta
 from typing import Any, Optional, Union, cast
@@ -259,7 +259,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         if not self.patient and not self._errors:
             self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
-    def _handle_response(self, response: dict[str, Any]) -> None:  # noqa C901
+    def _handle_response(self, response: dict[str, Any]) -> None:  # noqa: C901,WPS213,WPS231
         """Handle the response from OIE service.
 
         Args:
@@ -276,9 +276,9 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 self.add_error(NON_FIELD_ERRORS, _('Patient is not a test patient.'))
 
             for message in messages:
-                if 'attribute "status“' in message:  # noqa WPS223
+                if 'attribute "status“' in message:  # noqa: WPS223
                     self.add_error(NON_FIELD_ERRORS, _('Response status is invalid.'))
-                elif 'attribute dateOfBirth' in message:
+                elif 'attribute dateOfBirth' in message or 'dateOfBirth is invalid' in message:
                     self.add_error(NON_FIELD_ERRORS, _('Patient dateOfBirth is invalid.'))
                 elif 'attribute firstName' in message:
                     self.add_error(NON_FIELD_ERRORS, _('Patient firstName is invalid.'))

@@ -802,7 +802,7 @@ def test_accessrequestsearchform_invalid_dateofbirth(mocker: MockerFixture) -> N
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
             'status': 'error',
-            'data': {'message': ['Patient dateOfBirth is invalid.']},
+            'data': {'message': ['dateOfBirth is invalid.']},
         },
     )
 
