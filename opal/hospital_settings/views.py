@@ -8,6 +8,7 @@ from django_tables2 import SingleTableView
 from opal.core.views import CreateUpdateView
 
 from . import tables
+from .forms import InstitutionForm
 from .models import Institution, Site
 
 
@@ -36,7 +37,7 @@ class InstitutionCreateUpdateView(CreateUpdateView):
 
     model = Institution
     template_name = 'hospital_settings/institution/institution_form.html'
-    fields = ['name_en', 'name_fr', 'code']
+    form_class = InstitutionForm
     success_url = reverse_lazy('hospital-settings:institution-list')
 
 
