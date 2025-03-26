@@ -124,14 +124,9 @@ def test_update_caregiver_success() -> None:
     username1 = 'username-1'
     username2 = 'username-2'
     user = User(phone_number=phone_number1, language=language1, username=username1)
-    info = {
-        'user': {
-            'language': language2,
-            'phone_number': phone_number2,
-            'username': username2,
-        },
-    }
-    utils.update_caregiver(user, info)
+
+    utils.update_caregiver(user, username2, language2, phone_number2)
+
     user.refresh_from_db()
     assert user.language == language2
     assert user.phone_number == phone_number2
@@ -147,19 +142,13 @@ def test_update_caregiver_failure() -> None:
     username1 = 'username-1'
     username2 = 'username-2'
     user = User(phone_number=phone_number1, language=language1, username=username1)
-    info = {
-        'user': {
-            'language': language2,
-            'phone_number': phone_number2,
-            'username': username2,
-        },
-    }
+
     expected_message = "{'phone_number': ['Enter a valid value.']}"
     with assertRaisesMessage(
         ValidationError,
         expected_message,
     ):
-        utils.update_caregiver(user, info)
+        utils.update_caregiver(user, username2, language2, phone_number2)
 
 
 def test_replace_caregiver() -> None:
@@ -187,10 +176,9 @@ def test_update_caregiver_profile_success() -> None:
     legacy_id1 = 1
     legacy_id2 = 2
     profile = CaregiverProfile(legacy_id=legacy_id1)
-    info = {
-        'legacy_id': legacy_id2,
-    }
-    utils.update_caregiver_profile(profile, info)
+
+    utils.update_caregiver_profile(profile, legacy_id2)
+
     profile.refresh_from_db()
     assert profile.legacy_id == legacy_id2
 
@@ -200,15 +188,13 @@ def test_update_caregiver_profile_failure() -> None:
     legacy_id1 = 1
     legacy_id2 = 'Two'
     profile = CaregiverProfile(legacy_id=legacy_id1)
-    info = {
-        'legacy_id': legacy_id2,
-    }
+
     expected_message = "{'legacy_id': ['“Two” value must be an integer.']}"
     with assertRaisesMessage(
         ValidationError,
         expected_message,
     ):
-        utils.update_caregiver_profile(profile, info)
+        utils.update_caregiver_profile(profile, legacy_id2)  # type: ignore[arg-type]
 
 
 def test_insert_security_answers_success() -> None:

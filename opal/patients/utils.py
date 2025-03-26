@@ -1,7 +1,7 @@
 """App patients util functions."""
 import logging
 from datetime import date
-from typing import Any, Final, Optional
+from typing import Final, Optional
 from uuid import UUID
 
 from django.conf import settings
@@ -108,21 +108,23 @@ def find_caregiver(username: str) -> Optional[User]:
     return Caregiver.objects.filter(username=username).first()
 
 
-def update_caregiver(user: User, info: dict[str, Any]) -> None:
+def update_caregiver(caregiver: User, username: str, language: str, phone_number: str) -> None:
     """
-    Update User information.
+    Update the caregiver with the given information.
 
     Args:
-        user: User object
-        info: User info to be updated
+        caregiver: the caregiver instance to update
+        username: the caregiver's username
+        language: the caregiver's language
+        phone_number: the caregiver's phone number
     """
-    user.username = info['user']['username']
-    user.language = info['user']['language']
-    user.phone_number = info['user']['phone_number']
-    user.date_joined = timezone.now()
-    user.is_active = True
-    user.full_clean()
-    user.save()
+    caregiver.username = username
+    caregiver.language = language
+    caregiver.phone_number = phone_number
+    caregiver.date_joined = timezone.now()
+    caregiver.is_active = True
+    caregiver.full_clean()
+    caregiver.save()
 
 
 def replace_caregiver(existing_caregiver: User, relationship: Relationship) -> None:
@@ -145,15 +147,15 @@ def replace_caregiver(existing_caregiver: User, relationship: Relationship) -> N
     old_skeleton_user.delete()
 
 
-def update_caregiver_profile(profile: caregiver_models.CaregiverProfile, info: dict[str, Any]) -> None:
+def update_caregiver_profile(profile: caregiver_models.CaregiverProfile, legacy_id: int) -> None:
     """
     Update CaregiverProfile information.
 
     Args:
         profile: CaregiverProfile object
-        info: Caregiver info to be updated
+        legacy_id: the caregiver's legacy ID
     """
-    profile.legacy_id = info['legacy_id']
+    profile.legacy_id = legacy_id
     profile.full_clean()
     profile.save()
 
