@@ -143,6 +143,26 @@ def test_authenticate_wrong_credentials(mocker: MockerFixture) -> None:
 
 
 @pytest.mark.django_db()
+def test_create_user() -> None:
+    """Ensure the create_user function creates a new user."""
+    user = auth_backend._create_user('johnwayne', UserData(
+        'john.wayne@example.com',
+        'John',
+        'Wayne',
+    ))
+
+    assert UserModel.objects.count() == 1
+    db_user = UserModel.objects.get()
+    assert db_user == user
+    assert user.username == 'johnwayne'
+    assert user.email == 'john.wayne@example.com'
+    assert user.first_name == 'John'
+    assert user.last_name == 'Wayne'
+    assert user.type == UserModel.UserType.CLINICAL_STAFF
+    assert not user.has_usable_password()
+
+
+@pytest.mark.django_db()
 def test_authenticate_user_does_not_exist(mocker: MockerFixture) -> None:
     """Ensure authentication fails if the user does not exist."""
     # mock authentication and pretend it was successful
