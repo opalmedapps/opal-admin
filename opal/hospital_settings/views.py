@@ -2,8 +2,10 @@
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
+
+from opal.core.views import CreateUpdateView
 
 from .models import Institution, Site
 
@@ -23,9 +25,9 @@ class InstitutionListView(ListView):
     template_name = 'hospital_settings/institution/institution_list.html'
 
 
-class InstitutionCreateView(CreateView):
+class InstitutionCreateUpdateView(CreateUpdateView):
     """
-    This `CreateView` displays a form for creating an institution object.
+    This `CreateUpdateView` displays a form for creating and updating an institution object.
 
     It redisplays the form with validation errors (if there are any) and saves the institution object.
     """
@@ -41,21 +43,6 @@ class InstitutionDetailView(DetailView):
 
     model = Institution
     template_name = 'hospital_settings/institution/institution_detail.html'
-
-
-class InstitutionUpdateView(UpdateView):
-    """
-    This `UpdateView` provides a page that displays a form for editing an existing institution object.
-
-    It redisplays the form with validation errors (if there are any) and saves changes to the institution object.
-
-    This uses a form automatically generated from the institution's model class (unless a form is manually specified).
-    """
-
-    model = Institution
-    template_name = 'hospital_settings/institution/institution_form.html'
-    fields = ['name_en', 'name_fr', 'code']
-    success_url = reverse_lazy('hospital-settings:institution-list')
 
 
 class InstitutionDeleteView(DeleteView):
@@ -80,9 +67,9 @@ class SiteListView(ListView):
     template_name = 'hospital_settings/site/site_list.html'
 
 
-class SiteCreateView(CreateView):
+class SiteCreateUpdateView(CreateUpdateView):
     """
-    This `CreateView` displays a form for creating a site object.
+    This `CreateView` displays a form for creating and updating a site object.
 
     It redisplays the form with validation errors (if there are any) and saves the site object.
     """
@@ -107,30 +94,6 @@ class SiteDetailView(DetailView):
 
     model = Site
     template_name = 'hospital_settings/site/site_detail.html'
-
-
-class SiteUpdateView(UpdateView):
-    """
-    This `UpdateView` provides a page that displays a form for editing an existing site object.
-
-    It redisplays the form with validation errors (if there are any) and saves changes to the site object.
-
-    This uses a form automatically generated from the site' model class (unless a form class is manually specified).
-    """
-
-    model = Site
-    template_name = 'hospital_settings/site/site_form.html'
-    fields = [
-        'name_en',
-        'name_fr',
-        'parking_url_en',
-        'parking_url_fr',
-        'direction_url_en',
-        'direction_url_fr',
-        'code',
-        'institution',
-    ]
-    success_url = reverse_lazy('hospital-settings:site-list')
 
 
 class SiteDeleteView(DeleteView):

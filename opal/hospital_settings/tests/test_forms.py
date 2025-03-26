@@ -1,6 +1,6 @@
 import pytest
 
-from opal.hospital_settings.views import InstitutionCreateView, InstitutionUpdateView, SiteCreateView, SiteUpdateView
+from opal.hospital_settings.views import InstitutionCreateUpdateView, SiteCreateUpdateView
 
 from .. import factories
 
@@ -15,7 +15,7 @@ def test_institution_create() -> None:
         'code': 'TST',
     }
 
-    view = InstitutionCreateView()
+    view = InstitutionCreateUpdateView()
     form = view.get_form_class()(data=form_data)
 
     assert form.is_valid()
@@ -28,7 +28,7 @@ def test_institution_create_with_missing_code() -> None:
         'name_fr': 'TEST1_FR',
     }
 
-    view = InstitutionCreateView()
+    view = InstitutionCreateUpdateView()
     form = view.get_form_class()(data=form_data)
 
     assert not form.is_valid()
@@ -44,7 +44,7 @@ def test_institution_update() -> None:
         'code': 'TST',
     }
 
-    view = InstitutionUpdateView()
+    view = InstitutionCreateUpdateView()
     form = view.get_form_class()(data=form_data, instance=institution)
 
     assert form.is_valid()
@@ -62,7 +62,7 @@ def test_institution_update_with_missing_field() -> None:
         'name_fr': 'TEST1_FR_EDIT',
     }
 
-    view = InstitutionUpdateView()
+    view = InstitutionCreateUpdateView()
     form = view.get_form_class()(data=form_data, instance=institution)
 
     assert not form.is_valid()
@@ -86,7 +86,7 @@ def test_site_create() -> None:
         'institution': institution.id,
     }
 
-    view = SiteCreateView()
+    view = SiteCreateUpdateView()
     form = view.get_form_class()(data=form_data)
 
     assert form.is_valid()
@@ -102,7 +102,7 @@ def test_site_create_with_missing_field() -> None:
         'code': 'TEST1',
     }
 
-    view = SiteCreateView()
+    view = SiteCreateUpdateView()
     form = view.get_form_class()(data=form_data)
     assert not form.is_valid()
 
@@ -122,7 +122,7 @@ def test_site_update() -> None:
         'institution': site.institution.id,
     }
 
-    view = SiteUpdateView()
+    view = SiteCreateUpdateView()
     form = view.get_form_class()(data=form_data, instance=site)
 
     assert form.is_valid()
@@ -142,7 +142,7 @@ def test_site_update_with_missing_field() -> None:
         'parking_url_fr': 'http://127.0.0.1:8000/hospital-settings/site/1/',
     }
 
-    view = SiteUpdateView()
+    view = SiteCreateUpdateView()
     form = view.get_form_class()(data=form_data, instance=site)
 
     assert not form.is_valid()

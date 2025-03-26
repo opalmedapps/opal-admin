@@ -19,10 +19,10 @@ def test_institution_factory() -> None:
 
 def test_institution_code_unique() -> None:
     """The institution name needs to be unique."""
-    factories.Institution()
+    factories.Institution(code='MUHC')
 
     with assertRaisesMessage(IntegrityError, "Duplicate entry 'MUHC'"):  # type: ignore[arg-type]
-        factories.Institution(name='Another')
+        factories.Institution(name='Another', code='MUHC')
 
 
 def test_institution_string_method() -> None:

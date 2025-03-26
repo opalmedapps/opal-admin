@@ -14,9 +14,13 @@ pytestmark = pytest.mark.django_db
 testdata: list[Tuple] = [
     (views.IndexTemplateView, 'hospital-settings:index', '/hospital-settings/'),
     (views.InstitutionListView, 'hospital-settings:institution-list', '/hospital-settings/institutions/'),
-    (views.InstitutionCreateView, 'hospital-settings:institution-create', '/hospital-settings/institution/create/'),
+    (
+        views.InstitutionCreateUpdateView,
+        'hospital-settings:institution-create',
+        '/hospital-settings/institution/create/',
+    ),
     (views.SiteListView, 'hospital-settings:site-list', '/hospital-settings/sites/'),
-    (views.SiteCreateView, 'hospital-settings:site-create', '/hospital-settings/site/create/'),
+    (views.SiteCreateUpdateView, 'hospital-settings:site-create', '/hospital-settings/site/create/'),
 ]
 
 
@@ -58,7 +62,7 @@ def test_institution_update_url_is_resolved(institution: Institution) -> None:
         '/hospital-settings/institution/{0}/update/'.format(institution.id),
     )
     path_name = resolve('/hospital-settings/institution/{0}/update/'.format(institution.id)).func.__name__
-    assert path_name == views.InstitutionUpdateView.as_view().__name__
+    assert path_name == views.InstitutionCreateUpdateView.as_view().__name__
 
 
 def test_institution_delete_url_is_resolved(institution: Institution) -> None:
@@ -102,7 +106,7 @@ def test_site_update_url_is_resolved(site: Site) -> None:
         '/hospital-settings/site/{0}/update/'.format(site.id),
     )
     path_name = resolve('/hospital-settings/site/{0}/update/'.format(site.id)).func.__name__
-    assert path_name == views.SiteUpdateView.as_view().__name__
+    assert path_name == views.SiteCreateUpdateView.as_view().__name__
 
 
 def test_site_delete_url_is_resolved(site: Site) -> None:

@@ -26,12 +26,12 @@ urlpatterns = [
     ),
     path(
         'institution/create/',
-        views.InstitutionCreateView.as_view(),
+        views.InstitutionCreateUpdateView.as_view(),
         name='institution-create',
     ),
     path(
         'institution/<int:pk>/update/',
-        views.InstitutionUpdateView.as_view(),
+        views.InstitutionCreateUpdateView.as_view(),
         name='institution-update',
     ),
     path(
@@ -52,12 +52,12 @@ urlpatterns = [
     ),
     path(
         'site/create/',
-        views.SiteCreateView.as_view(),
+        views.SiteCreateUpdateView.as_view(),
         name='site-create',
     ),
     path(
         'site/<int:pk>/update/',
-        views.SiteUpdateView.as_view(),
+        views.SiteCreateUpdateView.as_view(),
         name='site-update',
     ),
     path(
