@@ -12,7 +12,6 @@ from django.http import JsonResponse
 import requests
 from requests.auth import HTTPBasicAuth
 
-from ..hospital_settings.models import Site
 from ..patients.models import HospitalPatient
 from ..utils.base64_util import Base64Util
 
@@ -95,11 +94,11 @@ class OIECommunicationService:
         Returns:
             bool: boolean value showing if OIE report export data is valid
         """
-        reg_exp = re.compile('(^FU-[a-zA-Z]+$)|(^FMU-[a-zA-Z]+$)')
+        reg_exp = re.compile('(^FU-[a-zA-Z0-9]+$)|(^FMU-[a-zA-Z0-9]+$)')
         return (  # check if mrn exists
             HospitalPatient.objects.filter(mrn=report_data.mrn).exists()
             # check if site exists
-            and Site.objects.filter(code=report_data.site).exists()
+            and HospitalPatient.objects.filter(site__code__exact=report_data.site).exists()
             # check if report content is base64
             and Base64Util().is_base64(report_data.base64_content)
             # check if document type format is valid
