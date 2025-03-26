@@ -18,7 +18,7 @@ class CaregiverProfileAdmin(admin.ModelAdmin):
 class DeviceAdmin(admin.ModelAdmin):
     """Admin options for the `Device` model."""
 
-    list_display = ['__str__', 'device_id', 'type', 'is_trusted', 'modified', 'caregiver']
+    list_display = ['__str__', 'type', 'is_trusted', 'modified', 'caregiver']
     list_filter = ['type', 'modified']
 
 
