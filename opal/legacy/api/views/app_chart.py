@@ -52,7 +52,7 @@ class AppChartView(APIView):
                 legacy_id,
                 user_name,
             ).count(),
-            'unread_questionnaire_count': LegacyQuestionnaire.objects.get_new_queryset(
+            'unread_questionnaire_count': LegacyQuestionnaire.objects.new_questionnaires(
                 legacy_id,
             ).count(),
         }

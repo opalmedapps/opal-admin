@@ -3,14 +3,18 @@ Module providing legacy quesitonnaire model managers to provide the interface th
 
 Each manager in this module should be prefixed with `Legacy`
 """
+from typing import TYPE_CHECKING
 
 from django.db import models
 
+if TYPE_CHECKING:
+    from .models import LegacyQuestionnaire
 
-class LegacyQuestionnaireManager(models.Manager):
+
+class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
     """legacy questionnaire manager."""
 
-    def get_new_queryset(self, patient_sernum: int) -> models.QuerySet:
+    def new_questionnaires(self, patient_sernum: int) -> models.QuerySet['LegacyQuestionnaire']:
         """Get the queryset of new questionnaires for a given user.
 
         Note the input sernum for this query is the OpalDB PatientSerNum, we use the

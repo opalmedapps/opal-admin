@@ -1,8 +1,6 @@
-from django.db import connections
 from django.urls import reverse
 
 import pytest
-from pytest_django.plugin import _DatabaseBlocker  # noqa: WPS450
 from rest_framework.test import APIClient
 
 from opal.legacy import factories, models
@@ -89,15 +87,13 @@ class TestChartAppView:
         ).count()
         assert edumaterials == 2
 
-    def test_get_unread_questionnaire_count(self, django_db_blocker: _DatabaseBlocker) -> None:
+    @pytest.mark.parametrize(
+        'clear_questionnairedb',
+        [['answerQuestionnaire', 'questionnaire', 'purpose']],
+        indirect=True,
+    )
+    def test_get_unread_questionnaire_count(self, clear_questionnairedb: None) -> None:
         """Test if function returns number of new clinical questionnaires."""
-        # Because of the test_QuestionnaireDB setup for the export reports,
-        # there are already random test data in test_QuestionnaireDB
-        # So we have to clear and re-populate with the correct factories...
-        with django_db_blocker.unblock():
-            with connections['questionnaire'].cursor() as conn:
-                conn.execute('SET FOREIGN_KEY_CHECKS=0;DELETE FROM answerQuestionnaire;DELETE FROM questionnaire;DELETE FROM purpose;')  # noqa: E501
-                conn.close()
         clinical_purpose = questionnaires_factories.LegacyPurposeFactory(id=1)
         research_purpose = questionnaires_factories.LegacyPurposeFactory(id=2)
         clinical_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=clinical_purpose)
@@ -124,7 +120,7 @@ class TestChartAppView:
             questionnaireid=clinical_questionnaire,
             patientid=patient_two,
         )
-        new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.get_new_queryset(
+        new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
             patient_sernum=51,
         ).count()
         assert new_questionnaires == 1
