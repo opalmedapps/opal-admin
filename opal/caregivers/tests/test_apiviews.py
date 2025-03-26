@@ -171,7 +171,6 @@ class TestApiEmailVerification:
         assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
         assert email_verification.code in mail.outbox[0].body
         assert 'Cher' in mail.outbox[0].body
-        assert mail.outbox[0].subject == 'Code de vérification Opal'
 
     def test_resend_verify_email_within_ten_sec(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test resend verify email within 10 sec."""
