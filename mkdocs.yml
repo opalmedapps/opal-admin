@@ -17,6 +17,7 @@ nav:
   - Apps:
       - App Structure: apps/structure.md
       - Caregivers: apps/caregivers.md
+      - Health Data: apps/health_data.md
       - Patients: apps/patients.md
       - Users: apps/users.md
       - Questionnaires: apps/questionnaires.md
@@ -87,11 +88,9 @@ plugins:
             - import docs.mock_django
           import:
             # import Sphinx objects inventories to support referencing other elements in docs
-            - https://docs.python.org/3.9/objects.inv
-            - https://docs.djangoproject.com/en/3.2/_objects/
+            - https://docs.python.org/3.10/objects.inv
+            - https://docs.djangoproject.com/en/4.1/_objects/
             - https://django-modeltranslation.readthedocs.io/en/latest/objects.inv
-      watch:
-        - opal/
 
 # Extensions
 markdown_extensions:
@@ -129,3 +128,4 @@ markdown_extensions:
 watch:
   - README.md
   - CHANGELOG.md
+  - opal/
