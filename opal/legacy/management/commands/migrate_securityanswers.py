@@ -52,7 +52,7 @@ class Command(BaseCommand):
 
             legacy_question = legacy_answer.securityquestionsernum
             question_text = legacy_question.questiontext_en  # English
-            if user.language == settings.LANGUAGES[1][0]:  # French
+            if user.language == 'fr':  # French
                 question_text = legacy_question.questiontext_fr
 
             # Import SecurityAnwser or create if it does not exist.
