@@ -1305,6 +1305,38 @@ def test_accessrequestrequestorform_existing_user_validate_self_caregiver_exists
     )
 
 
+def test_accessrequestrequestorform_existing_user_relationship_exists() -> None:
+    """Ensure clean handles a caregiver already having a CONFIRMED or PENDING relationship to the patient."""
+    caregiver = Caregiver(
+        first_name='Marge',
+        last_name='Simpson',
+        email='marge@opalmedapps.ca',
+        phone_number='+15141234567',
+    )
+    relationship = factories.Relationship(
+        caregiver=CaregiverProfile(user=caregiver),
+        type=RelationshipType.objects.mandatary(),
+        status=RelationshipStatus.CONFIRMED,
+    )
+
+    form = forms.AccessRequestRequestorForm(
+        patient=relationship.patient,
+        data={
+            'user_type': constants.UserType.EXISTING.name,
+            'relationship_type': RelationshipType.objects.guardian_caregiver(),
+            'form_filled': True,
+            'id_checked': True,
+            'user_email': caregiver.email,
+            'user_phone': caregiver.phone_number,
+        },
+    )
+
+    assert not form.is_valid()
+    assert form.non_field_errors()[0] == (
+        'There already exists an active relationship between the patient and caregiver.'
+    )
+
+
 def test_accessrequestrequestorform_first_last_name_not_disabled() -> None:
     """Ensure that the first and last name are not disabled for no selection."""
     form = forms.AccessRequestRequestorForm(
