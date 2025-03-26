@@ -3,6 +3,7 @@ from datetime import date, datetime
 from http import HTTPStatus
 
 from django.conf import settings
+from django.core.management.base import CommandError
 from django.db import connections
 from django.utils import timezone
 
@@ -477,7 +478,12 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         legacy_factories.LegacyPatientControlFactory(
             patient=legacy_factories.LegacyPatientFactory(patientsernum=100),
         )
-        message, error = self._call_command('find_deviations')
+
+        with pytest.raises(CommandError) as exc:
+            self._call_command('find_deviations')
+
+        error = str(exc.value)
+
         assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.patients_patient',
             'OpalDB.Patient(UserType="Patient")',
@@ -509,7 +515,11 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         )
         patient_factories.Patient(legacy_id=51)
 
-        message, error = self._call_command('find_deviations')
+        with pytest.raises(CommandError) as exc:
+            self._call_command('find_deviations')
+
+        error = str(exc.value)
+
         assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.patients_patient',
             'OpalDB.Patient(UserType="Patient")',
@@ -531,7 +541,12 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         patient_factories.HospitalPatient(patient=first_patient)
         patient_factories.HospitalPatient(patient=second_patient)
         legacy_factories.LegacyPatientHospitalIdentifierFactory()
-        message, error = self._call_command('find_deviations')
+
+        with pytest.raises(CommandError) as exc:
+            self._call_command('find_deviations')
+
+        error = str(exc.value)
+
         assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.patients_hospitalpatient',
             'OpalDB.Patient_Hospital_Identifier',
@@ -551,7 +566,11 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             site=hospital_settings_factories.Site(acronym='TST'),
         )
 
-        message, error = self._call_command('find_deviations')
+        with pytest.raises(CommandError) as exc:
+            self._call_command('find_deviations')
+
+        error = str(exc.value)
+
         deviations_err = 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.patients_hospitalpatient',
             'OpalDB.Patient_Hospital_Identifier',
@@ -708,8 +727,10 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         assert patient.data_access == patient_models.Patient.DataAccessType.ALL
         assert legacy_patient.access_level == '1'
 
-        message, error = self._call_command('find_deviations')
+        with pytest.raises(CommandError) as exc:
+            self._call_command('find_deviations')
 
+        error = str(exc.value)
         assert 'The number of records in' not in error
 
         deviations_err = 'found deviations between {0} Django model and {1} legacy table!!!'.format(
@@ -753,6 +774,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
 
         message, error = self._call_command('find_deviations')
 
+        assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
         assert 'The number of records in' not in error
 
         deviations_err = 'found deviations between {0} Django model and {1} legacy table!!!'.format(
@@ -779,7 +801,12 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         )
         legacy_factories.LegacyPatientFactory(patientsernum=99)
         legacy_factories.LegacyPatientFactory(patientsernum=100)
-        message, error = self._call_command('find_deviations')
+
+        with pytest.raises(CommandError) as exc:
+            self._call_command('find_deviations')
+
+        error = str(exc.value)
+
         assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.caregivers_caregiverprofile',
             'OpalDB.Patient(UserType="Caregiver")',
@@ -806,8 +833,12 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             username='test_username',
         )
         patient_factories.CaregiverProfile(legacy_id=42, user=user)
-        message, error = self._call_command('find_deviations')
-        print(error)
+
+        with pytest.raises(CommandError) as exc:
+            self._call_command('find_deviations')
+
+        error = str(exc.value)
+
         assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
             'opal.caregivers_caregiverprofile',
             'OpalDB.Patient(UserType="Caregiver")',
@@ -1049,7 +1080,7 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
                 conn.close()
 
         message, error = self._call_command('find_questionnaire_respondent_deviations')
-        assert 'No sync errors has been found in the in the questionnaire respondent data.' in message
+        assert 'No sync errors have been found in the in the questionnaire respondent data.' in message
 
     def test_questionnaire_respondents_deviations(self, django_db_blocker: DjangoDbBlocker) -> None:
         """Ensure the command detects the deviations between "answerQuestionnaire" table and `CaregiverProfile`."""
@@ -1107,7 +1138,10 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
             username='firebase hashed user UID_2',
         )
 
-        message, error = self._call_command('find_questionnaire_respondent_deviations')
+        with pytest.raises(CommandError) as exc:
+            self._call_command('find_questionnaire_respondent_deviations')
+
+        error = str(exc.value)
         assert 'found deviations in the questionnaire respondents!!!' in error
         assert "('', '')" in error
         assert "('firebase hashed user UID_2', 'TEST NAME RESPONDENT test2_2')" in error
@@ -1164,7 +1198,7 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
         )
 
         message, error = self._call_command('find_questionnaire_respondent_deviations')
-        assert 'No sync errors has been found in the in the questionnaire respondent data.' in message
+        assert 'No sync errors have been found in the in the questionnaire respondent data.' in message
 
 
 class TestUpdateOrmsPatientsCommand(CommandTestMixin):

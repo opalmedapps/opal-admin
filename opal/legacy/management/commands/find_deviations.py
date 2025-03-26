@@ -2,7 +2,7 @@
 from typing import Any, Optional
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import connections, transaction
 from django.utils import timezone
 
@@ -112,7 +112,7 @@ class Command(BaseCommand):
 
     by using Django's models.
 
-    NOTE!!! For the `patients` and `users/caregivers`, the comparison is performed only for fully inserted
+    NOTE: For the `patients` and `users/caregivers`, the comparison is performed only for fully inserted
     records (e.g., `patients` and `caregivers` that completed registration). This is to avoid/eliminate
     the following scenarios:
 
@@ -150,11 +150,12 @@ class Command(BaseCommand):
 
             - https://www.mysqltutorial.org/compare-two-tables-to-find-unmatched-records-mysql.aspx
 
-        Return 'None'.
-
         Args:
-            args: input arguments.
-            kwargs: input arguments.
+            args: input arguments
+            kwargs: input arguments
+
+        Raises:
+            CommandError: if there are deviations
         """
         with connections['default'].cursor() as django_db:
             django_db.execute(DJANGO_PATIENT_QUERY)
@@ -197,9 +198,8 @@ class Command(BaseCommand):
         )
 
         if err:
-            self.stderr.write(
-                err,
-            )
+            # trigger a non-zero exit code
+            raise CommandError(err)
         else:
             self.stdout.write('No deviations have been found in the "Patient and Caregiver" tables/models.')
 
