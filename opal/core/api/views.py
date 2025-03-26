@@ -35,7 +35,7 @@ class LanguagesView(APIView):
         return Response(response)
 
 
-class HL7CreateView(CreateAPIView):
+class HL7CreateView(CreateAPIView[Any]):
     """APIView Superclass for all endpoints requiring HL7 parsing."""
 
     parser_classes = (HL7Parser,)

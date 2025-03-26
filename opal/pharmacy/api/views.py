@@ -34,8 +34,7 @@ class CreatePharmacyView(HL7CreateView):
         Returns:
             API Response with code and headers
         """
-        print(request.data)
-        transformed_data = self._transform_parsed_to_serializer_structure(request.data)
+        transformed_data = self._transform_parsed_to_serializer_structure(request.data)  # type: ignore[attr-defined]
         patient: Patient = get_object_or_404(Patient, uuid=self.kwargs['uuid'])
         transformed_data['patient'] = patient.pk
         serializer = self.get_serializer(data=transformed_data)
@@ -44,7 +43,7 @@ class CreatePharmacyView(HL7CreateView):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def _transform_parsed_to_serializer_structure(self, parsed_data: dict[str, Any]) -> dict:  # noqa: WPS210
+    def _transform_parsed_to_serializer_structure(self, parsed_data: dict[str, Any]) -> dict[str, Any]:  # noqa: WPS210
         """Transform the parsed defaultdict segment data into the expected structure for the serializer.
 
         Args:

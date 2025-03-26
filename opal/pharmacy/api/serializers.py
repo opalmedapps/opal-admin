@@ -8,7 +8,7 @@ from opal.core.api.serializers import DynamicFieldsSerializer
 from ..models import CodedElement, PharmacyComponent, PharmacyEncodedOrder, PharmacyRoute, PhysicianPrescriptionOrder
 
 
-class CodedElementSerializer(DynamicFieldsSerializer):
+class CodedElementSerializer(DynamicFieldsSerializer[CodedElement]):
     """Serializer for the `CodedElement` model."""
 
     class Meta:
@@ -36,7 +36,7 @@ class _NestedCodedElementSerializer(CodedElementSerializer):
     """
 
     class Meta(CodedElementSerializer.Meta):
-        validators = []
+        validators: list[Any] = []
 
 
 class PharmacyRouteSerializer(serializers.ModelSerializer[PharmacyRoute]):
@@ -63,7 +63,7 @@ class PharmacyRouteSerializer(serializers.ModelSerializer[PharmacyRoute]):
             'administration_method',
         )
 
-    def to_internal_value(self, data) -> Any:
+    def to_internal_value(self, data: Any) -> Any:
         """Check if all fields of `administration_method` are blank and set it to None if true.
 
         This is required because for the majority of pharmacy data (and in the RxTFC docs), `administration_method`
@@ -184,7 +184,7 @@ class PhysicianPrescriptionOrderSerializer(serializers.ModelSerializer[Physician
             'effective_at',
         )
 
-    def create(self, validated_data: dict) -> PhysicianPrescriptionOrder:  # noqa: WPS210
+    def create(self, validated_data: dict[str, Any]) -> PhysicianPrescriptionOrder:  # noqa: WPS210
         """Create new `PhysicianPrescriptionOrder` instance and related model instances.
 
         Args:
