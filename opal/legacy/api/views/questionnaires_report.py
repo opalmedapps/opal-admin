@@ -89,7 +89,7 @@ class QuestionnairesReportView(views.APIView):
                 mrn=serializer.validated_data.get('mrn'),
                 site=serializer.validated_data.get('site'),
                 base64_content=encoded_report,
-                document_number='FMU',  # TODO: clarify where to get the value
+                document_number='MU-8624',  # TODO: clarify where to get the value (currently set as a test document)
                 document_date=timezone.localtime(timezone.now()),  # TODO: get the exact time of the report creation
             ),
         )

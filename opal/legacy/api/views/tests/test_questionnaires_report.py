@@ -282,7 +282,7 @@ class TestQuestionnairesReportView:
                 mrn=hospital_patient.mrn,
                 site=hospital_patient.site.code,
                 base64_content=base64_encoded_report,
-                document_number='FMU',  # TODO: clarify where to get the value
+                document_number='MU-8624',  # TODO: clarify where to get the value
                 document_date=document_date,  # TODO: get the exact time of the report creation
             ),
         )
@@ -325,7 +325,7 @@ class TestQuestionnairesReportView:
                 mrn=hospital_patient.mrn,
                 site=hospital_patient.site.code,
                 base64_content=base64_encoded_report,
-                document_number='FMU',  # TODO: clarify where to get the value
+                document_number='MU-8624',  # TODO: clarify where to get the value
                 document_date=document_date,  # TODO: get the exact time of the report creation
             ),
         )

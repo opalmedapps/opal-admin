@@ -608,3 +608,21 @@ class RelationshipPendingAccessForm(forms.ModelForm):
             'status',
             'reason',
         )
+
+
+# TODO Future Enhancement review UI and decide whether or not to add role_type as read-only field in UI.
+class RelationshipTypeUpdateForm(forms.ModelForm):
+    """Form for updating a `RelationshipType` object."""
+
+    class Meta:
+        model = RelationshipType
+        fields = [
+            'name_en',
+            'name_fr',
+            'description_en',
+            'description_fr',
+            'start_age',
+            'end_age',
+            'form_required',
+            'can_answer_questionnaire',
+        ]
