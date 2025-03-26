@@ -894,14 +894,30 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
     email = 'foo@bar.ca'
     code = 'abcdef123456'
 
-    def _request_code(self, api_client: APIClient) -> None:
+    def _request_code(self, api_client: APIClient, email: str | None = None) -> None:
         """Request a verification code."""
+        email = email or self.email
         response = api_client.post(
             reverse(
                 'api:verify-email',
                 kwargs={'code': self.code},
             ),
-            data={'email': self.email},
+            data={'email': email},
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+    def _verify_email(self, api_client: APIClient, email_verification: caregiver_models.EmailVerification) -> None:
+        """Verify the email address with the code."""
+        response = api_client.post(
+            reverse(
+                'api:verify-email-code',
+                kwargs={'code': self.code},
+            ),
+            data={
+                'code': email_verification.code,
+                'email': email_verification.email,
+            },
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -917,19 +933,7 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
     def test_email_verification_process(self, api_client: APIClient) -> None:
         """Test the email verification process."""
         email_verification = caregiver_models.EmailVerification.objects.get(email=self.email)
-
-        response = api_client.post(
-            reverse(
-                'api:verify-email-code',
-                kwargs={'code': self.code},
-            ),
-            data={
-                'code': email_verification.code,
-                'email': self.email,
-            },
-        )
-
-        assert response.status_code == HTTPStatus.OK
+        self._verify_email(api_client, email_verification)
 
         email_verification.refresh_from_db()
         assert email_verification.is_verified
@@ -951,18 +955,7 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
         """Test the email verification process with resending a verification code."""
         email_verification = caregiver_models.EmailVerification.objects.get(email=self.email)
 
-        response = api_client.post(
-            reverse(
-                'api:verify-email-code',
-                kwargs={'code': self.code},
-            ),
-            data={
-                'code': email_verification.code,
-                'email': self.email,
-            },
-        )
-
-        assert response.status_code == HTTPStatus.OK
+        self._verify_email(api_client, email_verification)
 
         # mock the current timezone to simulate a later time
         future = timezone.now() + dt.timedelta(minutes=10)
@@ -973,6 +966,34 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
         email_verification.refresh_from_db()
         assert email_verification.sent_at == future
         assert not email_verification.is_verified
+
+    def test_verify_email_multiple(self, api_client: APIClient, admin_user: User) -> None:
+        """Ensure that the registration process still works when a user verifies two different emails."""
+        email_verification = caregiver_models.EmailVerification.objects.get(email=self.email)
+
+        # verify the first email address
+        self._verify_email(api_client, email_verification)
+
+        # the user does a second email verification for a different email address
+        self._request_code(api_client, email='bar@foo.ca')
+        self._verify_email(api_client, caregiver_models.EmailVerification.objects.get(email='bar@foo.ca'))
+
+        assert caregiver_models.EmailVerification.objects.filter(is_verified=True).count() == 2
+
+        # the user finishes the registration
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': self.code},
+            ),
+            data=TestRegistrationCompletionView.input_data,
+        )
+
+        user = self.registration_code.relationship.caregiver.user
+        user.refresh_from_db()
+
+        assert response.status_code == HTTPStatus.OK
+        assert user.email == 'bar@foo.ca'
 
 
 class TestRegistrationCompletionView:
