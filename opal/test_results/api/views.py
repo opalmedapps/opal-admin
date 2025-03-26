@@ -45,7 +45,6 @@ class CreatePathologyView(generics.CreateAPIView[GeneralTest]):
             ),
             uuid=self.kwargs['uuid'],
         )
-
         # Generate the pathology report
         pathology_pdf_path = generate_pathology_report(
             patient=patient,

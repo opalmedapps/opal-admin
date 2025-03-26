@@ -12,7 +12,15 @@ from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
 from opal.patients import factories as patient_factories
-from opal.services.reports import PathologyData, PathologyPDF, QuestionnaireReportRequestData, ReportService
+from opal.services.reports import (
+    InstitutionData,
+    PathologyData,
+    PathologyPDF,
+    PatientData,
+    QuestionnaireReportRequestData,
+    ReportService,
+    SiteData,
+)
 from opal.utils.base64_util import Base64Util
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -34,14 +42,11 @@ QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
     language='en',
 )
 
-PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK = PathologyData(
-    site_logo_path=Path('opal/tests/fixtures/test_logo.png'),
-    site_name='Decarie Boulevard',
-    site_building_address='1001',
-    site_city='Montreal',
-    site_province='QC',
-    site_postal_code='H4A3J1',
-    site_phone='5149341934',
+INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK = InstitutionData(
+    institution_logo_path=Path('opal/tests/fixtures/test_logo.png'),
+)
+
+PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK = PatientData(
     patient_first_name='Bart',
     patient_last_name='Simpson',
     patient_date_of_birth=datetime.date(1999, 1, 1),
@@ -50,6 +55,19 @@ PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK = PathologyData(
         {'mrn': '22222443', 'site_code': 'MGH'},
         {'mrn': '1111728', 'site_code': 'RVH'},
     ],
+)
+
+SITE_REPORT_DATA_WITH_NO_PAGE_BREAK = SiteData(
+    site_name='Decarie Boulevard',
+    site_building_address='1001',
+    site_city='Montreal',
+    site_province='QC',
+    site_postal_code='H4A3J1',
+    site_phone='5149341934',
+)
+
+
+PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK = PathologyData(
     test_number='AS-2021-62605',
     test_collected_at=datetime.datetime(2021, 11, 25, 9, 55),
     test_reported_at=datetime.datetime(2021, 11, 28, 11, 52),
@@ -73,21 +91,6 @@ observation_diagnosis = """LEFT BREAST AT 3 O'CLOCK, BIOPSY\n - BENIGN BREAST TI
 """
 
 PATHOLOGY_REPORT_DATA_WITH_PAGE_BREAK = PathologyData(
-    site_logo_path=Path('opal/tests/fixtures/test_logo.png'),
-    site_name='Decarie Boulevard',
-    site_building_address='1001',
-    site_city='Montreal',
-    site_province='QC',
-    site_postal_code='H4A3J1',
-    site_phone='5149341934',
-    patient_first_name='Bart',
-    patient_last_name='Simpson',
-    patient_date_of_birth=datetime.date(1999, 1, 1),
-    patient_ramq='SIMM99999999',
-    patient_sites_and_mrns=[
-        {'mrn': '22222443', 'site_code': 'MGH'},
-        {'mrn': '1111728', 'site_code': 'RVH'},
-    ],
     test_number='AS-2021-62605',
     test_collected_at=datetime.datetime(2021, 11, 25, 9, 55),
     test_reported_at=datetime.datetime(2021, 11, 28, 11, 52),
@@ -104,6 +107,30 @@ PATHOLOGY_REPORT_DATA_WITH_PAGE_BREAK = PathologyData(
     observation_diagnosis=[observation_diagnosis],
     prepared_by='Atilla Omeroglu, MD',
     prepared_at=datetime.datetime(2021, 12, 29, 10, 30),
+)
+
+INSTITUTION_REPORT_DATA_WITH_PAGE_BREAK = InstitutionData(
+    institution_logo_path=Path('opal/tests/fixtures/test_logo.png'),
+)
+
+SITE_REPORT_DATA_WITH_PAGE_BREAK = SiteData(
+    site_name='Decarie Boulevard',
+    site_building_address='1001',
+    site_city='Montreal',
+    site_province='QC',
+    site_postal_code='H4A3J1',
+    site_phone='5149341934',
+)
+
+PATIENT_REPORT_DATA_WITH_PAGE_BREAK = PatientData(
+    patient_first_name='Bart',
+    patient_last_name='Simpson',
+    patient_date_of_birth=datetime.date(1999, 1, 1),
+    patient_ramq='SIMM99999999',
+    patient_sites_and_mrns=[
+        {'mrn': '22222443', 'site_code': 'MGH'},
+        {'mrn': '1111728', 'site_code': 'RVH'},
+    ],
 )
 
 
@@ -422,6 +449,9 @@ def test_generate_pathology_report_success_with_no_page_break(
 
     # Generate the pathology report
     pathology_report = report_service.generate_pathology_report(
+        institution_data=INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        patient_data=PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        site_data=SITE_REPORT_DATA_WITH_NO_PAGE_BREAK,
         pathology_data=PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK,
     )
 
@@ -439,6 +469,9 @@ def test_generate_pathology_report_success_with_page_break(
 
     # Generate the pathology report
     pathology_report = report_service.generate_pathology_report(
+        institution_data=INSTITUTION_REPORT_DATA_WITH_PAGE_BREAK,
+        patient_data=PATIENT_REPORT_DATA_WITH_PAGE_BREAK,
+        site_data=SITE_REPORT_DATA_WITH_PAGE_BREAK,
         pathology_data=PATHOLOGY_REPORT_DATA_WITH_PAGE_BREAK,
     )
 
@@ -460,11 +493,17 @@ test_patient_names_data: list[tuple[str, str]] = [
 @pytest.mark.parametrize(('first_name', 'last_name'), test_patient_names_data)
 def test_long_patient_names_not_splitted(first_name: str, last_name: str) -> None:
     """Ensure long patient names are formatted and no words splitted."""
-    pathology_data = PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK._replace(
+    pathology_data = PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK
+
+    institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK
+
+    site_data = SITE_REPORT_DATA_WITH_NO_PAGE_BREAK
+
+    patient_data = PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK._replace(
         patient_first_name=first_name,
         patient_last_name=last_name,
     )
-    pathology_pdf = PathologyPDF(pathology_data)
+    pathology_pdf = PathologyPDF(institution_data, patient_data, site_data, pathology_data)
 
     patient_list = pathology_pdf._get_site_address_patient_info_box()
 

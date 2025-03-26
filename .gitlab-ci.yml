@@ -12,7 +12,7 @@ variables:
   FF_SCRIPT_SECTIONS: "true"
 
 default:
-  image: python:3.11.9-alpine3.19
+  image: python:3.11.10-alpine3.20
   # mark all jobs interruptible by default
   # https://docs.gitlab.com/ee/ci/yaml/index.html#workflowauto_cancelon_new_commit
   interruptible: true
@@ -69,7 +69,7 @@ setup:
     - pip install uv
     - uv venv
     - source .venv/bin/activate
-    - uv pip install --cache-dir .cache/uv -r requirements/development.txt
+    - uv pip install --compile --cache-dir .cache/uv -r requirements/development.txt
   artifacts:
     # pin artifacts to the branch
     # see: https://docs.gitlab.com/ee/ci/pipelines/job_artifacts.html#use-cicd-variables-to-define-the-artifacts-name
@@ -129,7 +129,7 @@ mypy:
 markdownlint:
   stage: static analysis
   image:
-    name: davidanson/markdownlint-cli2:v0.13.0
+    name: davidanson/markdownlint-cli2:v0.14.0
     # overwrite default entrypoint (which is a call to markdownlint-cli2)
     entrypoint: [""]
   # does not need setup artifacts
@@ -272,10 +272,10 @@ django template validation:
 
 build image:
   stage: build
-  image: docker:27.2.0
+  image: docker:27.3.1
   needs: []
   services:
-    - docker:27.2.0-dind
+    - docker:27.3.1-dind
   variables:
     # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
     DOCKER_HOST: tcp://docker:2376
@@ -353,6 +353,12 @@ workflow:
 
 
 include:
+  - component: $CI_SERVER_FQDN/opalmedapps/engineering/ci-templates/check-thirdparty-notice@main
+    inputs:
+      # includes base.txt
+      pip-requirements-files: requirements/production.txt
+      package-file: opal/static/thirdparty/package.json
+
   # run pipelines for default branch, tags, and all types of merge request pipelines
   # to support merge trains
   # see: https://docs.gitlab.com/ee/ci/pipelines/merge_trains.html#enable-merge-trains

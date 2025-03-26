@@ -1,5 +1,6 @@
 """Module providing model factories for Legacy database models."""
 import datetime as dt
+import json
 
 from django.utils import timezone
 
@@ -80,6 +81,24 @@ class LegacyHospitalMapFactory(DjangoModelFactory):
     dateadded = timezone.make_aware(dt.datetime(2023, 3, 15))
 
 
+class LegacyEducationalMaterialCategoryFactory(DjangoModelFactory):
+    """Educational material category from the legacy database."""
+
+    class Meta:
+        model = models.LegacyEducationalMaterialCategory
+
+    title_en = 'Clinical'
+
+
+class LegacyEducationalMaterialControlFactory(DjangoModelFactory):
+    """Educational material control factory from the legacy database."""
+
+    class Meta:
+        model = models.LegacyEducationalMaterialControl
+
+    educationalmaterialcategoryid = SubFactory(LegacyEducationalMaterialCategoryFactory)
+
+
 class LegacyAliasFactory(DjangoModelFactory):
     """Alias factory from the legacy database."""
 
@@ -91,6 +110,7 @@ class LegacyAliasFactory(DjangoModelFactory):
     aliasname_fr = 'Calcul de la Dose'
     alias_description_en = 'Calcul de la Dose'
     alias_description_fr = 'Calcul de la Dose'
+    educational_material_control_ser_num = SubFactory(LegacyEducationalMaterialControlFactory)
     hospitalmapsernum = SubFactory(LegacyHospitalMapFactory)
 
 
@@ -189,24 +209,6 @@ class LegacyTxTeamMessageFactory(DjangoModelFactory):
     patientsernum = SubFactory(LegacyPatientFactory)
     readby = '[]'
     readstatus = 0
-
-
-class LegacyEducationalMaterialCategoryFactory(DjangoModelFactory):
-    """Educational material category from the legacy database."""
-
-    class Meta:
-        model = models.LegacyEducationalMaterialCategory
-
-    title_en = 'Clinical'
-
-
-class LegacyEducationalMaterialControlFactory(DjangoModelFactory):
-    """Educational material control factory from the legacy database."""
-
-    class Meta:
-        model = models.LegacyEducationalMaterialControl
-
-    educationalmaterialcategoryid = SubFactory(LegacyEducationalMaterialCategoryFactory)
 
 
 class LegacyEducationalMaterialFactory(DjangoModelFactory):
@@ -561,8 +563,14 @@ class LegacyPatientActivityLogFactory(DjangoModelFactory):
     #   - UpdateSecurityQuestionAnswer
     #   - VerifyAnswer
     #   etc.
-    request = 'Login'
-    parameters = ''
+    request = 'Log'
+    parameters = json.dumps(
+        {
+            'Activity': 'Login',
+            'ActivityDetails': {'deviceType': 'browser', 'isTrustedDevice': 'true'},
+        },
+        separators=(',', ':'),
+    )
     target_patient_id = 51
     username = Faker('user_name')
     device_id = Faker('uuid4')

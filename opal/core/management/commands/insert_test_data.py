@@ -170,6 +170,7 @@ MRN_DATA = MappingProxyType({
             ('RVH', '1092300'),
             ('MGH', '5024737'),
         ],
+        "Rory O'Brien": [('RVH', '9999989')],
     },
     InstitutionOption.ohigph: {
         'Bart Simpson': [('CHUSJ', '9999996')],
@@ -375,7 +376,15 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             mrns=mrn_data['Laurie Hendren'],
             date_of_death=date(2019, 5, 27),
         )
-
+        rory = _create_patient(
+            first_name='Rory',
+            last_name="O'Brien",
+            date_of_birth=date(1972, 6, 11),
+            sex=Patient.SexType.OTHER,
+            ramq='OBRR72061199',
+            legacy_id=59,
+            mrns=mrn_data["Rory O'Brien"],
+        )
     # Bart exists at both institutions
     bart = _create_patient(
         first_name='Bart',
@@ -452,7 +461,15 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             phone_number='+15144415642',
             legacy_id=6,
         )
-
+        user_rory = _create_caregiver(
+            first_name='Rory',
+            last_name="O'Brien",
+            username='mouj1pqpXrYCl994oSm5wtJT3In2',
+            email='rory@opalmedapps.ca',
+            language='en',
+            phone_number='+15557654321',
+            legacy_id=7,
+        )
     # get relationship types
     type_self = RelationshipType.objects.self_type()
     type_parent = RelationshipType.objects.parent_guardian()
@@ -570,6 +587,16 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             request_date=_relative_date(today, -14),
             start_date=_relative_date(today, -14),
         )
+
+        # Rory --> Rory: Self
+        _create_relationship(
+            patient=rory,
+            caregiver=user_rory,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -14),
+            start_date=_relative_date(today, -14),
+        )
     # The rest of the relationships exist at both institutions
 
     # Marge --> Bart: Guardian-Caregiver
@@ -598,6 +625,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
         _create_security_answers(user_homer)
         _create_security_answers(user_fred)
         _create_security_answers(user_laurie)
+        _create_security_answers(user_rory)
 
     _create_security_answers(user_marge)
     _create_security_answers(user_bart)
@@ -710,7 +738,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             legacy_document_id=16,
         )
         # Create a fake pathology for laurie as well to complete her dataset
-        # Wednesday received her pathology 15 days ago
+        # Laurie received her pathology 15 days ago
         _create_pathology_result(
             patient=laurie,
             site=sites['RVH'],
@@ -724,6 +752,21 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
                 datetime.now() - relativedelta(years=6, months=0, days=15),
             ),
             legacy_document_id=31,
+        )
+        # Rory pathology 12 days ago
+        _create_pathology_result(
+            patient=rory,
+            site=sites['RVH'],
+            collected_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=12),
+            ),
+            received_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=12),
+            ),
+            reported_at=timezone.make_aware(
+                datetime.now() - relativedelta(years=0, months=0, days=12),
+            ),
+            legacy_document_id=32,
         )
 
 
