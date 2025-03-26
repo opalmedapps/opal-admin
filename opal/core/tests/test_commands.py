@@ -73,3 +73,15 @@ class TestInsertTestData(CommandTestMixin):
         assert CaregiverProfile.objects.count() == 3
         assert Relationship.objects.count() == 7
         assert SecurityAnswer.objects.count() == 9
+
+    def test_create_security_answers(self) -> None:
+        """Ensure that the security answer's question depends on the user's language."""
+        stdout, _stderr = self._call_command('insert_test_data')
+
+        caregiver_en = CaregiverProfile.objects.get(user__first_name='Marge')
+        question_en = SecurityAnswer.objects.filter(user=caregiver_en)[0].question
+        caregiver_fr = CaregiverProfile.objects.get(user__first_name='Bart')
+        question_fr = SecurityAnswer.objects.filter(user=caregiver_fr)[0].question
+
+        assert question_en == 'What is the name of your first pet?'
+        assert question_fr == 'Quel est le nom de votre premier animal de compagnie?'

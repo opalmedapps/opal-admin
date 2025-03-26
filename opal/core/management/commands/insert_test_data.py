@@ -213,7 +213,7 @@ def _create_test_data() -> None:
         last_name=homer.last_name,
         username='homer_username_undefined',
         email='homer@opaldevapps.ca',
-        language='fr',
+        language='en',
         phone_number='+15557654321',
         legacy_id=2,
     )
@@ -223,7 +223,7 @@ def _create_test_data() -> None:
         last_name=bart.last_name,
         username='bart_username_undefined',
         email='bart@opaldevapps.ca',
-        language='en',
+        language='fr',
         phone_number='+498999998123',
         legacy_id=3,
     )
@@ -550,19 +550,40 @@ def _create_security_answer(caregiver: CaregiverProfile, question: str, answer: 
 
 
 def _create_security_answers(caregiver: CaregiverProfile) -> None:
+    language = caregiver.user.language
+    print(language)
+
+    question1 = (
+        'What is the name of your first pet?'
+        if language == 'en'
+        else
+        'Quel est le nom de votre premier animal de compagnie?'
+    )
+    question2 = (
+        'What was the name of your favorite superhero as a child?'
+        if language == 'en'
+        else
+        'Quel était le nom de votre super-héros préféré durant votre enfance?'
+    )
+    question3 = (
+        'What was the color of your first car'
+        if language == 'en'
+        else
+        'Quelle était la couleur de votre première voiture?'
+    )
     _create_security_answer(
         caregiver,
-        'What is the name of your first pet?',
+        question1,
         '5ed4c7167f059c5b864fd775f527c5a88794f9f823fea73c6284756b31a08faf6f9f950473c5aa7cdb99c56bc7807517fe4c4a0bd67318bcaec508592dd6d917',  # noqa: E501
     )
     _create_security_answer(
         caregiver,
-        'What was the name of your favorite superhero as a child?',
+        question2,
         'f3b49c229cc474b3334dd4a3bbe827a866cbf6d6775cde7a5c42da24b4f15db8c0e564c4ff20754841c2baa9dafffc2caa02341010456157b1de9b927f24a1e6',  # noqa: E501
     )
     _create_security_answer(
         caregiver,
-        'What was the color of your first car',
+        question3,
         'a7dbabba9a0371fbdb92724a5ca66401e02069089b1f3a100374e61f934fe9e959215ae0327de2bc064a9dfc351c4d64ef89bd47e95be0198a1f466c3518cc1d',  # noqa: E501
     )
 
