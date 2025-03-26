@@ -29,3 +29,27 @@ def test_users_detail() -> None:
         kwargs={'username': user.username},
     ) == f'/api/users/{user.username}/'  # noqa: WPS221
     assert resolve(f'/api/users/{user.username}/').view_name == 'api:users-detail'
+
+
+def test_users_action_set_manager_user() -> None:
+    """Ensure users action for `set-manager-user` is defined."""
+    user = factories.User()
+
+    assert reverse(
+        'api:users-set-manager-user',
+        kwargs={'username': user.username},
+    ) == f'/api/users/{user.username}/set_manager_user/'
+
+    assert resolve(f'/api/users/{user.username}/set_manager_user/').view_name == 'api:users-set-manager-user'
+
+
+def test_users_action_unset_manager_user() -> None:
+    """Ensure users action for `unset-manager-user` is defined."""
+    user = factories.User()
+
+    assert reverse(
+        'api:users-unset-manager-user',
+        kwargs={'username': user.username},
+    ) == f'/api/users/{user.username}/unset_manager_user/'
+
+    assert resolve(f'/api/users/{user.username}/unset_manager_user/').view_name == 'api:users-unset-manager-user'
