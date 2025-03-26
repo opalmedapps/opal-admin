@@ -65,16 +65,20 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
         Returns:
             template rendered with updated context or HttpError
         """
+        print(request.POST.keys())
         context = self.get_context_data()
 
-        qid = int(request.POST['questionnaireid'])
-        if qid is not None:
+        if 'questionnaireid' in request.POST.keys():
+            try:
+                qid = int(request.POST['questionnaireid'])
+            except ValueError:
+                self.logger.error('Invalid request format for questionnaireid')
+                return HttpResponse(status=HTTPStatus.BAD_REQUEST)
             questionnaire_detail = get_questionnaire_detail(qid)
             context.update(questionnaire_detail)
-        else:
-            self.logger.error('Request questionnaire not found.')
-            return HttpResponse(status=HTTPStatus.NOT_FOUND)
-        return super().render_to_response(context)  # noqa: WPS613
+            return super().render_to_response(context)  # noqa: WPS613
+        self.logger.error('Missing post key: questionnaireid')
+        return HttpResponse(status=HTTPStatus.BAD_REQUEST)
 
 
 # EXPORT REPORTS VIEW REPORT
