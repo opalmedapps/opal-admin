@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from opal.services.data_processing.deidentification import OpenScienceIdentity, PatientData
 from opal.patients.models import SexType
+from opal.services.data_processing.deidentification import OpenScienceIdentity, PatientData
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
@@ -23,6 +23,8 @@ with FIXTURES_DIR.joinpath('attributes_expected_signatures.csv').open() as csv_f
         'féminin': SexType.FEMALE,
         'other': SexType.OTHER,
         'unknown': SexType.UNKNOWN,
+        'autre': SexType.OTHER,
+        'inconnu': SexType.UNKNOWN,
     }
 
     for row in reader:
