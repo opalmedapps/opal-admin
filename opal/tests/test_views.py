@@ -52,7 +52,7 @@ def test_loginview_success(client: Client, django_user_model: User, settings: Se
     )
 
 
-def test_loginview_error(client: Client, django_user_model: User, settings: SettingsWrapper) -> None:
+def test_loginview_error(client: Client, settings: SettingsWrapper) -> None:
     """Ensure that submitting the login form with incorrect credentials fails authenticating the user."""
     # assume that the FedAuthBackend is enabled and remove it (to avoid making outgoing requests during tests)
     # if it is not enabled in the future, remove these lines
@@ -63,7 +63,6 @@ def test_loginview_error(client: Client, django_user_model: User, settings: Sett
         'username': 'testuser',
         'password': 'invalid',
     }
-    django_user_model.objects.create(username=credentials['username'])
 
     response = client.post(
         reverse(settings.LOGIN_URL),
