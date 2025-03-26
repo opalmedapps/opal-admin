@@ -234,7 +234,7 @@ def test_institution_with_no_terms_of_use_create(
     user_client: Client,
     institution_form: InstitutionForm,
 ) -> None:
-    """Ensure that new incomplete institution (with missing terms of use) form cannot be posted to the server."""
+    """Ensure that new incomplete institution (with missing terms of use file) form cannot be posted to the server."""
     url = reverse('hospital-settings:institution-create')
     form_data = institution_form.data
     form_data.pop('terms_of_use_fr')
@@ -329,7 +329,7 @@ def test_institution_with_no_terms_of_use_update(
     user_client: Client,
     institution_form: InstitutionForm,
 ) -> None:
-    """Ensure that institution form (with missing logo images) can update an existing institution."""
+    """Ensure that institution form (with missing terms of use file) can update an existing institution."""
     assert institution_form.is_valid()
     institution_form.save()
 
