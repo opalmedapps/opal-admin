@@ -184,15 +184,14 @@ def post_save_user_signal_handler(  # noqa: WPS211, WPS231
         args: argument sent with the request
         kwargs: extra keyword arguments
     """
-    if model == Group and instance.type == 'CLINICAL':
+    if model == Group and instance.type == UserType.CLINICAL_STAFF:
         administrators = Group.objects.filter(name=ADMIN_GROUP_NAME).first()
-        if administrators:
-            if administrators.pk in pk_set:
-                if action == 'post_add':
-                    instance.is_superuser = True
-                    instance.is_staff = True
-                elif action == 'post_remove':
-                    instance.is_superuser = False
-                    instance.is_staff = False
+        if administrators and administrators.pk in pk_set:
+            if action == 'post_add':
+                instance.is_superuser = True
+                instance.is_staff = True
+            elif action == 'post_remove':
+                instance.is_superuser = False
+                instance.is_staff = False
 
         instance.save()
