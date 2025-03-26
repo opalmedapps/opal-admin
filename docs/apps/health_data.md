@@ -63,3 +63,7 @@ beats_per_minute = beat / minute = bpm
 hertz = counts / second = hz
 beat = [heart_beats] = b
 ```
+
+#### Statistics
+
+It would be great to add a dashboard to the health data view allowing the clinician to visualize some advanced statistics about the patient's data, and perhaps even provide support for basic predictive machine learning models.
