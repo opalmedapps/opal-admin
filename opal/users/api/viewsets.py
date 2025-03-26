@@ -38,7 +38,7 @@ class UserViewSet(
     serializer_classes = {
         'create': UserClinicalStaffSerializer,
         'retrieve': UpdateClinicalStaffUserSerializer,
-        'update': UpdateClinicalStaffUserSerializer,
+        'update': UserClinicalStaffSerializer,
         'set_manager_user': UpdateClinicalStaffUserSerializer,
     }
     permission_classes = [CustomDjangoModelPermissions]
