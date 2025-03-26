@@ -430,6 +430,7 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
         and the registration code (in the case of a new caregiver, otherwise None)
     """
     is_new_patient = False
+    registration_code = None
     mrns = []
     status = (
         RelationshipStatus.CONFIRMED if relationship_type.role_type == RoleType.SELF else RelationshipStatus.PENDING
@@ -456,10 +457,10 @@ def create_access_request(  # noqa: WPS210 (too many local variables)
 
     # Existing user
     if isinstance(caregiver, caregiver_models.CaregiverProfile):
+        # Note: existing users are not issued a registration code
+
         caregiver_profile = caregiver
         relationship = create_relationship(patient, caregiver_profile, relationship_type, status)
-
-        registration_code = None
 
         # For existing users registering as self, upgrade their legacy UserType to 'Patient'
         if relationship.type.role_type == RoleType.SELF:
