@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-26 18:37+0000\n"
+"POT-Creation-Date: 2023-10-27 16:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -69,6 +69,30 @@ msgstr "Téléphone de Contact"
 #: opal/core/models.py
 msgid "Contact Fax"
 msgstr "Télécopieur"
+
+#: opal/core/models.py
+msgid "Non-Interpretable Lab Result Delay"
+msgstr "Le délai de résultat de laboratoire non interprétable"
+
+#: opal/core/models.py
+msgid ""
+"Lab result delay for pediatric patients when clinician interpretation is "
+"recommended in lab setting."
+msgstr ""
+"Le délai des résultats de laboratoire pour les patients pédiatriques lorsque "
+"l'interprétation du clinicien est recommandée en laboratoire."
+
+#: opal/core/models.py
+msgid "Interpretable Lab Result Delay"
+msgstr "Le délai de résultat de laboratoire interprétable"
+
+#: opal/core/models.py
+msgid ""
+"Lab result delay for pediatric patients when clinician interpretation is not "
+"specified in lab setting."
+msgstr ""
+"Le délai des résultats de laboratoire pour les patients pédiatriques lorsque "
+"l'interprétation du clinicien n'est pas spécifiée dans le laboratoire."
 
 #: opal/core/validators.py
 msgid "Enter a valid RAMQ number consisting of 4 letters followed by 8 digits"
