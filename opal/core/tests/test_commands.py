@@ -337,3 +337,50 @@ class TestInitializeData(CommandTestMixin):  # noqa: WPS338
         token = Token.objects.get(user=user)
 
         assert token.key == random_token
+
+    def test_insert_superuser_random_password(self) -> None:
+        """An admin user with a random password us generated."""
+        stdout, _stderr = self._call_command('initialize_data')
+
+        user = User.objects.get(username='admin')
+
+        assert user.is_staff
+        assert user.is_superuser
+        assert user.has_usable_password()
+
+        legacy_models.LegacyOAUser.objects.get(username='admin')
+
+        assert 'Created superuser with username "admin"' in stdout
+        assert 'and generated password: ' in stdout
+
+    def test_insert_superuser_predefined_password(self) -> None:
+        """A predefined password can be provided for the admin user."""
+        # 9 bytes --> 12 characters
+        random_password = secrets.token_urlsafe(9)
+
+        stdout, _stderr = self._call_command('initialize_data', f'--admin-password={random_password}')
+
+        user = User.objects.get(username='admin')
+
+        assert user.is_staff
+        assert user.is_superuser
+        assert user.has_usable_password()
+        assert user.check_password(random_password)
+
+        legacy_models.LegacyOAUser.objects.get(username='admin')
+
+        assert 'Created superuser with username "admin"' in stdout
+        assert 'and generated password' not in stdout
+
+    def test_insert_superuser_predefined_password_invalid(self) -> None:
+        """The password for the admin user needs to have a minimum length."""
+        # 8 bytes --> 11 characters
+        random_password = secrets.token_urlsafe(8)
+
+        assert len(random_password) == 11
+
+        with pytest.raises(
+            CommandError,
+            match=f"Error: argument --admin-password: invalid password value: '{random_password}'",
+        ):
+            self._call_command('initialize_data', f'--admin-password={random_password}')

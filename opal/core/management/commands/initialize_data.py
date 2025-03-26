@@ -297,7 +297,7 @@ class Command(BaseCommand):
     def _create_legacy_data(self, **options: Any) -> None:
         # create a legacy admin user with the system administrator role
         admin_role = legacy_models.LegacyOARole.objects.get(name_en='System Administrator')
-        legacy_models.LegacyOAUser(
+        legacy_models.LegacyOAUser.objects.create(
             username='admin',
             # the password does not matter since legacy OpalAdmin
             # does not support logging in with AD or regular login at the same time
