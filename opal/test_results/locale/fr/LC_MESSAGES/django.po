@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-14 14:39-0400\n"
+"POT-Creation-Date: 2023-09-15 18:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -192,10 +192,10 @@ msgstr "ID du document hérité"
 
 #: opal/test_results/models.py
 msgid ""
-"OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to "
+"OpalDB.Document.DocumentSerNum, used for displaying pathology PDFs to "
 "patients."
 msgstr ""
-"OpalDB.Document.DocumentSerNum, utilisé pour afficher les pdf de pathologie "
+"OpalDB.Document.DocumentSerNum, utilisé pour afficher les PDF de pathologie "
 "aux patients"
 
 #: opal/test_results/models.py
