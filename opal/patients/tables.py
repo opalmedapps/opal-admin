@@ -2,63 +2,15 @@
 from typing import Any
 
 from django.db.models import QuerySet
-from django.template import Context
+from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
 
 import django_tables2 as tables
-from django_tables2.columns import BoundColumn
 
 from opal.services.hospital.hospital_data import OIEMRNData
 from opal.users.models import User
 
 from .models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
-
-
-# Adjusting context depending on record content:
-# https://stackoverflow.com/questions/53582717/django-tables2-adding-template-column-which-content-depends-on-condition
-class RelationshipTypeTemplateColumn(tables.TemplateColumn):
-    """A customized template column overriding the default behaviour."""
-
-    def render(  # noqa: WPS211
-        self,
-        record: RelationshipType,
-        table: Any,
-        value: None,
-        bound_column: BoundColumn,
-        **kwargs: Any,
-    ) -> tables.TemplateColumn:
-        """Override the rendering method to remove delete option in restricted role types.
-
-        Args:
-            record: The RelationshipType instance
-            table: The RelationshipTypeTable instance
-            value: value from `record` that corresponds to the current column
-            bound_column: The column being rendered
-            kwargs: Any number of key-word arguments
-
-        Returns:
-            TemplateColumn: the renderable content for the column
-        """
-        context = getattr(table, 'context', Context())
-        additional_context = {
-            'default': bound_column.default,
-            'column': bound_column,
-            'record': record,
-            'value': value,
-            'row_counter': kwargs['bound_row'].row_counter,
-        }
-
-        # Remove the deletion button for restricted types
-        if record.role_type in {RoleType.SELF, RoleType.PARENT_GUARDIAN}:
-            self.extra_context = {'urlname_update': 'patients:relationshiptype-update'}
-        else:
-            self.extra_context = {
-                'urlname_update': 'patients:relationshiptype-update',
-                'urlname_delete': 'patients:relationshiptype-delete',
-            }
-        additional_context.update(self.extra_context)
-        with context.update(self.extra_context):
-            return super().render(record, table, value, bound_column, **kwargs)
 
 
 class RelationshipTypeTable(tables.Table):
@@ -68,10 +20,13 @@ class RelationshipTypeTable(tables.Table):
     Defines an additional action column for action buttons.
     """
 
-    actions = RelationshipTypeTemplateColumn(
+    actions = tables.TemplateColumn(
         verbose_name=_('Actions'),
         template_name='tables/action_column.html',
         orderable=False,
+        extra_context={
+            'urlname_update': 'patients:relationshiptype-update',
+        },
     )
 
     class Meta:
@@ -86,6 +41,34 @@ class RelationshipTypeTable(tables.Table):
             'actions',
         ]
         empty_text = _('No relationship types defined.')
+
+    def render_actions(
+        self,
+        record: RelationshipType,
+        column: tables.TemplateColumn,
+        *args: Any,
+        **kwargs: Any,
+    ) -> SafeString:
+        """
+        Render the actions column.
+
+        Append the delete URL name to the `extra_context` if the record has a role type of `CAREGIVER`.
+
+        Args:
+            record: the current relationship type
+            column: the current column
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the rendered column HTML
+        """
+        if record.role_type == RoleType.CAREGIVER:
+            column.extra_context.update({
+                'urlname_delete': 'patients:relationshiptype-delete',
+            })
+
+        return column.render(record, *args, **kwargs)  # type: ignore[no-any-return]
 
 
 class PatientTable(tables.Table):
@@ -199,16 +182,15 @@ class RelationshipCaregiverTable(tables.Table):
 
     actions = tables.TemplateColumn(
         verbose_name=_('Actions'),
-        # TODO: use action_column.html template once the update/delete pages are implemented
-        template_name='tables/edit_pencil_icon.html',
+        # TODO: use action_column.html template once the delete pages are implemented
+        template_name='tables/action_column.html',
         attrs={
             'td': {'align': 'center'},
         },
         orderable=False,
         extra_context={
-            # TODO: update urlname_delete and urlname_update values once the corresponding pages are implemented
-            'urlname_delete': '',
-            'urlname_update': '',
+            # TODO: update urlname_delete values once the corresponding pages are implemented
+            'urlname_update': 'patients:relationships-search-update',
         },
     )
 

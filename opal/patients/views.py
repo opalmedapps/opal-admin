@@ -26,22 +26,14 @@ from qrcode.image import svg
 from opal.caregivers.models import RegistrationCode
 from opal.core.utils import generate_random_registration_code, generate_random_uuid
 from opal.core.views import CreateUpdateView, UpdateView
-from opal.patients import forms
+from opal.patients import forms, tables
 from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver
 
 from . import constants
 from .filters import ManageCaregiverAccessFilter
-from .forms import RelationshipPendingAccessForm, RelationshipTypeUpdateForm
+from .forms import RelationshipAccessForm, RelationshipTypeUpdateForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
-from .tables import (
-    ConfirmPatientDetailsTable,
-    ExistingUserTable,
-    PatientTable,
-    PendingRelationshipTable,
-    RelationshipCaregiverTable,
-    RelationshipTypeTable,
-)
 
 
 class RelationshipTypeListView(PermissionRequiredMixin, SingleTableView):
@@ -49,7 +41,7 @@ class RelationshipTypeListView(PermissionRequiredMixin, SingleTableView):
 
     model = RelationshipType
     permission_required = ('patients.can_manage_relationshiptypes',)
-    table_class = RelationshipTypeTable
+    table_class = tables.RelationshipTypeTable
     ordering = ['pk']
     template_name = 'patients/relationship_type/list.html'
 
@@ -169,7 +161,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             context = self._update_patient_confirmation_context(context, patient_record)
         if self.steps.current == 'existing':
             user_record = self.get_cleaned_data_for_step(self.steps.prev)['user_record']
-            context.update({'table': ExistingUserTable([user_record])})
+            context.update({'table': tables.ExistingUserTable([user_record])})
         context.update({'header_title': self.form_title_list[self.steps.current]})
         return context
 
@@ -268,12 +260,15 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         new_form_data = self._process_form_data(form_data)
         # generate access request for both of the case(new user or existing user)
         relationship = self._generate_access_request(new_form_data)
-        # get a random registration code
-        registration_code = generate_random_registration_code(constants.REGISTRATION_CODE_LENGTH)
-        # create the registration code instance for the relationship
-        RegistrationCode.objects.get_or_create(relationship=relationship, code=registration_code)
+        # create the registration code instance for the relationship and validate the registration code
+        registration_code = RegistrationCode(
+            relationship=relationship,
+            code=generate_random_registration_code(settings.INSTITUTION_CODE, constants.REGISTRATION_CODE_LENGTH),
+        )
+        registration_code.full_clean()
+        registration_code.save()
         # generate QR code for Opal registration system
-        stream = self._generate_qr_code(registration_code)
+        stream = self._generate_qr_code(registration_code.code)
 
         return render(self.request, 'patients/access_request/qr_code.html', {
             'qrcode': base64.b64encode(stream.getvalue()).decode(),
@@ -523,7 +518,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             })
 
         context.update({
-            'table': ConfirmPatientDetailsTable([patient_record]),
+            'table': tables.ConfirmPatientDetailsTable([patient_record]),
         })
         return context
 
@@ -533,26 +528,91 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableView):
 
     model = Relationship
     permission_required = ('patients.can_manage_relationships',)
-    table_class = PendingRelationshipTable
+    table_class = tables.PendingRelationshipTable
     ordering = ['request_date']
-    template_name = 'patients/relationships/pending/list.html'
+    template_name = 'patients/relationships/pending_relationship_list.html'
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
 
 
-class PendingRelationshipUpdateView(
-    PermissionRequiredMixin, UpdateView[Relationship, ModelForm[Relationship]],
-):
+class ManageRelationshipUpdateMixin(UpdateView[Relationship, ModelForm[Relationship]]):
     """
-    This `UpdatesView` displays a form for updating a `Relationship` object.
+    This is a mixin view that is inherited by `ManagePendingUpdateView` and `ManageSearchUpdateView`.
 
-    It redisplays the form with validation errors (if there are any) and saves the `Relationship` object.
+    It provides common features among the inherited views.
     """
 
     model = Relationship
+    template_name = 'patients/relationships/edit_relationships.html'
+    form_class = RelationshipAccessForm
+
+
+class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateMixin):
+    """
+    This view inherits `ManageRelationshipUpdateMixin` used to update pending relationship requests.
+
+    It overrides `get_context_data()` to provide the correct `cancel_url` when editing a pending request.
+    """
+
     permission_required = ('patients.can_manage_relationships',)
-    template_name = 'patients/relationships/pending/form.html'
-    form_class = RelationshipPendingAccessForm
     success_url = reverse_lazy('patients:relationships-pending-list')
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        """
+        Return the template context for `ManagePendingUpdateView` update view.
+
+        Args:
+            kwargs: additional keyword arguments
+
+        Returns:
+            the template context for `ManagePendingUpdateView`
+        """
+        context = super().get_context_data(**kwargs)
+        # to pass url to crispy form to be able to use it as a url for cancel button.
+        context['cancel_url'] = reverse_lazy('patients:relationships-pending-list')
+
+        return context
+
+
+class ManageSearchUpdateView(ManageRelationshipUpdateMixin):
+    """
+    This view inherits `ManageRelationshipUpdateMixin` used to update a record in search access requests results.
+
+    It overrides `get_context_data()` to provide the correct `cancel_url` when editing a pending request.
+
+    It overrides `get_success_url()` to provide the correct `success_url` when saving an update.
+    """
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        """
+        Return the template context for `ManageSearchUpdateView` update view.
+
+        Args:
+            kwargs: additional keyword arguments
+
+        Returns:
+            the template context for `ManageSearchUpdateView`
+        """
+        context = super().get_context_data(**kwargs)
+        # to pass url to crispy form to be able to re-use the same form for different purposes
+        default_success_url = reverse_lazy('patients:relationships-search')
+        # provide previous link with parameters to update on clicking cancel button
+        if self.request.META.get('HTTP_REFERER'):
+            context['cancel_url'] = self.request.META.get('HTTP_REFERER')
+        else:
+            context['cancel_url'] = default_success_url
+        return context
+
+    def get_success_url(self) -> Any:  # noqa: WPS615
+        """
+        Provide the correct `success_url` that re-submits search query or default success_url.
+
+        Returns:
+            the success url link
+        """
+        if self.request.POST.get('cancel_url', False):
+            return self.request.POST['cancel_url']
+
+        return reverse_lazy('patients:relationships-search')
 
 
 # The order of `MultiTableMixin` and `FilterView` classes is important!
@@ -565,9 +625,9 @@ class CaregiverAccessView(MultiTableMixin, FilterView):
         'relationships__caregiver__user',
     )
     filterset_class = ManageCaregiverAccessFilter
-    tables = [PatientTable, RelationshipCaregiverTable]
-    success_url = reverse_lazy('patients:caregiver-access')
-    template_name = 'patients/relationships-search/relationship_filter.html'
+    tables = [tables.PatientTable, tables.RelationshipCaregiverTable]
+    success_url = reverse_lazy('patients:relationships-search')
+    template_name = 'patients/relationships/relationship_filter.html'
 
     def get_tables_data(self) -> List[QuerySet[Any]]:
         """
