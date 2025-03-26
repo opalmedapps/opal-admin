@@ -600,6 +600,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         return True
 
 
+# TODO: move this to the core app
 class AccessRequestConfirmForm(forms.Form):
     """This form provides a layout to confirm user password."""
 
