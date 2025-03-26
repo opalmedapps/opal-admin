@@ -138,6 +138,15 @@ class TestInitializeData(CommandTestMixin):
         assert Token.objects.count() == 3
         assert SecurityQuestion.objects.count() == 6
 
+        for group in Group.objects.all():
+            group.full_clean()
+        for user in User.objects.all():
+            user.full_clean()
+        for token in Token.objects.all():
+            token.full_clean()
+        for security_question in SecurityQuestion.objects.all():
+            security_question.full_clean()
+
         listener_token = Token.objects.get(user__username='listener')
         interface_engine_token = Token.objects.get(user__username='interface-engine')
         legacy_backend_token = Token.objects.get(user__username='opaladmin-backend-legacy')

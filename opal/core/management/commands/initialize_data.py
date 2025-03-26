@@ -71,9 +71,15 @@ class Command(BaseCommand):
 
         # users
         # TODO: should non-human users have a different user type (right now it would be clinician/clinical staff)?
-        listener = User.objects.create(username='listener')
-        interface_engine = User.objects.create(username='interface-engine')
-        legacy_backend = User.objects.create(username='opaladmin-backend-legacy')
+        listener = User(username='listener')
+        listener.set_unusable_password()
+        listener.save()
+        interface_engine = User(username='interface-engine')
+        interface_engine.set_unusable_password()
+        interface_engine.save()
+        legacy_backend = User(username='opaladmin-backend-legacy')
+        legacy_backend.set_unusable_password()
+        legacy_backend.save()
 
         # permissions
         view_institution = _find_permission('hospital_settings', 'view_institution')
