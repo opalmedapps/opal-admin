@@ -9,9 +9,8 @@
 {% endblock %}
 
 {% block content %}
-  <div class="card mb-3">
-    <!-- reused file in both edit and view templates -->
-    {% include "patients/relationships/patient_details.html" %}
+  <!-- reused file in both edit and view templates -->
+  {% include "patients/relationships/patient_details.html" %}
   <div class="card">
     <div class="card-body">
       <div class="row">
@@ -95,7 +94,7 @@
       </div>
 
       {% #form_actions %}
-        {% form_cancel href=cancel_url type="back" %}
+      {% form_cancel href=cancel_url type="back" %}
       {% /form_actions %}
 
     </div>
