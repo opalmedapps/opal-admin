@@ -1,7 +1,6 @@
 """App patient utils test functions."""
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
-from django.http import Http404
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
@@ -11,31 +10,17 @@ from opal.caregivers.factories import CaregiverProfile, RegistrationCode
 from opal.patients.factories import Patient
 from opal.users.factories import User
 
-from ..utils import (
-    get_and_update_registration_code,
-    insert_security_answers,
-    update_caregiver,
-    update_patient_legacy_id,
-)
+from ..utils import insert_security_answers, update_caregiver, update_patient_legacy_id, update_registration_code_status
 
 pytestmark = pytest.mark.django_db
 
 
-def test_get_and_update_registration_code_success() -> None:
+def test_update_registration_code_status_success() -> None:
     """Test get registration code and update its status success."""
-    registration_code = RegistrationCode()
-    result = get_and_update_registration_code(registration_code.code)
-    assert result.status == caregiver_models.RegistrationCodeStatus.REGISTERED
-
-
-def test_get_and_update_registration_code_failure() -> None:
-    """Test get non-exists registration code fails."""
-    expected_message = 'No RegistrationCode matches the given query.'
-    with assertRaisesMessage(
-        Http404,  # type: ignore[arg-type]
-        expected_message,
-    ):
-        get_and_update_registration_code('NONE12345678')
+    registration_code = RegistrationCode(status=caregiver_models.RegistrationCodeStatus.NEW)
+    update_registration_code_status(registration_code)
+    registration_code.refresh_from_db()
+    assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
 
 
 def test_update_patient_legacy_id_valid() -> None:

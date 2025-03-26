@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models.query import QuerySet
 
 from rest_framework import serializers
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -19,12 +19,7 @@ from opal.core.drf_permissions import CaregiverPatientPermissions
 from opal.patients.api.serializers import CaregiverRelationshipSerializer
 
 from ..models import Relationship
-from ..utils import (
-    get_and_update_registration_code,
-    insert_security_answers,
-    update_caregiver,
-    update_patient_legacy_id,
-)
+from ..utils import insert_security_answers, update_caregiver, update_patient_legacy_id, update_registration_code_status
 
 
 class RetrieveRegistrationDetailsView(RetrieveAPIView):
@@ -86,15 +81,22 @@ class RegistrationCompletionView(APIView):
         serializer.is_valid(raise_exception=True)
         register_data = serializer.validated_data
 
-        registration_code = get_and_update_registration_code(code)
+        registration_code = get_object_or_404(
+            caregiver_models.RegistrationCode.objects.select_related(
+                'relationship__patient',
+                'relationship__caregiver__user',
+            ).filter(code=code, status=caregiver_models.RegistrationCodeStatus.NEW),
+        )
 
         try:  # noqa: WPS229
-            # update patient legacy_id
+
+            update_registration_code_status(registration_code)
+
             update_patient_legacy_id(
                 registration_code.relationship.patient,
                 register_data['relationship']['patient']['legacy_id'],
             )
-            # update caregiver
+
             update_caregiver(
                 registration_code.relationship.caregiver.user,
                 register_data['relationship']['caregiver'],
