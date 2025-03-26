@@ -155,19 +155,19 @@ class TestChartAppView:
         )
         new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
             patient_sernum=patient_one.external_id,
-            user_name=user.username,
+            username=user.username,
             purpose_id=1,
         ).count()
         assert new_questionnaires == 1
         new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
             patient_sernum=patient_one.external_id,
-            user_name=user.username,
+            username=user.username,
             purpose_id=2,
         ).count()
         assert new_questionnaires == 1
         new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
             patient_sernum=patient_one.external_id,
-            user_name=user.username,
+            username=user.username,
             purpose_id=4,
         ).count()
         assert new_questionnaires == 1

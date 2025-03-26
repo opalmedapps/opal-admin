@@ -56,13 +56,13 @@ class TestAppAppointmentsView:
         mock_timezone.return_value = now
 
         relationship = patient_factories.Relationship(status='CON')
-        user_name = relationship.caregiver.user.username
+        username = relationship.caregiver.user.username
         api_client.force_login(user=listener_user)
-        api_client.credentials(HTTP_APPUSERID=user_name)
+        api_client.credentials(HTTP_APPUSERID=username)
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         factories.LegacyNotificationFactory(patientsernum=patient)
         factories.LegacyNotificationFactory(patientsernum=patient)
-        factories.LegacyNotificationFactory(patientsernum=patient, readby=user_name)
+        factories.LegacyNotificationFactory(patientsernum=patient, readby=username)
         appointment_time = timezone.now() + dt.timedelta(hours=2)
         factories.LegacyAppointmentFactory(patientsernum=patient, checkin=1, scheduledstarttime=appointment_time)
         response = api_client.get(reverse('api:app-appointments'))

@@ -40,13 +40,13 @@ class TestHomeAppView:
         mock_timezone.return_value = now
 
         relationship = patient_factories.Relationship(status='CON')
-        user_name = relationship.caregiver.user.username
+        username = relationship.caregiver.user.username
         api_client.force_login(user=admin_user)
-        api_client.credentials(HTTP_APPUSERID=user_name)
+        api_client.credentials(HTTP_APPUSERID=username)
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         factories.LegacyNotificationFactory(patientsernum=patient)
         factories.LegacyNotificationFactory(patientsernum=patient)
-        factories.LegacyNotificationFactory(patientsernum=patient, readby=user_name)
+        factories.LegacyNotificationFactory(patientsernum=patient, readby=username)
         appointment_time = timezone.now() + dt.timedelta(hours=2)
         appointment = factories.LegacyAppointmentFactory(
             patientsernum=patient,
@@ -63,14 +63,14 @@ class TestHomeAppView:
     def test_get_unread_notification_count(self) -> None:
         """Test if function returns number of unread notifications."""
         relationship = patient_factories.Relationship(status='CON')
-        user_name = relationship.caregiver.user.username
+        username = relationship.caregiver.user.username
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         factories.LegacyNotificationFactory(patientsernum=patient)
         factories.LegacyNotificationFactory(patientsernum=patient)
-        factories.LegacyNotificationFactory(patientsernum=patient, readby=user_name)
+        factories.LegacyNotificationFactory(patientsernum=patient, readby=username)
         notifications = models.LegacyNotification.objects.get_unread_queryset(
             patient.patientsernum,
-            user_name,
+            username,
         ).count()
         assert notifications == 2
 
@@ -109,9 +109,9 @@ class TestHomeAppView:
     ) -> None:
         """Test the return value of get home data when the fields are empty."""
         relationship = patient_factories.Relationship(status='CON')
-        user_name = relationship.caregiver.user.username
+        username = relationship.caregiver.user.username
         api_client.force_login(user=admin_user)
-        api_client.credentials(HTTP_APPUSERID=user_name)
+        api_client.credentials(HTTP_APPUSERID=username)
         factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
 
         response = api_client.get(reverse('api:app-home'))

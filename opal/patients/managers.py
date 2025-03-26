@@ -1,7 +1,7 @@
 """Collection of managers for the caregiver app."""
 import operator
 from functools import reduce
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 from django.db import models
 from django.db.models.functions import Coalesce
@@ -10,47 +10,67 @@ from . import constants
 from . import models as patient_models
 
 if TYPE_CHECKING:
-    from opal.patients.models import Patient, Relationship, RelationshipType
+    from opal.patients.models import Patient, Relationship, RelationshipStatus, RelationshipType
 
 
 class RelationshipManager(models.Manager['Relationship']):
     """Manager class for the `Relationship` model."""
 
-    def get_patient_list_for_caregiver(self, user_name: str) -> models.QuerySet['Relationship']:
+    def get_patient_list_for_caregiver(
+        self,
+        username: str,
+        status: Optional['RelationshipStatus'] = None,
+    ) -> models.QuerySet['Relationship']:
         """
         Query manager to get a list of patients for a given caregiver.
 
         Args:
-            user_name: User id making the request
+            username: user id making the request
+            status: specific relationship status that returned patients should have (e.g., filtered)
 
         Returns:
             Queryset to get the list of patients
 
         """
-        return self.select_related(
+        relationships = self.select_related(
             'patient',
             'caregiver',
             'caregiver__user',
             'type',
         ).filter(
-            caregiver__user__username=user_name,
+            caregiver__user__username=username,
         )
 
-    def get_patient_id_list_for_caregiver(self, user_name: str, status: str = '') -> list[int]:
+        # Filter relationships by status if given status is not None
+        return relationships.filter(status=status) if status else relationships
+
+    def get_list_of_patients_ids_for_caregiver(
+        self,
+        username: str,
+        status: Optional['RelationshipStatus'] = None,
+    ) -> list[int]:
         """
         Get an array of patients' legacy IDs for a given caregiver.
 
+        If status provided, filter caregiver's patients by given relationship status (e.g., only confirmed
+        relationships).
+
+        If no status provided, return list of patients' legacy IDs with all relationship statuses.
+
         Args:
-            user_name: User id making the request
-            status: string of RelationshipStatus
+            username: user id making the request
+            status: specific relationship status that returned patients should have (e.g., filtered)
 
         Returns:
             Return list of patients' legacy IDs
         """
-        relationships = self.get_patient_list_for_caregiver(user_name=user_name)
-        relationships = relationships.filter(
-            status=patient_models.RelationshipStatus.CONFIRMED,
-        ) if status == 'confirmed' else relationships
+        # Fetch caregiver's relationships with all statuses
+        # and then filter relationships by given status if it is not None
+        relationships = self.get_patient_list_for_caregiver(
+            username=username,
+            status=status,
+        )
+
         # filter out legacy_id=None to avoid typing problems when doing at the DB-level
         # the result type is otherwise ValuesQuerySet[Relationship, Optional[int]]
         return [

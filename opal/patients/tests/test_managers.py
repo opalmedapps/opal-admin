@@ -46,7 +46,7 @@ def test_get_patient_id_list_for_any_caregiver() -> None:
         caregiver=profile,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-    patient_ids = Relationship.objects.get_patient_id_list_for_caregiver(caregiver.username)
+    patient_ids = Relationship.objects.get_list_of_patients_ids_for_caregiver(caregiver.username)
 
     assert len(patient_ids) == 2
 
@@ -67,6 +67,9 @@ def test_get_patient_id_list_for_confirmed_caregiver() -> None:
         caregiver=profile,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
-    patient_ids = Relationship.objects.get_patient_id_list_for_caregiver(caregiver.username, 'confirmed')
+    patient_ids = Relationship.objects.get_list_of_patients_ids_for_caregiver(
+        username=caregiver.username,
+        status=patient_models.RelationshipStatus.CONFIRMED,
+    )
 
     assert len(patient_ids) == 1

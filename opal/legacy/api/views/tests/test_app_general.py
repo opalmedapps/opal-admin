@@ -41,7 +41,7 @@ class TestGeneralAppView:
         assert announcements == 2
 
     def test_get_unread_announcement_multiple_patient(self) -> None:
-        """Test the return of announcements for multiple patient without dupicate 'postcontrolsernum'."""
+        """Test the return of announcements for multiple patient without duplicate 'postcontrolsernum'."""
         patient1 = factories.LegacyPatientFactory()
         patient2 = factories.LegacyPatientFactory()
         post_control = factories.LegacyPostcontrolFactory(posttype='Announcement')
