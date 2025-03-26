@@ -952,7 +952,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         assert ClinicalStaff.objects.all().count() == 2
 
     def test_migrate_users_duplicate_legacyoauser_fail(self) -> None:
-        """Test import fail for re-entering same OAUser."""
+        """Test import fail for re-entering same OAUser of type Administration."""
         module = legacy_factories.LegacyModuleFactory(name_en='Patient')
         user_factories.GroupFactory(name='System Administrators')
         user_factories.GroupFactory(name='Registrants')
@@ -1004,3 +1004,28 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
 
         assert 'Total migrated users: 6 of which 2 Admins and 2 Registrants.\n' in message
         assert ClinicalStaff.objects.all().count() == 6
+
+    def test_migrate_users_duplicate_registrants_legacyoauser_fail(self) -> None:
+        """Test import fail for re-entering same OAUser of type registrant."""
+        module = legacy_factories.LegacyModuleFactory(name_en='Patient')
+        role = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
+        user = legacy_factories.LegacyOAUserFactory(oaroleid=role)
+        legacy_factories.LegacyOARoleModuleFactory(oaroleid=role, moduleid=module, access=3)
+
+        # Creating needed groups
+        user_factories.GroupFactory(name='System Administrators')
+        user_factories.GroupFactory(name='Registrants')
+        message, error = self._call_command('migrate_users')
+
+        assert 'Total migrated users: 1 of which 0 Admins and 1 Registrants.\n' in message
+        assert ClinicalStaff.objects.all().count() == 1
+
+        message, error = self._call_command('migrate_users')
+        errormsg = '{0} {1} {2}{3}'.format(
+            "Error: {'username': ['A user with that username already exists.']}",
+            'when saving username:',
+            user.username,
+            '\n',
+        )
+
+        assert errormsg in error
