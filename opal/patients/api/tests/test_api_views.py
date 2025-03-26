@@ -21,7 +21,7 @@ from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
 from opal.patients.factories import HospitalPatient, Patient, Relationship
 from opal.users import factories as caregiver_factories
-from opal.users.models import Caregiver, User
+from opal.users.models import Caregiver
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
