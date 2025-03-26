@@ -163,6 +163,15 @@ class TestAppAppointmentsView:
         ).data
 
         assert len(daily_appointments) == 1
-        assert 'patient' in daily_appointments[0]
         assert 'alias' in daily_appointments[0]
+        assert 'appointmentsernum' in daily_appointments[0]
+        assert 'checkin' in daily_appointments[0]
+        assert 'checkininstruction_en' in daily_appointments[0]
+        assert 'checkininstruction_fr' in daily_appointments[0]
+        assert 'checkinpossible' in daily_appointments[0]
         assert 'hospitalmap' in daily_appointments[0]
+        assert 'patient' in daily_appointments[0]
+        assert 'roomlocation_en' in daily_appointments[0]
+        assert 'roomlocation_fr' in daily_appointments[0]
+        assert 'scheduledstarttime' in daily_appointments[0]
+        assert 'state' in daily_appointments[0]
