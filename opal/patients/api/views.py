@@ -109,7 +109,6 @@ class RegistrationCompletionView(APIView):
         )
 
         try:  # noqa: WPS229
-
             utils.update_registration_code_status(registration_code)
 
             utils.update_patient_legacy_id(
