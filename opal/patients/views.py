@@ -539,7 +539,7 @@ class PendingRelationshipUpdateView(
     PermissionRequiredMixin, UpdateView[Relationship, ModelForm[Relationship]],
 ):
     """
-    This `UpdatesView` displays a form for updating a `Relationship` object.
+    This `UpdateView` displays a form for updating a `Relationship` object.
 
     It redisplays the form with validation errors (if there are any) and saves the `Relationship` object.
     """
@@ -553,7 +553,7 @@ class PendingRelationshipUpdateView(
 
 class SearchRelationshipUpdateView(UpdateView[Relationship, ModelForm[Relationship]]):
     """
-    This `UpdatesView` displays a form for updating a `Relationship` object of type other than pending.
+    This `UpdateView` displays a form for updating a `Relationship` object of type other than pending.
 
     It redisplays the search form along with updated search results on cancel.
 
