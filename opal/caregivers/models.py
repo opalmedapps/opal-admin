@@ -270,7 +270,7 @@ class EmailVerification(models.Model):
         Returns:
             the string email verification code and its status
         """
-        return 'Code: {code} (Status: {verified})'.format(
+        return 'Code: {code} (Active: {verified})'.format(
             code=self.code,
             verified=str(self.is_verified),
         )
