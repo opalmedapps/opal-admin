@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-09 08:40-0400\n"
+"POT-Creation-Date: 2023-05-16 15:58+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,7 +24,7 @@ msgstr ""
 
 #: opal/core/forms/layouts.py
 msgid "Reset"
-msgstr ""
+msgstr "Réinitialiser"
 
 #: opal/core/validators.py
 msgid "Enter a valid RAMQ number consisting of 4 letters followed by 8 digits"
@@ -131,19 +131,19 @@ msgstr "L’Équipe Opal"
 
 #: opal/templates/sidebar.html
 msgid "new"
-msgstr ""
+msgstr "nouveau"
 
 #: opal/templates/sidebar.html
 msgid "Go back to Legacy OpalAdmin"
-msgstr ""
+msgstr "Retourner à l'ancien OpalAdmin"
 
 #: opal/templates/sidebar.html
 msgid "Home"
-msgstr ""
+msgstr "Accueil"
 
 #: opal/templates/sidebar.html
 msgid "Home Page"
-msgstr ""
+msgstr "Page d'accueil"
 
 #: opal/templates/sidebar.html
 msgid "Hospital Settings"
@@ -167,7 +167,7 @@ msgstr "Types de Relations"
 
 #: opal/templates/sidebar.html
 msgid "Opal Registration"
-msgstr ""
+msgstr "Inscription à Opal"
 
 #: opal/templates/sidebar.html
 msgid "Opal Registration (old)"
@@ -175,7 +175,7 @@ msgstr ""
 
 #: opal/templates/sidebar.html
 msgid "Manage Caregiver Access"
-msgstr ""
+msgstr "Gestion d'accès des proches aidants"
 
 #: opal/templates/sidebar.html
 msgid "Questionnaires"
@@ -191,7 +191,7 @@ msgstr "Se déconnecter"
 
 #: opal/templates/tables/action_column.html
 msgid "View"
-msgstr ""
+msgstr "Voir"
 
 #: opal/templates/tables/action_column.html
 msgid "Edit"
