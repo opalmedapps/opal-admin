@@ -447,8 +447,7 @@ class RegistrationCompletionView(APIView):
 
         # also support an existing caregiver who has a Firebase account already
         # this can happen if the caregiver has an account at another institution
-        email: str = email_verification.email if email_verification is not None else data_email
-        return email
+        return email_verification.email if email_verification is not None else data_email
 
     def _update_caregiver(
         self,
