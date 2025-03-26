@@ -3,8 +3,13 @@ version: '3'
 services:
   db:
     image: mariadb:10.7.1-focal
-    env_file:
-      - .envs/mariadb.dev
+    environment:
+      - MARIADB_RANDOM_ROOT_PASSWORD=yes
+      - MARIADB_USER=${DATABASE_USER}
+      - MARIADB_PASSWORD=${DATABASE_PASSWORD}
+      - MARIADB_DATABASE=${DATABASE_NAME}
+    volumes:
+      - ./docker/mariadb:/docker-entrypoint-initdb.d
     # expose DB locally to be able to access it through venv
     ports:
       - ${DATABASE_PORT}:3306
@@ -16,7 +21,7 @@ services:
       # overwrite for container to allow both container and local venv
       - DATABASE_HOST=db
     volumes:
-      - $PWD:/app
+      - .:/app
     ports:
       - 8000:8000
     depends_on:
