@@ -7,7 +7,6 @@ from typing import Any, Optional, TypeAlias
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
-from django.db import transaction
 from django.db.models import Model
 from django.utils import timezone
 
