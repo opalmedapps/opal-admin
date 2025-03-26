@@ -319,7 +319,7 @@ class PathologyPDF(FPDF):
             - Producer of the document (e.g., the name of the software that generates the PDF)
         """
         self.set_author('Opal Health Informatics Group')
-        self.set_creator('Opal Backend')
+        self.set_creator('O-HIG')
         self.set_keywords(
             'Pathology Report, Pathologie Chirurgicale Rapport Final, Surgical Pathology Final Report, Opal, Opal Health Informatics Group',
         )
