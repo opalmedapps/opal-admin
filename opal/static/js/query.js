@@ -33,7 +33,6 @@ questionCBox.addEventListener('change', e => {
     }
 });
 
-
 function updateEndDate() {
     var start_date = document.getElementById("start").value;
     document.getElementById("end").value = "";
