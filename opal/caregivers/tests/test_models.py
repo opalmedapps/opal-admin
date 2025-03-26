@@ -7,13 +7,10 @@ from django.db.models.deletion import ProtectedError
 import pytest
 from pytest_django.asserts import assertRaisesMessage
 
-from opal.patients import factories as patient_factories
-from opal.patients.models import Patient, Relationship, RelationshipType
 from opal.users import factories as user_factories
-from opal.users.models import Caregiver
 
 from .. import factories
-from ..models import CaregiverProfile, RegistrationCode
+from ..models import CaregiverProfile
 
 pytestmark = pytest.mark.django_db
 
@@ -74,14 +71,8 @@ def test_caregiverprofile_legacy_id() -> None:
 
 
 def test_registrationcode_str() -> None:  # pylint: disable-msg=too-many-locals
-    """The `str` method returns the registration code of the associated relationship."""
-    caregiver = user_factories.Caregiver(first_name='bbb', last_name='222')
-    relationshiptype = patient_factories.RelationshipType(name='caregiver', name_fr='Proche aidant')
-    relationship = patient_factories.Relationship()
-    relationship.patient = patient_factories.Patient(first_name='aaa', last_name='111')
-    relationship.caregiver = CaregiverProfile(user=caregiver)
-    relationship.type = relationshiptype
-    registration_code = factories.RegistrationCode(relationship=relationship)
+    """The `str` method returns the registration code and status."""
+    registration_code = factories.RegistrationCode()
     assert str(registration_code) == 'Code: code12345678 (Status: NEW)'
 
 
@@ -93,34 +84,9 @@ def test_registrationcode_factory() -> None:
 
 def test_registrationcode_code_unique() -> None:
     """Ensure the code of registration code is unique."""
-    caregiver = Caregiver(first_name='bbb', last_name='222')
-    caregiver.save()
-    relationshiptype = RelationshipType(
-        name='caregiver',
-        name_fr='Proche aidant',
-        start_age=14,
-    )
-    relationshiptype.save()
-    patient = Patient(
-        first_name='aaa',
-        last_name='111',
-        date_of_birth=datetime.date(1999, 1, 1),
-    )
-    patient.save()
-    profile = CaregiverProfile(user=caregiver)
-    profile.save()
-    relationship = Relationship(
-        patient=patient,
-        caregiver=profile,
-        type=relationshiptype,
-        request_date=datetime.date.today(),
-        start_date=datetime.date(2020, 1, 1),
-        end_date=datetime.date(2020, 5, 1),
-    )
-    relationship.save()
-    RegistrationCode.objects.create(relationship=relationship, code='code12345678')
+    registration_code = factories.RegistrationCode()
     with assertRaisesMessage(IntegrityError, "Duplicate entry 'code12345678' for key 'code'"):  # type: ignore[arg-type]
-        RegistrationCode.objects.create(relationship=relationship, code='code12345678')
+        factories.RegistrationCode(relationship=registration_code.relationship)
 
 
 def test_registrationcode_code_length_gt() -> None:

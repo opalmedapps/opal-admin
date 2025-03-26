@@ -1,7 +1,5 @@
 """Module providing model factories for caregiver app models."""
 
-import datetime
-
 from factory import Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
@@ -28,6 +26,4 @@ class RegistrationCode(DjangoModelFactory):
     # Using string model references to avoid circular import
     relationship = SubFactory('opal.patients.factories.Relationship')
     code = 'code12345678'
-    status = models.RegistrationCodeStatus.NEW
     email_verification_code = '123456'
-    creation_date = datetime.date.today()

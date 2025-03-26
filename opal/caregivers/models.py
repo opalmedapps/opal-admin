@@ -65,19 +65,19 @@ class RegistrationCode(models.Model):
     )
 
     status = models.CharField(
-        verbose_name=_('Relationship Code Status'),
+        verbose_name=_('Status'),
         choices=RegistrationCodeStatus.choices,
         default=RegistrationCodeStatus.NEW,
         max_length=3,
     )
 
     creation_date = models.DateField(
-        verbose_name=_('Registration Code Creation Date'),
+        verbose_name=_('Creation Date'),
         auto_now_add=True,
     )
 
     attempts = models.PositiveIntegerField(
-        verbose_name=_('Registration Code Attemps'),
+        verbose_name=_('Attemps'),
         default=0,
     )
 
