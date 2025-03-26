@@ -10,7 +10,7 @@
 {% translate "Android: https://play.google.com/store/apps/details?id=com.hig.opal2" %}
 
 {% translate "Once installed, launch the application and sign in with the username and password you created when you registered." %}
-{% translate "If you have any problems with the app, please contact us at opal@muhc.mcgill.ca or by using the Feedback form available on the General tab of Opal." %}
+{% blocktranslate %}If you have any problems with the app, please contact us at {{ support_email }} or by using the Feedback form available on the General tab of Opal.{% endblocktranslate %}
 {% translate "If you find the app useful, please let us know by rating it and leaving us a comment on the App Store or Google Play store. We are working hard to make Opal useful and empowering for our patients, and we appreciate your feedback." %}
 
 {% translate "Thank you," %}

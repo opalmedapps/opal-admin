@@ -21,6 +21,7 @@ from opal.caregivers import factories as caregiver_factories
 from opal.caregivers import models as caregiver_models
 from opal.core.test_utils import RequestMockerTest
 from opal.hospital_settings import factories as hospital_factories
+from opal.hospital_settings.factories import Institution
 from opal.legacy import factories as legacy_factories
 from opal.legacy import utils as legacy_utils
 from opal.legacy.models import (
@@ -1048,6 +1049,7 @@ class TestEmailVerificationProcess:  # noqa: WPS338 (let the _prepare fixture be
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_verify_email_multiple(self, api_client: APIClient, admin_user: User) -> None:
         """Ensure that the registration process still works when a user verifies two different emails."""
+        Institution(support_email='support@testhospital.com')
         email_verification = caregiver_models.EmailVerification.objects.get(email=self.email)
 
         # verify the first email address
@@ -1159,6 +1161,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_register_success(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration register success."""
+        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         registration_code, _ = self._build_access_request(email_verified=True)
 
@@ -1182,6 +1185,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         mocker: MockerFixture,
     ) -> None:
         """The skeleton user is updated and the legacy data updated."""
+        Institution(support_email='support@testhospital.com')
         mock_create = mocker.spy(legacy_utils, name='create_caregiver_user')
 
         api_client.force_login(user=admin_user)
@@ -1223,6 +1227,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         mocker: MockerFixture,
     ) -> None:
         """The legacy patient is updated due to the self relationship."""
+        Institution(support_email='support@testhospital.com')
         mock_create = mocker.spy(legacy_utils, name='create_caregiver_user')
         # need an existing legacy patient
         legacy_patient = LegacyPatient(
@@ -1316,6 +1321,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         admin_user: User,
     ) -> None:
         """Ensure the legacy data for a self-relationship is added correctly."""
+        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         registration_code, _ = self._build_access_request(new_patient=True, email_verified=True, self_relationship=True)
 
@@ -1347,6 +1353,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         mocker: MockerFixture,
     ) -> None:
         """The legacy user and patient are updated due to the self relationship."""
+        Institution(support_email='support@testhospital.com')
         mock_create = mocker.spy(legacy_utils, name='change_caregiver_user_to_patient')
         legacy_patient = legacy_utils.create_dummy_patient(
             'Marge',
@@ -1419,6 +1426,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
 
     def test_registration_with_existing_user(self, api_client: APIClient, admin_user: User) -> None:
         """Test registration without security answers don't cause the serializer to fail."""
+        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
 
         # Build existing caregiver
@@ -1513,6 +1521,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
 
     def test_remove_skeleton_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """Test api registration register remove skeleton caregiver."""
+        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         # Build existing caregiver
         caregiver = user_factories.Caregiver(
@@ -1543,6 +1552,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
 
     def test_existing_caregiver_keeps_securityanswers(self, api_client: APIClient, admin_user: User) -> None:
         """When registering with an existing caregiver, the existing security answers are kept."""
+        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         # Build existing caregiver
         caregiver = user_factories.Caregiver(
@@ -1596,6 +1606,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         admin_user: User,
     ) -> None:
         """It succeeds if the email address is unverified for a caregiver who already has a Firebase account."""
+        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         caregiver = caregiver_factories.CaregiverProfile(user__email='', user__is_active=False)
         registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver)
@@ -1619,6 +1630,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
 
     def test_email_not_verified_existing_caregiver(self, api_client: APIClient, admin_user: User) -> None:
         """The registration succeeds with no email verification when it is an existing caregiver."""
+        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         # create an existing caregiver
         caregiver_factories.CaregiverProfile(user__username='test-username')
@@ -1646,6 +1658,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_verified_email_copied(self, api_client: APIClient, admin_user: User) -> None:
         """The verified email is copied to the caregiver."""
+        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         caregiver_user = user_factories.Caregiver(email='', is_active=False)
         registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=caregiver_user)
@@ -1677,7 +1690,8 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         admin_user: User,
         settings: SettingsWrapper,
     ) -> None:
-        """Test that the confirmation email is sent for new caregiver in French."""
+        """Test that the confirmation email is sent for new caregiver."""
+        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
         registration_code, _ = self._build_access_request(email_verified=True, new_patient=False)
 
@@ -1695,6 +1709,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert mail.outbox[0].to == ['opal@muhc.mcgill.ca']
         body = mail.outbox[0].body
         assert 'Thank you for registering for the Opal app.' in body
+        assert 'support@testhospital.com' in body
         assert mail.outbox[0].subject == 'Thank you for registering for Opal!'
 
     @pytest.mark.django_db(databases=['default', 'legacy'])
@@ -1704,7 +1719,8 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         admin_user: User,
         settings: SettingsWrapper,
     ) -> None:
-        """Test that the confirmation email is sent for existing caregiver in English."""
+        """Test that the confirmation email is sent for existing caregiver."""
+        Institution(support_email='support@testhospital.com')
         api_client.force_login(user=admin_user)
 
         # Build existing caregiver
@@ -1728,4 +1744,5 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert mail.outbox[0].to == ['test-username@example.com']
         body = mail.outbox[0].body
         assert 'Thank you for registering for the Opal app.' in body
+        assert 'support@testhospital.com' in body
         assert mail.outbox[0].subject == 'Thank you for registering for Opal!'
