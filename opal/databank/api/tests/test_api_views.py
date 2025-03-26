@@ -64,11 +64,102 @@ class TestCreateDatabankConsentView:
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
+    def test_databank_consent_create_missing_data(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint doesn't accept partial data."""
+        patient = Patient(
+            ramq='TEST01161972',
+            uuid=PATIENT_UUID,
+        )
+        patient.save()
+
+        client = self._get_client_with_permissions(api_client)
+        response = client.post(
+            reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
+            data={
+                'has_appointments': True,
+                'has_diagnoses': True,
+                'has_demographics': True,
+                'has_labs': False,
+                'has_questionnaires': False,
+                'middle_name': 'Bert',
+            },
+            format='json',
+        )
+
+        assertContains(
+            response=response,
+            text='{"city_of_birth":["This field is required."]}',
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def test_databank_consent_create_blank_city_of_birth(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint doesn't accept a blank city of birth."""
+        patient = Patient(
+            ramq='TEST01161972',
+            uuid=PATIENT_UUID,
+        )
+        patient.save()
+
+        client = self._get_client_with_permissions(api_client)
+        response = client.post(
+            reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
+            data={
+                'has_appointments': True,
+                'has_diagnoses': True,
+                'has_demographics': True,
+                'has_labs': False,
+                'has_questionnaires': False,
+                'middle_name': 'Bert',
+                'city_of_birth': '',
+            },
+            format='json',
+        )
+
+        assertContains(
+            response=response,
+            text='{"city_of_birth":["This field may not be blank."]}',
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def test_databank_consent_create_blank_middle_name(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint allows blank middle name (middle name not required for GUID)."""
+        patient = Patient(
+            ramq='TEST01161972',
+            uuid=PATIENT_UUID,
+        )
+        patient.save()
+
+        client = self._get_client_with_permissions(api_client)
+        response = client.post(
+            reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
+            data={
+                'has_appointments': True,
+                'has_diagnoses': True,
+                'has_demographics': True,
+                'has_labs': False,
+                'has_questionnaires': False,
+                'middle_name': '',
+                'city_of_birth': 'ddd',
+            },
+            format='json',
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+
     def test_databank_consent_create_success(
         self,
         api_client: APIClient,
     ) -> None:
-        """Ensure the endpoint can create databank consent with no errors."""
+        """Ensure the endpoint can create databank consent for a full input with no errors."""
         patient = Patient(
             ramq='TEST01161972',
             uuid=PATIENT_UUID,
@@ -96,6 +187,8 @@ class TestCreateDatabankConsentView:
             'has_demographics': True,
             'has_labs': False,
             'has_questionnaires': False,
+            'middle_name': 'Juliet',
+            'city_of_birth': 'Springfield',
         }
 
     def _get_client_with_permissions(self, api_client: APIClient) -> APIClient:

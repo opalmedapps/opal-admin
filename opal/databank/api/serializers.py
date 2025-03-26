@@ -12,7 +12,7 @@ class DatabankConsentSerializer(DynamicFieldsSerializer):
     """Serializer for DatabankConsents."""
 
     # Non model fields used for GUID generation
-    middle_name = serializers.CharField(required=True, write_only=True)
+    middle_name = serializers.CharField(required=True, allow_blank=True, write_only=True)
     city_of_birth = serializers.CharField(required=True, write_only=True)
 
     class Meta:
