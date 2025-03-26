@@ -52,8 +52,8 @@ class QuestionnaireReportDashboardTemplateView(PermissionRequiredMixin, Template
             user=requestor,
         )
 
-        if questionnaires_following:
-            context['questionnaires_following'] = questionnaires_following.questionnaire_list
+        context['questionnaires_following'] = questionnaires_following.questionnaire_list
+
         return context
 
 
