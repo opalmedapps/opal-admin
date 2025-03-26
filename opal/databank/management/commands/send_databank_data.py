@@ -24,11 +24,13 @@ class Command(BaseCommand):
     help = "send consenting Patients' data to the databank"  # noqa: A003
 
     def __init__(self) -> None:
-        """Prepare some class level fields to help with last_syncrhonization tracking.
+        """Prepare some class level fields to help with last_synchronized tracking.
 
-        command_called is the time when this command was called
-        patient_data_success will have an entry for each patient with value as a dict of bools for each DataModuleType
-        Only update the databank_patient.last_synchronized if all booleans are true for that patient.
+        - command_called is the time when this command was called
+        - patient_data_success_tracker will have an entry for each patient
+          with the value being a dictionary of booleans for each DataModuleType
+
+        We only update the databank_patient.last_synchronized if all data type booleans are true for that patient.
         This is required to know when we have to re-send failed data in the next cron run.
         """
         super().__init__()
@@ -250,7 +252,7 @@ class Command(BaseCommand):
         synced_data: Any,
         message: Optional[str] = None,
     ) -> None:
-        """Update DatabankConsent last synchronization time create sent data ids.
+        """Update `DatabankConsent.last_synchronized` and create `SharedData` instances.
 
         Args:
             databank_patient: Consent instance to be updated
