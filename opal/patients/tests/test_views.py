@@ -454,7 +454,7 @@ def test_access_request_done_redirects_temp(  # noqa: C901 WPS231
         elif 'existing' in step:
             assert response.context['wizard']['steps'].current == 'password'
         elif 'password' in step:
-            assertTemplateUsed(response, 'patients/access_request/qr_code.html')
+            assertTemplateUsed(response, 'patients/access_request/confirmation_code.html')
 
 
 class _TestAccessRequestView(AccessRequestView):

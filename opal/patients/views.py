@@ -665,7 +665,7 @@ class AccessRequestView(PermissionRequiredMixin, SessionWizardView):  # noqa: WP
         # generate QR code for Opal registration system
         stream = self._generate_qr_code(registration_code.code)
 
-        return render(self.request, 'patients/access_request/qr_code.html', {
+        return render(self.request, 'patients/access_request/confirmation_code.html', {
             'qrcode': base64.b64encode(stream.getvalue()).decode(),
             'patient': relationship.patient,
             'hospital': new_form_data['sites'],
