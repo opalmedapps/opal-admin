@@ -11,12 +11,12 @@ from rest_framework.exceptions import NotFound
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.serializers import BaseSerializer
+from rest_framework.serializers import ModelSerializer
 
 from config.settings.base import USER_MANAGER_GROUP_NAME
 
 from ...core.drf_permissions import FullDjangoModelPermissions
-from ..models import ClinicalStaff, User
+from ..models import ClinicalStaff
 from .serializers import UpdateClinicalStaffUserSerializer, UserClinicalStaffSerializer
 
 
@@ -24,7 +24,7 @@ class UserViewSet(  # noqa: WPS215 (too many base classes)
     CreateModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
-    viewsets.GenericViewSet[User],
+    viewsets.GenericViewSet[ClinicalStaff],
 ):
     """
     A viewset that provides `create`, `retrieve`, and `update` actions to clinical staff and groups.
@@ -141,7 +141,7 @@ class UserViewSet(  # noqa: WPS215 (too many base classes)
         clinicalstaff_user.save()
         return Response({'detail': _('User was reactivated successfully.')}, status=HTTPStatus.OK)
 
-    def get_serializer_class(self) -> type[BaseSerializer[User]]:
+    def get_serializer_class(self) -> type[ModelSerializer[ClinicalStaff]]:
         """
         Override get_serializer_class to return the corresponding serializer for each action.
 
