@@ -88,7 +88,7 @@ class LegacyPurpose(models.Model):
 
 
 class LegacyRespondent(models.Model):
-    """Questionnaire model from the legacy database QuestionnaireDB."""
+    """Respondent model from the legacy database QuestionnaireDB."""
 
     id = models.AutoField(db_column='ID', primary_key=True)
     title = models.ForeignKey(
