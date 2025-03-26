@@ -6,9 +6,11 @@
   Fragment that is reusable across the page so that the page heading can be shown in various places.
   See: https://mitchel.me/slippers/docs/using-components/#assigning-output-to-a-variable
 {% endcomment %}
-{% fragment as page_heading %}
+{% fragment as raw_page_heading %}
   {% block heading %}empty block <code>heading</code>{% endblock %}
 {% endfragment %}
+{# strip whitespace and newlines to support more readable blocks #}
+{% var page_heading=raw_page_heading|striplines %}
 
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
@@ -16,7 +18,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>
-      {{ page_heading|strip }} · OpalAdmin 2.0
+      {{ page_heading }} · OpalAdmin 2.0
     </title>
 
     <link href="{% static 'thirdparty/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
@@ -55,10 +57,10 @@
           <nav aria-label="breadcrumb" class="bg-white">
             <ol class="breadcrumb">
               <li class="breadcrumb-item">{{ app_verbose_name }}</li>
-              <li class="breadcrumb-item active" aria-current="page">{{ page_heading|strip }} </li>
+              <li class="breadcrumb-item active" aria-current="page">{{ page_heading }} </li>
             </ol>
           </nav>
-          <h1 class="mb-3">{{ page_heading|strip }}</h1>
+          <h1 class="mb-3">{{ page_heading }}</h1>
             <div class="content px-3 py-3 mb-3 border border-secondary-subtle rounded-1">
               {% block content %}empty block <code>content</code>{% endblock %}
             </div>

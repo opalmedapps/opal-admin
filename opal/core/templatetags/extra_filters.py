@@ -58,3 +58,24 @@ def strip(text: str) -> str:
         the truncated text
     """
     return text.strip()
+
+
+@register.filter('striplines')
+@stringfilter
+def striplines(text: str) -> str:
+    """
+    Strip whitespaces around each line of the given text.
+
+    Args:
+        text: the text
+
+    Returns:
+        the replaced text
+    """
+    # skip empty elements
+    # see: https://stackoverflow.com/a/8626817
+    return ' '.join(
+        line.strip()
+        for line in text.splitlines()
+        if line.strip()
+    )

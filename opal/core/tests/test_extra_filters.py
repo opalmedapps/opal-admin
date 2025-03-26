@@ -28,7 +28,22 @@ def test_rsubstring(text: str, separator: str, expected: str) -> None:
     (' bar', 'bar'),
     ('bar ', 'bar'),
     ('      \nbar         \n         ', 'bar'),
+    ('      \nbar         \n    foo     ', 'bar         \n    foo'),
 ])
 def test_strip(text: str, expected: str) -> None:
     """Ensure the strip filter returns the correct result."""
     assert filters.strip(text) == expected
+
+
+@pytest.mark.parametrize(('text', 'expected'), [
+    ('bar ', 'bar'),
+    ('bar\n', 'bar'),
+    (' \nbar', 'bar'),
+    ('bar\n \n \n', 'bar'),
+    ('bar\n\n\n', 'bar'),
+    ('      \nbar         \n         ', 'bar'),
+    ('      \nbar         \n    foo     ', 'bar foo'),
+])
+def test_striplines(text: str, expected: str) -> None:
+    """Ensure the striplines filter returns the correct result."""
+    assert filters.striplines(text) == expected
