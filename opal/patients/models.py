@@ -92,7 +92,7 @@ class RelationshipType(models.Model):
             role_type__in=[RoleType.SELF, RoleType.PARENTGUARDIAN],
         )
 
-        existing_restricted_roletypes = [existing_restricted_relationshiptypes[idx].role_type for idx in range(0, 2)]  # noqa: E501
+        existing_restricted_roletypes = [rel.role_type for rel in existing_restricted_relationshiptypes]
 
         # Verify there are always the two restricted types, raise error otherwise
         if any(
