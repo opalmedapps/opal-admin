@@ -348,7 +348,7 @@ include:
 
 # Dependency Scanning
 # https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-analyzer-behavior
-gemnasium-dependency-scanning:
+gemnasium-dependency_scanning:
   variables:
     # ensure that the JS lockfile gets detected in opal/static/thirdparty
     DS_MAX_DEPTH: 3
