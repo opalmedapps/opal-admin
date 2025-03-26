@@ -196,8 +196,8 @@ def test_user_admin_group_add_signal() -> None:
     """User properties `is_staff` and `is_superuser` are activated when added to the defined admin Group ."""
     clinical_staff = factories.User()
     # create an admin group
-    admingroup = factories.Group(name=ADMIN_GROUP_NAME)
-    admingroup.save()
+    admingroup = factories.GroupFactory(name=ADMIN_GROUP_NAME)
+
     # add user to the created admin group
     clinical_staff.groups.add(admingroup)
 
@@ -212,8 +212,8 @@ def test_user_admin_group_remove_signal() -> None:
     clinical_staff = factories.User(is_superuser=True, is_staff=True)
     # activate superuser and staff properties
     # create admin group
-    admingroup = factories.Group(name=ADMIN_GROUP_NAME)
-    admingroup.save()
+    admingroup = factories.GroupFactory(name=ADMIN_GROUP_NAME)
+
     # add user to admin group
     clinical_staff.groups.add(admingroup)
     # remove user from admin group
@@ -229,8 +229,8 @@ def test_user_group_add_not_change_status() -> None:
     # create a user
     clinical_staff = factories.User(is_superuser=True, is_staff=True)
     # create a group
-    group = factories.Group(name=ORMS_GROUP_NAME)
-    group.save()
+    group = factories.GroupFactory(name=ORMS_GROUP_NAME)
+
     # add user to admin group
     clinical_staff.groups.add(group)
 
@@ -244,8 +244,8 @@ def test_user_group_remove_not_change_status() -> None:
     # create a user
     clinical_staff = factories.User(is_superuser=True, is_staff=True)
     # create a group
-    group = factories.Group(name=ORMS_GROUP_NAME)
-    group.save()
+    group = factories.GroupFactory(name=ORMS_GROUP_NAME)
+
     # add user to non-admin group
     clinical_staff.groups.add(group)
     clinical_staff.groups.remove(group)
@@ -260,8 +260,8 @@ def test_user_nonclinical_user_add_not_change_status() -> None:
     # create a user
     clinical_staff = factories.Caregiver()
     # create a group
-    admingroup = factories.Group(name=ADMIN_GROUP_NAME)
-    admingroup.save()
+    admingroup = factories.GroupFactory(name=ADMIN_GROUP_NAME)
+
     # add user to admin group
     clinical_staff.groups.add(admingroup)
 
@@ -275,8 +275,8 @@ def test_user_nonclinical_user_remove_not_change_status() -> None:
     # create a user
     clinical_staff = factories.Caregiver(is_staff=True, is_superuser=True)
     # create a group
-    admingroup = factories.Group(name=ADMIN_GROUP_NAME)
-    admingroup.save()
+    admingroup = factories.GroupFactory(name=ADMIN_GROUP_NAME)
+
     # add user to admin group
     clinical_staff.groups.add(admingroup)
     clinical_staff.groups.remove(admingroup)
@@ -291,13 +291,9 @@ def test_user_group_remove_add_multiple_groups() -> None:  # noqa: WPS213
     # create a user
     clinical_staff = factories.User()
     # create a group
-    admingroup = factories.Group(name=ADMIN_GROUP_NAME)
-    ormsgroup = factories.Group(name=ORMS_GROUP_NAME)
-    testgroup = factories.Group(name='test_group')
-    # add user to admin group
-    admingroup.save()
-    ormsgroup.save()
-    testgroup.save()
+    admingroup = factories.GroupFactory(name=ADMIN_GROUP_NAME)
+    ormsgroup = factories.GroupFactory(name=ORMS_GROUP_NAME)
+    testgroup = factories.GroupFactory(name='test_group')
 
     clinical_staff.groups.add(admingroup)
     clinical_staff.groups.add(ormsgroup)
