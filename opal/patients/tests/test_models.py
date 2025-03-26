@@ -488,3 +488,31 @@ def test_relationshiptype_par_role_delete_error() -> None:
     message = "['The relationship type with this role type cannot be deleted']"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
         relationship_type.delete()
+
+
+def test_relationshiptype_duplicate_self_role() -> None:
+    """Ensure validation error when creating a second self role type."""
+    roletype_self = factories.RelationshipType()
+    roletype_self.role_type = RoleType.SELF
+    roletype_self.save()
+
+    roletype_self_copy = factories.RelationshipType()
+    roletype_self_copy.role_type = RoleType.SELF
+
+    message = "['There must always be exactly one SELF and one PARENTGUARDIAN roles.']"
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        roletype_self_copy.clean()
+
+
+def test_relationshiptype_duplicate_parent_role() -> None:
+    """Ensure validation error when creating a second parent/guardian role type."""
+    roletype_parent = factories.RelationshipType()
+    roletype_parent.role_type = RoleType.PARENTGUARDIAN
+    roletype_parent.save()
+
+    roletype_parent_copy = factories.RelationshipType()
+    roletype_parent_copy.role_type = RoleType.PARENTGUARDIAN
+
+    message = "['There must always be exactly one SELF and one PARENTGUARDIAN roles.']"
+    with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
+        roletype_parent_copy.clean()

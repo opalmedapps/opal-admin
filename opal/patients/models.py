@@ -92,23 +92,19 @@ class RelationshipType(models.Model):
             role_type__in=[RoleType.SELF, RoleType.PARENTGUARDIAN],
         )
 
-        # TODO remove after adding pre-populate migration
-        if not existing_restricted_relationshiptypes:  # noqa: WPS504
-            pass  # noqa: WPS420
-        else:
-            existing_restricted_roletypes = [existing_restricted_relationshiptypes[idx].role_type for idx in range(0, 2)]  # noqa: E501
+        existing_restricted_roletypes = [existing_restricted_relationshiptypes[idx].role_type for idx in range(0, 2)]  # noqa: E501
 
-            # Verify there are always the two restricted types, raise error otherwise
-            if any(
-                [
-                    len(existing_restricted_roletypes) != 2,
-                    RoleType.SELF not in existing_restricted_roletypes,
-                    RoleType.PARENTGUARDIAN not in existing_restricted_roletypes,
-                ],
-            ):
-                raise ValidationError(
-                    _('There must always be exactly one SELF and one PARENTGUARDIAN roles'),
-                )
+        # Verify there are always the two restricted types, raise error otherwise
+        if any(
+            [
+                len(existing_restricted_roletypes) != 2,
+                RoleType.SELF not in existing_restricted_roletypes,
+                RoleType.PARENTGUARDIAN not in existing_restricted_roletypes,
+            ],
+        ):
+            raise ValidationError(
+                _('There must always be exactly one SELF and one PARENTGUARDIAN roles'),
+            )
 
     def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
         """Validate the model being deleted is not of type 'self'.
