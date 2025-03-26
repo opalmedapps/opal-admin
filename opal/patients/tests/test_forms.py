@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from typing import Optional
 
+from django.core.exceptions import NON_FIELD_ERRORS
 from django.forms import HiddenInput, model_to_dict
 from django.utils import timezone
 
@@ -432,7 +433,30 @@ def test_caregiver_access_form_update_self() -> None:
     assert not form_fields['end_date'].required
 
 
-def test_caregiver_access_form_update_self_fail() -> None:
+def test_caregiver_access_form_update_self_pending() -> None:
+    """Ensure that a self-relationship cannot have the pending status."""
+    self_type = factories.RelationshipType(role_type=RoleType.SELF.name)
+    patient = factories.Patient()
+
+    relationship = factories.Relationship(
+        patient=patient,
+        type=self_type,
+        status=RelationshipStatus.PENDING,
+    )
+
+    form_data = model_to_dict(relationship)
+    user: User = relationship.caregiver.user
+    form_data['first_name'] = user.first_name
+    form_data['last_name'] = user.last_name
+
+    message = '"Pending" status does not apply for the Self relationship.'
+    form = forms.RelationshipAccessForm(data=form_data, instance=relationship)
+
+    assert not form.is_valid()
+    assert message in form.errors['status']
+
+
+def test_caregiver_access_form_update_self_name_not_changed() -> None:
     """Ensure that different patient and caregiver names and non-confirmed status raise error for self-relationship."""
     self_type = factories.RelationshipType(role_type=RoleType.SELF.name)
     patient = factories.Patient()
@@ -444,16 +468,14 @@ def test_caregiver_access_form_update_self_fail() -> None:
     )
 
     form_data = model_to_dict(relationship)
-    form_data['first_name'] = 'test_first_name'
-    form_data['last_name'] = 'test_last_name'
+    form_data['first_name'] = 'John'
+    form_data['last_name'] = 'Wayne'
 
-    diff_name_err = 'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
-    pending_err = '"Pending" status does not apply for the Self relationship.'
     form = forms.RelationshipAccessForm(data=form_data, instance=relationship)
 
     assert not form.is_valid()
-    assert diff_name_err in form.errors['__all__']
-    assert pending_err in form.errors['status']
+    message = "The caregiver's name cannot currently be changed."
+    assert message in form.errors[NON_FIELD_ERRORS]
 
 
 def test_caregiver_access_form_update_non_self() -> None:

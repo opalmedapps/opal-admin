@@ -935,19 +935,21 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             the cleaned form data
         """
         super().clean()
+
         caregiver_firstname: Optional[str] = self.cleaned_data.get('first_name')
         caregiver_lastname: Optional[str] = self.cleaned_data.get('last_name')
         type_field: RelationshipType = cast(RelationshipType, self.cleaned_data.get('type'))
 
+        # Prevent the caregiver name from being changed for a self-relationship since the fields are readonly
         if type_field.role_type == RoleType.SELF.name:
+            caregiver: User = self.instance.caregiver.user
+
+            # Only add an error if the name was modified by the user
             if (
-                self.instance.patient.first_name != caregiver_firstname
-                or self.instance.patient.last_name != caregiver_lastname
+                caregiver.first_name != caregiver_firstname
+                and caregiver.last_name != caregiver_lastname
             ):
-                # this is to capture before saving patient and caregiver has matching names
-                error = (_(
-                    'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
-                ))
+                error = _("The caregiver's name cannot currently be changed.")
                 self.add_error(NON_FIELD_ERRORS, error)
 
         return self.cleaned_data
