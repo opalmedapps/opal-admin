@@ -31,6 +31,7 @@ class TestAppChartView:
 
     def test_get_unread_appointment_count(self, admin_api_client: APIClient) -> None:
         """Test if function returns number of unread appointments."""
+        # Insert appointment with different state, status and read status.
         alias_expression = factories.LegacyAliasExpressionFactory()
         factories.LegacyAppointmentFactory(
             patientsernum=self.patient,
@@ -39,6 +40,38 @@ class TestAppChartView:
         factories.LegacyAppointmentFactory(
             patientsernum=self.patient,
             aliasexpressionsernum=alias_expression,
+            status='Deleted',
+            state='Active',
+        )
+        factories.LegacyAppointmentFactory(
+            patientsernum=self.patient,
+            aliasexpressionsernum=alias_expression,
+            status='Cancelled',
+            state='Deleted',
+        )
+        factories.LegacyAppointmentFactory(
+            patientsernum=self.patient,
+            aliasexpressionsernum=alias_expression,
+            status='Deleted',
+            state='Deleted',
+        )
+        factories.LegacyAppointmentFactory(
+            patientsernum=self.patient,
+            aliasexpressionsernum=alias_expression,
+            status='In Progress',
+            state='Active',
+        )
+        factories.LegacyAppointmentFactory(
+            patientsernum=self.patient,
+            aliasexpressionsernum=alias_expression,
+            status='Completed',
+            state='Active',
+        )
+        factories.LegacyAppointmentFactory(
+            patientsernum=self.patient,
+            aliasexpressionsernum=alias_expression,
+            status='Cancelled',
+            state='Active',
         )
         factories.LegacyAppointmentFactory(
             patientsernum=self.patient,
@@ -51,7 +84,7 @@ class TestAppChartView:
             self.patient.patientsernum,
             self.user.username,
         ).count()
-        assert appointments == 2
+        assert appointments == 7
 
         # API results
         response = self._call_chart_data_request(admin_api_client, self.patient.patientsernum, self.user.username)
