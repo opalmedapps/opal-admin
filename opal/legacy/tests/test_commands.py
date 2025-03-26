@@ -403,6 +403,20 @@ class TestPatientsDeviationsCommand(TestBasicClass):
         assert "(1, '', 'Patient First Name', 'Patient Last Name', '1999-01-01', 'M', None, None, None)" in error
         assert "(51, '123456', 'TEST', 'LEGACY', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en')" in error
 
+    def test_deviations_uneven_hospi_patient_records(self) -> None:
+        """Ensure the command handles the cases when "HospitalPatient" model/tables have uneven number of records."""
+        patient_factories.HospitalPatient()
+        patient_factories.HospitalPatient()
+        legacy_factories.LegacyPatientHospitalIdentifierFactory()
+        message, error = self._call_command('find_patients_deviations')
+        assert 'found deviations in the "Patient" tables/models!!!' in error
+        assert '{0}{1}'.format(
+            'The number of records in "opal.patients_hospitalpatient" ',
+            'and "OpalDB.Patient_Hospital_Identifier" tables does not match!',
+        ) in error
+        assert 'opal.patients_hospitalpatient: 2' in error
+        assert 'OpalDB.Patient_Hospital_Identifier: 1' in error
+
     def test_hospital_patient_records_deviations(self) -> None:
         """Ensure the command detects the deviations in the "HospitalPatient" model and tables."""
         legacy_factories.LegacyPatientHospitalIdentifierFactory()

@@ -1,5 +1,5 @@
 """Command for detecting deviations between MariaDB and Django `Patient` model tables."""
-from typing import Any, List, Tuple
+from typing import Any, List, Optional, Tuple
 
 from django.core.management.base import BaseCommand
 from django.db import connections, transaction
@@ -77,7 +77,7 @@ class Command(BaseCommand):
         django_hospital_patients: List[Tuple],
         legacy_patients: List[Tuple],
         legacy_hospital_patients: List[Tuple],
-    ) -> str:
+    ) -> Optional[str]:
         """Build error string based on the `Patient` table/model records deviations.
 
         Args:
@@ -102,7 +102,7 @@ class Command(BaseCommand):
         django_hospital_patients_len = len(django_hospital_patients_set)
         legacy_hospital_patients_len = len(legacy_hospital_patients)
 
-        # return an empty string (no error) if there are no unmatched patients
+        # return `None` if there are no unmatched patients
         # and the number of the data records is the same
         if (
             not unmatched_patients
@@ -110,7 +110,7 @@ class Command(BaseCommand):
             and django_patients_len == legacy_patients_len
             and django_hospital_patients_len == legacy_hospital_patients_len
         ):
-            return ''
+            return None
 
         err_str = '\n{0}: found deviations in the "Patient" tables/models!!!'.format(timezone.now())
 
