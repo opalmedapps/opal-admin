@@ -7,7 +7,8 @@
 This project has the following requirements to be available on your system:
 
 * [Docker Desktop](https://docs.docker.com/desktop/) (or Docker Engine on Linux)
-* Python 3.10 or higher
+* Python 3.11
+* [Git LFS](https://git-lfs.github.com/)
 
 ## Getting Started
 
@@ -43,6 +44,10 @@ To connect to the app container, run `docker compose exec app bash` (or any spec
     While this is not ideal, it makes it easier to run `pre-commit` with the same setup/dependencies for `flake8` and `mypy`. In addition, `vscode` can make use of the virtual environment to call `flake8` and `mypy` and provide the results directly in the editor. Alternatively, the [Remote Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) could be used to develop fully within the container. If you figure out a proper configuration to have linting, typechecking and `pre-commit` running in there, please provide a merge request.
 
 In order for linting, type checking, unit testing etc. to be available in your IDE, and for `pre-commit` to use the same configuration, we recommend to set up a local virtual environment. This also makes it possible to execute management commands directly from the virtual environment without having to execute them within the container. Otherwise, everything has to be run from inside the container (e.g., by calling `docker compose exec app <command>`).
+
+#### Troubleshooting
+
+If you have the wrong python version inside your virtual environment: When creating the .venv, you can change the command python3 to instead use python3.11. This will make sure you get the right version of python in the .venv.
 
 #### Set up the virtual environment
 
@@ -153,12 +158,17 @@ python -m pip install -r requirements/development.txt
 
 ### Migrate Database and Create Superuser
 
-Before you can start, you need to migrate the database and create a superuser. Execute the following commands either in the virtual environment or in the `app` container.
+Before you can start, you need to migrate the database and create a superuser. Ensure Docker is running before starting the server with `python manage.py runserver`. Execute the following commands either in the virtual environment or in the `app` container.
 
 ```sh
 python manage.py migrate
 python manage.py createsuperuser
 ```
+
+* tip: error message when trying python manage.py migrate (seems MacOS M1&M2 related problem)
+```django.core.exceptions.ImproperlyConfigured: Error loading MySQLdb module.Did you install mysqlclient?```, fixed by do the following pip install pymysql Then, edit the __init__.py file in your project origin dir(the same as settings.py) add: import `pymysql pymysql`and `install_as_MySQLdb()`.
+
+* note: the superuser is an account you'll create and can use during local development to have access to every part of the backend on your machine. We don't have access to this type of account in the real environments, for security, but on your local machine it's fine to have easy access to everything. You can create your own username and password. Whenever you reset the data in your database, the superuser will be reset also, and you'll need to recreate it.
 
 Once this is done, you can go to [http://localhost:8000](http://localhost:8000) to access the frontend. Go to [http://localhost:8000/admin](http://localhost:8000/admin) to log in to the Django admin site with the superuser you created. [http://localhost:8000/api](http://localhost:8000/api) shows the available REST API endpoints to you.
 
