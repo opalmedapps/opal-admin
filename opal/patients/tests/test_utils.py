@@ -302,7 +302,7 @@ def test_create_patient_hospitalpatients() -> None:
 
 @pytest.mark.django_db(transaction=True)
 def test_create_patient_hospitalpatients_error() -> None:
-    """A new patient can be created with associated hospital patient instances."""
+    """A new patient is created even though an error occurs when creating associated hospital patient instances."""
     site = Site()
 
     with pytest.raises(IntegrityError):
@@ -334,12 +334,12 @@ def test_create_caregiver_profile() -> None:
 
     assert caregiver.first_name == 'Hans'
     assert caregiver.last_name == 'Wurst'
-    assert caregiver.is_active is False
+    assert not caregiver.is_active
     assert caregiver.username == ''
 
 
 def test_create_relationship() -> None:
-    """A new relationship can be created."""
+    """A new confirmed relationship is created for a self relationship."""
     patient = patient_factories.Patient()
     caregiver_profile = CaregiverProfile()
     self_type = RelationshipType.objects.self_type()
@@ -415,7 +415,7 @@ def test_create_registration_code(mocker: MockerFixture, settings: SettingsWrapp
 
 
 def test_create_access_request_existing() -> None:
-    """A new relationship is created for an existing patient and caregiver."""
+    """A new self relationship is created for an existing patient and caregiver."""
     patient = patient_factories.Patient()
     caregiver_profile = CaregiverProfile()
     self_type = RelationshipType.objects.self_type()
@@ -501,7 +501,7 @@ def test_create_access_request_new_patient_mrns_missing_site() -> None:
 
 
 def test_create_access_request_new_patient_mrns() -> None:
-    """A new ."""
+    """A new relationship and patient are created along with associated hospital patient instances."""
     Site(code='RVH')
     Site(code='MGH')
     caregiver_profile = CaregiverProfile()
