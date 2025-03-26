@@ -29,9 +29,8 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
     card_type = django_filters.ChoiceFilter(
         choices=constants.MEDICAL_CARDS,
         label=_('Card Type'),
-        initial=constants.MedicalCard.RAMQ.name,
         required=True,
-        empty_label=_('Choose...'),
+        empty_label=None,
     )
 
     site = django_filters.ModelChoiceFilter(
@@ -63,7 +62,8 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             kwargs: additional keyword arguments
         """
         request = kwargs.get('request')
-
+        # set the initial value to MRN
+        self.base_filters['card_type'].extra['initial'] = constants.MedicalCard.MRN.name
         # replace form's data with initial in case of up-validate
         # such that missing fields don't cause the "required" validation error
         # TODO: move this into a DynamicFilterSetMixin that can be reused where needed
@@ -81,8 +81,8 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
         self.form.helper.disable_csrf = True
         self.form.helper.layout = Layout(
             Column('card_type'),
-            Column('site'),
             Column('medical_number'),
+            Column('site'),
             Column(InlineSubmit(
                 name='',
                 label=gettext('Search Specific Patient'),

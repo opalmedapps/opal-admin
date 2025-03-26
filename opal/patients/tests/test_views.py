@@ -21,7 +21,7 @@ from opal.users.models import User
 
 from .. import constants, factories, forms, models, tables
 # Add any future GET-requestable patients app pages here for faster test writing
-from ..views import ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView
+from ..views import ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView, NewAccessRequestView
 
 pytestmark = pytest.mark.django_db
 
@@ -353,9 +353,9 @@ def test_form_search_result_default_sucess_url(relationship_user: Client) -> Non
 
 def test_form_search_result_http_referer(relationship_user: Client) -> None:
     """Ensures that the correct cancel url and success url are provided in the response."""
-    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    relationshiptype = factories.RelationshipType(pk=11, name='relationshiptype')
     caregiver = factories.CaregiverProfile()
-    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=models.RelationshipStatus.PENDING)
+    relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
     response_get = relationship_user.get(
         reverse(
             'patients:relationships-view-update',
@@ -368,21 +368,22 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
     cancel_url = response_get.context_data['view'].get_context_data()['cancel_url']  # type: ignore[attr-defined]
     assert cancel_url == 'patient/test/?search-query'
 
+    relationship_data = model_to_dict(relationship)
+    relationship_data['type'] = 11
+    relationship_data['first_name'] = 'test_firstname'
+    relationship_data['last_name'] = 'test_lastname'
+    relationship_data['cancel_url'] = cancel_url
+
     response_post = relationship_user.post(
         reverse(
             'patients:relationships-view-update',
             kwargs={'pk': 1},
         ),
-        {
-            'cancel_url': cancel_url,
-            'first_name': 'test_firstname',
-            'last_name': 'test_lastname',
-        },
+        data=relationship_data,
     )
 
     # assert success_url is equal to the new cancel_url
-    success_url = response_post.context_data['view'].get_success_url()  # type: ignore[attr-defined]
-    assert success_url == cancel_url
+    assert response_post.url == cancel_url  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(
@@ -710,16 +711,6 @@ def test_relationshiptype_response_no_menu(user_client: Client, django_user_mode
     assertNotContains(response, 'Relationship Types')
 
 
-def test_registration_response_no_menu(user_client: Client, django_user_model: User) -> None:
-    """Ensures that Opal Registration is not displayed for users without permission."""
-    user = django_user_model.objects.create(username='test_registration_user')
-    user_client.force_login(user)
-
-    response = user_client.get(reverse('hospital-settings:index'))
-
-    assertNotContains(response, 'Opal Registration')
-
-
 def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, django_user_model: User) -> None:
     """
     Ensure that `Search Patient Access` template displays `Patient Details` table and `Caregiver Details` table.
@@ -903,20 +894,54 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, dj
 
 
 # Access Request Tests
-def test_access_request_cancel_button(registration_user: Client) -> None:
+def test_access_request_permission(client: Client, registration_user: User) -> None:
+    """Ensure that the access request view can be viewed with the `can_perform_registration` permission."""
+    client.force_login(registration_user)
+    response = client.get(reverse('patients:access-request-new'))
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_access_request_no_permission(django_user_model: User) -> None:
+    """Ensure that the access request view can not be viewed without the `can_perform_registration` permission."""
+    request = RequestFactory().get(reverse('patients:access-request-new'))
+    request.user = django_user_model.objects.create(username='testuser')
+
+    with pytest.raises(PermissionDenied):
+        NewAccessRequestView.as_view()(request)
+
+
+def test_access_request_menu_shown(client: Client, registration_user: User) -> None:
+    """Ensures that Opal Registration is displayed for users with permission."""
+    client.force_login(registration_user)
+    response = client.get(reverse('start'), follow=True)
+
+    assertContains(response, 'Opal Registration')
+
+
+def test_access_request_menu_hidden(user_client: Client) -> None:
+    """Ensures that Opal Registration is not displayed for users without permission."""
+    response = user_client.get(reverse('start'), follow=True)
+
+    assertNotContains(response, 'Opal Registration')
+
+
+def test_access_request_cancel_button(client: Client, registration_user: User) -> None:
     """Ensure the cancel button links to the correct URL."""
     url = reverse('patients:access-request-new')
-    response = registration_user.get(url)
+    client.force_login(registration_user)
+    response = client.get(url)
 
     assertContains(response, f'href="{url}"')
 
 
-def test_access_request_initial_search(registration_user: Client) -> None:
+def test_access_request_initial_search(client: Client, registration_user: User) -> None:
     """Ensure that the patient search form initializes fields values as expected."""
     site = factories.Site()
+    client.force_login(registration_user)
 
     # initialize the session storage
-    response = registration_user.get(reverse('patients:access-request-new'))
+    response = client.get(reverse('patients:access-request-new'))
 
     assert response.status_code == HTTPStatus.OK
 
@@ -926,7 +951,7 @@ def test_access_request_initial_search(registration_user: Client) -> None:
         'search-medical_number': '',
     }
 
-    response_post = registration_user.post(reverse('patients:access-request-new'), data=form_data)
+    response_post = client.post(reverse('patients:access-request-new'), data=form_data)
 
     # assert site field is being initialized with site when there is only one site
     context = response_post.context

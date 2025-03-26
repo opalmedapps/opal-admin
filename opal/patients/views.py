@@ -80,7 +80,12 @@ class RelationshipTypeDeleteView(
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: WPS214 (too many methods)
+class NewAccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many base classes)
+    PermissionRequiredMixin,
+    TemplateResponseMixin,
+    ContextMixin,
+    View,
+):
     """
     View to process an access request.
 
@@ -89,6 +94,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
     Any previous form (validated) is disabled.
     """
 
+    permission_required = ('patients.can_perform_registration',)
     template_name = 'patients/access_request/new_access_request.html'
     template_name_confirmation_code = 'patients/access_request/confirmation_code.html'
     template_name_confirmation = 'patients/access_request/confirmation.html'
@@ -623,7 +629,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
 
         return super().get(request, *args, **kwargs)
 
-    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:  # noqa: WPS210
         """
         Save updates for the `first_name` and `last_name` fields that are related to the caregiver/user module.
 
@@ -650,7 +656,31 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
                 status=HTTPStatus.METHOD_NOT_ALLOWED,
             )
 
-        return super().post(request, **kwargs)
+        data = self.request.POST
+        # convert data from queryset to dict
+        initial = data.dict()
+
+        # use initial instead of data to avoid validating a form when up-validate is used
+        form = self.form_class(
+            data=None if 'X-Up-Validate' in self.request.headers else data,
+            initial=initial,
+            instance=relationship_record,
+        )
+        # when the post is triggered by up validate
+        if 'X-Up-Validate' in self.request.headers:
+            context_data = form.get_context()
+            # keep original cancel_url
+            context_data['cancel_url'] = request.POST.get('cancel_url')
+        # when the post is triggered by submit/save button
+        else:
+            if form.is_valid():
+                return super().post(request, **kwargs)
+            else:
+                context_data = form.get_context()
+                context_data['cancel_url'] = request.POST.get('cancel_url')
+
+        # update the form with context data when post does not succeed
+        return self.render_to_response(context_data)
 
     def form_valid(self, form: ModelForm[Relationship]) -> HttpResponse:
         """

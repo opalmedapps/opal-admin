@@ -1,6 +1,6 @@
 """This module provides forms for the `patients` app."""
 from datetime import date, timedelta
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, cast
 
 from django import forms
 from django.contrib.auth import authenticate
@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Column, Div
 from crispy_forms.layout import Field as CrispyField
-from crispy_forms.layout import Fieldset, Hidden, Layout, Row, Submit
+from crispy_forms.layout import Hidden, Layout, Row, Submit
 from dynamic_forms import DynamicField, DynamicFormMixin
 
 from opal.caregivers.models import CaregiverProfile
@@ -26,6 +26,52 @@ from opal.users.models import Caregiver, User
 from . import constants, utils
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 from .validators import has_multiple_mrns_with_same_site_code, is_deceased
+
+
+# functions that are reused between two forms
+def is_mrn_selected(form: forms.Form) -> bool:
+    """
+    Return whether MRN is selected as the card type.
+
+    Args:
+        form: the form object being used
+
+    Returns:
+        True, if MRN is selected, False otherwise
+    """
+    card_type: str = form['card_type'].value()
+    return card_type == constants.MedicalCard.MRN.name
+
+
+def is_not_mrn_or_single_site(form: forms.Form) -> bool:
+    """
+    Check whether the form's `card_type` doesn't have MRN selected or there is only one site.
+
+    Args:
+        form: the form object being used
+
+    Returns:
+        True if there is only one site or the selected `card_type` is MRN, False otherwise
+    """
+    site_count = Site.objects.all().count()
+
+    return not is_mrn_selected(form) or site_count == 1
+
+
+def get_site_empty_label(form: forms.Form) -> str:
+    """
+    Set the site empty label according to selected `card_type`.
+
+    Args:
+        form: the form object being used
+
+    Returns:
+        `Choose` if mrn is selected, `Not Required` otherwise
+    """
+    if is_mrn_selected(form):
+        return cast(str, _('Choose...'))
+
+    return cast(str, _('Not required'))
 
 
 class DisableFieldsMixin(forms.Form):
@@ -69,15 +115,16 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
     card_type = forms.ChoiceField(
         widget=forms.Select(attrs={'up-validate': ''}),
         choices=constants.MEDICAL_CARDS,
+        initial=constants.MedicalCard.MRN.name,
         label=_('Card Type'),
     )
     site = DynamicField(
         forms.ModelChoiceField,
         queryset=Site.objects.all(),
         label=_('Hospital'),
-        required=lambda form: form.is_mrn_selected(),
-        disabled=lambda form: form.is_not_mrn_or_single_site(),
-        empty_label=lambda form: _('Choose...') if form.is_mrn_selected() else _('Not required'),
+        required=is_mrn_selected,
+        disabled=is_not_mrn_or_single_site,
+        empty_label=get_site_empty_label,  # noqa: WPS506
     )
     medical_number = forms.CharField(label=_('Identification Number'))
 
@@ -101,7 +148,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         if sites.count() == 1:
             site_field.widget = forms.HiddenInput()
 
-            if self.is_mrn_selected():
+            if is_mrn_selected(self):
                 site_field.initial = sites.first()
         else:
             site_field.initial = None
@@ -163,31 +210,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         if card_type and medical_number:
             self._search_patient(card_type, medical_number, site)
 
-        if not self.patient:
-            self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
-
         return self.cleaned_data
-
-    def is_mrn_selected(self) -> bool:
-        """
-        Return whether MRN is selected as the card type.
-
-        Returns:
-            True, if MRN is selected, False otherwise
-        """
-        card_type: str = self['card_type'].value()
-        return card_type == constants.MedicalCard.MRN.name
-
-    def is_not_mrn_or_single_site(self) -> bool:
-        """
-        Check whether the form's `card_type` doesn't have MRN selected or there is only one site.
-
-        Returns:
-            True if there is only one site or the selected `card_type` is MRN, False otherwise
-        """
-        site_count = Site.objects.all().count()
-
-        return not self.is_mrn_selected() or site_count == 1
 
     def _search_patient(self, card_type: str, medical_number: str, site: Optional[Site]) -> None:
         """
@@ -227,6 +250,9 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 self.patient = response['data']
             else:
                 self.add_error(NON_FIELD_ERRORS, response['data']['message'])
+
+            if not self.patient:
+                self.add_error(NON_FIELD_ERRORS, _('No patient could be found.'))
 
     def _fake_oie_response(self) -> OIEPatientData:
         return OIEPatientData(
@@ -316,7 +342,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
     """This form provides a radio button to choose the relationship to the patient."""
 
     relationship_type = forms.ModelChoiceField(
-        queryset=RelationshipType.objects.all(),
+        queryset=RelationshipType.objects.all().reverse(),
         # TODO: provide a custom template that can show a tooltip
         # when hovering over the relationship type with the details of the relationship type
         # can be done as a completely separate MR at the end
@@ -406,11 +432,10 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                     'relationship_type',
                 ),
                 Column(
-                    Fieldset(
-                        'Validation',
-                        'form_filled',
-                        'id_checked',
-                    ),
+                    # make it appear like a label
+                    HTML('<p class="fw-semibold">{0}</p>'.format(_('Validation'))),
+                    'form_filled',
+                    'id_checked',
                 ),
             ),
             TabRadioSelect('user_type'),
@@ -643,6 +668,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         label=_('Last Name'),
     )
     type = forms.ModelChoiceField(  # noqa: A003
+        widget=forms.Select(attrs={'up-validate': ''}),
         queryset=RelationshipType.objects.none(),
         label=_('Relationship'),
         empty_label=None,
@@ -659,7 +685,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         label=_('Access End'),
     )
     reason = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': '2'}),
+        widget=forms.Textarea(attrs={'rows': '4'}),
         label=_('Explanation for Change(s)'),
         required=False,
     )
@@ -677,7 +703,6 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'status',
             'reason',
             'cancel_url',
-            'type',
         )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -689,6 +714,10 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
+        # get the selected type
+        selected_type = self['type'].value()
+        initial_type = RelationshipType.objects.get(pk=selected_type)
+
         self.fields['status'].choices = [  # type: ignore[attr-defined]
             (choice.value, choice.label) for choice in Relationship.valid_statuses(
                 RelationshipStatus(self.instance.status),
@@ -698,14 +727,14 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             'min': self.instance.patient.date_of_birth,
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
-                self.instance.type,
+                initial_type,
             ),
         })
         self.fields['end_date'].widget.attrs.update({   # noqa: WPS219
             'min': self.instance.patient.date_of_birth + timedelta(days=1),
             'max': Relationship.calculate_end_date(
                 self.instance.patient.date_of_birth,
-                self.instance.type,
+                initial_type,
             ),
         })
 
@@ -722,6 +751,10 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         # setting the value of caregiver first and last names
         self.fields['last_name'].initial = self.instance.caregiver.user.last_name
         self.fields['first_name'].initial = self.instance.caregiver.user.first_name
+
+        # change to required/not-required according to the type of the relationship
+        if initial_type.role_type == RoleType.SELF.name:
+            self.fields['end_date'].required = False
 
         self.helper = FormHelper(self)
         self.helper.attrs = {'novalidate': ''}
@@ -778,14 +811,25 @@ class ManageCaregiverAccessForm(forms.Form):
         """
         super().__init__(*args, **kwargs)
 
-        card_type = self.fields['card_type']
-        card_type.widget.attrs.update({'up-validate': ''})
-        card_type_value = self['card_type'].value()
+        card_type: forms.ModelChoiceField = cast(forms.ModelChoiceField, self.fields['card_type'])
+        site: forms.ModelChoiceField = cast(forms.ModelChoiceField, self.fields['site'])
 
-        if card_type_value == constants.MedicalCard.MRN.name:
-            self.fields['site'].required = True
+        # add up-validate to `card_type` field to trigger post on change
+        card_type.widget.attrs.update({'up-validate': ''})
+        # check if mrn is selected to disable
+        if is_mrn_selected(self):
+            site.required = True
         else:
-            self.fields['site'].disabled = True
+            site.disabled = True
+            site.initial = None
+
+        # get the proper empty value string for the selected `card_type`
+        site.empty_label = get_site_empty_label(self)
+
+        if Site.objects.all().count() == 1:
+            site.disabled = True
+            site.widget = forms.HiddenInput()
+            site.initial = Site.objects.first()
 
 
 class ManageCaregiverAccessUserForm(forms.ModelForm[User]):

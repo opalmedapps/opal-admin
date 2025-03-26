@@ -789,7 +789,6 @@ def test_validstatuses_not_contain_wrong_status_expired() -> None:
                 RelationshipStatus.CONFIRMED,
                 RelationshipStatus.PENDING,
                 RelationshipStatus.REVOKED,
-                RelationshipStatus.EXPIRED,
             ],
         ),
         (
