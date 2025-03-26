@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-23 22:23+0300\n"
+"POT-Creation-Date: 2023-01-25 16:41+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -500,6 +500,15 @@ msgstr "Confirmer l'accès aux données du patient"
 #: opal/patients/views.py
 msgid "QR Code Generation"
 msgstr "Générateur de code QR"
+
+#: opal/patients/views.py
+msgid ""
+"Unable to complete action with this patient. Date of death has been recorded "
+"in the patient′s file. Please contact Medical Records."
+msgstr ""
+"Impossible de terminer l'action avec ce patient. La date du décès a été "
+"enregistrée dans le dossier du patient. Veuillez contacter les dossiers "
+"médicaux."
 
 #: opal/patients/views.py
 msgid "Please note multiple MRNs need to be merged by medical records."
