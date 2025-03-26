@@ -40,7 +40,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
     lookup_url_kwarg = 'code'
     lookup_field = 'code'
 
-    def get_object(self) -> caregiver_models.RegistrationCode:
+    def get_object(self) -> Any:
         """
         Override get_object to filter RegistrationCode by patient date_of_death.
 
