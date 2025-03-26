@@ -34,7 +34,7 @@ msgstr "Code de vérification Opal"
 
 #: opal/caregivers/api/views.py
 msgid "Thank you for registering for Opal!"
-msgstr "Merci de vous être inscrit(e) à Opal !"
+msgstr "Merci de vous être inscrit(e) à Opal!"
 
 #: opal/caregivers/api/viewsets.py
 msgid "The provided answer is not correct"

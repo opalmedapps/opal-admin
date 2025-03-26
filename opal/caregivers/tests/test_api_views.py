@@ -1671,13 +1671,13 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert caregiver_user.email == 'foo@bar.com'
 
     @pytest.mark.django_db(databases=['default', 'legacy'])
-    def test_confirmation_email_sent(
+    def test_confirmation_email_new_caregiver_fr(
         self,
         api_client: APIClient,
         admin_user: User,
         settings: SettingsWrapper,
     ) -> None:
-        """Test that the confirmation email is sent when registration complete."""
+        """Test that the confirmation email is sent for new caregiver in French."""
         api_client.force_login(user=admin_user)
         registration_code, _ = self._build_access_request(email_verified=True)
 
@@ -1695,4 +1695,37 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert mail.outbox[0].to == ['opal@muhc.mcgill.ca']
         body = mail.outbox[0].body
         assert "Merci de vous être inscrit(e) à l'application Opal." in body
-        assert mail.outbox[0].subject == 'Merci de vous être inscrit(e) à Opal !'
+        assert mail.outbox[0].subject == 'Merci de vous être inscrit(e) à Opal!'
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_confirmation_email_existing_caregiver_en(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        settings: SettingsWrapper,
+    ) -> None:
+        """Test that the confirmation email is sent for existing caregiver in English."""
+        api_client.force_login(user=admin_user)
+
+        # Build existing caregiver
+        caregiver = user_factories.Caregiver(
+            username='test-username',
+            first_name='caregiver',
+            last_name='test',
+        )
+        caregiver_factories.CaregiverProfile(user=caregiver)
+        registration_code, _ = self._build_access_request()
+
+        url = reverse('api:registration-register', kwargs={'code': registration_code.code})
+        response = api_client.post(
+            f'{url}?existingUser',
+            data=self.data_existing_caregiver,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].from_email == settings.EMAIL_FROM_REGISTRATION
+        assert mail.outbox[0].to == ['test-username@example.com']
+        body = mail.outbox[0].body
+        assert 'Thank you for registering for the Opal app.' in body
+        assert mail.outbox[0].subject == 'Thank you for registering for Opal!'
