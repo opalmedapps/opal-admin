@@ -40,6 +40,7 @@ class RelationshipTypeCreateUpdateView(CreateUpdateView):
         'start_age',
         'end_age',
         'form_required',
+        'can_answer_questionnaire',
     ]
     success_url = reverse_lazy('patients:relationshiptype-list')
 
