@@ -51,16 +51,17 @@ class InlineSubmit(Layout):
     The label is present in the output but visually hidden.
     """
 
-    def __init__(self, label: str) -> None:
+    def __init__(self, name: str, label: str) -> None:
         """
         Initialize the submit button with the given label.
 
         Args:
+            name: the name of the submit button, empty string if you don't need to identify it
             label: the label of the submit button
         """
         fields = (
             HTML(f'<label class="form-label invisible d-sm-none d-md-inline-block">{label}</label>'),
-            Submit('submit', label, css_class='d-table'),
+            Submit(name, label, css_class='d-table'),
         )
         super().__init__(*fields)
 
