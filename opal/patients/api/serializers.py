@@ -31,12 +31,17 @@ class PatientSerializer(DynamicFieldsSerializer):
             'ramq',
             'uuid',
         ]
-        # enforce proper value for legacy_id
+
+
+class PatientUpdateSerializer(serializers.ModelSerializer[Patient]):
+    """Patient serializer to update a patient instance."""
+
+    class Meta:
+        model = Patient
+        fields = [
+            'data_access',
+        ]
         extra_kwargs: dict[str, dict[str, Any]] = {
-            'legacy_id': {
-                'allow_null': False,
-                'required': True,
-            },
             'data_access': {
                 'required': True,
             },

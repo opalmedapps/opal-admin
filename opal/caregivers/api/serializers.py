@@ -212,7 +212,12 @@ class _NestedPatientSerializer(PatientSerializer):
 
     class Meta(PatientSerializer.Meta):
         extra_kwargs = {
-            'legacy_id': dict(PatientSerializer.Meta.extra_kwargs['legacy_id'], validators=[]),
+            # enforce proper value for legacy_id
+            'legacy_id': {
+                'allow_null': False,
+                'required': True,
+                'validators': [],
+            },
         }
 
 
