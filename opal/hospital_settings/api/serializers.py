@@ -19,11 +19,11 @@ class SiteSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class InstitutionSerializer(serializers.HyperlinkedModelSerializer, DynamicFieldsSerializer):
-    """This class defines how a `Site` is serialized for an API."""
+    """This class defines how an `Institution` model is serialized for the REST API."""
 
     url = serializers.HyperlinkedIdentityField(view_name='api:institutions-detail')
     sites = SiteSerializer(many=True, read_only=True)
 
     class Meta:
         model = Institution
-        fields = ['id', 'url', 'name', 'code', 'sites']
+        fields = ['id', 'url', 'name', 'code', 'support_email', 'sites']
