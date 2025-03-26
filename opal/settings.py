@@ -14,6 +14,7 @@ from pathlib import Path
 from django.utils.translation import gettext_lazy as _
 
 import environ
+from django_stubs_ext import StrPromise
 
 # get root of the project
 ROOT_DIR = Path(__file__).parents[1]
@@ -257,7 +258,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(ROOT_DIR / 'locale')]
 # https://docs.djangoproject.com/en/dev/ref/settings/#languages
-LANGUAGES = [
+# Provide a type hint to avoid mypy import cycle errors
+# see: https://github.com/typeddjango/django-stubs/issues/1346
+LANGUAGES: list[tuple[str, StrPromise]] = [
     ('en', _('English')),
     ('fr', _('French')),
 ]
