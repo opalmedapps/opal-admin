@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from opal.legacy.utils import get_patient_sernum
 
 from .. import models
-from .serializers import LegacyAppointmentSerializer
+from .serializers import LegacyAppointmentSerializer, UnreadCount, UnreadCountSerializer
 
 
 class AppHomeView(APIView):
@@ -53,15 +53,13 @@ class AppChartView(APIView):
             Http response with the data needed to display the chart view.
         """
         patient_sernum = get_patient_sernum(request.headers['Appuserid'])
+        unread_count = UnreadCount(
+            unread_appointment_count=models.LegacyAppointment.objects.get_unread_queryset(patient_sernum).count(),
+            unread_document_count=models.LegacyDocument.objects.get_unread_queryset(patient_sernum).count(),
+            unread_txteammessage_count=models.LegacyTxTeamMessage.objects.get_unread_queryset(patient_sernum).count(),
+            unread_educationalmaterial_count=models.LegacyEducationMaterial.objects.get_unread_queryset(patient_sernum).count(),  # noqa: E501
+            unread_questionnaire_count=models.LegacyQuestionnaire.objects.get_unread_queryset(patient_sernum).count(),
+        )
         return Response({
-            'unread_appointment_count':
-                models.LegacyAppointment.objects.get_unread_queryset(patient_sernum).count(),
-            'unread_document_count':
-                models.LegacyDocument.objects.get_unread_queryset(patient_sernum).count(),
-            'unread_txteammessage_count':
-                models.LegacyTxTeamMessage.objects.get_unread_queryset(patient_sernum).count(),
-            'unread_educationalmaterial_count':
-                models.LegacyEducationMaterial.objects.get_unread_queryset(patient_sernum).count(),
-            'unread_questionnaire_count':
-                models.LegacyQuestionnaire.objects.get_unread_queryset(patient_sernum).count(),
+            'unread_count': UnreadCountSerializer(unread_count).data,
         })
