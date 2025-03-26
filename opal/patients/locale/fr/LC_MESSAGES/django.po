@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-14 00:07+0300\n"
+"POT-Creation-Date: 2023-01-13 20:50+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -304,7 +304,6 @@ msgstr "Supprimer"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 #: opal/patients/templates/patients/relationship_type/form.html
-#: opal/patients/templates/patients/relationships/pending/form.html
 msgid "Cancel"
 msgstr "Annuler"
 
