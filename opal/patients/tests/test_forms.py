@@ -3,13 +3,14 @@ import datetime
 from django.forms import model_to_dict
 
 import pytest
+from dateutil.relativedelta import relativedelta
 from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers.factories import CaregiverProfile
 from opal.users.factories import Caregiver
 from opal.users.models import User
 
-from .. import factories, forms
+from .. import constants, factories, forms
 from ..models import Relationship, RelationshipStatus, RelationshipType, RoleType
 
 pytestmark = pytest.mark.django_db
@@ -40,9 +41,11 @@ def test_relationshippending_form_is_valid() -> None:
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
-        date_of_birth=datetime.date(2013, 5, 9),
+        date_of_birth=datetime.date.today() - relativedelta(
+            years=10,
+        ),
         relationship_type=factories.RelationshipType(),
-        request_date=datetime.date(2023, 4, 30),
+        request_date=datetime.date.today(),
     )
     assert relationshippending_form.is_valid()
 
@@ -58,9 +61,11 @@ def test_relationshippending_missing_startdate() -> None:
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
-        date_of_birth=datetime.date(2013, 5, 9),
+        date_of_birth=datetime.date.today() - relativedelta(
+            years=10,
+        ),
         relationship_type=factories.RelationshipType(),
-        request_date=datetime.date(2023, 4, 30),
+        request_date=datetime.date.today(),
     )
     assert not relationshippending_form.is_valid()
 
@@ -73,9 +78,11 @@ def test_relationshippending_update() -> None:
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
-        date_of_birth=datetime.date(2013, 5, 9),
+        date_of_birth=datetime.date.today() - relativedelta(
+            years=10,
+        ),
         relationship_type=factories.RelationshipType(),
-        request_date=datetime.date(2023, 4, 30),
+        request_date=datetime.date.today(),
     )
     relationshippending_form.save()
 
@@ -94,9 +101,11 @@ def test_relationshippending_update_fail() -> None:
     relationshippending_form = forms.RelationshipAccessForm(
         data=form_data,
         instance=relationship_info,
-        date_of_birth=datetime.date(2013, 5, 9),
+        date_of_birth=datetime.date.today() - relativedelta(
+            years=10,
+        ),
         relationship_type=factories.RelationshipType(),
-        request_date=datetime.date(2023, 4, 30),
+        request_date=datetime.date.today(),
     )
 
     assert not relationshippending_form.is_valid()
@@ -120,7 +129,9 @@ def test_relationshippending_form_date_validated() -> None:
         instance=relationship_info,
         date_of_birth=datetime.date(2013, 5, 9),
         relationship_type=factories.RelationshipType(),
-        request_date=datetime.date(2023, 4, 30),
+        request_date=relationship_info.start_date + relativedelta(
+            years=constants.RELATIVE_YEAR_VALUE,
+        ),
     )
 
     assert not relationshippending_form.is_valid()
@@ -147,7 +158,9 @@ def test_relationship_pending_status_reason() -> None:
         instance=relationship_info,
         date_of_birth=datetime.date(2013, 5, 9),
         relationship_type=factories.RelationshipType(),
-        request_date=datetime.date(2023, 4, 30),
+        request_date=relationship_info.start_date + relativedelta(
+            years=constants.RELATIVE_YEAR_VALUE,
+        ),
     )
 
     assert not pending_form.is_valid()

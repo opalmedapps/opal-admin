@@ -308,10 +308,18 @@ def test_relationship_clean_start_date_before_date_of_birth() -> None:
 def test_relationship_start_date_beyond_boundary() -> None:
     """Ensure that the relationship start_date cannot be before the boundary."""
     relationship = factories.Relationship()
-    relationship.request_date = datetime.date(2023, 4, 11)
-    relationship.start_date = datetime.date(2021, 4, 10)
+    relationship.request_date = datetime.date.today()
+    relationship.start_date = relationship.request_date - relativedelta(
+        years=constants.RELATIVE_YEAR_VALUE,
+    ) - datetime.timedelta(days=1)
 
-    expected_message = 'Start date cannot be earlier than 2 years before the request date of 2023-04-11.'
+    expected_message = (
+        'Start date cannot be earlier than {relative_year} years '
+        + 'before the request date of {request_date}.'
+    ).format(
+        relative_year=constants.RELATIVE_YEAR_VALUE,
+        request_date=relationship.request_date,
+    )
     with assertRaisesMessage(ValidationError, expected_message):
         relationship.clean()
 
@@ -320,10 +328,15 @@ def test_relationship_start_date_beyond_boundary_by_relationship() -> None:
     """Ensure that the start_date is valid when the relationship type start age is closer to request date."""
     relationship = factories.Relationship()
     relationship.patient.date_of_birth = datetime.date(2008, 5, 9)
-    relationship.request_date = datetime.date(2023, 4, 11)
-    relationship.start_date = datetime.date(2022, 5, 8)
+    relationship.request_date = datetime.date.today()
+    calculated_start_date = relationship.patient.date_of_birth + relativedelta(
+        years=relationship.type.start_age,
+    )
+    relationship.start_date = calculated_start_date - datetime.timedelta(days=1)
 
-    expected_message = 'Start date cannot be earlier than 2022-05-09.'
+    expected_message = 'Start date cannot be earlier than {calculated_start_date}.'.format(
+        calculated_start_date=calculated_start_date,
+    )
     with assertRaisesMessage(ValidationError, expected_message):
         relationship.clean()
 
@@ -333,10 +346,16 @@ def test_relationship_end_date_beyond_boundary() -> None:
     relationship = factories.Relationship()
     relationship.patient.date_of_birth = datetime.date(2008, 5, 9)
     relationship.type.end_age = 18
-    relationship.start_date = datetime.date(2022, 5, 9)
-    relationship.end_date = datetime.date(2026, 5, 10)
 
-    expected_message = 'End date for Caregiver relationship cannot be later than 2026-05-09.'
+    calculated_end_date = relationship.patient.date_of_birth + relativedelta(
+        years=relationship.type.end_age,
+    )
+    relationship.start_date = calculated_end_date - relativedelta(years=constants.RELATIVE_YEAR_VALUE)
+    relationship.end_date = calculated_end_date + datetime.timedelta(days=1)
+
+    expected_message = 'End date for Caregiver relationship cannot be later than {calculated_end_date}.'.format(
+        calculated_end_date=calculated_end_date,
+    )
     with assertRaisesMessage(ValidationError, expected_message):
         relationship.clean()
 
