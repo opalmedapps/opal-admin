@@ -125,7 +125,7 @@ class IsLegacyBackend(_UsernameRequired):
 
 
 class IsOrmsSystem(_UsernameRequired):
-    """Allows access only to the orms system user and superusers."""
+    """Allows access only to the ORMS system user and superusers."""
 
     required_username = constants.USERNAME_ORMS
 

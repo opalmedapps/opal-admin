@@ -234,9 +234,7 @@ class TestUpdateAppointmentCheckinView:
 
     def test_update_checkin_success_orms(self, api_client: APIClient, orms_system_user: User) -> None:
         """Test a successful update of the checkin field."""
-        user = factories.LegacyUserFactory()
         api_client.force_login(user=orms_system_user)
-        api_client.credentials(HTTP_APPUSERID=user.username)
         medivisit = factories.LegacySourceDatabaseFactory()
         appointment = factories.LegacyAppointmentFactory(
             source_system_id='2024A21342134',
