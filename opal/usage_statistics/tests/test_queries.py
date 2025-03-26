@@ -24,11 +24,13 @@ def test_empty_fetch_registration_summary() -> None:
         start_date=timezone.now().today(),
         end_date=timezone.now().today(),
     )
-    assert registration_summary == {
-        'uncompleted_registration': 0,
-        'completed_registration': 0,
-        'total_registration_codes': 0,
-    }
+    assert registration_summary == [
+        {
+            'uncompleted_registration': 0,
+            'completed_registration': 0,
+            'total_registration_codes': 0,
+        },
+    ]
 
 
 def test_fetch_registration_summary(mocker: MockerFixture) -> None:
@@ -92,11 +94,13 @@ def test_fetch_registration_summary(mocker: MockerFixture) -> None:
         start_date=today,
         end_date=today,
     )
-    assert population_summary == {
-        'uncompleted_registration': 2,
-        'completed_registration': 6,
-        'total_registration_codes': 8,
-    }
+    assert population_summary == [
+        {
+            'uncompleted_registration': 2,
+            'completed_registration': 6,
+            'total_registration_codes': 8,
+        },
+    ]
 
 
 def test_empty_fetch_grouped_registration_summary() -> None:
@@ -357,14 +361,16 @@ def test_empty_fetch_caregivers_summary() -> None:
         start_date=timezone.now().today(),
         end_date=timezone.now().today(),
     )
-    assert caregivers_summary == {
-        'caregivers_total': 0,
-        'caregivers_registered': 0,
-        'caregivers_unregistered': 0,
-        'never_logged_in_after_registration': 0,
-        'en': 0,
-        'fr': 0,
-    }
+    assert caregivers_summary == [
+        {
+            'caregivers_total': 0,
+            'caregivers_registered': 0,
+            'caregivers_unregistered': 0,
+            'never_logged_in_after_registration': 0,
+            'en': 0,
+            'fr': 0,
+        },
+    ]
 
 
 def test_fetch_caregivers_summary() -> None:
@@ -385,14 +391,16 @@ def test_fetch_caregivers_summary() -> None:
         start_date=timezone.now().today(),
         end_date=timezone.now().today(),
     )
-    assert caregivers_summary == {
-        'caregivers_total': 6,
-        'caregivers_registered': 3,
-        'caregivers_unregistered': 3,
-        'never_logged_in_after_registration': 1,
-        'en': 3,
-        'fr': 3,
-    }
+    assert caregivers_summary == [
+        {
+            'caregivers_total': 6,
+            'caregivers_registered': 3,
+            'caregivers_unregistered': 3,
+            'never_logged_in_after_registration': 1,
+            'en': 3,
+            'fr': 3,
+        },
+    ]
 
 
 def test_empty_fetch_patients_summary() -> None:
@@ -401,16 +409,18 @@ def test_empty_fetch_patients_summary() -> None:
         start_date=timezone.now().today(),
         end_date=timezone.now().today(),
     )
-    assert caregivers_summary == {
-        'total': 0,
-        'deceased': 0,
-        'male': 0,
-        'female': 0,
-        'sex_other': 0,
-        'sex_unknown': 0,
-        'access_all': 0,
-        'access_ntk': 0,
-    }
+    assert caregivers_summary == [
+        {
+            'total': 0,
+            'deceased': 0,
+            'male': 0,
+            'female': 0,
+            'sex_other': 0,
+            'sex_unknown': 0,
+            'access_all': 0,
+            'access_ntk': 0,
+        },
+    ]
 
 
 def test_fetch_patients_summary() -> None:
@@ -446,16 +456,18 @@ def test_fetch_patients_summary() -> None:
         start_date=timezone.now().today(),
         end_date=timezone.now().today(),
     )
-    assert caregivers_summary == {
-        'total': 7,
-        'deceased': 2,
-        'male': 3,
-        'female': 2,
-        'sex_other': 1,
-        'sex_unknown': 1,
-        'access_all': 5,
-        'access_ntk': 2,
-    }
+    assert caregivers_summary == [
+        {
+            'total': 7,
+            'deceased': 2,
+            'male': 3,
+            'female': 2,
+            'sex_other': 1,
+            'sex_unknown': 1,
+            'access_all': 5,
+            'access_ntk': 2,
+        },
+    ]
 
 
 @pytest.mark.django_db(databases=['legacy'])
@@ -465,12 +477,14 @@ def test_empty_fetch_devices_summary() -> None:
         start_date=timezone.now().today(),
         end_date=timezone.now().today(),
     )
-    assert devices_summary == {
-        'device_total': 0,
-        'device_ios': 0,
-        'device_android': 0,
-        'device_browser': 0,
-    }
+    assert devices_summary == [
+        {
+            'device_total': 0,
+            'device_ios': 0,
+            'device_android': 0,
+            'device_browser': 0,
+        },
+    ]
 
 
 @pytest.mark.django_db(databases=['legacy'])
@@ -493,12 +507,14 @@ def test_fetch_devices_summary(mocker: MockerFixture) -> None:
         start_date=timezone.now().today(),
         end_date=timezone.now().today(),
     )
-    assert devices_summary == {
-        'device_total': 6,
-        'device_ios': 2,
-        'device_android': 2,
-        'device_browser': 2,
-    }
+    assert devices_summary == [
+        {
+            'device_total': 6,
+            'device_ios': 2,
+            'device_android': 2,
+            'device_browser': 2,
+        },
+    ]
 
 
 def test_empty_fetch_patients_received_clinical_data_summary() -> None:
@@ -507,13 +523,15 @@ def test_empty_fetch_patients_received_clinical_data_summary() -> None:
         start_date=timezone.now().today(),
         end_date=timezone.now().today(),
     )
-    assert patients_received_data_summary == {
-        'no_appointments_labs_notes': 0,
-        'has_appointments_only': 0,
-        'has_labs_only': 0,
-        'has_clinical_notes_only': 0,
-        'receiving_new_data_total': 0,
-    }
+    assert patients_received_data_summary == [
+        {
+            'no_appointments_labs_notes': 0,
+            'has_appointments_only': 0,
+            'has_labs_only': 0,
+            'has_clinical_notes_only': 0,
+            'receiving_new_data_total': 0,
+        },
+    ]
 
 
 def test_patients_received_data_no_appointment_labs_note() -> None:
@@ -582,13 +600,15 @@ def test_patients_received_data_no_appointment_labs_note() -> None:
     )
 
     assert stats_models.DailyPatientDataReceived.objects.count() == 8
-    assert patients_received_data_summary == {
-        'no_appointments_labs_notes': 4,
-        'has_appointments_only': 0,
-        'has_labs_only': 0,
-        'has_clinical_notes_only': 0,
-        'receiving_new_data_total': 0,
-    }
+    assert patients_received_data_summary == [
+        {
+            'no_appointments_labs_notes': 4,
+            'has_appointments_only': 0,
+            'has_labs_only': 0,
+            'has_clinical_notes_only': 0,
+            'receiving_new_data_total': 0,
+        },
+    ]
 
 
 def test_patients_received_data_has_appointments_only() -> None:
@@ -650,13 +670,15 @@ def test_patients_received_data_has_appointments_only() -> None:
     )
 
     assert stats_models.DailyPatientDataReceived.objects.count() == 8
-    assert patients_received_data_summary == {
-        'no_appointments_labs_notes': 1,
-        'has_appointments_only': 3,
-        'has_labs_only': 0,
-        'has_clinical_notes_only': 0,
-        'receiving_new_data_total': 3,
-    }
+    assert patients_received_data_summary == [
+        {
+            'no_appointments_labs_notes': 1,
+            'has_appointments_only': 3,
+            'has_labs_only': 0,
+            'has_clinical_notes_only': 0,
+            'receiving_new_data_total': 3,
+        },
+    ]
 
 
 def test_patients_received_data_has_labs_only() -> None:
@@ -718,13 +740,15 @@ def test_patients_received_data_has_labs_only() -> None:
     )
 
     assert stats_models.DailyPatientDataReceived.objects.count() == 8
-    assert patients_received_data_summary == {
-        'no_appointments_labs_notes': 1,
-        'has_appointments_only': 0,
-        'has_labs_only': 3,
-        'has_clinical_notes_only': 0,
-        'receiving_new_data_total': 3,
-    }
+    assert patients_received_data_summary == [
+        {
+            'no_appointments_labs_notes': 1,
+            'has_appointments_only': 0,
+            'has_labs_only': 3,
+            'has_clinical_notes_only': 0,
+            'receiving_new_data_total': 3,
+        },
+    ]
 
 
 def test_patients_received_data_has_clinical_notes_only() -> None:
@@ -786,13 +810,15 @@ def test_patients_received_data_has_clinical_notes_only() -> None:
     )
 
     assert stats_models.DailyPatientDataReceived.objects.count() == 8
-    assert patients_received_data_summary == {
-        'no_appointments_labs_notes': 1,
-        'has_appointments_only': 0,
-        'has_labs_only': 0,
-        'has_clinical_notes_only': 3,
-        'receiving_new_data_total': 3,
-    }
+    assert patients_received_data_summary == [
+        {
+            'no_appointments_labs_notes': 1,
+            'has_appointments_only': 0,
+            'has_labs_only': 0,
+            'has_clinical_notes_only': 3,
+            'receiving_new_data_total': 3,
+        },
+    ]
 
 
 def test_patients_received_data_using_app_after_receiving_new_data() -> None:
@@ -849,13 +875,15 @@ def test_patients_received_data_using_app_after_receiving_new_data() -> None:
     )
 
     assert stats_models.DailyPatientDataReceived.objects.count() == 8
-    assert patients_received_data_summary == {
-        'no_appointments_labs_notes': 0,
-        'has_appointments_only': 1,
-        'has_labs_only': 1,
-        'has_clinical_notes_only': 1,
-        'receiving_new_data_total': 4,
-    }
+    assert patients_received_data_summary == [
+        {
+            'no_appointments_labs_notes': 0,
+            'has_appointments_only': 1,
+            'has_labs_only': 1,
+            'has_clinical_notes_only': 1,
+            'receiving_new_data_total': 4,
+        },
+    ]
 
 
 def test_empty_logins_summary() -> None:

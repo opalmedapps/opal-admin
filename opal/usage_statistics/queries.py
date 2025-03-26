@@ -32,7 +32,7 @@ class GroupByComponent(Enum):
 def fetch_registration_summary(
     start_date: dt.date,
     end_date: dt.date,
-) -> dict[str, Any]:
+) -> list[dict[str, Any]]:
     """Fetch registration summary from `RegistrationCode` model.
 
     Args:
@@ -42,7 +42,7 @@ def fetch_registration_summary(
     Returns:
         registration summary for a given time period
     """
-    return caregivers_models.RegistrationCode.objects.filter(
+    registration_summary = caregivers_models.RegistrationCode.objects.filter(
         created_at__date__gte=start_date,
         created_at__date__lte=end_date,
     ).aggregate(
@@ -54,6 +54,7 @@ def fetch_registration_summary(
         ),
         total_registration_codes=models.F('uncompleted_registration') + models.F('completed_registration'),
     )
+    return [registration_summary]
 
 
 def fetch_grouped_registration_summary(
@@ -97,7 +98,7 @@ def fetch_grouped_registration_summary(
 def fetch_caregivers_summary(
     start_date: dt.date,
     end_date: dt.date,
-) -> dict[str, Any]:
+) -> list[dict[str, Any]]:
     """Fetch grouped caregivers summary from `Caregiver` model.
 
     Args:
@@ -112,7 +113,7 @@ def fetch_caregivers_summary(
         lang: models.Count('id', filter=models.Q(language=lang)) for lang in lang_codes
     }
 
-    return users_models.Caregiver.objects.filter(
+    caregivers_summary = users_models.Caregiver.objects.filter(
         date_joined__date__gte=start_date,
         date_joined__date__lte=end_date,
     ).aggregate(
@@ -122,12 +123,13 @@ def fetch_caregivers_summary(
         never_logged_in_after_registration=models.Count('id', filter=models.Q(is_active=True, last_login=None)),
         **lang_dict,
     )
+    return [caregivers_summary]
 
 
 def fetch_patients_summary(
     start_date: dt.date,
     end_date: dt.date,
-) -> dict[str, Any]:
+) -> list[dict[str, Any]]:
     """Fetch grouped patients summary from `Patient` model.
 
     Args:
@@ -143,7 +145,7 @@ def fetch_patients_summary(
         key_name = f'access_{access_type.lower()}'
         access_dict[key_name] = models.Count('id', filter=models.Q(data_access=access_type))
 
-    return patients_models.Patient.objects.filter(
+    patients_summary = patients_models.Patient.objects.filter(
         created_at__date__gte=start_date,
         created_at__date__lte=end_date,
     ).aggregate(
@@ -155,6 +157,7 @@ def fetch_patients_summary(
         sex_unknown=models.Count('id', filter=models.Q(sex=patients_models.SexType.UNKNOWN)),
         **access_dict,
     )
+    return [patients_summary]
 
 
 # TODO: QSCCD-2168
@@ -162,7 +165,7 @@ def fetch_patients_summary(
 def fetch_devices_summary(
     start_date: dt.date,
     end_date: dt.date,
-) -> dict[str, Any]:
+) -> list[dict[str, Any]]:
     """Fetch grouped device identifiers summary from `LegacyPatientDeviceIdentifier` model.
 
     Args:
@@ -172,7 +175,7 @@ def fetch_devices_summary(
     Returns:
         device identifiers summary for a given time period
     """
-    return legacy_models.LegacyPatientDeviceIdentifier.objects.filter(
+    device_identifiers_summary = legacy_models.LegacyPatientDeviceIdentifier.objects.filter(
         last_updated__date__gte=start_date,
         last_updated__date__lte=end_date,
     ).aggregate(
@@ -190,12 +193,13 @@ def fetch_devices_summary(
             filter=models.Q(device_type=3),
         ),
     )
+    return [device_identifiers_summary]
 
 
 def fetch_patients_received_clinical_data_summary(
     start_date: dt.date,
     end_date: dt.date,
-) -> dict[str, Any]:
+) -> list[dict[str, Any]]:
     """Fetch grouped patients received data summary from the `DailyPatientDataReceived` model.
 
     The summary includes only clinical data (e.g., appointments, labs, clinical notes, diagnosis).
@@ -250,12 +254,13 @@ def fetch_patients_received_clinical_data_summary(
         ),
     }
 
-    return DailyPatientDataReceived.objects.filter(
+    patients_received_data_summary = DailyPatientDataReceived.objects.filter(
         action_date__gte=start_date,
         action_date__lte=end_date,
     ).aggregate(
         **aggregated_patients_received_data,
     )
+    return [patients_received_data_summary]
 
 
 def fetch_logins_summary(
