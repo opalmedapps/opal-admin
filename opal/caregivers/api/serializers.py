@@ -1,4 +1,4 @@
-"""This module provides Django REST framework serializers for GetRegistrationEncryptionInfoView api return value."""
+"""This module provides Django REST framework serializers for Caregiver apis."""
 from typing import Dict
 
 from rest_framework import serializers
@@ -88,8 +88,8 @@ class SecurityQuestionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title_en', 'title_fr']
 
 
-class ReadSecurityAnswerSerializer(serializers.ModelSerializer):
-    """Serializer for security answers."""
+class SecurityAnswerQuestionSerializer(serializers.ModelSerializer):
+    """Serializer for security answers without answer."""
 
     class Meta:
         model = SecurityAnswer
@@ -107,7 +107,7 @@ class VerifySecurityAnswerSerializer(serializers.ModelSerializer):
 
 
 class SecurityAnswerSerializer(DynamicFieldsSerializer):
-    """Serializer for security answers."""
+    """Serializer for security answers with corresponding questions."""
 
     class Meta:
         model = SecurityAnswer
@@ -115,7 +115,7 @@ class SecurityAnswerSerializer(DynamicFieldsSerializer):
 
 
 class CaregiverSerializer(DynamicFieldsSerializer):
-    """Serializer for security questions."""
+    """Serializer for caregiver profile."""
 
     language = serializers.CharField(source='user.language')
     phone_number = serializers.CharField(source='user.phone_number')

@@ -7,9 +7,11 @@ from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 
 import pytest
+from pytest_django.asserts import assertRaisesMessage
 from rest_framework.test import APIClient
 
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
+from opal.caregivers.models import RegistrationCode as RegistrationCodeModel
 from opal.caregivers.models import RegistrationCodeStatus, SecurityAnswer
 from opal.hospital_settings.factories import Institution, Site
 from opal.users.factories import User
@@ -135,9 +137,6 @@ class TestApiRegistrationRegister:
         assert response.status_code == HTTPStatus.OK
         assert registration_code.status == RegistrationCodeStatus.REGISTERED
         assert len(security_answers) == 2
-        assert response.json() == {
-            'detail': 'Saved the patient data successfully.',
-        }
 
     def test_non_existent_registration_code(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test non-existent registration code."""
@@ -147,7 +146,7 @@ class TestApiRegistrationRegister:
         user = User()
         caregiver = CaregiverProfile(user=user)
         relationship = Relationship(patient=patient, caregiver=caregiver)
-        registration_code = RegistrationCode(relationship=relationship)
+        RegistrationCode(relationship=relationship)
         valid_input_data = {
             'patient': {
                 'legacy_id': 1,
@@ -167,22 +166,16 @@ class TestApiRegistrationRegister:
                 },
             ],
         }
-
-        response = api_client.post(
-            reverse(
-                'api:registration-register',
-                kwargs={'code': 'code11111111'},
-            ),
-            data=valid_input_data,
-            format='json',
-        )
-
-        registration_code.refresh_from_db()
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert registration_code.status == RegistrationCodeStatus.NEW
-        assert response.json() == {
-            'detail': 'Registration code is invalid.',
-        }
+        expected_message = 'RegistrationCode matching query does not exist.'
+        with assertRaisesMessage(RegistrationCodeModel.DoesNotExist, expected_message):  # type: ignore[arg-type]
+            api_client.post(
+                reverse(
+                    'api:registration-register',
+                    kwargs={'code': 'code11111111'},
+                ),
+                data=valid_input_data,
+                format='json',
+            )
 
     def test_registered_registration_code(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test registered registration code."""
@@ -216,20 +209,16 @@ class TestApiRegistrationRegister:
             ],
         }
 
-        response = api_client.post(
-            reverse(
-                'api:registration-register',
-                kwargs={'code': registration_code.code},
-            ),
-            data=valid_input_data,
-            format='json',
-        )
-
-        registration_code.refresh_from_db()
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.json() == {
-            'detail': 'Registration code is invalid.',
-        }
+        expected_message = 'RegistrationCode matching query does not exist.'
+        with assertRaisesMessage(RegistrationCodeModel.DoesNotExist, expected_message):  # type: ignore[arg-type]
+            api_client.post(
+                reverse(
+                    'api:registration-register',
+                    kwargs={'code': registration_code.code},
+                ),
+                data=valid_input_data,
+                format='json',
+            )
 
     def test_register_with_invalid_input_data(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test api registration register success."""
