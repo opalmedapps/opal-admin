@@ -222,3 +222,6 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
             raise exceptions.PermissionDenied(
                 'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.',
             )
+
+# Future Enhancement: Pull common permissions functionality into an abstract base class
+#                     to allow for faster definition of new perms in the future

@@ -72,17 +72,6 @@ class RelationshipType(models.Model):
             + ' A "Self" role type indicates a patient who owns the data that is being accessed.',
         ),
     )
-
-    role_type = models.CharField(
-        verbose_name=_('Relationship Role Type'),
-        choices=RoleType.choices,
-        default=RoleType.CAREGIVER,
-        max_length=14,
-        help_text=_(
-            'Role types track the category of relationship between a caregiver and patient.'
-            + ' A "Self" role type indicates a patient who owns the data that is being accessed.',
-        ),
-    )
     objects = RelationshipTypeManager()
 
     class Meta:
