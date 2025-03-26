@@ -13,6 +13,7 @@ from pytest_mock import MockerFixture
 from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
+from opal.services.general.service_communication import SOURCE_SYSTEM_TIMEOUT
 from opal.services.general.service_error import ServiceErrorHandler
 from opal.services.hospital.hospital import (
     SourceSystemMRNData,
@@ -242,7 +243,7 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
         auth=requests.auth.HTTPBasicAuth(SOURCE_SYSTEM_CREDENTIALS_USER, SOURCE_SYSTEM_CREDENTIALS),
         headers=None,
         json=payload,
-        timeout=15,
+        timeout=SOURCE_SYSTEM_TIMEOUT,
     )
 
 

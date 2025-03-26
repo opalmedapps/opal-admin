@@ -30,15 +30,14 @@ class TestTwilioService:
 
     def test_send_sms_empty_credentials(self, mocker: MockerFixture) -> None:
         """Ensure we catch the TwilioException when instantiating the client."""
-        # Twilio reads environment variables if the provided credentials are falsy
-        mocker.patch.dict('os.environ', {'TWILIO_ACCOUNT_SID': '', 'TWILIO_AUTH_TOKEN': ''})
-        service = TwilioService('', '', self.sender)
+        mocker.patch.object(MessageList, 'create', side_effect=TwilioException('an error occurred'))
 
         with pytest.raises(TwilioServiceError) as exc:
-            service.send_sms('', '')
+            self.service.send_sms('', '')
 
         assert str(exc.value) == 'Sending SMS failed'
         assert isinstance(exc.value.__cause__, TwilioException)
+        assert str(exc.value.__cause__) == 'an error occurred'
 
     def test_send_sms_exception(self, mocker: MockerFixture) -> None:
         """Ensure we catch and handle the TwilioException correctly."""

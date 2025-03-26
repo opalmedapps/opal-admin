@@ -27,11 +27,11 @@ repos:
   hooks:
   - id: isort
 - repo: https://github.com/DavidAnson/markdownlint-cli2
-  rev: v0.16.0
+  rev: v0.17.2
   hooks:
   - id: markdownlint-cli2
 - repo: https://github.com/asottile/pyupgrade
-  rev: v3.19.0
+  rev: v3.19.1
   hooks:
   - id: pyupgrade
     # desired Python version needs to be set explicitly

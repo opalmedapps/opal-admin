@@ -554,7 +554,7 @@ class RegistrationCompletionView(APIView):
         utils.update_caregiver_profile(caregiver_profile, legacy_user.usersernum)
 
 
-class RetrieveCaregiverView(RetrieveAPIView[User]):
+class RetrieveCaregiverView(RetrieveAPIView[Caregiver]):
     """
     View that looks up a caregiver by its username.
 

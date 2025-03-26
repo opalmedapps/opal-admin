@@ -407,12 +407,12 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
             table_data = [existing_user.user] if existing_user else []
             context_data['user_table'] = tables.ExistingUserTable(table_data)
 
-        if current_step == 'confirm' or next_step == 'confirm':
-            # populate relationship type (in case it is just the ID)
-            relationship_form.full_clean()
+            if current_step == 'confirm' or next_step == 'confirm':
+                # populate relationship type (in case it is just the ID)
+                relationship_form.full_clean()
 
-            if relationship_form.is_existing_user_selected(relationship_form.cleaned_data):
-                context_data['next_button_text'] = _('Create Access Request')
+                if relationship_form.is_existing_user_selected(relationship_form.cleaned_data):
+                    context_data['next_button_text'] = _('Create Access Request')
 
         return context_data
 

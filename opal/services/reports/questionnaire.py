@@ -5,12 +5,13 @@ import re
 import types
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 import pandas as pd
 from fpdf import FPDF, FPDF_VERSION, FontFace, FPDFException
-from fpdf.enums import Align, TableBordersLayout
+from fpdf.enums import Align, PageLabelStyle, TableBordersLayout
 from fpdf.outline import OutlineSection
+from fpdf.transitions import Transition
 from plotly import express
 
 from .base import FPDFCellDictType, FPDFMultiCellDictType, InstitutionData, PatientData
@@ -237,21 +238,27 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
     def add_page(  # noqa: WPS211
         self,
         orientation: '_Orientation' = '',
-        format_page: '_Format | tuple[float, float]' = '',
+        format: '_Format | tuple[float, float]' = '',  # noqa: A002, WPS125
         same: bool = False,
-        duration: int = 0,
-        transition: Any | None = None,
+        duration: float = 0,
+        transition: Transition | None = None,
+        label_style: PageLabelStyle | str | None = None,
+        label_prefix: str | None = None,
+        label_start: int | None = None,
     ) -> None:
         """Add new page to the questionnaire report and set the correct spacing for the header.
 
         Args:
             orientation: "portrait" or "landscape". Default to "portrait"
-            format_page: "a3", "a4", "a5", "letter", "legal" or a tuple (width, height). Default to "a4"
+            format: "a3", "a4", "a5", "letter", "legal" or a tuple (width, height). Default to "a4"
             same: indicates to use the same page format as the previous page. Default to False
-            duration: optional page’s display duration
+            duration: optional page's display duration
             transition: optional visual transition to use when moving from another page
+            label_style: defines the numbering style for the numeric portion of each page label
+            label_prefix: prefix string applied to the page label
+            label_start: starting number for the first page of a page label range
         """
-        super().add_page(orientation, format_page, same, duration, transition)
+        super().add_page(orientation, format, same, duration, transition, label_style, label_prefix, label_start)
 
         header_cursor_abscissa_position_in_mm: int = 35
         # Set the cursor at the top (e.g., 3.5 cm from the top).

@@ -37,9 +37,11 @@ def test_api_root_not_accessible_in_non_debug(settings: SettingsWrapper) -> None
 
 def test_api_auth_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API auth endpoints are defined."""
-    auth_login_path = f'/{settings.API_ROOT}/auth/login/'
+    # the trailing slash is optional for dj-rest-auth since v7.0.1
+    auth_login_path = f'/{settings.API_ROOT}/auth/login'
     assert reverse('api:rest_login') == auth_login_path
-    assert resolve(auth_login_path).view_name == 'api:rest_login'
+    # check that the trailing slash still works as expected
+    assert resolve(f'{auth_login_path}/').view_name == 'api:rest_login'
 
 
 def test_api_languages_defined(settings: SettingsWrapper) -> None:

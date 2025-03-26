@@ -6,6 +6,9 @@
     ":separateMultipleMajorReleases",
     // https://docs.renovatebot.com/presets-default/#separatepatchreleases
     ":separatePatchReleases",
+    // https://docs.renovatebot.com/modules/manager/pre-commit/
+    // https://docs.renovatebot.com/presets-default/#enableprecommit
+    ":enablePreCommit",
     "gitlab>opalmedapps/renovate-bot//presets/docker-alpine.json5",
   ],
   // https://docs.renovatebot.com/python/#alternative-file-names
@@ -13,7 +16,7 @@
     "fileMatch": ["^requirements/.*\\.txt$"]
   },
   // https://docs.renovatebot.com/configuration-options/#assignees
-  "assignees": ["mschoettle", "Napparific"],
+  "assignees": ["mschoettle"],
   // https://docs.renovatebot.com/configuration-options/#labels
   "labels": ["dependencies"],
   // https://docs.renovatebot.com/configuration-options/#packagerules
@@ -55,9 +58,4 @@
       "groupName": "pytest packages"
     },
   ],
-  // enable updates for pre-commit
-  // see: https://docs.renovatebot.com/modules/manager/pre-commit/
-  "pre-commit": {
-    "enabled": true
-  }
 }
