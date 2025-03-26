@@ -20,8 +20,8 @@ from opal.caregivers.factories import CaregiverProfile, Device, RegistrationCode
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
 from opal.patients.factories import HospitalPatient, Patient, Relationship
-from opal.users.factories import Caregiver
-from opal.users.models import Caregiver as caregiver_model, User
+from opal.users import factories as caregiver_factories
+from opal.users.models import Caregiver, User
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
@@ -331,14 +331,14 @@ class TestApiRegistrationCompletion:
         """Test api registration register remove skeleton caregiver."""
         api_client.force_login(user=admin_user)
         # Build existing caregiver
-        caregiver = Caregiver(
+        caregiver = caregiver_factories.Caregiver(
             username='test-username',
             first_name='caregiver',
             last_name='test',
         )
         caregiver_profile = CaregiverProfile(user=caregiver)
         # Build skeleton user
-        skeleton = Caregiver(
+        skeleton = caregiver_factories.Caregiver(
             username='skeleton-username',
             first_name='skeleton',
             last_name='test',
@@ -364,7 +364,7 @@ class TestApiRegistrationCompletion:
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
         assert relationship.caregiver.id == caregiver_profile.id
         assert relationship.caregiver.user.id == caregiver.id
-        assert not caregiver_model.objects.filter(username=skeleton.username).exists()
+        assert not Caregiver.objects.filter(username=skeleton.username).exists()
         assert not caregiver_models.CaregiverProfile.objects.filter(user=skeleton).exists()
 
 
@@ -804,7 +804,7 @@ class TestPatientDemographicView:
         Returns:
             Authorized API client.
         """
-        user = Caregiver(username='lisaphillips')
+        user = caregiver_factories.Caregiver(username='lisaphillips')
         permission = Permission.objects.get(codename='change_patient')
         user.user_permissions.add(permission)
         api_client.force_login(user=user)
@@ -821,8 +821,8 @@ class TestPatientCaregiversView:
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id)
 
-        user1 = Caregiver(language='en', phone_number='+11234567890')
-        user2 = Caregiver(language='fr', phone_number='+11234567891')
+        user1 = caregiver_factories.Caregiver(language='en', phone_number='+11234567890')
+        user2 = caregiver_factories.Caregiver(language='fr', phone_number='+11234567891')
         caregiver1 = CaregiverProfile(user=user1)
         caregiver2 = CaregiverProfile(user=user2)
         Relationship(caregiver=caregiver1, patient=patient)
