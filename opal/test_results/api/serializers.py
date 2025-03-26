@@ -16,7 +16,21 @@ class GeneralTestSerializer(DynamicFieldsSerializer):
 
     class Meta:
         model = GeneralTest
-        fields = '__all__'
+        fields = (
+            'patient',
+            'type',
+            'sending_facility',
+            'receiving_facility',
+            'collected_at',
+            'received_at',
+            'message_type',
+            'message_event',
+            'test_group_code',
+            'test_group_code_description',
+            'legacy_document_id',
+            'case_number',
+            'reported_at',
+        )
 
 
 class ObservationSerializer(DynamicFieldsSerializer):
@@ -24,7 +38,18 @@ class ObservationSerializer(DynamicFieldsSerializer):
 
     class Meta:
         model = Observation
-        fields = '__all__'
+        fields = (
+            'general_test',
+            'identifier_code',
+            'identifier_text',
+            'value',
+            'value_units',
+            'value_min_range',
+            'value_max_range',
+            'value_abnormal',
+            'observed_at',
+            'updated_at',
+        )
 
 
 class NoteSerializer(DynamicFieldsSerializer):
@@ -32,7 +57,12 @@ class NoteSerializer(DynamicFieldsSerializer):
 
     class Meta:
         model = Note
-        fields = '__all__'
+        fields = (
+            'general_test',
+            'note_source',
+            'note_text',
+            'updated_at',
+        )
 
 
 class PatientUUIDRelatedField(serializers.RelatedField):
@@ -108,6 +138,25 @@ class PathologySerializer(GeneralTestSerializer):
         allow_empty=False,
         required=True,
     )
+
+    class Meta:
+        model = GeneralTest
+        fields = (
+            'patient',
+            'observations',
+            'notes',
+            'type',
+            'sending_facility',
+            'receiving_facility',
+            'collected_at',
+            'received_at',
+            'message_type',
+            'message_event',
+            'test_group_code',
+            'test_group_code_description',
+            'case_number',
+            'reported_at',
+        )
 
     @transaction.atomic
     def create(self, validated_data: dict[str, Any]) -> GeneralTest:
