@@ -136,11 +136,13 @@ def fetch_devices_summary(
     )
 
 
-def fetch_patients_received_data_summary(
+def fetch_patients_received_clinical_data_summary(
     start_date: dt.date,
     end_date: dt.date,
 ) -> dict[str, Any]:
     """Fetch grouped patients received data summary from the `DailyPatientDataReceived` model.
+
+    The summary includes only clinical data (e.g., appointments, labs, clinical notes, diagnosis).
 
     Args:
         start_date: the beginning of the time period of the patients received data summary (inclusive)
