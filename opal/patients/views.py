@@ -231,7 +231,7 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
             relationship_form.full_clean()
 
             if relationship_form.is_existing_user_selected(relationship_form.cleaned_data):
-                context_data['next_button_text'] = _('Submit Access Request')
+                context_data['next_button_text'] = _('Create Access Request')
 
         # TODO: might not be needed anymore
         context_data['next_button_disabled'] = disable_next
