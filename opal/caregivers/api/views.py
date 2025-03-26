@@ -10,9 +10,10 @@ from django.db.models.functions import SHA512
 from django.db.models.manager import Manager
 from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
-from django.utils import timezone, translation
-from django.utils.translation import gettext  # noqa: WPS458
+from django.utils import timezone
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import override
 
 from rest_framework import exceptions
 from rest_framework import serializers
@@ -396,7 +397,7 @@ class RegistrationCompletionView(APIView):
             email: the target email
             language: the language of user
         """
-        with translation.override(language):
+        with override(language):
             email_plain = render_to_string(
                 'email/confirmation_email.txt',
             )
