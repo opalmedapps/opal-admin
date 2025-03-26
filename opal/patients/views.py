@@ -857,9 +857,8 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
         )
 
         # when the post is triggered by up validate
-        if 'X-Up-Validate' not in self.request.headers:
-            if form.is_valid():
-                return super().post(request, **kwargs)
+        if 'X-Up-Validate' not in self.request.headers and form.is_valid():
+            return super().post(request, **kwargs)
 
         return self.render_to_response({
             'table': tables.PatientTable([relationship_record.patient]),
