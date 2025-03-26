@@ -30,6 +30,7 @@ class PatientSerializer(DynamicFieldsSerializer):
             'data_access',
             'sex',
             'ramq',
+            'is_adult',
             'non_interpretable_lab_result_delay',
             'interpretable_lab_result_delay',
         ]
