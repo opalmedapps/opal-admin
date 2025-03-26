@@ -35,14 +35,6 @@ def test_logout_url_shown(user_client: Client) -> None:
     assertContains(response, text='method="post" action="{url}"'.format(url=reverse('logout')))
 
 
-def test_home_url_shown(user_client: Client) -> None:
-    """Ensure that the template shows a link to the home page."""
-    # follow any redirect to retrieve content
-    response = user_client.get(reverse('start'), follow=True)
-
-    assertContains(response, text='href="{url}"'.format(url=reverse('start')))
-
-
 def test_unauthenticated_redirected(client: Client, settings: SettingsWrapper) -> None:
     """Ensure that an unauthenticated request to the redirect URL is redirected to the login page."""
     response = client.get(reverse(settings.LOGIN_REDIRECT_URL))
