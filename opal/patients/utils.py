@@ -73,7 +73,7 @@ def search_valid_relationship_types(date_of_birth: date) -> List[Dict[str, Any]]
     Search for valid relationship types according to patient age.
 
     Args:
-        date_of_birth: date of birth of the patientt
+        date_of_birth: date of birth of the patient
 
     Returns:
         list(queryset): list of ids of filtered relationship types
