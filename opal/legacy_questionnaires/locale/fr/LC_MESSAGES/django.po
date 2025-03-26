@@ -20,4 +20,4 @@ msgstr ""
 
 #: opal/legacy_questionnaires/apps.py
 msgid "Legacy Questionnaires"
-msgstr ""
+msgstr "Questionnaires hérités"
