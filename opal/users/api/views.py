@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 
 from rest_framework import generics
 
+from ...core.drf_permissions import CustomDjangoModelPermissions
 from .serializers import GroupSerializer
 
 
@@ -13,3 +14,4 @@ class ListGroupView(generics.ListAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     pagination_class = None
+    permission_classes = [CustomDjangoModelPermissions]
