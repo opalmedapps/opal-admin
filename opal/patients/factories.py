@@ -10,7 +10,7 @@ reference from:
 import datetime
 
 from dateutil.relativedelta import relativedelta
-from factory import RelatedFactory, Sequence, SubFactory, lazy_attribute
+from factory import Sequence, SubFactory, lazy_attribute
 from factory.django import DjangoModelFactory
 
 from opal.caregivers.factories import CaregiverProfile
@@ -63,15 +63,6 @@ class Relationship(DjangoModelFactory):
     start_date = lazy_attribute(lambda relationship: relationship.patient.date_of_birth)
     end_date = datetime.date.today() + relativedelta(years=2)
     reason = ''
-
-
-class CaregiverWithPatients(CaregiverProfile):
-    """Model factory to create caregiverWithPatients models."""
-
-    caregivers = RelatedFactory(
-        Relationship,
-        factory_related_name='caregiver',
-    )
 
 
 class HospitalPatient(DjangoModelFactory):
