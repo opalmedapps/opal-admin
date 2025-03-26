@@ -255,5 +255,5 @@ msgid "New Relationship Type"
 msgstr ""
 
 #: opal/patients/templates/patients/relationships/pending/list.html
-#~ msgid "Pending Caregiver Access Requests"
-#~ msgstr ""
+# msgid "Pending Caregiver Access Requests"
+# msgstr ""
