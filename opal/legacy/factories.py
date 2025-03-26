@@ -350,3 +350,72 @@ class LegacyTestResultFactory(DjangoModelFactory):
     valid_entry = 'Y'
     date_added = timezone.make_aware(datetime(2018, 1, 1))
     read_status = Faker('random_int', min=0, max=1)
+
+
+class LegacyTestControlFactory(DjangoModelFactory):
+    """LegacyTestControl factory."""
+
+    class Meta:
+        model = models.LegacyTestControl
+
+    name_en = Faker('name')
+    name_fr = Faker('name')
+    group_en = Faker('name')
+    group_fr = Faker('name')
+    description_en = Faker('name')
+    description_fr = Faker('name')
+    source_database = SubFactory(LegacySourceDatabaseFactory)
+    educational_material_control_ser_num = SubFactory(LegacyEducationalMaterialControlFactory)
+    publish_flag = 1
+    url_en = Faker('url')
+    url_fr = Faker('url')
+
+
+class LegacyTestExpressionFactory(DjangoModelFactory):
+    """LegacyTestExpression factory."""
+
+    class Meta:
+        model = models.LegacyTestExpression
+
+    test_code = Faker('random_int')
+    test_control_ser_num = SubFactory(LegacyTestControlFactory)
+    source_database = SubFactory(LegacySourceDatabaseFactory)
+    expression_name = Faker('word')
+
+
+class LegacyTestGroupExpressionFactory(DjangoModelFactory):
+    """LegacyTestGroupExpression factory."""
+
+    class Meta:
+        model = models.LegacyTestGroupExpression
+
+    test_code = Faker('random_int')
+    source_database = SubFactory(LegacySourceDatabaseFactory)
+    expression_name = Faker('word')
+
+
+class LegacyPatientTestResultFactory(DjangoModelFactory):
+    """LegacyPatientTestResult factory."""
+
+    class Meta:
+        model = models.LegacyPatientTestResult
+
+    patient_ser_num = SubFactory(LegacyPatientFactory)
+    test_group_expression_ser_num = SubFactory(LegacyTestGroupExpressionFactory)
+    test_expression_ser_num = SubFactory(LegacyTestExpressionFactory)
+    abnormal_flag = Faker('random_int')
+    sequence_num = Faker('random_int')
+    normal_range_min = Faker('random_int')
+    normal_range_max = Faker('random_int')
+    normal_range = lazy_attribute(
+        lambda legacypatienttestresult:
+        str(legacypatienttestresult.normal_range_min)
+        + '-'
+        + str(legacypatienttestresult.normal_range_max),
+    )
+    test_value_numeric = Faker('pyfloat', positive=True)
+    test_value_string = lazy_attribute(lambda legacypatienttestresult: str(legacypatienttestresult.test_value_numeric))
+    collected_date_time = timezone.make_aware(datetime(2018, 1, 1))
+    result_date_time = timezone.make_aware(datetime(2018, 1, 1))
+    unit_description = 'mmol'
+    read_by = ''
