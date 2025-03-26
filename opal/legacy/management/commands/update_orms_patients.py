@@ -35,12 +35,12 @@ class Command(BaseCommand):
         patients = Patient.objects.prefetch_related(
             'hospital_patients__site',
         )
-        unupdated_patients = []
+        skipped_patients = []
 
         for patient in patients:
             hospital_patient = patient.hospital_patients.first()
             if not hospital_patient:
-                unupdated_patients.append(patient)
+                skipped_patients.append(patient)
                 continue
 
             # Try to send an HTTP POST request and get a response
@@ -60,11 +60,11 @@ class Command(BaseCommand):
                     timeout=5,
                 )
             except requests.exceptions.RequestException as req_exp:
-                unupdated_patients.append(patient)
-                # log ORMS errors
+                skipped_patients.append(patient)
+                # Print an error to the console
                 self.stderr.write(
                     '{error_msg}\npatient_id={patient_id}\t\tpatient_uuid={patient_uuid}\n{exp_msg}'.format(
-                        error_msg="An error occurred during patients' UUID update!",
+                        error_msg="An error occurred during patient's UUID update!",
                         patient_id=patient.id,
                         patient_uuid=str(patient.uuid),
                         exp_msg=str(req_exp),
@@ -72,32 +72,32 @@ class Command(BaseCommand):
                 )
                 continue
 
-            # Add patient to the unupdated_patients list if the response status code is not success
+            # Add patient to the skipped_patients list if the response status code is not success
             if status.is_success(response.status_code) is False:
-                unupdated_patients.append(patient)
+                skipped_patients.append(patient)
 
         self.stdout.write('\n\n{0}\n'.format(SPLIT_LENGTH * '-'))
         self.stdout.write(
             'Updated {0} out of {1} patients.'.format(
-                patients.count() - len(unupdated_patients),
+                patients.count() - len(skipped_patients),
                 patients.count(),
             ),
         )
 
-        self._print_unupdated_patients(unupdated_patients)
+        self._print_skipped_patients(skipped_patients)
 
-    def _print_unupdated_patients(self, unupdated_patients: list) -> None:
+    def _print_skipped_patients(self, skipped_patients: list) -> None:
         """Print the patients' UUIDs that were not updated in the ORMS.
 
         Args:
-            unupdated_patients: patients that were not updated
+            skipped_patients: patients that were not updated
         """
-        if unupdated_patients:
+        if skipped_patients:
             self.stderr.write('\nThe following patients were not updated:\n')
-            for unupdated_patient in unupdated_patients:
+            for skipped_patient in skipped_patients:
                 self.stderr.write(
                     'patient_id={patient_id}\t\tpatient_uuid={patient_uuid}\n'.format(
-                        patient_id=unupdated_patient.id,
-                        patient_uuid=str(unupdated_patient.uuid),
+                        patient_id=skipped_patient.id,
+                        patient_uuid=str(skipped_patient.uuid),
                     ),
                 )

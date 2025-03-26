@@ -52,11 +52,11 @@ class RequestMockerTest:
         """Mock an HTTP POST call to a web service.
 
         Args:
-            mocker (MockerFixture): object that provides the same interface to functions in the mock module
-            response_data (dict[str, str]): generated mock response data
+            mocker: object that provides the same interface to functions in the mock module
+            response_data: generated mock response data
 
         Returns:
-            MagicMock: object that mocks HTTP post request to the web service
+            object that mocks HTTP post request to the web service
         """
         mock_post = mocker.patch('requests.post')
         response = requests.Response()
@@ -76,11 +76,11 @@ class RequestMockerTest:
         """Mock an HTTP GET call to a web service.
 
         Args:
-            mocker (MockerFixture): object that provides the same interface to functions in the mock module
-            generated_response_data (dict[str, str]): generated mock response data
+            mocker: object that provides the same interface to functions in the mock module
+            generated_response_data: generated mock response data
 
         Returns:
-            MagicMock: object that mocks HTTP get request to the web service
+            object that mocks HTTP get request to the web service
         """
         mock_get = mocker.patch('requests.get')
         response = requests.Response()
