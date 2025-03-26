@@ -11,8 +11,8 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from opal.patients.factories import Patient
-from opal.users.models import User
 from opal.pharmacy import models
+from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
