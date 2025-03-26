@@ -25,6 +25,7 @@ class Command(BaseCommand):
             kwargs: input arguments.
         """
         legacy_users = LegacyUsers.objects.filter(usertype='Patient')
+        # TODO: change relying on name in retrieving the relationship type, after QSCCD-645.
         relationshiptype = RelationshipType.objects.filter(name='self').first()
         migrated_users_count = 0
         for legacy_user in legacy_users:
@@ -71,7 +72,12 @@ class Command(BaseCommand):
             f'Number of imported users is: {migrated_users_count}',
         )
 
-    def _create_relationship(self, patient: Patient, caregiver_profile: CaregiverProfile, relationshiptype: RelationshipType) -> None:  # noqa: E501
+    def _create_relationship(
+        self,
+        patient: Patient,
+        caregiver_profile: CaregiverProfile,
+        relationshiptype: RelationshipType,
+    ) -> None:
         """
             Check the self relationship between caregiver and patient and migrated if it does not exist.
 
@@ -84,7 +90,7 @@ class Command(BaseCommand):
         relationship = Relationship.objects.filter(
             patient=patient,
             caregiver=caregiver_profile,
-            type__name='SELF',
+            type=relationshiptype,
         ).first()
         if relationship:
             self.stdout.write(
