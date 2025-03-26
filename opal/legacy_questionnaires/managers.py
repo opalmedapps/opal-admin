@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 
 from django.db import connections, models, transaction
 from django.db.backends.utils import CursorWrapper
+from django.utils import timezone
 
 from opal.patients.models import RelationshipType
 
@@ -98,7 +99,10 @@ class LegacyAnswerQuestionnaireManager(models.Manager['LegacyAnswerQuestionnaire
 
         # Execute SQL contents
         with connections['questionnaire'].cursor() as conn:
-            conn.execute(self._read_local_sql(query_dir_details), [patient_ser_num, last_synchronized.isoformat()])
+            conn.execute(
+                self._read_local_sql(query_dir_details),
+                [patient_ser_num, timezone.make_naive(last_synchronized)],
+            )
             conn.execute(self._read_local_sql(query_dir_answer))
             return self._fetch_all_as_dict(conn)
 

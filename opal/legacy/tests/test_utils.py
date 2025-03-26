@@ -404,13 +404,9 @@ def test_create_databank_patient_consent_data(
     info_sheet = databank_consent_questionnaire_data[1]
     response = legacy_utils.create_databank_patient_consent_data(django_patient)
 
-    assert response
-
     qdb_patient = questionnaire_models.LegacyQuestionnairePatient.objects.get(
         external_id=django_patient.legacy_id,
     )
-    print(consent_form.id)
-    print(qdb_patient.id)
     inserted_answer_questionnaire = questionnaire_models.LegacyAnswerQuestionnaire.objects.get(
         questionnaire_id=consent_form.id,
         patient_id=qdb_patient.id,

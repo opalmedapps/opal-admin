@@ -1,13 +1,15 @@
 import re
 from datetime import datetime
 
+from django.utils import timezone
+
 import pytest
 
 from opal.caregivers import factories as caregiver_factories
 from opal.patients import factories as patient_factories
 
 from .. import factories
-from ..models import LegacyAnswerQuestionnaire, LegacyDictionary, LegacyQuestionnaire
+from ..models import LegacyAnswerQuestionnaire, LegacyQuestionnaire
 
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 
@@ -22,7 +24,7 @@ def test_get_questionnaire_databank_data(questionnaire_data: None) -> None:
     # Prepare patients and last cron run time
     non_consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=52)
     consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=51)
-    last_cron_sync_time = datetime(2023, 1, 1, 0, 0, 5)
+    last_cron_sync_time = timezone.make_aware(datetime(2023, 1, 1, 0, 0, 5))
 
     # Fetch the data
     databank_data_empty = LegacyAnswerQuestionnaire.objects.get_databank_data_for_patient(
@@ -52,7 +54,7 @@ def test_get_questionnaire_databank_data(questionnaire_data: None) -> None:
     }
 
     for questionnaire_answer in databank_data:
-        assert questionnaire_answer['last_updated'] > last_cron_sync_time
+        assert timezone.make_aware(questionnaire_answer['last_updated']) > last_cron_sync_time
         assert not (set(expected_returned_fields) - set(questionnaire_answer.keys()))
         assert 'consent' not in questionnaire_answer['questionnaire_title'].lower()
         assert re.search(r'\bmiddle\s+name\b', questionnaire_answer['question_text'], re.IGNORECASE) is None
@@ -141,7 +143,6 @@ def test_new_questionnaires_return_empty_without_respondent_matching() -> None:
 
     Get empty questionnaires with unexpected respondents
     """
-    print(LegacyDictionary.objects.all())
     caregiver = caregiver_factories.Caregiver(username='test_new_questionnaires')
     caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
     legacy_patient = factories.LegacyQuestionnairePatientFactory()
@@ -155,8 +156,6 @@ def test_new_questionnaires_return_empty_without_respondent_matching() -> None:
         caregiver=caregiver_profile,
         patient=patient,
     )
-
-    print(LegacyDictionary.objects.all())
 
     # legacy factory instances
     legacy_dictionary = factories.LegacyDictionaryFactory(
