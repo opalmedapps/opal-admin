@@ -1,6 +1,5 @@
 """This module provides views for hospital-specific settings."""
 import io
-import uuid
 from collections import Counter
 from datetime import date
 from typing import Any, Dict, List, Tuple
@@ -18,6 +17,8 @@ from django_tables2 import MultiTableMixin, SingleTableView
 from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
 
+from opal.caregivers.models import RegistrationCode
+from opal.core.utils import generate_random_registration_code, generate_random_uuid
 from opal.core.views import CreateUpdateView
 from opal.patients import forms
 from opal.services.hospital.hospital_data import OIEPatientData
@@ -257,17 +258,51 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         # process form data for easily accessing to
         new_form_data = self._process_form_data(form_data)
         # generate access request for both of the case(new user or existing user)
-        self._generate_access_request(new_form_data)
-
-        factory = svg.SvgImage
-        img = qrcode.make(new_form_data['sites'], image_factory=factory, box_size=10)
-        stream = io.BytesIO()
-        img.save(stream)
+        relationship = self._generate_access_request(new_form_data)
+        # get a random registration code
+        registration_code = generate_random_registration_code(constants.REGISTRATION_CODE_LENGTH)
+        # create the registration code instance for the relationship
+        self._create_registration_code(relationship, registration_code)
+        # generate QR code for Opal registration system
+        stream = self._generate_qr_code(registration_code)
 
         return render(self.request, 'patients/access_request/test_qr_code.html', {
             'svg': stream.getvalue().decode(),
             'header_title': _('QR Code Generation'),
         })
+
+    def _generate_qr_code(self, registration_code: str) -> io.BytesIO:
+        """
+        Generate a QR code for Opal registration system.
+
+        Args:
+            registration_code: registration code
+
+        Returns:
+            the start date
+        """
+        factory = svg.SvgImage
+        img = qrcode.make(
+            'https://registration.opalmedapps.ca/#!/?code={0}'.format(registration_code),
+            image_factory=factory,
+            box_size=constants.QR_CODE_BOX_SIZE,
+        )
+        stream = io.BytesIO()
+        img.save(stream)
+        return stream
+
+    def _create_registration_code(self, relationship: Relationship, registration_code: str) -> None:
+        """
+        Create registration code instance for the given relationship.
+
+        Args:
+            relationship: relationship instance
+            registration_code: registration code
+        """
+        RegistrationCode.objects.get_or_create(
+            relationship=relationship,
+            code=registration_code,
+        )
 
     def _set_relationship_start_date(self, date_of_birth: date, relationship_type: str) -> date:
         """
@@ -303,7 +338,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             random_username_length: the length of random username
 
         Returns:
-            caregiver user nad caregiver profile instance dictionary
+            caregiver user and caregiver profile instance dictionary
         """
         if form_data['user_type'] == str(constants.EXISTING_USER):
             # Get the Caregiver user if it exists
@@ -314,7 +349,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         else:
             # Create a new Caregiver user
             caregiver_user = Caregiver.objects.create(
-                username=uuid.uuid4().hex[:random_username_length],
+                username=generate_random_uuid(random_username_length),
                 first_name=form_data['first_name'],
                 last_name=form_data['last_name'],
             )
@@ -359,7 +394,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         form_data: dict,
         caregiver_dict: dict[str, Any],
         patient: Patient,
-    ) -> None:
+    ) -> Relationship:
         """
         Create relationship instance if not exists.
 
@@ -367,6 +402,9 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             form_data: form data
             caregiver_dict: caregiver user nad caregiver profile instance dictionary
             patient: patient instance
+
+        Returns:
+            relationship instance
         """
         caregiver_user = caregiver_dict['caregiver_user']
         caregiver = caregiver_dict['caregiver']
@@ -381,13 +419,13 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             caregiver_user.last_name,
             caregiver_user.id,
             patient_record.ramq,
-        )
+        ).first()
 
         # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done
         # For `Self` relationship, the status is CONFIRMED
         status = RelationshipStatus.CONFIRMED if str(relationship_type) == 'Self' else RelationshipStatus.PENDING
         if not relationships:
-            Relationship.objects.create(
+            relationships = Relationship.objects.create(
                 patient=patient,
                 caregiver=caregiver,
                 type=relationship_type,
@@ -400,7 +438,18 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
                 ),
             )
 
-    def _generate_access_request(self, new_form_data: dict) -> None:
+        return relationships
+
+    def _generate_access_request(self, new_form_data: dict) -> Relationship:
+        """
+        Generate the relationship instance.
+
+        Args:
+            new_form_data: processed form data
+
+        Returns:
+            relationship instance
+        """
         # Create caregiver user and caregiver profile if not exists
         caregiver_dict = self._create_caregiver_profile(new_form_data, random_username_length=constants.USERNAME_LENGTH)
 
@@ -408,7 +457,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         patient = self._create_patient(new_form_data)
 
         # Create relationship instance if not exists
-        self._create_relationship(new_form_data, caregiver_dict, patient)
+        return self._create_relationship(new_form_data, caregiver_dict, patient)
 
     def _process_form_data(self, forms_data: list) -> dict:
         """
