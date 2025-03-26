@@ -192,10 +192,10 @@ msgstr "ID du document hérité"
 
 #: opal/test_results/models.py
 msgid ""
-"OpalDB.Document.DocumentSerNum, used for displaying pathology PDFs to "
+"OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to "
 "patients."
 msgstr ""
-"OpalDB.Document.DocumentSerNum, utilisé pour afficher les PDF de pathologie "
+"OpalDB.Document.DocumentSerNum, utilisé pour afficher les pdf de pathologie "
 "aux patients"
 
 #: opal/test_results/models.py

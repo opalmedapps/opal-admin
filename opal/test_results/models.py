@@ -247,7 +247,7 @@ class GeneralTest(models.Model):
         verbose_name=_('Legacy Document ID'),
         blank=True,
         null=True,
-        help_text=_('OpalDB.Document.DocumentSerNum, used for displaying pathology PDFs to patients.'),
+        help_text=_('OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to patients.'),
     )
     case_number = models.CharField(
         verbose_name=_('Case Number'),
