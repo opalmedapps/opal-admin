@@ -213,7 +213,7 @@ def test_relationship_str() -> None:
 
     relationship = factories.Relationship.build(patient=patient, caregiver=profile)
 
-    assert str(relationship) == 'Kobe Briant <--> John Wayne [Self]'
+    assert str(relationship) == 'Kobe Briant <--> John Wayne [Caregiver]'
 
 
 def test_relationship_factory() -> None:
@@ -499,7 +499,7 @@ def test_relationshiptype_duplicate_self_role() -> None:
     roletype_self_copy = factories.RelationshipType()
     roletype_self_copy.role_type = RoleType.SELF
 
-    message = "['There must always be exactly one SELF and one PARENTGUARDIAN roles.']"
+    message = "['There must always be exactly one SELF and one PARENTGUARDIAN roles']"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
         roletype_self_copy.clean()
 
@@ -513,6 +513,6 @@ def test_relationshiptype_duplicate_parent_role() -> None:
     roletype_parent_copy = factories.RelationshipType()
     roletype_parent_copy.role_type = RoleType.PARENTGUARDIAN
 
-    message = "['There must always be exactly one SELF and one PARENTGUARDIAN roles.']"
+    message = "['There must always be exactly one SELF and one PARENTGUARDIAN roles']"
     with assertRaisesMessage(ValidationError, message):  # type: ignore[arg-type]
         roletype_parent_copy.clean()

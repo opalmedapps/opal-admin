@@ -16,15 +16,6 @@ def test_relationshiptypes_list_table(user_client: Client) -> None:
     assert response.context['table'].__class__ == tables.RelationshipTypeTable
 
 
-def test_relationshiptypes_list_empty(user_client: Client) -> None:
-    """Relationship types list shows message when no types are defined."""
-    response = user_client.get(reverse('patients:relationshiptype-list'))
-
-    assert response.status_code == HTTPStatus.OK
-
-    assertContains(response, 'No relationship types defined.')
-
-
 def test_relationshiptypes_list(user_client: Client) -> None:
     """Relationship types are listed."""
     types = [factories.RelationshipType(), factories.RelationshipType(name='Second')]
@@ -32,7 +23,7 @@ def test_relationshiptypes_list(user_client: Client) -> None:
     response = user_client.get(reverse('patients:relationshiptype-list'))
     response.content.decode('utf-8')
 
-    assertQuerysetEqual(response.context['relationshiptype_list'], types)
+    assertQuerysetEqual(response.context['relationshiptype_list'], models.RelationshipType.objects.order_by('id'))
 
     for relationship_type in types:
         assertContains(response, f'<td >{relationship_type.name}</td>')
@@ -54,8 +45,8 @@ def test_relationshiptype_create(user_client: Client) -> None:
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
 
-    assert models.RelationshipType.objects.count() == 1
-    assert models.RelationshipType.objects.get().name == relationship_type.name
+    assert models.RelationshipType.objects.count() == 3
+    assert models.RelationshipType.objects.get(name='Testname').name == relationship_type.name
 
 
 def test_relationshiptype_update_get(user_client: Client) -> None:
@@ -68,7 +59,7 @@ def test_relationshiptype_update_get(user_client: Client) -> None:
     )
 
     assertContains(response, 'Update Relationship Type')
-    assertContains(response, 'value="Self"')
+    assertContains(response, 'value="Caregiver"')
 
 
 def test_relationshiptype_update_post(user_client: Client) -> None:
@@ -82,7 +73,7 @@ def test_relationshiptype_update_post(user_client: Client) -> None:
         data=model_to_dict(relationship_type, exclude=['id']),
     )
 
-    assert models.RelationshipType.objects.get().end_age == 100
+    assert models.RelationshipType.objects.get(pk=relationship_type.pk).end_age == 100
 
 
 def test_relationshiptype_delete_get(user_client: Client) -> None:
@@ -93,8 +84,7 @@ def test_relationshiptype_delete_get(user_client: Client) -> None:
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
-
-    assertContains(response, 'Are you sure you want to delete the following relationship type: Self?')
+    assertContains(response, 'Are you sure you want to delete the following relationship type: Caregiver?')
 
 
 def test_relationshiptype_delete(user_client: Client) -> None:
@@ -105,7 +95,7 @@ def test_relationshiptype_delete(user_client: Client) -> None:
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
     )
 
-    assert models.RelationshipType.objects.count() == 0
+    assert models.RelationshipType.objects.count() == 2
 
 
 def test_relationships_list_table(user_client: Client) -> None:

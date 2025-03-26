@@ -9,13 +9,15 @@ from opal.patients import constants
 def generate_restricted_roletypes(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """Generate the restricted role type objects and save to database."""
     RelationshipType = apps.get_model('patients', 'RelationshipType')
+    # Clear before migrating to avoid potential 'out-of-sync' error situations
+    RelationshipType.objects.all().delete()
 
     relationship_type_self = RelationshipType.objects.create(
         name='self',
         name_en='SELF',
-        name_fr='',
+        name_fr='SELF',
         description_en='A Self role type indicates a patient who owns the data that is being accessed.',
-        description_fr='',
+        description_fr='Un type de rôle Self indique un patient qui possède les données auxquelles on accède.',
         start_age=14,
         role_type=RoleType.SELF,
     )
@@ -25,7 +27,7 @@ def generate_restricted_roletypes(apps: Apps, schema_editor: BaseDatabaseSchemaE
         name_en='PARENT/GUARDIAN',
         name_fr='PARENT/TUTEUR',
         description_en='A parent or guardian of a patient.',
-        description_fr='',
+        description_fr="Un parent ou un tuteur d'un patient.",
         start_age=constants.RELATIONSHIP_MIN_AGE,
         end_age=14,
         role_type=RoleType.PARENTGUARDIAN,
