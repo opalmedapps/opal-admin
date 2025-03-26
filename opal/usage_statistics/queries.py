@@ -66,7 +66,7 @@ def fetch_caregivers_summary(
     )
 
 
-# TODO: add (start_date, end_date) parameters to the fetch_patients_summary() function.
+# TODO: QSCCD-2168 - add (start_date, end_date) parameters to the fetch_patients_summary() function.
 def fetch_patients_summary() -> dict[str, Any]:
     """Fetch grouped patients summary from `Patient` model.
 
