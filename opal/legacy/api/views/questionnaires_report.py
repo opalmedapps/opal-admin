@@ -18,7 +18,7 @@ from opal.services.reports import QuestionnaireReportRequestData, ReportService
 from ..serializers import QuestionnaireReportRequestSerializer
 
 
-class QuestionnairesReportCreateAPIView(APIView):
+class QuestionnairesReportView(APIView):
     """View to generate a questionnaires PDF report."""
 
     permission_classes = [permissions.IsAuthenticated]

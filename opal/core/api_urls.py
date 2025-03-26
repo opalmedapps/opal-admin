@@ -15,7 +15,7 @@ from opal.hospital_settings.api import viewsets as settings_views
 from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_home import AppHomeView
 from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
-from opal.legacy.api.views.questionnaires_report import QuestionnairesReportCreateAPIView
+from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
@@ -42,6 +42,6 @@ urlpatterns = [
         name='caregiver-permissions',
     ),
     path('registration/by-hash/<str:hash>/', GetRegistrationEncryptionInfoView.as_view(), name='registration-by-hash'),
-    path('questionnaires/reviewed/', QuestionnairesReportCreateAPIView.as_view(), name='questionnaires-reviewed'),
+    path('questionnaires/reviewed/', QuestionnairesReportView.as_view(), name='questionnaires-reviewed'),
     path('', include(router.urls)),
 ]
