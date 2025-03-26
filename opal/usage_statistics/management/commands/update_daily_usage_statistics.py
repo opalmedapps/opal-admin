@@ -63,20 +63,18 @@ class Command(BaseCommand):
             args: input arguments
             options:  additional keyword arguments
         """
-        # TODO: Remove, convenience CL arg for testing
-        force_delete: bool = options['force_delete']
-        if force_delete:
+        # Convenience CL arg for testing; DO NOT USE IN PROD!
+        if options['force_delete']:
             self.stdout.write(self.style.WARNING('Deleting existing data'))
             DailyUserAppActivity.objects.all().delete()
             DailyPatientDataReceived.objects.all().delete()
 
-        # Optional today parameter for calculating app statistics for the current day between 00:00:00 and 23:59:59
-        today: bool = options['today']
         # By default the command extract the statistics for the previous day
         days_delta = 1
 
-        if today:
-            self.stdout.write(self.style.WARNING('Calculating statistics for today'))
+        # Optional today parameter for calculating app statistics for the current day between 00:00:00 and 23:59:59
+        if options['today']:
+            self.stdout.write(self.style.WARNING('Calculating usage statistics for today'))
             days_delta = 0
 
         # Set the default query time period for the previous complete day (e.g., between 00:00:00 and 23:59:59)
@@ -91,17 +89,16 @@ class Command(BaseCommand):
             timezone.get_current_timezone(),
         )
 
-        activities = LegacyPatientActivityLog.objects.get_app_activities(
+        activities = LegacyPatientActivityLog.objects.get_aggregated_app_activities(
             start_datetime_period=start_datetime_period,
             end_datetime_period=end_datetime_period,
         )
-        print('DEBUG SQL Query:', str(activities.query))
-        print(activities.count())
+
         self._populate_user_app_activities(activities=activities)
 
-        self.stdout.write(self.style.SUCCESS('Successfully populated DailyUserAppActivity'))
+        self.stdout.write(self.style.SUCCESS('Successfully populated statistics data to DailyUserAppActivity model'))
 
-    def _populate_user_app_activities(  # noqa: WPS210
+    def _populate_user_app_activities(
         self,
         activities: ValuesQuerySet['LegacyPatientActivityLog', dict[str, Any]],
     ) -> None:
@@ -151,7 +148,7 @@ class Command(BaseCommand):
             #     Q(count_checkins__gt=0) |
 
             if any(conditions):
-                user_app_activity = DailyUserAppActivity(
+                DailyUserAppActivity(
                     action_by_user=user,
                     # Feedback: It makes sense to filter only confirmed relationships... I think?
                     user_relationship_to_patient=Relationship.objects.filter(
@@ -175,5 +172,4 @@ class Command(BaseCommand):
                     count_device_android=activity['count_device_android'],
                     count_device_browser=activity['count_device_browser'],
                     date_added=timezone.now().date(),
-                )
-                user_app_activity.save()
+                ).save()

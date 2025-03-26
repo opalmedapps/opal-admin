@@ -479,13 +479,15 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
 class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']):
     """LegacyPatientActivityLog model manager."""
 
-    def get_app_activities(
+    def get_aggregated_app_activities(
         self,
         start_datetime_period: datetime,
         end_datetime_period: datetime,
     ) -> ValuesQuerySet['LegacyPatientActivityLog', dict[str, Any]]:
         """
-        Retrieve application activity statistics for a given time period from `PatientActivityLog` (a.k.a. PAL) table.
+        Retrieve aggregated application activity statistics for a given time period.
+
+        The statistics are fetched from the legacy `PatientActivityLog` (a.k.a. PAL) table.
 
         NOTE! `PatientActivityLog.DateTime` field stores the datetime in the EST time zone format
         (e.g., zoneinfo.ZoneInfo(key=EST5EDT))), while new Django's models store datetimes in the
@@ -500,13 +502,16 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
         """
         # NOTE: It seems like an activity triggered from the Notifications page is recorded differently from when
         #       the activity is initialized in the chart.
-        #       If marge clicks on a TxTeamMessage notification from her Home page,
+        #       If Marge clicks on a TxTeamMessage notification from her Home page,
         #       the PAL shows Request==GetOneItem, Parameters=={"category":"TxTeamMessages","serNum":"3"}.
-        #       Whereas if marge clicks a TxTeamMessage from her chart page,
+        #       Whereas if Marge clicks a TxTeamMessage from her chart page,
         #       PAL shows Request=Read, Parameters={"Field":"TxTeamMessages","Id":"1"}
         return self.filter(
             date_time__gte=start_datetime_period,
             date_time__lt=end_datetime_period,
+        ).values(
+            'target_patient_id',
+            'username',
         ).annotate(
             last_login=models.Max('date_time', filter=models.Q(request='Login')),
             count_logins=models.Count('activity_ser_num', filter=models.Q(request='Login')),
@@ -530,7 +535,7 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
             count_feedback=models.Count('activity_ser_num', filter=models.Q(request='Feedback')),
             count_questionnaires_complete=models.Count(
                 'activity_ser_num',
-                filter=models.Q(request='QuestionnaireUpdateStatus', parameters__contains='new_status:"2"'),
+                filter=models.Q(request='QuestionnaireUpdateStatus', parameters__contains='"new_status":"2"'),
             ),
             count_labs=models.Count(
                 'activity_ser_num',
@@ -557,21 +562,4 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
             count_device_browser=models.Count(
                 'device_id', filter=models.Q(parameters__contains='browser'), distinct=True,
             ),
-        ).values(
-            'target_patient_id',
-            'username',
-            'last_login',
-            'count_logins',
-            'count_checkins',
-            'count_documents',
-            'count_educational_materials',
-            'count_feedback',
-            'count_questionnaires_complete',
-            'count_labs',
-            'count_update_security_answers',
-            'count_update_passwords',
-            'count_update_language',
-            'count_device_ios',
-            'count_device_android',
-            'count_device_browser',
         )
