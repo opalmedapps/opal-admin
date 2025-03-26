@@ -97,11 +97,11 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         If the user requested to re-send the code too soon, it fails.
 
         Args:
-            request: Http request made by the listener.
+            request: the HTTP request.
             code: registration code.
 
         Raises:
-            ValidationError: resend email after 10 seconds.
+            ValidationError: if re-sending the verification code was requested too soon.
 
         Returns:
             Http response with empty message.
@@ -158,7 +158,7 @@ class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
         and updates the email on the user instance with the verified one.
 
         Args:
-            request: Http request made by the listener.
+            request: the HTTP request.
             code: registration code.
 
         Returns:

@@ -105,6 +105,7 @@ class TestApiEmailVerification:
         caregiver_profile.user.refresh_from_db()
         assert response.status_code == HTTPStatus.OK
         assert caregiver_profile.user.email != user_email
+        assert caregiver_profile.user.email == 'opal@muhc.mcgill.ca'
         assert caregiver_model.EmailVerification.objects.all().count() == 0
 
     def test_save_verify_email_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
