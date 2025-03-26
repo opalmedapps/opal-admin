@@ -796,6 +796,50 @@ def test_accessrequestsearchform_no_test_patient(mocker: MockerFixture) -> None:
     assert form.non_field_errors()[0] == 'Patient is not a test patient.'
 
 
+def test_accessrequestsearchform_invalid_dateofbirth(mocker: MockerFixture) -> None:
+    """Ensure that the validation fails if the patient dateOfBirth is invalid."""
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'error',
+            'data': {'message': ['Patient dateOfBirth is invalid.']},
+        },
+    )
+
+    data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'medical_number': 'TESS53510111',
+    }
+    form = forms.AccessRequestSearchPatientForm(data=data)
+
+    assert not form.is_valid()
+    assert form.patient is None
+    assert len(form.non_field_errors()) == 1
+    assert form.non_field_errors()[0] == 'Patient dateOfBirth is invalid.'
+
+
+def test_accessrequestsearchform_invalid_mrn(mocker: MockerFixture) -> None:
+    """Ensure that the validation fails if the patient MRN is invalid."""
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'error',
+            'data': {'message': ['Patient MRN is invalid.']},
+        },
+    )
+
+    data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'medical_number': 'TESS53510111',
+    }
+    form = forms.AccessRequestSearchPatientForm(data=data)
+
+    assert not form.is_valid()
+    assert form.patient is None
+    assert len(form.non_field_errors()) == 1
+    assert form.non_field_errors()[0] == 'Patient MRN is invalid.'
+
+
 def test_accessrequestconfirmpatientform_init() -> None:
     """Ensure that the form is bound for early evaluation."""
     form = forms.AccessRequestConfirmPatientForm(patient=OIE_PATIENT_DATA)
