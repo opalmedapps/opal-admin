@@ -149,12 +149,15 @@ def fetch_patients_received_data_summary(
     Returns:
         patients received data summary for a given time period
     """
+    # Only fetch self-caregivers who completed registration
     self_relationships = patients_models.Relationship.objects.select_related(
         'patient',
         'caregiver__user',
     ).filter(
         type__role_type=patients_models.RoleType.SELF,
+        registration_codes__status=caregivers_models.RegistrationCodeStatus.REGISTERED,
     )
+
     patients_with_logins = [rel.patient.id for rel in self_relationships.exclude(caregiver__user__last_login=None)]
     patients_with_no_logins = [rel.patient.id for rel in self_relationships.filter(caregiver__user__last_login=None)]
 
