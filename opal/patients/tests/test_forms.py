@@ -4,7 +4,7 @@ import pytest
 
 from opal.hospital_settings import factories
 
-from ..forms import SearchForm, SelectSiteForm
+from ..forms import ConfirmPatientForm, SearchForm, SelectSiteForm
 
 pytestmark = pytest.mark.django_db
 
@@ -74,3 +74,25 @@ def test_search_form_invalid_ramq_field(
     form = SearchForm(data=form_data)
     assert not form.is_valid()
     assert form.errors['medical_number'] == ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']
+
+
+def test_is_correct_checked() -> None:
+    """Ensure that the 'Correct?' checkbox is checked."""
+    form_data = {
+        'is_correct': True,
+    }
+
+    form = ConfirmPatientForm(data=form_data)
+
+    assert form.is_valid()
+
+
+def test_is_correct_not_checked() -> None:
+    """Ensure that the 'Correct?' checkbox is not checked."""
+    form_data = {
+        'is_correct': False,
+    }
+
+    form = ConfirmPatientForm(data=form_data)
+
+    assert not form.is_valid()

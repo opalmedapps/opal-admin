@@ -134,9 +134,9 @@ def test_initial_call(
 
     assert response.status_code == HTTPStatus.OK
     assert wizard['steps'].current == 'site'
-    assert wizard['steps'].last == 'search'
+    assert wizard['steps'].last == 'confirm'
     assert wizard['steps'].next == 'search'
-    assert wizard['steps'].count == 2
+    assert wizard['steps'].count == 3
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
@@ -157,7 +157,7 @@ def test_form_post_error(
     assert response.context['wizard']['form'].errors == {'sites': ['This field is required.']}
 
 
-def _wizard_step_data(site: Site) -> Tuple[dict, dict]:
+def _wizard_step_data(site: Site) -> Tuple[dict, dict, dict]:
     return (
         {
             'site-sites': site.pk,
@@ -167,6 +167,10 @@ def _wizard_step_data(site: Site) -> Tuple[dict, dict]:
             'search-medical_card': 'mrn',
             'search-medical_number': '99996',
             'access_request_view-current_step': 'search',
+        },
+        {
+            'confirm-is_correct': True,
+            'access_request_view-current_step': 'confirm',
         },
     )
 
@@ -205,7 +209,7 @@ def test_form_post_success(
     assert response.context['wizard']['steps'].current == 'search'
     assert response.context['wizard']['steps'].step0 == 1
     assert response.context['wizard']['steps'].prev == 'site'
-    assert response.context['wizard']['steps'].next is None
+    assert response.context['wizard']['steps'].next == 'confirm'
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
@@ -232,6 +236,28 @@ def test_form_stepback(
     assert response.context['wizard']['steps'].current == 'site'
 
 
+@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
+def test_form_finish(
+    user_client: Client,
+    url_name: str,
+    template: str,
+) -> None:
+    """Ensure that the form can go through all the steps."""
+    url = reverse(url_name)
+    wizard_step_data = _wizard_step_data(factories.Site())
+    response = user_client.get(url)
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['wizard']['steps'].current == 'site'
+
+    response = user_client.post(url, wizard_step_data[0])
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['wizard']['steps'].current == 'search'
+
+    response = user_client.post(url, wizard_step_data[1])
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['wizard']['steps'].current == 'confirm'
+
+
 def test_access_request_done_redirects_temp(user_client: Client) -> None:
     """Ensure that when the page is submitted it redirects to the final page."""
     url = reverse('patients:access-request')
@@ -239,6 +265,7 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:
     form_data = [
         ('site', {'sites': site.pk}),
         ('search', {'medical_card': 'ramq', 'medical_number': 'RAMQ99996666'}),
+        ('confirm', {'is_correct': True}),
     ]
     response = user_client.get(url)
     assert response.status_code == HTTPStatus.OK
@@ -255,8 +282,9 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:
 
         if 'site' in step:
             assert response.context['wizard']['steps'].current == 'search'
-
         elif 'search' in step:
+            assert response.context['wizard']['steps'].current == 'confirm'
+        elif 'confirm' in step:
             assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')
 
 

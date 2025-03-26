@@ -75,7 +75,7 @@ class SearchForm(forms.Form):
                 css_class='form-row',
             ),
             ButtonHolder(
-                Submit('wizard_goto_step', _('Generate QR Code')),
+                Submit('wizard_goto_step', _('Next')),
             ),
         )
 
@@ -94,3 +94,26 @@ class SearchForm(forms.Form):
         # Medical Record Number (MRN)
         else:
             pass  # noqa: WPS420
+
+
+class ConfirmPatientForm(forms.Form):
+    """This `ConfirmPatientForm` provides the layout for confirmation checkbox."""
+
+    is_correct = forms.BooleanField(required=True, label=_('Correct?'))
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the layout for confirmation checkbox.
+
+        Args:
+            args: additional argumentssle
+            kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            'is_correct',
+            ButtonHolder(
+                Submit('wizard_goto_step', _('Generate QR Code')),
+            ),
+        )

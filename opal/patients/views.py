@@ -15,7 +15,8 @@ from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
 
 from opal.core.views import CreateUpdateView
-from opal.patients.forms import SearchForm, SelectSiteForm
+from opal.patients.forms import ConfirmPatientForm, SearchForm, SelectSiteForm
+from opal.patients.tables import PatientTable
 
 from .models import RelationshipType, Site
 from .tables import RelationshipTypeTable
@@ -65,6 +66,62 @@ class RelationshipTypeDeleteView(generic.edit.DeleteView):
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
+def _patient_data() -> Any:
+    return {
+        'dateOfBirth': '1953-01-01 00:00:00',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+        'mrns': [
+            {
+                'site': 'MGH',
+                'mrn': '9999993',
+                'active': True,
+            },
+        ],
+    }
+
+
+def _find_patient_by_mrn(mrn: str, site: str) -> Any:
+    """
+    Search patient info by MRN code.
+
+    Args:
+        mrn: Medical Record Number (MRN) code (e.g., 9999993)
+        site: site code (e.g., MGH)
+
+    Returns:
+        patient info or an error in JSON format
+    """
+    return [{
+        'first_name': _patient_data()['firstName'],
+        'last_name': _patient_data()['lastName'],
+        'date_of_birth': _patient_data()['dateOfBirth'],
+        'card_number': _patient_data()['mrns'][0]['mrn'],
+    }]
+
+
+def _find_patient_by_ramq(ramq: str) -> Any:
+    """
+    Search patient info by RAMQ code.
+
+    Args:
+        ramq (str): RAMQ code
+
+    Returns:
+        patient info or an error in JSON format
+    """
+    return [{
+        'first_name': _patient_data()['firstName'],
+        'last_name': _patient_data()['lastName'],
+        'date_of_birth': _patient_data()['dateOfBirth'],
+        'card_number': _patient_data()['ramq'],
+    }]
+
+
 class AccessRequestView(SessionWizardView):
     """
     Form wizard view providing the steps for a caregiver's patient access request.
@@ -77,10 +134,12 @@ class AccessRequestView(SessionWizardView):
     form_list = [
         ('site', SelectSiteForm),
         ('search', SearchForm),
+        ('confirm', ConfirmPatientForm),
     ]
     template_list = {
         'site': 'patients/access_request/access_request.html',
         'search': 'patients/access_request/access_request.html',
+        'confirm': 'patients/access_request/access_request.html',
     }
 
     def get_template_names(self) -> List[str]:
@@ -125,6 +184,19 @@ class AccessRequestView(SessionWizardView):
             context.update({'header_title': _('Hospital Information')})
         elif self.steps.current == 'search':  # pragma: no cover
             context.update({'header_title': _('Patient Details')})
+        elif self.steps.current == 'confirm':
+            context.update({'header_title': _('Patient Details')})
+            medical_card = self.get_cleaned_data_for_step(self.steps.prev)['medical_card']
+            medical_number = self.get_cleaned_data_for_step(self.steps.prev)['medical_number']
+            site_code = self.get_cleaned_data_for_step('site')['sites']
+            if medical_card == 'mrn':
+                context.update({
+                    'table': PatientTable(_find_patient_by_mrn(medical_number, site_code)),
+                })
+            else:
+                context.update({
+                    'table': PatientTable(_find_patient_by_ramq(medical_number)),
+                })
 
         return context
 

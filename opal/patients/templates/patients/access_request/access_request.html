@@ -26,9 +26,13 @@
       <div class="card-body">
         <form action="" method="post">
           {% csrf_token %}
-            {{ wizard.management_form }}
-            {% crispy wizard.form %}
-          </form>
+          {% if table %}
+            {% render_table table %}
+          {%  endif %}
+
+          {{ wizard.management_form }}
+          {% crispy wizard.form %}
+        </form>
       </div>
     </div>
   </div>
