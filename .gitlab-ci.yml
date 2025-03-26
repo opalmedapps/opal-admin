@@ -353,6 +353,11 @@ workflow:
 
 
 include:
+  - component: $CI_SERVER_FQDN/opalmedapps/engineering/ci-templates/check-thirdparty-notice@main
+    inputs:
+      pip-requirements-files: requirements/production.txt
+      package-file: opal/static/thirdparty/package.json
+
   # run pipelines for default branch, tags, and all types of merge request pipelines
   # to support merge trains
   # see: https://docs.gitlab.com/ee/ci/pipelines/merge_trains.html#enable-merge-trains
