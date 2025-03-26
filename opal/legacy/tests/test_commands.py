@@ -463,6 +463,8 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         """Ensure the command does not fail if there are no patient and caregiver records."""
         message, error = self._call_command('find_deviations')
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
+        message, error = self._call_command('find_patients_deviations')
+        assert 'No deviations have been found in the "Patient" tables/models.' in message
 
     def test_deviations_uneven_patient_records(self) -> None:
         """Ensure the command handles the cases when "Patient" model/tables have uneven number of records."""
@@ -487,6 +489,15 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         ) in error
         assert 'opal.patients_patient: 1' in error
         assert 'OpalDB.Patient(UserType="Patient"): 2' in error
+
+        message, error = self._call_command('find_patients_deviations')
+        assert 'found deviations in the "Patient" tables/models!!!' in error
+        assert 'The number of records in "{0}" and "{1}" tables does not match!'.format(
+            'opal.patients_patient',
+            'OpalDB.Patient',
+        ) in error
+        assert '"opal.patients_patient": 1' in error
+        assert '"OpalDB.Patient": 2' in error
 
     def test_patient_records_deviations(self) -> None:
         """Ensure the command detects the deviations in the "Patient" model and tables."""
@@ -521,6 +532,15 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         ) in error
         assert '{0}\n\n\n'.format(120 * '-')
 
+        message, error = self._call_command('find_patients_deviations')
+        assert 'found deviations in the "Patient" tables/models!!!' in error
+        assert 'OpalDB.Patient  <===>  opal.patients_patient:' in error
+        assert "(51, '', 'Marge', 'Simpson', '1999-01-01', 'M', '', 'test@test.com', 'en', 'ALL')" in error
+        assert (
+            "(51, 'SIMM18510198', 'Marge', 'Simpson', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en', 'ALL')"
+        ) in error
+        assert '{0}\n\n\n'.format(120 * '-')
+
     def test_deviations_uneven_hospital_patient_records(self) -> None:
         """Ensure the command handles the cases when "HospitalPatient" model/tables have uneven number of records."""
         legacy_factories.LegacyUserFactory(usersernum=99, usertypesernum=99)
@@ -542,6 +562,15 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         assert 'opal.patients_hospitalpatient: 2' in error
         assert 'OpalDB.Patient_Hospital_Identifier: 1' in error
 
+        message, error = self._call_command('find_patients_deviations')
+        assert 'found deviations in the "Patient" tables/models!!!' in error
+        assert '{0}{1}'.format(
+            'The number of records in "opal.patients_patient" ',
+            'and "OpalDB.Patient" tables does not match!',
+        ) in error
+        assert '"opal.patients_patient": 2' in error
+        assert '"OpalDB.Patient": 1' in error
+
     def test_hospital_patient_records_deviations(self) -> None:
         """Ensure the command detects the deviations in the "HospitalPatient" model and tables."""
         legacy_factories.LegacyPatientHospitalIdentifierFactory()
@@ -560,15 +589,26 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         assert "(51, 'RVH', '9999996', 1)" in error
         assert "(1, 'TST', '9999996', 1)" in error
 
+        message, error = self._call_command('find_patients_deviations')
+        deviations_err = 'found deviations in the "Patient" tables/models!!!'
+        assert deviations_err in error
+        assert 'OpalDB.Patient  <===>  opal.patients_patient:' in error
+        assert "(51, 'SIMM18510198', 'Marge', 'Simpson', '2018-01-01', " in error
+        assert "(1, '', 'Marge', 'Simpson', '1999-01-01', 'M', None, None, None, 'ALL')" in error
+
     def test_no_deviations_for_patients_with_users(self) -> None:
         """Ensure the command does not return an error if there are no deviations in "Patient" records."""
         self._create_two_fully_registered_patients()
 
         message, error = self._call_command('find_deviations')
-
         assert patient_models.Patient.objects.count() == 2
         assert legacy_models.LegacyPatientControl.objects.count() == 2
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
+
+        message, error = self._call_command('find_patients_deviations')
+        assert patient_models.Patient.objects.count() == 2
+        assert legacy_models.LegacyPatientControl.objects.count() == 2
+        assert 'No deviations have been found in the "Patient" tables/models.' in message
 
     def test_no_deviations_for_patients_with_unregistered_users(self) -> None:
         """Ensure the command does not return deviations for unregistered "Patient" records."""
@@ -596,7 +636,6 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         )
 
         message, error = self._call_command('find_deviations')
-
         assert patient_models.Patient.objects.count() == 3
         assert legacy_models.LegacyPatientControl.objects.count() == 2
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
