@@ -863,8 +863,8 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             Hidden('cancel_url', '{{cancel_url}}'),
             Row(
                 FormActions(
-                    CancelButton('{{cancel_url}}'),
                     Submit('submit', _('Save'), css_class='btn btn-primary me-2'),
+                    CancelButton('{{cancel_url}}'),
                 ),
             ),
         )
