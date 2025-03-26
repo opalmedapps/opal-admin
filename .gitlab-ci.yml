@@ -115,6 +115,7 @@ coverage:
 build docs:
   stage: Build
   script:
+    - apt list | grep sql
     - pip install -r requirements/docs.txt
     - pip list
     - mkdocs --version
