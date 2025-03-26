@@ -33,7 +33,7 @@ body {
 }
 
 body h5 {
-  font-weight: bold;
+  font-weight: 600;
 }
 
 /* if there is not enough space for the sidebar, scroll it individually */
