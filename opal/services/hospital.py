@@ -1,8 +1,11 @@
-import requests
+"""Module providing api functions for the OIE server."""
 from django.conf import settings
+
+import requests
 
 
 def find_patient_by_mrn(mrn: str, site: str):
+    """Search patient info by mrn code."""
     url = settings.OIE_HOST
     data = {
         'mrn': mrn,
@@ -14,6 +17,7 @@ def find_patient_by_mrn(mrn: str, site: str):
 
 
 def find_patient_by_ramq(ramq: str):
+    """Search patient info by ramq code."""
     url = settings.OIE_HOST
     data = {
         'medicareNumber': ramq,
