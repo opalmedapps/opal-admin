@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
     """Add role type enum to Patients.RelationshipType, default 'Caregiver'."""
 
     dependencies = [
-        ('patients', '0011_patient_date_of_death'),
+        ('patients', '0012_add_manage_relationship_permission'),
     ]
 
     operations = [

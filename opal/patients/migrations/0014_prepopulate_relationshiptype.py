@@ -58,7 +58,7 @@ class Migration(migrations.Migration):
     """Pre-populate deployment with the SELF and PARENTGUARDIAN role types."""
 
     dependencies = [
-        ('patients', '0012_relationshiptype_role'),
+        ('patients', '0013_relationshiptype_role'),
     ]
 
     operations = [

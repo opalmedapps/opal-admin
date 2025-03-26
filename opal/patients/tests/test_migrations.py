@@ -5,12 +5,12 @@ from .. import models
 
 def test_migration_relationshiptype_prepopulate_no_existing_types(migrator: Migrator) -> None:
     """Ensure the migration correctly prepopulates the relationshiptypes."""
-    old_state = migrator.apply_initial_migration(('patients', '0012_relationshiptype_role'))  # noqa: WPS204
+    old_state = migrator.apply_initial_migration(('patients', '0013_relationshiptype_role'))  # noqa: WPS204
     RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')
 
     assert RelationshipType.objects.count() == 0
 
-    new_state = migrator.apply_tested_migration(('patients', '0013_prepopulate_relationshiptype'))
+    new_state = migrator.apply_tested_migration(('patients', '0014_prepopulate_relationshiptype'))
 
     RelationshipType = new_state.apps.get_model('patients', 'RelationshipType')
 
@@ -19,14 +19,14 @@ def test_migration_relationshiptype_prepopulate_no_existing_types(migrator: Migr
     assert RelationshipType.objects.filter(role_type=models.RoleType.PARENTGUARDIAN).count() == 1
 
     # ensure that the migration can be reversed without any error
-    migrator.apply_tested_migration(('patients', '0012_relationshiptype_role'))
+    migrator.apply_tested_migration(('patients', '0013_relationshiptype_role'))
 
     assert RelationshipType.objects.count() == 2
 
 
 def test_migration_relationshiptype_prepopulate_existing_types(migrator: Migrator) -> None:
     """Ensure the migration correctly prepopulates the relationshiptypes."""
-    old_state = migrator.apply_initial_migration(('patients', '0012_relationshiptype_role'))
+    old_state = migrator.apply_initial_migration(('patients', '0013_relationshiptype_role'))
     RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')
 
     assert RelationshipType.objects.count() == 0
@@ -52,7 +52,7 @@ def test_migration_relationshiptype_prepopulate_existing_types(migrator: Migrato
         end_age=14,
     )
 
-    new_state = migrator.apply_tested_migration(('patients', '0013_prepopulate_relationshiptype'))
+    new_state = migrator.apply_tested_migration(('patients', '0014_prepopulate_relationshiptype'))
 
     RelationshipType = new_state.apps.get_model('patients', 'RelationshipType')
 
@@ -61,14 +61,14 @@ def test_migration_relationshiptype_prepopulate_existing_types(migrator: Migrato
     assert RelationshipType.objects.filter(role_type=models.RoleType.PARENTGUARDIAN).count() == 1
 
     # ensure that the migration can be reversed without any error
-    migrator.apply_tested_migration(('patients', '0012_relationshiptype_role'))
+    migrator.apply_tested_migration(('patients', '0013_relationshiptype_role'))
 
     assert RelationshipType.objects.count() == 2
 
 
 def test_migration_relationshiptype_prepopulate_existing_role_types(migrator: Migrator) -> None:
     """Ensure the migration correctly prepopulates the relationshiptypes."""
-    old_state = migrator.apply_initial_migration(('patients', '0012_relationshiptype_role'))
+    old_state = migrator.apply_initial_migration(('patients', '0013_relationshiptype_role'))
     RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')
 
     RelationshipType.objects.create(
@@ -94,7 +94,7 @@ def test_migration_relationshiptype_prepopulate_existing_role_types(migrator: Mi
         role_type=models.RoleType.PARENTGUARDIAN,
     )
 
-    new_state = migrator.apply_tested_migration(('patients', '0013_prepopulate_relationshiptype'))
+    new_state = migrator.apply_tested_migration(('patients', '0014_prepopulate_relationshiptype'))
 
     RelationshipType = new_state.apps.get_model('patients', 'RelationshipType')
 
@@ -102,14 +102,14 @@ def test_migration_relationshiptype_prepopulate_existing_role_types(migrator: Mi
     assert RelationshipType.objects.filter(role_type=models.RoleType.CAREGIVER).count() == 0
 
     # ensure that the migration can be reversed without any error
-    migrator.apply_tested_migration(('patients', '0012_relationshiptype_role'))
+    migrator.apply_tested_migration(('patients', '0013_relationshiptype_role'))
 
     assert RelationshipType.objects.count() == 2
 
 
 def test_migration_relationshiptype_prepopulate_existing_caregiver(migrator: Migrator) -> None:
     """Ensure the migration correctly prepopulates the relationshiptypes."""
-    old_state = migrator.apply_initial_migration(('patients', '0012_relationshiptype_role'))
+    old_state = migrator.apply_initial_migration(('patients', '0013_relationshiptype_role'))
     RelationshipType = old_state.apps.get_model('patients', 'RelationshipType')
 
     RelationshipType.objects.create(
@@ -135,7 +135,7 @@ def test_migration_relationshiptype_prepopulate_existing_caregiver(migrator: Mig
         role_type=models.RoleType.PARENTGUARDIAN,
     )
 
-    new_state = migrator.apply_tested_migration(('patients', '0013_prepopulate_relationshiptype'))
+    new_state = migrator.apply_tested_migration(('patients', '0014_prepopulate_relationshiptype'))
 
     RelationshipType = new_state.apps.get_model('patients', 'RelationshipType')
 
@@ -143,6 +143,6 @@ def test_migration_relationshiptype_prepopulate_existing_caregiver(migrator: Mig
     assert RelationshipType.objects.filter(role_type=models.RoleType.CAREGIVER).count() == 1
 
     # ensure that the migration can be reversed without any error
-    migrator.apply_tested_migration(('patients', '0012_relationshiptype_role'))
+    migrator.apply_tested_migration(('patients', '0013_relationshiptype_role'))
 
     assert RelationshipType.objects.count() == 3
