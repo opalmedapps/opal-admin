@@ -1,21 +1,24 @@
 from typing import Any, Optional
 
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import Group
+from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest
 from django.test import RequestFactory
 from django.utils import timezone
 
 import pytest
+from pytest_django.fixtures import SettingsWrapper
 from rest_framework import exceptions, generics
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from opal.caregivers import factories as caregiver_factories
+from opal.core import constants
 from opal.patients import factories as patient_factories
 from opal.patients.models import RelationshipStatus, RelationshipType
 from opal.users.models import User
 
-from ..drf_permissions import CaregiverPatientPermissions, CaregiverSelfPermissions, FullDjangoModelPermissions
+from .. import drf_permissions
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
@@ -24,7 +27,7 @@ pytestmark = pytest.mark.django_db(databases=['default'])
 class TestCaregiverPatientPermissions:
     """Class wrapper for CaregiverPatientPermissions tests."""
 
-    class_instance = CaregiverPatientPermissions()
+    class_instance = drf_permissions.CaregiverPatientPermissions()
 
     def set_args(self, user_id: Optional[Any], patient_id: int | str | None) -> None:
         """Set the input arguments expected by CaregiverPatientPermissions."""
@@ -40,7 +43,7 @@ class TestCaregiverPatientPermissions:
         Returns:
             The result of calling CaregiverPatientPermissions; i.e., whether the permission is granted.
         """
-        return self.class_instance.has_permission(self.request, self.view)
+        return self.class_instance.has_permission(Request(self.request), self.view)
 
     def test_no_caregiver_username(self) -> None:
         """Test with no provided 'Appuserid'."""
@@ -142,7 +145,7 @@ class TestCaregiverPatientPermissions:
 class TestCaregiverSelfPermissions:
     """Class wrapper for CaregiverSelfPermissions tests."""
 
-    class_instance = CaregiverSelfPermissions()
+    class_instance = drf_permissions.CaregiverSelfPermissions()
 
     def set_args(self, user_id: Optional[Any], patient_id: Optional[Any]) -> None:
         """Set the input arguments expected by CaregiverPatientPermissions."""
@@ -158,7 +161,7 @@ class TestCaregiverSelfPermissions:
         Returns:
             The result of calling CaregiverPatientPermissions; i.e., whether the permission is granted.
         """
-        return self.class_instance.has_permission(self.request, self.view)
+        return self.class_instance.has_permission(Request(self.request), self.view)
 
     def test_non_self_relationship_type(self) -> None:
         """Test a permissions check where the caregiver has a relationship with the patient, but it isn't self typed."""
@@ -190,7 +193,7 @@ class TestCaregiverSelfPermissions:
 class _ModelView(generics.ListAPIView[User]):
     model = User
     queryset = User.objects.none()
-    permission_classes = [FullDjangoModelPermissions]
+    permission_classes = (drf_permissions.FullDjangoModelPermissions,)
 
 
 class TestFullDjangoModelPermissions:
@@ -203,9 +206,8 @@ class TestFullDjangoModelPermissions:
         """Test that an unauthenticated request is rejected."""
         view = _ModelView()
         request = Request(RequestFactory().generic(method, '/'))
-        request.user = AnonymousUser()
 
-        assert not FullDjangoModelPermissions().has_permission(request, view)
+        assert not drf_permissions.FullDjangoModelPermissions().has_permission(request, view)
 
     @pytest.mark.parametrize('method', methods)
     def test_no_permission(self, method: str) -> None:
@@ -214,7 +216,7 @@ class TestFullDjangoModelPermissions:
         request = Request(RequestFactory().generic(method, '/'))
         request.user = User.objects.create(username='testuser')
 
-        assert not FullDjangoModelPermissions().has_permission(request, view)
+        assert not drf_permissions.FullDjangoModelPermissions().has_permission(request, view)
 
     @pytest.mark.parametrize('method', methods)
     def test_with_permission(self, method: str) -> None:
@@ -223,4 +225,124 @@ class TestFullDjangoModelPermissions:
         request = Request(RequestFactory().generic(method, '/'))
         request.user = User.objects.create(username='testuser', is_superuser=True)
 
-        assert FullDjangoModelPermissions().has_permission(request, view)
+        assert drf_permissions.FullDjangoModelPermissions().has_permission(request, view)
+
+
+def test_issuperuser_unauthenticated() -> None:
+    """The `IsSuperUser` permission requires an authenticated user."""
+    request = Request(RequestFactory().get('/'))
+
+    assert not drf_permissions.IsSuperUser().has_permission(request, APIView())
+
+
+def test_issuperuser_unauthorized() -> None:
+    """The `IsSuperUser` permission rejects users that are not a superuser."""
+    request = Request(RequestFactory().get('/'))
+    request.user = User.objects.create(username='testuser', is_staff=True)
+
+    assert not drf_permissions.IsSuperUser().has_permission(request, APIView())
+
+
+def test_issuperuser_authorized() -> None:
+    """The `IsSuperUser` permission requires a superuser."""
+    request = Request(RequestFactory().get('/'))
+    request.user = User.objects.create(username='testuser', is_superuser=True)
+
+    assert drf_permissions.IsSuperUser().has_permission(request, APIView())
+
+
+def test_isormsuser_unauthenticated() -> None:
+    """The `IsORMSUser` permission requires an authenticated user."""
+    request = Request(RequestFactory().get('/'))
+
+    assert not drf_permissions.IsORMSUser().has_permission(request, APIView())
+
+
+def test_isormsuser_unauthorized() -> None:
+    """The `IsSuperUser` permission rejects users that are not an ORMS user."""
+    request = Request(RequestFactory().get('/'))
+    request.user = User.objects.create(username='testuser', is_staff=True)
+
+    assert not drf_permissions.IsORMSUser().has_permission(request, APIView())
+
+
+def test_isormsuser_superuser() -> None:
+    """The `IsORMSUser` permission allows access to a superuser."""
+    request = Request(RequestFactory().get('/'))
+    request.user = User.objects.create(username='testuser', is_superuser=True)
+
+    assert drf_permissions.IsORMSUser().has_permission(request, APIView())
+
+
+def test_isormsuser_orms_user(settings: SettingsWrapper) -> None:
+    """The `IsORMSUser` permission grants access to an ORMS user."""
+    request = Request(RequestFactory().get('/'))
+    user = User.objects.create(username='testuser')
+    user.groups.add(Group.objects.create(name=settings.ORMS_GROUP_NAME))
+    request.user = user
+
+    assert drf_permissions.IsORMSUser().has_permission(request, APIView())
+
+
+def test_username_required_missing_attribute() -> None:
+    """The UserNameRequired permission asserts that the required_username attribute is set."""
+    with pytest.raises(ImproperlyConfigured):
+        drf_permissions._UsernameRequired().has_permission(Request(HttpRequest()), APIView())
+
+
+@pytest.mark.parametrize('permission_class', [
+    drf_permissions.IsListener,
+    drf_permissions.IsRegistrationListener,
+    drf_permissions.IsInterfaceEngine,
+    drf_permissions.IsLegacyBackend,
+])
+def test_username_required_unauthenticated(permission_class: type[drf_permissions._UsernameRequired]) -> None:
+    """The permissions require the user to be authenticated."""
+    request = Request(RequestFactory().get('/'))
+
+    assert not permission_class().has_permission(request, APIView())
+
+
+@pytest.mark.parametrize('permission_class', [
+    drf_permissions.IsListener,
+    drf_permissions.IsRegistrationListener,
+    drf_permissions.IsInterfaceEngine,
+    drf_permissions.IsLegacyBackend,
+])
+def test_username_required_admin_permitted(permission_class: type[drf_permissions._UsernameRequired]) -> None:
+    """The permissions succeed if the user is an admin (superuser)."""
+    request = Request(RequestFactory().get('/'))
+    request.user = User.objects.create(username='testuser', is_superuser=True)
+
+    assert permission_class().has_permission(request, APIView())
+
+
+@pytest.mark.parametrize('permission_class', [
+    drf_permissions.IsListener,
+    drf_permissions.IsRegistrationListener,
+    drf_permissions.IsInterfaceEngine,
+    drf_permissions.IsLegacyBackend,
+])
+def test_username_required_wrong_username(permission_class: type[drf_permissions._UsernameRequired]) -> None:
+    """The permissions fail if the user does not have the expected username."""
+    request = Request(RequestFactory().get('/'))
+    request.user = User.objects.create(username='testuser')
+
+    assert not permission_class().has_permission(request, APIView())
+
+
+@pytest.mark.parametrize(('permission_class', 'username'), [
+    (drf_permissions.IsListener, constants.USERNAME_LISTENER),
+    (drf_permissions.IsRegistrationListener, constants.USERNAME_LISTENER_REGISTRATION),
+    (drf_permissions.IsInterfaceEngine, constants.USERNAME_INTERFACE_ENGINE),
+    (drf_permissions.IsLegacyBackend, constants.USERNAME_BACKEND_LEGACY),
+])
+def test_username_required_correct_username(
+    permission_class: type[drf_permissions._UsernameRequired],
+    username: str,
+) -> None:
+    """The permissions require the user to have the expected username."""
+    request = Request(RequestFactory().get('/'))
+    request.user = User.objects.create(username=username)
+
+    assert permission_class().has_permission(request, APIView())

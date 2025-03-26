@@ -4,13 +4,15 @@ These permissions are provided for the project and intended to be reused.
 """
 from typing import TYPE_CHECKING, Optional
 
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import QuerySet
-from django.http import HttpRequest
 
 from rest_framework import exceptions, permissions
 from rest_framework.request import Request
 
 from opal.caregivers.models import CaregiverProfile
+from opal.core import constants
 from opal.patients.models import Patient, Relationship, RelationshipStatus, RoleType
 
 if TYPE_CHECKING:
@@ -39,9 +41,109 @@ class FullDjangoModelPermissions(permissions.DjangoModelPermissions):
     }
 
 
-# class IsListener(permissions.IsAuthenticated):
-#     def has_permission(self, request: Request, view: APIView) -> bool:
-#         return super().has_permission(request, view) and request.user.username == 'listener'
+class IsSuperUser(permissions.IsAuthenticated):
+    """
+    Allows access only to super users.
+
+    This is an improvement over DRF's `IsAdminUser` which only checks for the user's `is_staff` field.
+    """
+
+    def has_permission(self, request: Request, view: 'APIView') -> bool:
+        """
+        Check if the user is authenticated and is a superuser.
+
+        Args:
+            request: the HTTP request
+            view: the view that is being accessed
+
+        Returns:
+            True, if the check is successful, False otherwise
+        """
+        return super().has_permission(request, view) and request.user.is_superuser
+
+
+class _UsernameRequired(permissions.IsAuthenticated):
+    """
+    Allows access only to authenticated user with a given username.
+
+    Additionally, allows access to super users.
+
+    Do not use this permission class directly. Instead, use one of the subclasses.
+    Subclasses need to define the `required_username` attribute.
+    """
+
+    required_username: str
+
+    def has_permission(self, request: Request, view: 'APIView') -> bool:
+        """
+        Check if the user is authenticated and has the required username.
+
+        Args:
+            request: the HTTP request
+            view: the view that is being accessed
+
+        Returns:
+            True, if the check is successful, False otherwise
+
+        Raises:
+            ImproperlyConfigured: if the `required_username` attribute is not defined in the subclass
+        """
+        if not hasattr(self, 'required_username') or not self.required_username:
+            raise ImproperlyConfigured(
+                'The concrete permission class {class_} has to define the `required_username` attribute.'.format(
+                    class_=self.__class__.__name__,
+                ),
+            )
+
+        return super().has_permission(request, view) and (
+            str(request.user.username) == self.required_username or request.user.is_superuser
+        )
+
+
+class IsListener(_UsernameRequired):
+    """Allows access only to the listener user and superusers."""
+
+    required_username = constants.USERNAME_LISTENER
+
+
+class IsRegistrationListener(_UsernameRequired):
+    """Allows access only to the registration listener user and superusers."""
+
+    required_username = constants.USERNAME_LISTENER_REGISTRATION
+
+
+class IsInterfaceEngine(_UsernameRequired):
+    """Allows access only to the interface engine user and superusers."""
+
+    required_username = constants.USERNAME_INTERFACE_ENGINE
+
+
+class IsLegacyBackend(_UsernameRequired):
+    """Allows access only to the legacy backend (legacy OpalAdmin) user and superusers."""
+
+    required_username = constants.USERNAME_BACKEND_LEGACY
+
+
+class IsORMSUser(permissions.IsAuthenticated):
+    """Allows access only to users belong to the ORMS user group and superusers."""
+
+    def has_permission(self, request: Request, view: 'APIView') -> bool:
+        """
+        Check if the user is authenticated and has the required username.
+
+        Args:
+            request: the HTTP request
+            view: the view that is being accessed
+
+        Returns:
+            True, if the check is successful, False otherwise
+        """
+        return super().has_permission(request, view) and (
+            # make mypy happy to know that the user is not anonymous
+            request.user.is_authenticated
+            and request.user.groups.filter(name=settings.ORMS_GROUP_NAME).exists()
+            or request.user.is_superuser
+        )
 
 
 class CaregiverPatientPermissions(permissions.BasePermission):
@@ -53,7 +155,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         legacy_id (from the view's kwargs): The patient's legacy ID.
     """
 
-    def has_permission(self, request: HttpRequest, view: 'APIView') -> bool:
+    def has_permission(self, request: Request, view: 'APIView') -> bool:
         """
         Permission check that looks for a confirmed relationship between a caregiver and a patient.
 
@@ -79,7 +181,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
 
         return True
 
-    def _get_caregiver_username(self, request: HttpRequest) -> str:
+    def _get_caregiver_username(self, request: Request) -> str:
         """
         Validate the existence of a caregiver username provided as input, and return it if provided.
 
@@ -113,7 +215,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         Returns:
             The patient's legacy id.
         """
-        patient_legacy_id = view.kwargs.get('legacy_id') if hasattr(view, 'kwargs') else None
+        patient_legacy_id: Optional[int] = view.kwargs.get('legacy_id') if hasattr(view, 'kwargs') else None
         if not patient_legacy_id or not isinstance(patient_legacy_id, int):
             raise exceptions.ParseError(
                 'Requests to APIs using CaregiverPatientPermissions must provide an integer'
@@ -198,37 +300,6 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             )
 
 
-class CreateModelPermissions(permissions.DjangoModelPermissions):
-    """
-    Custom DRF `DjangoModelPermissions` permission for adding/creating a model's data.
-
-    Restricts POST operations to require the `add` permission on the model.
-
-    See: https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
-    """
-
-    # taken from DjangoModelPermissions and added the permission for POST
-    perms_map = {
-        'POST': ['%(app_label)s.add_%(model_name)s'],
-    }
-
-
-class UpdateModelPermissions(permissions.DjangoModelPermissions):
-    """
-    Custom DRF `DjangoModelPermissions` permission for changing/updating a model's data.
-
-    Restricts PUT and PATCH operations to require the `change` permission on the model.
-
-    See: https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
-    """
-
-    # taken from DjangoModelPermissions and added the permission for PUT and PATCH
-    perms_map = {
-        'PUT': ['%(app_label)s.change_%(model_name)s'],
-        'PATCH': ['%(app_label)s.change_%(model_name)s'],
-    }
-
-
 class CaregiverSelfPermissions(CaregiverPatientPermissions):
     """
     Global permission check that validates the permission of a caregiver trying to access a patient's data.
@@ -240,7 +311,7 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
         legacy_id (from the view's kwargs): The patient's legacy ID.
     """
 
-    def has_permission(self, request: HttpRequest, view: 'APIView') -> bool:
+    def has_permission(self, request: Request, view: 'APIView') -> bool:
         """
         Permission check that looks for a confirmed self relationship between a caregiver and a patient.
 
@@ -286,6 +357,7 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
             raise exceptions.PermissionDenied(
                 'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.',
             )
+
 
 # Future Enhancement: Pull common permissions functionality into an abstract base class
 #                     to allow for faster definition of new perms in the future

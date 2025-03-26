@@ -2,13 +2,12 @@
 from django.conf import settings
 
 from dj_rest_auth.views import LoginView
-from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.core.drf_permissions import IsORMSUser
 from opal.users.api.serializers import ClinicalStaffDetailSerializer
 from opal.users.models import ClinicalStaff
 
@@ -49,27 +48,23 @@ class ORMSValidateView(APIView):
     It checks user authentication and the user's group.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsORMSUser,)
 
     def get(self, request: Request) -> Response:
         """
         Validate if the user is authenticated and user belongs to ORMS user group.
 
+        Raises `PermissionDenied` if the user has no permission.
+        I.e., the user is not a superuser or not part of the ORMS users group.
+
         Args:
             request: the HTTP request.
-
-        Raises:
-            PermissionDenied: if no permission.
 
         Returns:
             Http response with caregiver username and status code.
         """
         user: ClinicalStaff = request.user  # type: ignore[assignment]
 
-        if not user.groups.filter(name=settings.ORMS_GROUP_NAME).exists():
-            raise PermissionDenied()
-
         return Response(
             data=ClinicalStaffDetailSerializer(user).data,
-            status=status.HTTP_200_OK,
         )

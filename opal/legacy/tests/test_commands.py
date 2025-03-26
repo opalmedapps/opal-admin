@@ -16,8 +16,9 @@ from opal.caregivers.models import SecurityAnswer, SecurityQuestion
 from opal.core.test_utils import CommandTestMixin, RequestMockerTest
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
+from opal.legacy import models as legacy_models
 from opal.patients import factories as patient_factories
-from opal.patients.models import Patient, RelationshipStatus, RelationshipType
+from opal.patients import models as patient_models
 from opal.users import factories as user_factories
 from opal.users.models import ClinicalStaff
 
@@ -187,25 +188,45 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
 
         message, error = self._call_command('migrate_patients')
 
-        patient = Patient.objects.get(legacy_id=51)
+        patient = patient_models.Patient.objects.get(legacy_id=51)
 
         assert patient.date_of_birth == date(2018, 1, 1)
-        assert patient.sex == Patient.SexType.MALE
+        assert patient.sex == patient_models.Patient.SexType.MALE
+        assert patient.first_name == legacy_patient.first_name
+        assert patient.last_name == legacy_patient.last_name
+        assert patient.ramq == legacy_patient.ramq
+
+    def test_import_deceased_patient(self) -> None:
+        """The patient is imported with the correct data."""
+        legacy_patient = legacy_factories.LegacyPatientFactory(
+            death_date=timezone.make_aware(datetime(2118, 1, 1)),
+        )
+
+        message, error = self._call_command('migrate_patients')
+
+        patient = patient_models.Patient.objects.get(legacy_id=51)
+
+        assert patient.date_of_birth == date(2018, 1, 1)
+        assert patient.date_of_death == timezone.make_aware(datetime(2118, 1, 1))
+        assert patient.sex == patient_models.Patient.SexType.MALE
         assert patient.first_name == legacy_patient.first_name
         assert patient.last_name == legacy_patient.last_name
         assert patient.ramq == legacy_patient.ramq
 
     @pytest.mark.parametrize(('data_access', 'legacy_data_access'), [
-        (Patient.DataAccessType.ALL, '3'),
-        (Patient.DataAccessType.NEED_TO_KNOW, '1'),
+        (patient_models.Patient.DataAccessType.ALL, '3'),
+        (patient_models.Patient.DataAccessType.NEED_TO_KNOW, '1'),
     ])
-    def test_import_patient_data_access(self, data_access: Patient.DataAccessType, legacy_data_access: str) -> None:
+    def test_import_patient_data_access(
+        self, data_access: patient_models.Patient.DataAccessType,
+        legacy_data_access: str,
+    ) -> None:
         """The patient is imported with the data access level."""
         legacy_factories.LegacyPatientFactory(access_level=legacy_data_access)
 
         message, error = self._call_command('migrate_patients')
 
-        patient = Patient.objects.get(legacy_id=51)
+        patient = patient_models.Patient.objects.get(legacy_id=51)
         assert patient.data_access == data_access
 
     def test_import_legacy_patient_not_exist_fail(self) -> None:
@@ -339,13 +360,13 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         """Test import relation fails, relation already exists."""
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient = patient_factories.Patient(legacy_id=99)
-        relationship_type = RelationshipType.objects.self_type()
+        relationship_type = patient_models.RelationshipType.objects.self_type()
         caregiver = patient_factories.CaregiverProfile(legacy_id=55)
         patient_factories.Relationship(
             patient=patient,
             caregiver=caregiver,
             type=relationship_type,
-            status=RelationshipStatus.CONFIRMED,
+            status=patient_models.RelationshipStatus.CONFIRMED,
         )
 
         message, error = self._call_command('migrate_caregivers')
@@ -438,50 +459,82 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 class TestPatientsDeviationsCommand(CommandTestMixin):
     """Test class for the custom command that detects `Patient` model/tables deviations."""
 
-    def test_deviations_no_patients(self) -> None:
-        """Ensure the command does not fail if there are no patient records."""
-        message, error = self._call_command('find_patients_deviations')
-        assert 'No deviations have been found in the "Patient" tables/models.' in message
+    def test_no_deviations(self) -> None:
+        """Ensure the command does not fail if there are no patient and caregiver records."""
+        message, error = self._call_command('find_deviations')
+        assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
     def test_deviations_uneven_patient_records(self) -> None:
         """Ensure the command handles the cases when "Patient" model/tables have uneven number of records."""
-        patient_factories.Patient(legacy_id=99, first_name='Test_1', ramq='RAMQ12345678')
-        legacy_factories.LegacyPatientFactory(patientsernum=99)
-        legacy_factories.LegacyPatientFactory(patientsernum=100)
-        message, error = self._call_command('find_patients_deviations')
-        assert 'found deviations in the "Patient" tables/models!!!' in error
-        assert 'The number of records in "opal.patients_patient" and "OpalDB.Patient" tables does not match!' in error
-        assert '"opal.patients_patient": 1' in error
-        assert '"OpalDB.Patient": 2' in error
+        user_factories.Caregiver(first_name='Marge', last_name='Simpson')
+        patient_factories.Patient(legacy_id=99, first_name='Marge', last_name='Simpson', ramq='RAMQ12345678')
+        legacy_factories.LegacyUserFactory(usersernum=99, usertypesernum=99)
+        legacy_factories.LegacyUserFactory(usersernum=100, usertypesernum=100)
+        legacy_factories.LegacyPatientControlFactory(
+            patient=legacy_factories.LegacyPatientFactory(patientsernum=99),
+        )
+        legacy_factories.LegacyPatientControlFactory(
+            patient=legacy_factories.LegacyPatientFactory(patientsernum=100),
+        )
+        message, error = self._call_command('find_deviations')
+        assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
+            'opal.patients_patient',
+            'OpalDB.Patient(UserType="Patient")',
+        ) in error
+        assert 'The number of records in "{0}" and "{1}" tables does not match!'.format(
+            'opal.patients_patient',
+            'OpalDB.Patient(UserType="Patient")',
+        ) in error
+        assert 'opal.patients_patient: 1' in error
+        assert 'OpalDB.Patient(UserType="Patient"): 2' in error
 
     def test_patient_records_deviations(self) -> None:
         """Ensure the command detects the deviations in the "Patient" model and tables."""
-        legacy_factories.LegacyPatientFactory()
-        patient_factories.Patient(legacy_id=1)
-        message, error = self._call_command('find_patients_deviations')
+        # Create legacy patient
+        legacy_factories.LegacyUserFactory(usertypesernum=51)
+        legacy_factories.LegacyPatientControlFactory(
+            patient=legacy_factories.LegacyPatientFactory(patientsernum=51),
+        )
 
-        assert '{0}\n\n{1}'.format(
-            'found deviations in the "Patient" tables/models!!!',
-            120 * '-',
+        # Create Django patient
+        patient_factories.CaregiverProfile(
+            user=user_factories.Caregiver(
+                first_name='Marge',
+                last_name='Simpson',
+                email='test@test.com',
+                username='username',
+            ),
+            legacy_id=51,
+        )
+        patient_factories.Patient(legacy_id=51)
+
+        message, error = self._call_command('find_deviations')
+        assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
+            'opal.patients_patient',
+            'OpalDB.Patient(UserType="Patient")',
         ) in error
 
-        print(message)
-        print(error)
-
-        assert 'OpalDB.Patient  <===>  opal.patients_patient:' in error
-        assert "(1, '', 'Marge', 'Simpson', '1999-01-01', 'M', None, None, None, 'ALL')" in error
+        assert 'opal.patients_patient  <===>  OpalDB.Patient(UserType="Patient"):' in error
+        assert "(51, '', 'Marge', 'Simpson', '1999-01-01', 'M', 'ALL', None" in error
         assert (
-            "(51, 'SIMM18510198', 'Marge', 'Simpson', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en', 'ALL')"
+            "(51, 'SIMM18510198', 'Marge', 'Simpson', '2018-01-01', 'M', 'ALL', None)"
         ) in error
         assert '{0}\n\n\n'.format(120 * '-')
 
-    def test_deviations_uneven_hospi_patient_records(self) -> None:
+    def test_deviations_uneven_hospital_patient_records(self) -> None:
         """Ensure the command handles the cases when "HospitalPatient" model/tables have uneven number of records."""
-        patient_factories.HospitalPatient()
-        patient_factories.HospitalPatient()
+        legacy_factories.LegacyUserFactory(usersernum=99, usertypesernum=99)
+        legacy_factories.LegacyUserFactory(usersernum=98, usertypesernum=98)
+        first_patient = patient_factories.Patient(ramq='RAMQ12345678', legacy_id=99)
+        second_patient = patient_factories.Patient(ramq='RAMQ87654321', legacy_id=98)
+        patient_factories.HospitalPatient(patient=first_patient)
+        patient_factories.HospitalPatient(patient=second_patient)
         legacy_factories.LegacyPatientHospitalIdentifierFactory()
-        message, error = self._call_command('find_patients_deviations')
-        assert 'found deviations in the "Patient" tables/models!!!' in error
+        message, error = self._call_command('find_deviations')
+        assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
+            'opal.patients_hospitalpatient',
+            'OpalDB.Patient_Hospital_Identifier',
+        ) in error
         assert '{0}{1}'.format(
             'The number of records in "opal.patients_hospitalpatient" ',
             'and "OpalDB.Patient_Hospital_Identifier" tables does not match!',
@@ -497,14 +550,59 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             site=hospital_settings_factories.Site(code='TST'),
         )
 
-        message, error = self._call_command('find_patients_deviations')
-        assert 'found deviations in the "Patient" tables/models!!!' in error
-        assert 'OpalDB.Patient_Hospital_Identifier  <===>  opal.patients_hospitalpatient:' in error
+        message, error = self._call_command('find_deviations')
+        deviations_err = 'found deviations between {0} Django model and {1} legacy table!!!'.format(
+            'opal.patients_hospitalpatient',
+            'OpalDB.Patient_Hospital_Identifier',
+        )
+        assert deviations_err in error
+        assert 'opal.patients_hospitalpatient  <===>  OpalDB.Patient_Hospital_Identifier:' in error
         assert "(51, 'RVH', '9999996', 1)" in error
         assert "(1, 'TST', '9999996', 1)" in error
 
-    def test_no_patient_records_deviations(self) -> None:
+    def test_no_deviations_for_patients_with_users(self) -> None:
         """Ensure the command does not return an error if there are no deviations in "Patient" records."""
+        self._create_two_fully_registered_patients()
+
+        message, error = self._call_command('find_deviations')
+
+        assert patient_models.Patient.objects.count() == 2
+        assert legacy_models.LegacyPatientControl.objects.count() == 2
+        assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
+
+    def test_no_deviations_for_patients_with_unregistered_users(self) -> None:
+        """Ensure the command does not return deviations for unregistered "Patient" records."""
+        self._create_two_fully_registered_patients()
+
+        # Create unregistered Patient record
+        patient_factories.Patient(
+            legacy_id=None,
+            ramq='RAMQ33333333',
+            first_name='Third First Name',
+            last_name='Third Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+        )
+        # create unregistered SELF type caregiver
+        patient_factories.CaregiverProfile(
+            user=user_factories.Caregiver(
+                email='opal@unregistered-example.com',
+                language='en',
+                phone_number='5149995555',
+                first_name='Third First Name',
+                last_name='Third Last Name',
+                username='third_username',
+            ),
+            legacy_id=None,
+        )
+
+        message, error = self._call_command('find_deviations')
+
+        assert patient_models.Patient.objects.count() == 3
+        assert legacy_models.LegacyPatientControl.objects.count() == 2
+        assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
+
+    def test_no_deviations_for_patients_without_user(self) -> None:  # noqa: WPS213
+        """Ensure the command does not return deviations error for "Patient" records without users."""
         # create legacy patient
         legacy_patient = legacy_factories.LegacyPatientFactory(
             patientsernum=99,
@@ -517,16 +615,10 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             email='opal@example.com',
             language='en',
         )
+        legacy_factories.LegacyPatientControlFactory(patient=legacy_patient)
         # create legacy HospitalPatient identifier
         legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_patient)
-        caregiver_factories.CaregiverProfile(
-            user=user_factories.Caregiver(
-                email='opal@example.com',
-                language='en',
-                phone_number='5149995555',
-            ),
-            legacy_id=99,
-        )
+
         # create patient
         patient = patient_factories.Patient(
             legacy_id=99,
@@ -555,21 +647,12 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             email='second.opal@example.com',
             language='fr',
         )
+        legacy_factories.LegacyPatientControlFactory(patient=second_legacy_patient)
         # create second legacy HospitalPatient identifier
         legacy_factories.LegacyPatientHospitalIdentifierFactory(
             patient=second_legacy_patient,
             mrn='9999997',
             hospital=legacy_factories.LegacyHospitalIdentifierTypeFactory(code='MGH'),
-        )
-
-        # create second CaregiverProfile record
-        caregiver_factories.CaregiverProfile(
-            user=user_factories.Caregiver(
-                email='second.opal@example.com',
-                phone_number='5149991111',
-                language='fr',
-            ),
-            legacy_id=98,
         )
 
         # create second `Patient` record
@@ -579,9 +662,8 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             first_name='Second First Name',
             last_name='Second Last Name',
             date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
-            sex=Patient.SexType.FEMALE,
+            sex=patient_models.Patient.SexType.FEMALE,
         )
-
         # create second `HospitalPatient` record
         patient_factories.HospitalPatient(
             patient=patient,
@@ -589,8 +671,8 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             site=hospital_settings_factories.Site(code='MGH'),
         )
 
-        message, error = self._call_command('find_patients_deviations')
-        assert 'No deviations have been found in the "Patient" tables/models.' in message
+        message, error = self._call_command('find_deviations')
+        assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
     def test_patient_records_deviations_access_level(self) -> None:
         """Ensure the command returns an error if the access level does not match."""
@@ -607,16 +689,15 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             language='en',
             access_level='1',
         )
-        caregiver_factories.CaregiverProfile(
-            user=user_factories.Caregiver(
-                email='opal@example.com',
-                language='en',
-                phone_number='5149995555',
-            ),
-            legacy_id=99,
+        user_factories.Caregiver(
+            email='opal@example.com',
+            language='en',
+            phone_number='5149995555',
+            first_name='First Name',
+            last_name='Last Name',
         )
         # create patient
-        patient: Patient = patient_factories.Patient(
+        patient: patient_models.Patient = patient_factories.Patient(
             legacy_id=99,
             ramq='RAMQ12345678',
             first_name='First Name',
@@ -624,12 +705,284 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
             date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
         )
 
-        assert patient.data_access == Patient.DataAccessType.ALL
+        assert patient.data_access == patient_models.Patient.DataAccessType.ALL
         assert legacy_patient.access_level == '1'
 
-        message, error = self._call_command('find_patients_deviations')
+        message, error = self._call_command('find_deviations')
 
-        assert 'found deviations in the "Patient" tables/models!!!' in error
+        deviations_err = 'found deviations between {0} Django model and {1} legacy table!!!'.format(
+            'opal.patients_patient',
+            'OpalDB.Patient(UserType="Patient")',
+        )
+        assert deviations_err in error
+
+    def test_deviations_uneven_caregiver_records(self) -> None:
+        """Ensure the command handles the cases when "User/Caregiver" model/tables have uneven number of records."""
+        caregiver_user = user_factories.Caregiver(first_name='Homer', last_name='Simpson')
+        patient_factories.CaregiverProfile(legacy_id=99, user=caregiver_user)
+        legacy_factories.LegacyUserFactory(
+            usersernum=99,
+            usertypesernum=99,
+            usertype=legacy_models.LegacyUserType.CAREGIVER,
+        )
+        legacy_factories.LegacyUserFactory(
+            usersernum=100,
+            usertypesernum=100,
+            usertype=legacy_models.LegacyUserType.CAREGIVER,
+        )
+        legacy_factories.LegacyPatientFactory(patientsernum=99)
+        legacy_factories.LegacyPatientFactory(patientsernum=100)
+        message, error = self._call_command('find_deviations')
+        assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
+            'opal.caregivers_caregiverprofile',
+            'OpalDB.Patient(UserType="Caregiver")',
+        ) in error
+        assert 'The number of records in "{0}" and "{1}" tables does not match!'.format(
+            'opal.caregivers_caregiverprofile',
+            'OpalDB.Patient(UserType="Caregiver")',
+        ) in error
+        assert 'opal.caregivers_caregiverprofile: 1' in error
+        assert 'OpalDB.Patient(UserType="Caregiver"): 2' in error
+
+    def test_caregiver_records_deviations(self) -> None:
+        """Ensure the command detects the deviations in the "User/Caregiver" records."""
+        legacy_factories.LegacyUserFactory(usertypesernum=51, usertype=legacy_models.LegacyUserType.CAREGIVER)
+        legacy_factories.LegacyPatientFactory(patientsernum=51, first_name='Homer', last_name='Simpson')
+        user = user_factories.Caregiver(
+            first_name='Homer',
+            last_name='Simpson',
+            email='test@test.com',
+            username='test_username',
+        )
+        patient_factories.CaregiverProfile(legacy_id=51, user=user)
+        message, error = self._call_command('find_deviations')
+        assert 'found deviations between {0} Django model and {1} legacy table!!!'.format(
+            'opal.caregivers_caregiverprofile',
+            'OpalDB.Patient(UserType="Caregiver")',
+        ) in error
+
+        assert 'opal.caregivers_caregiverprofile  <===>  OpalDB.Patient(UserType="Caregiver"):' in error
+        assert "(51, 'Homer', 'Simpson', '', 'test@test.com', 'en', 'test_username')" in error
+        assert (
+            "(51, 'Homer', 'Simpson', '5149995555', 'test@test.com', 'en', 'username')"
+        ) in error
+        assert '{0}\n\n\n'.format(120 * '-')
+
+    def test_no_caregiver_deviations(self) -> None:
+        """Ensure the command does not return an error if there are no deviations in "Caregiver" records."""
+        self._create_two_fully_registered_caregivers()
+
+        message, error = self._call_command('find_deviations')
+        assert legacy_models.LegacyUsers.objects.count() == 2
+        assert patient_models.CaregiverProfile.objects.count() == 2
+        assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
+
+    def test_no_caregiver_deviations_with_unregistered_users(self) -> None:
+        """Ensure the command does not return deviations for unregistered "User/Caregiver" records."""
+        self._create_two_fully_registered_caregivers()
+
+        # Create unregistered "User/Caregiver" in Django DB
+        caregiver_user = user_factories.Caregiver(
+            email='opal@unregistered_example.com',
+            language='en',
+            phone_number='5149994444',
+            first_name='Marge',
+            last_name='Simpson',
+            username='marge_username',
+        )
+
+        # create caregiver
+        patient_factories.CaregiverProfile(
+            legacy_id=None,
+            user=caregiver_user,
+        )
+
+        message, error = self._call_command('find_deviations')
+        assert legacy_models.LegacyUsers.objects.count() == 2
+        assert patient_models.CaregiverProfile.objects.count() == 3
+        assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
+
+    def _create_two_fully_registered_patients(self) -> None:  # noqa: WPS213
+        """Create two fully registered patients in both legacy and Django databases."""
+        # create legacy user
+        legacy_factories.LegacyUserFactory(
+            usersernum=99,
+            usertypesernum=99,
+            username='first_username',
+        )
+        # create legacy patient
+        legacy_patient = legacy_factories.LegacyPatientFactory(
+            patientsernum=99,
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+            sex='Male',
+            tel_num='5149995555',
+            email='opal@example.com',
+            language='en',
+        )
+        legacy_factories.LegacyPatientControlFactory(patient=legacy_patient)
+        # create legacy HospitalPatient identifier
+        legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_patient)
+
+        # create patient
+        patient = patient_factories.Patient(
+            legacy_id=99,
+            ramq='RAMQ12345678',
+            first_name='First Name',
+            last_name='Last Name',
+            date_of_birth=timezone.make_aware(datetime(2018, 1, 1)),
+        )
+        # create SELF type caregiver
+        patient_factories.CaregiverProfile(
+            user=user_factories.Caregiver(
+                email='opal@example.com',
+                language='en',
+                phone_number='5149995555',
+                first_name='First Name',
+                last_name='Last Name',
+                username='first_username',
+            ),
+            legacy_id=99,
+        )
+        # create hospital patient
+        patient_factories.HospitalPatient(
+            patient=patient,
+            site=hospital_settings_factories.Site(code='RVH'),
+        )
+
+        # create another patient record
+
+        # create a second legacy user
+        legacy_factories.LegacyUserFactory(
+            usersernum=98,
+            usertypesernum=98,
+            username='second_username',
+        )
+
+        # create a second legacy patient
+        second_legacy_patient = legacy_factories.LegacyPatientFactory(
+            patientsernum=98,
+            ramq='RAMQ87654321',
+            first_name='Second First Name',
+            last_name='Second Last Name',
+            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            sex='Female',
+            tel_num='5149991111',
+            email='second.opal@example.com',
+            language='fr',
+        )
+        legacy_factories.LegacyPatientControlFactory(patient=second_legacy_patient)
+        # create second legacy HospitalPatient identifier
+        legacy_factories.LegacyPatientHospitalIdentifierFactory(
+            patient=second_legacy_patient,
+            mrn='9999997',
+            hospital=legacy_factories.LegacyHospitalIdentifierTypeFactory(code='MGH'),
+        )
+
+        # create second `Patient` record
+        patient = patient_factories.Patient(
+            legacy_id=98,
+            ramq='RAMQ87654321',
+            first_name='Second First Name',
+            last_name='Second Last Name',
+            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            sex=patient_models.Patient.SexType.FEMALE,
+        )
+
+        # create second SELF type caregiver and second User record
+        patient_factories.CaregiverProfile(
+            legacy_id=98,
+            user=user_factories.Caregiver(
+                email='second.opal@example.com',
+                phone_number='5149991111',
+                language='fr',
+                first_name='Second First Name',
+                last_name='Second Last Name',
+                username='second_username',
+            ),
+        )
+
+        # create second `HospitalPatient` record
+        patient_factories.HospitalPatient(
+            patient=patient,
+            mrn='9999997',
+            site=hospital_settings_factories.Site(code='MGH'),
+        )
+
+    def _create_two_fully_registered_caregivers(self) -> None:
+        """Create two fully registered caregivers in both legacy and Django databases."""
+        # create legacy user
+        legacy_factories.LegacyUserFactory(
+            usersernum=99, usertypesernum=99,
+            usertype=legacy_models.LegacyUserType.CAREGIVER,
+            username='first_username',
+        )
+        # create legacy caregiver
+        legacy_factories.LegacyPatientFactory(
+            patientsernum=99,
+            ramq='',
+            first_name='Homer',
+            last_name='Simpson',
+            tel_num='5149995555',
+            email='opal@example.com',
+            language='en',
+        )
+
+        first_caregiver_user = user_factories.Caregiver(
+            email='opal@example.com',
+            language='en',
+            phone_number='5149995555',
+            first_name='Homer',
+            last_name='Simpson',
+            username='first_username',
+        )
+
+        # create caregiver
+        patient_factories.CaregiverProfile(
+            legacy_id=99,
+            user=first_caregiver_user,
+        )
+
+        # create another caregiver record
+
+        # create a second legacy user
+        legacy_factories.LegacyUserFactory(
+            usersernum=98,
+            usertypesernum=98,
+            usertype=legacy_models.LegacyUserType.CAREGIVER,
+            username='second_username',
+        )
+
+        # create a second legacy caregiver
+        legacy_factories.LegacyPatientFactory(
+            patientsernum=98,
+            ramq='RAMQ87654321',
+            first_name='Bart',
+            last_name='Simpson',
+            date_of_birth=timezone.make_aware(datetime(1950, 2, 3)),
+            sex='Male',
+            tel_num='5149991111',
+            email='second.opal@example.com',
+            language='fr',
+        )
+
+        # create second User record
+        second_careguver_user = user_factories.Caregiver(
+            email='second.opal@example.com',
+            phone_number='5149991111',
+            language='fr',
+            first_name='Bart',
+            last_name='Simpson',
+            username='second_username',
+        )
+
+        # create second `Caregiver` record
+        patient_factories.CaregiverProfile(
+            legacy_id=98,
+            user=second_careguver_user,
+        )
 
 
 class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
@@ -682,20 +1035,20 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
                 conn.execute(query)
                 conn.close()
 
-        user_factories.User(
+        user_factories.Caregiver(
             first_name='TEST NAME',
             last_name='RESPONDENT',
             username='firebase hashed user UID',
         )
 
         # this user should not be included to the error list
-        user_factories.User(
+        user_factories.Caregiver(
             first_name='TEST NAME',
             last_name='RESPONDENT test1',
             username='firebase hashed user UID_1',
         )
 
-        user_factories.User(
+        user_factories.Caregiver(
             first_name='TEST NAME',
             last_name='RESPONDENT test2_2',
             username='firebase hashed user UID_2',
@@ -739,19 +1092,19 @@ class TestQuestionnaireRespondentsDeviationsCommand(CommandTestMixin):
                 conn.execute(query)
                 conn.close()
 
-        user_factories.User(
+        user_factories.Caregiver(
             first_name='TEST NAME',
             last_name='RESPONDENT',
             username='firebase hashed user UID',
         )
 
-        user_factories.User(
+        user_factories.Caregiver(
             first_name='TEST NAME',
             last_name='RESPONDENT test1',
             username='firebase hashed user UID_1',
         )
 
-        user_factories.User(
+        user_factories.Caregiver(
             first_name='TEST NAME',
             last_name='RESPONDENT test2',
             username='firebase hashed user UID_2',
@@ -809,7 +1162,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         # Call the command
         message, error = self._call_command('update_orms_patients')
 
-        number_of_patients = Patient.objects.all().count()
+        number_of_patients = patient_models.Patient.objects.all().count()
         assert error.count("An error occurred during patient's UUID update!") == number_of_patients
 
     def test_orms_patients_update_unsuccessful_response(self, mocker: MockerFixture) -> None:
@@ -876,7 +1229,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         # Call the command
         message, error = self._call_command('update_orms_patients')
 
-        patients_num = Patient.objects.all().count()
+        patients_num = patient_models.Patient.objects.all().count()
         assert "An error occurred during patients' UUID update!" not in error
         assert 'Updated {0} out of {1}'.format(patients_num, patients_num) in message
         assert 'The following patients were not updated:' not in error

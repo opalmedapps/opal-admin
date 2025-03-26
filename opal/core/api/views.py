@@ -3,9 +3,10 @@
 from django.conf import settings
 from django.http import HttpRequest
 
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from opal.core.drf_permissions import IsRegistrationListener
 
 from .serializers import LanguageSerializer
 
@@ -13,7 +14,7 @@ from .serializers import LanguageSerializer
 class LanguagesView(APIView):
     """View that returns the list of supported languages."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsRegistrationListener,)
 
     def get(self, request: HttpRequest) -> Response:
         """

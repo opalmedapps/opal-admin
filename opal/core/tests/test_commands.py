@@ -10,6 +10,7 @@ from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
 from opal.patients import factories
 from opal.patients.models import HospitalPatient, Patient, Relationship
+from opal.test_results.models import GeneralTest, Note, PathologyObservation
 from opal.users.models import Caregiver, User
 
 pytestmark = pytest.mark.django_db()
@@ -33,11 +34,14 @@ class TestInsertTestData(CommandTestMixin):
         assert Institution.objects.count() == 1
         assert Institution.objects.get().code == 'MUHC'
         assert Site.objects.count() == 5
-        assert Patient.objects.count() == 5
-        assert HospitalPatient.objects.count() == 6
-        assert CaregiverProfile.objects.count() == 4
-        assert Relationship.objects.count() == 9
-        assert SecurityAnswer.objects.count() == 9
+        assert Patient.objects.count() == 7
+        assert HospitalPatient.objects.count() == 8
+        assert CaregiverProfile.objects.count() == 5
+        assert Relationship.objects.count() == 11
+        assert SecurityAnswer.objects.count() == 12
+        assert GeneralTest.objects.count() == 5
+        assert PathologyObservation.objects.count() == 5
+        assert Note.objects.count() == 5
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_chusj(self) -> None:
@@ -49,9 +53,12 @@ class TestInsertTestData(CommandTestMixin):
         assert Site.objects.count() == 1
         assert Patient.objects.count() == 2
         assert HospitalPatient.objects.count() == 2
-        assert CaregiverProfile.objects.count() == 2
+        assert CaregiverProfile.objects.count() == 3
         assert Relationship.objects.count() == 3
         assert SecurityAnswer.objects.count() == 6
+        assert GeneralTest.objects.count() == 0
+        assert PathologyObservation.objects.count() == 0
+        assert Note.objects.count() == 0
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_existing_data_cancel(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -95,11 +102,11 @@ class TestInsertTestData(CommandTestMixin):
         # new data was created
         assert Institution.objects.count() == 1
         assert Site.objects.count() == 5
-        assert Patient.objects.count() == 5
-        assert HospitalPatient.objects.count() == 6
-        assert CaregiverProfile.objects.count() == 4
-        assert Relationship.objects.count() == 9
-        assert SecurityAnswer.objects.count() == 9
+        assert Patient.objects.count() == 7
+        assert HospitalPatient.objects.count() == 8
+        assert CaregiverProfile.objects.count() == 5
+        assert Relationship.objects.count() == 11
+        assert SecurityAnswer.objects.count() == 12
 
     def test_insert_existing_data_force_delete(self) -> None:
         """The existing data is deleted without confirmation."""
@@ -134,8 +141,8 @@ class TestInitializeData(CommandTestMixin):
         stdout, _stderr = self._call_command('initialize_data')
 
         assert Group.objects.count() == 7
-        assert User.objects.count() == 3
-        assert Token.objects.count() == 3
+        assert User.objects.count() == 4
+        assert Token.objects.count() == 4
         assert SecurityQuestion.objects.count() == 6
 
         for group in Group.objects.all():
@@ -148,37 +155,44 @@ class TestInitializeData(CommandTestMixin):
             security_question.full_clean()
 
         listener_token = Token.objects.get(user__username='listener')
+        registration_listener_token = Token.objects.get(user__username='listener-registration')
         interface_engine_token = Token.objects.get(user__username='interface-engine')
         legacy_backend_token = Token.objects.get(user__username='opaladmin-backend-legacy')
 
         assert 'Data successfully created\n' in stdout
         assert f'listener token: {listener_token.key}' in stdout
+        assert f'listener-registration token: {registration_listener_token.key}' in stdout
         assert f'interface-engine token: {interface_engine_token.key}' in stdout
         assert f'opaladmin-backend-legacy token: {legacy_backend_token}' in stdout
 
     def test_insert_tokens(self) -> None:
         """Ensure that initial data is inserted with existing system users and their existing tokens are returned."""
         listener = User.objects.create(username='listener')
+        registration_listener = User.objects.create(username='listener-registration')
         interface_engine = User.objects.create(username='interface-engine')
         legacy_backend = User.objects.create(username='opaladmin-backend-legacy')
 
         token_listener = Token.objects.create(user=listener)
+        token_registration_listener = Token.objects.create(user=registration_listener)
         token_interface_engine = Token.objects.create(user=interface_engine)
         token_legacy_backend = Token.objects.create(user=legacy_backend)
 
         stdout, _stderr = self._call_command('initialize_data')
 
-        assert Token.objects.count() == 3
+        assert Token.objects.count() == 4
 
         listener_token = Token.objects.get(user__username='listener')
+        registration_listener_token = Token.objects.get(user__username='listener-registration')
         interface_engine_token = Token.objects.get(user__username='interface-engine')
         legacy_backend_token = Token.objects.get(user__username='opaladmin-backend-legacy')
 
         assert 'Data successfully created\n' in stdout
         assert token_listener == listener_token
+        assert token_registration_listener == registration_listener_token
         assert token_interface_engine == interface_engine_token
         assert token_legacy_backend == legacy_backend_token
         assert f'listener token: {listener_token.key}' in stdout
+        assert f'listener-registration token: {registration_listener_token.key}' in stdout
         assert f'interface-engine token: {interface_engine_token.key}' in stdout
         assert f'opaladmin-backend-legacy token: {legacy_backend_token}' in stdout
 
@@ -187,8 +201,8 @@ class TestInitializeData(CommandTestMixin):
         stdout, _stderr = self._call_command('initialize_data', '--muhc-deployment')
 
         assert Group.objects.count() == 7
-        assert User.objects.count() == 3
-        assert Token.objects.count() == 3
+        assert User.objects.count() == 4
+        assert Token.objects.count() == 4
         assert SecurityQuestion.objects.count() == 6
         assert Institution.objects.count() == 1
         assert Site.objects.count() == 5
@@ -217,18 +231,20 @@ class TestInitializeData(CommandTestMixin):
         stdout, stderr = self._call_command('initialize_data')
 
         listener = User.objects.get(username='listener')
+        registration_listener = User.objects.get(username='listener-registration')
         interface_engine = User.objects.get(username='interface-engine')
         legacy_backend = User.objects.get(username='opaladmin-backend-legacy')
 
         token_listener = Token.objects.get(user=listener)
+        token_registration_listener = Token.objects.get(user=registration_listener)
         token_interface_engine = Token.objects.get(user=interface_engine)
         token_legacy_backend = Token.objects.get(user=legacy_backend)
 
         stdout, stderr = self._call_command('initialize_data', '--force-delete')
 
         assert Group.objects.count() == 7
-        assert User.objects.count() == 3
-        assert Token.objects.count() == 3
+        assert User.objects.count() == 4
+        assert Token.objects.count() == 4
         assert SecurityQuestion.objects.count() == 6
 
         assert 'Deleting existing data\n' in stdout
@@ -236,5 +252,6 @@ class TestInitializeData(CommandTestMixin):
         assert 'Data successfully created\n' in stdout
 
         token_listener.refresh_from_db()
+        token_registration_listener.refresh_from_db()
         token_interface_engine.refresh_from_db()
         token_legacy_backend.refresh_from_db()

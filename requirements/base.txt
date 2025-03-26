@@ -1,6 +1,6 @@
 # Django
 #
-django==4.1.12
+django==4.1.13
 django-environ==0.11.2  # https://github.com/joke2k/django-environ
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions
 django-modeltranslation==0.18.11  # https://django-modeltranslation.readthedocs.io/en/latest/
@@ -37,17 +37,21 @@ whitenoise==6.6.0  # http://whitenoise.evans.io/en/stable/index.html
 
 # Export Report functionality
 #
-pandas==2.0.3  # https://pypi.org/project/pandas/
+pandas==2.1.2  # https://pypi.org/project/pandas/
 openpyxl==3.1.2  # https://pypi.org/project/openpyxl/
 
 # Interactive data visualization
 #
-plotly==5.17.0  # https://pypi.org/project/plotly/
+plotly==5.18.0  # https://pypi.org/project/plotly/
 
 # twilio for sending SMS
 #
-twilio==8.9.1  # https://github.com/twilio/twilio-python
+twilio==8.10.1  # https://github.com/twilio/twilio-python
 
 # fpdf2 for generating PDF documents
 #
 fpdf2==2.7.5
+
+# Unidecode for transliterating special characters during de-identification
+#
+unidecode==1.3.7  # https://pypi.org/project/Unidecode/

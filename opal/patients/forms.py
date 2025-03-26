@@ -22,7 +22,14 @@ from requests.exceptions import RequestException
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton, EnterSuppressedLayout, FormActions, InlineSubmit, RadioSelect
+from opal.core.forms.layouts import (
+    CancelButton,
+    EnterSuppressedLayout,
+    FormActions,
+    InlineSubmit,
+    RadioSelect,
+    TabRadioSelect,
+)
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.hospital_settings.models import Institution
 from opal.services.hospital.hospital import OIEService
@@ -536,6 +543,8 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                 if relationship_type:
                     patient_instance = patient if isinstance(patient, Patient) else None
                     self._validate_relationship(patient_instance, existing_user, relationship_type)
+        else:
+            self._validate_existing_relationship(cleaned_data)
 
         return cleaned_data
 
@@ -549,8 +558,6 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         Args:
             cleaned_data: the form's cleaned data, None if not available
         """
-        cleaned_data = self.cleaned_data
-
         # at the beginning (empty form) they are not in the cleaned data
         if 'user_email' in cleaned_data and 'user_phone' in cleaned_data:
             user_email = cleaned_data['user_email']
@@ -621,8 +628,35 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             )
         return option_descriptions
 
+    def _validate_existing_relationship(self, cleaned_data: dict[str, Any]) -> None:
+        """
+        Validate the existing relationship selection by looking up the caregiver.
 
-# TODO: move this to the core app
+        Look up the relationship by first **and** last name.
+        Add an error to the form if there is already an active relationship to a caregiver
+        with the same name.
+
+        Args:
+            cleaned_data: the form's cleaned data
+        """
+        # at the beginning (empty form) they are not in the cleaned data
+        if 'first_name' in cleaned_data and 'last_name' in cleaned_data:
+            first_name = cleaned_data['first_name']
+            last_name = cleaned_data['last_name']
+
+            existing_relationship = Relationship.objects.filter(
+                caregiver__user__first_name=first_name,
+                caregiver__user__last_name=last_name,
+                status__in={RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING},
+            ).exists()
+
+            if existing_relationship:
+                self.add_error(
+                    NON_FIELD_ERRORS,
+                    _('An active relationship with a caregiver with this name already exists.'),
+                )
+
+
 class AccessRequestConfirmForm(forms.Form):
     """This form provides a layout to confirm user password."""
 
@@ -668,20 +702,6 @@ class AccessRequestConfirmForm(forms.Form):
             self.add_error('password', _('The password you entered is incorrect. Please try again.'))
 
         return self.cleaned_data
-
-
-# TODO: move to core form layouts?
-# potential improvement: inherit from Container or LayoutObject to include the content
-# and provide a method to add content at the right place
-class TabRadioSelect(CrispyField):
-    """
-    Custom radio select widget to be used for visualizing choices as Bootstrap tabs.
-
-    Triggers validation via `up-validate` on selection to let the form react to the selection.
-    For example, the form can change the layout according to the selection.
-    """
-
-    template = 'patients/radioselect_tabs.html'
 
 
 class AccessRequestSendSMSForm(forms.Form):
