@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-24 15:20-0500\n"
+"POT-Creation-Date: 2022-11-25 12:07-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,10 +17,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-
-#: opal/patients/admin.py
-msgid "Operator cannot delete relationship type with this role"
-msgstr "Il est interdit de supprimer un type de relation avec ce rôle."
 
 #: opal/patients/apps.py opal/patients/models.py
 msgid "Patients"
@@ -81,7 +77,7 @@ msgid ""
 "being accessed."
 msgstr ""
 "Les types de rôle permettent de suivre la catégorie de relation entre un "
-"proche aidantet et un patient.Un rôle de type “Self” indique que le patient "
+"proche aidantet et un patient. Un rôle de type “Self” indique que le patient "
 "est le propriétaire des données demandées."
 
 #: opal/patients/models.py
@@ -96,6 +92,10 @@ msgstr "Types de relations avec le proche aidant"
 msgid ""
 "Operator cannot create multiple copies of relationship types with this role"
 msgstr "Il est interdit de créer plus d'un type de relation avec le même rôle."
+
+#: opal/patients/models.py
+msgid "Operator cannot delete relationship type with this role"
+msgstr "Il est interdit de supprimer un type de relation avec ce rôle."
 
 #: opal/patients/models.py
 msgid "Female"
