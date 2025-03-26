@@ -28,7 +28,7 @@ OIE_data = {
 
 def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_mrn return the expected OIE data structure."""
-    # mock find_patient_by_mrn and pretend it was unsuccessful
+    # mock find_patient_by_mrn and pretend it was successful
     mock_oie_response = mocker.patch('opal.services.hospital.find_patient_by_mrn')
     mock_oie_response.return_value = OIE_data
 
@@ -38,8 +38,8 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
 
 
 def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
-    """Ensure that find_patient_by_mrn return the expected OIE data structure."""
-    # mock find_patient_by_mrn and pretend it was unsuccessful
+    """Ensure that find_patient_by_mrn return None."""
+    # mock find_patient_by_mrn and pretend it was failed
     mock_oie_response = mocker.patch('opal.services.hospital.find_patient_by_mrn')
     mock_oie_response.return_value = None
 
@@ -49,7 +49,7 @@ def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
 
 def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_ramq return the expected OIE data structure."""
-    # mock find_patient_by_mrn and pretend it was unsuccessful
+    # mock find_patient_by_mrn and pretend it was successful
     mock_oie_response = mocker.patch('opal.services.hospital.find_patient_by_ramq')
     mock_oie_response.return_value = OIE_data
 
@@ -59,8 +59,8 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
 
 
 def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
-    """Ensure that find_patient_by_ramq return the expected OIE data structure."""
-    # mock find_patient_by_mrn and pretend it was unsuccessful
+    """Ensure that find_patient_by_ramq return None."""
+    # mock find_patient_by_mrn and pretend it was failed
     mock_oie_response = mocker.patch('opal.services.hospital.find_patient_by_ramq')
     mock_oie_response.return_value = None
 
