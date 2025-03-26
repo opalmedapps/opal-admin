@@ -82,3 +82,13 @@ def test_quantitysample_existing_cannot_save() -> None:
 
     with pytest.raises(ValidationError, match='Cannot change an existing instance of Quantity Sample'):
         sample.save()
+
+
+def test_quantitysample_multiple_per_patient() -> None:
+    """Ensure a patient can have multiple samples."""
+    patient = Patient()
+
+    factories.QuantitySample(patient=patient)
+    factories.QuantitySample(patient=patient)
+
+    assert QuantitySample.objects.count() == 2

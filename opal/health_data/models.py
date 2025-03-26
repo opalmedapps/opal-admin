@@ -118,7 +118,7 @@ class QuantitySample(AbstractSample):
     https://developer.apple.com/documentation/healthkit/hkquantitysample
     """
 
-    patient = models.OneToOneField(
+    patient = models.ForeignKey(
         verbose_name=_('Patient'),
         to=Patient,
         on_delete=models.CASCADE,
