@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-23 19:50+0000\n"
+"POT-Creation-Date: 2022-11-30 20:46+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -116,6 +116,20 @@ msgstr "Nom de famille"
 #: opal/patients/forms.py
 msgid "Generate QR Code"
 msgstr "Générer un code QR"
+
+#: opal/patients/forms.py
+msgid "Please confirm access to patient data by entering your password."
+msgstr ""
+"Veuillez confirmer l'accès aux données du patient en saisissant votre mot de "
+"passe."
+
+#: opal/patients/forms.py
+msgid "Confirm"
+msgstr "Confirmer"
+
+#: opal/patients/forms.py
+msgid "The password you entered is incorrect. Please try again."
+msgstr "Le mot de passe que vous avez entré est incorrect. Veuillez réessayer."
 
 #: opal/patients/models.py
 msgid "Name"
@@ -368,6 +382,10 @@ msgstr "Détails du patient"
 #: opal/patients/views.py
 msgid "Requestor Details"
 msgstr "Détails du demandeur"
+
+#: opal/patients/views.py
+msgid "Confirm access to patient data"
+msgstr "Confirmer l'accès aux données du patient"
 
 #: opal/patients/views.py
 msgid "QR Code Generation"

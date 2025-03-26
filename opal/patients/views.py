@@ -89,6 +89,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         ('account', forms.RequestorAccountForm),
         ('requestor', forms.ExistingUserForm),
         ('finished', forms.ConfirmExistingUserForm),
+        ('password', forms.ConfirmPasswordForm),
     ]
     form_title_list = {
         'site': _('Hospital Information'),
@@ -98,6 +99,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         'account': _('Requestor Details'),
         'requestor': _('Requestor Details'),
         'finished': _('Requestor Details'),
+        'password': _('Confirm access to patient data'),
     }
     template_list = {
         'site': 'patients/access_request/access_request.html',
@@ -107,6 +109,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         'account': 'patients/access_request/access_request.html',
         'requestor': 'patients/access_request/access_request.html',
         'finished': 'patients/access_request/access_request.html',
+        'password': 'patients/access_request/access_request.html',
     }
 
     def get_template_names(self) -> List[str]:
@@ -178,6 +181,10 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
                 form_class = forms.NewUserForm
                 form = form_class(data)
                 self.condition_dict = {'finished': False}
+        elif step == 'password':
+            user_type = self.get_cleaned_data_for_step('account')['user_type']
+            if user_type == str(constants.NEW_USER):
+                self.condition_dict = {'finished': False}
         return form
 
     def get_form_initial(self, step: str) -> dict[str, str]:
@@ -221,6 +228,8 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         if step == 'relationship':
             patient_record = self.get_cleaned_data_for_step('search')['patient_record']
             kwargs['date_of_birth'] = patient_record.date_of_birth
+        elif step == 'password':
+            kwargs['authorized_user'] = self.request.user
         return kwargs
 
     def done(self, form_list: Tuple, **kwargs: Any) -> HttpResponse:
