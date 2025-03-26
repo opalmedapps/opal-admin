@@ -1,5 +1,5 @@
 """This module is used to provide configuration, fixtures, and plugins for pytest."""
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from pathlib import Path
 
 from django.apps import apps
@@ -334,24 +334,42 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
 
 
 @pytest.fixture(scope='session', autouse=True)
-def django_db_setup(django_db_setup: None, django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004, WPS442
+def django_db_setup(  # noqa: PT004
+    django_db_setup: None,  # noqa: WPS442
+    django_db_blocker: DjangoDbBlocker,
+) -> Generator[None, None, None]:
     """
     Set up the QuestionnaireDB manually using an SQL file with the schema.
 
     Args:
         django_db_setup: pytest django's original DB setup fixture
         django_db_blocker: pytest fixture to allow database access here only
+
+    Yields:
+        None
     """
     with Path('opal/tests/sql/questionnairedb_functions.sql').open(encoding='ISO-8859-1') as handle:
         sql_content = handle.read()
+
+    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open() as handle:  # noqa: WPS440
+        sql_cleanup = handle.read()
 
     with django_db_blocker.unblock():
         with connections['questionnaire'].cursor() as conn:
             conn.execute(sql_content)
 
+    yield
+
+    with django_db_blocker.unblock():
+        with connections['questionnaire'].cursor() as conn:  # noqa: WPS440
+            conn.execute('SELECT COUNT(*) FROM questionnaire;')
+            result = conn.fetchone()
+            assert result[0] == 0  # noqa: S101
+            conn.execute(sql_cleanup)
+
 
 @pytest.fixture
-def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004
+def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, None, None]:  # noqa: PT004
     """
     Initialize the QuestionnaireDB with data.
 
@@ -367,13 +385,29 @@ def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT0
 
     Args:
         django_db_blocker: pytest fixture to allow database access here only
+
+    Yields:
+        None
     """
-    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='ISO-8859-1') as handle:
+    with Path('opal/tests/sql/questionnairedb_data.sql').open() as handle:
         sql_data = handle.read()
+
+    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open() as handle:  # noqa: WPS440
+        sql_cleanup = handle.read()
 
     with django_db_blocker.unblock():
         with connections['questionnaire'].cursor() as conn:
+            # safety check to ensure that there is no data already
+            conn.execute('SELECT COUNT(*) FROM questionnaire;')
+            result = conn.fetchone()
+            assert result[0] == 0  # noqa: S101
             conn.execute(sql_data)
+
+    yield
+
+    with django_db_blocker.unblock():
+        with connections['questionnaire'].cursor() as conn:  # noqa: WPS440
+            conn.execute(sql_cleanup)
 
 
 @pytest.fixture
