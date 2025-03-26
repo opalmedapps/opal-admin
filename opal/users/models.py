@@ -30,6 +30,12 @@ class User(AbstractUser):
 
     base_type = UserType.CLINICAL_STAFF
 
+    language = models.CharField(
+        verbose_name=_('Language'),
+        max_length=2,
+        choices=Language.choices,
+        default=Language.ENGLISH,
+    )
     type = models.CharField(  # noqa: A003
         verbose_name=_('Type'),
         max_length=10,
@@ -39,6 +45,10 @@ class User(AbstractUser):
 
     class Meta:
         constraints = [
+            models.CheckConstraint(
+                name='%(app_label)s_%(class)s_language_valid',  # noqa: WPS323
+                check=models.Q(language__in=Language.values),
+            ),
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_type_valid',  # noqa: WPS323
                 check=models.Q(type__in=UserType.values),
