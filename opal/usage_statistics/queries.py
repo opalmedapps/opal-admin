@@ -5,7 +5,7 @@ from typing import Any, TypeVar
 
 from django.conf import settings
 from django.db import models
-from django.db.models.functions import ExtractYear, TruncDay, TruncMonth, TruncYear
+from django.db.models.functions import Cast, ExtractYear, TruncDay, TruncMonth, TruncYear
 
 from opal.caregivers import models as caregivers_models
 from opal.legacy import models as legacy_models
@@ -667,6 +667,13 @@ def fetch_patient_demographic_diagnosis_summary(
         'latest_diagnosis_description',
         'latest_diagnosis_date',
     )
+
+    for patient in demographics_and_diagnosis:
+        patient['registration_date_utc'] = patient['registration_date'].astimezone(dt.timezone.utc)
+        patient['latest_diagnosis_date_utc'] = patient['latest_diagnosis_date'].astimezone(dt.timezone.utc)
+        patient.pop('registration_date')
+        patient.pop('latest_diagnosis_date')
+
     return list(demographics_and_diagnosis)
 
 
@@ -729,13 +736,20 @@ def _annotate_queryset_with_grouping_field(
     Returns:
         queryset with annotated grouping component field
     """
+    # First, cast the field to a DateTimeField (to avoid the ValueError if it's a DateField).
+    datetime_expr = Cast(field_name, output_field=models.DateTimeField())
+
     if group_by == GroupByComponent.YEAR:
         annotated_queryset: models.QuerySet[_ModelT] = queryset.annotate(
-            year=TruncYear(field_name),
+            year=TruncYear(datetime_expr, tzinfo=dt.timezone.utc, output_field=models.DateField()),
         )
     elif group_by == GroupByComponent.MONTH:
-        annotated_queryset = queryset.annotate(month=TruncMonth(field_name))
+        annotated_queryset = queryset.annotate(
+            month=TruncMonth(datetime_expr, tzinfo=dt.timezone.utc, output_field=models.DateField()),
+        )
     else:
-        annotated_queryset = queryset.annotate(day=TruncDay(field_name))
+        annotated_queryset = queryset.annotate(
+            day=TruncDay(datetime_expr, tzinfo=dt.timezone.utc, output_field=models.DateField()),
+        )
 
     return annotated_queryset

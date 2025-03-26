@@ -171,25 +171,25 @@ def test_fetch_grouped_registration_summary_by_day(mocker: MockerFixture) -> Non
             'uncompleted_registration': 0,
             'completed_registration': 1,
             'total_registration_codes': 1,
-            'day': current_datetime,
+            'day': current_datetime.date(),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'day': current_datetime - dt.timedelta(days=1),
+            'day': (current_datetime - dt.timedelta(days=1)).date(),
         },
         {
             'uncompleted_registration': 0,
             'completed_registration': 2,
             'total_registration_codes': 2,
-            'day': current_datetime - dt.timedelta(days=4),
+            'day': (current_datetime - dt.timedelta(days=4)).date(),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'day': current_datetime - dt.timedelta(days=6),
+            'day': (current_datetime - dt.timedelta(days=6)).date(),
         },
     ]
 
@@ -253,25 +253,25 @@ def test_fetch_grouped_registration_summary_by_month(mocker: MockerFixture) -> N
             'uncompleted_registration': 0,
             'completed_registration': 1,
             'total_registration_codes': 1,
-            'month': timezone.make_aware(dt.datetime(2024, 6, 1)),
+            'month': dt.datetime(2024, 6, 1).date(),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'month': timezone.make_aware(dt.datetime(2024, 5, 1)),
+            'month': dt.datetime(2024, 5, 1).date(),
         },
         {
             'uncompleted_registration': 0,
             'completed_registration': 2,
             'total_registration_codes': 2,
-            'month': timezone.make_aware(dt.datetime(2024, 4, 1)),
+            'month': dt.datetime(2024, 4, 1).date(),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'month': timezone.make_aware(dt.datetime(2024, 3, 1)),
+            'month': dt.datetime(2024, 3, 1).date(),
         },
     ]
 
@@ -335,25 +335,25 @@ def test_fetch_grouped_registration_summary_by_year(mocker: MockerFixture) -> No
             'uncompleted_registration': 0,
             'completed_registration': 1,
             'total_registration_codes': 1,
-            'year': timezone.make_aware(dt.datetime(2024, 1, 1)),
+            'year': dt.datetime(2024, 1, 1).date(),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'year': timezone.make_aware(dt.datetime(2023, 1, 1)),
+            'year': dt.datetime(2023, 1, 1).date(),
         },
         {
             'uncompleted_registration': 0,
             'completed_registration': 2,
             'total_registration_codes': 2,
-            'year': timezone.make_aware(dt.datetime(2022, 1, 1)),
+            'year': dt.datetime(2022, 1, 1).date(),
         },
         {
             'uncompleted_registration': 1,
             'completed_registration': 1,
             'total_registration_codes': 2,
-            'year': timezone.make_aware(dt.datetime(2021, 1, 1)),
+            'year': dt.datetime(2021, 1, 1).date(),
         },
     ]
 
@@ -2960,8 +2960,10 @@ def test_fetch_patient_demographic_diagnosis_summary_empty() -> None:
     assert not demographic_diagnosis_summary
 
 
-def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
+def test_fetch_patient_demographic_diagnosis_summary_success(mocker: MockerFixture) -> None:  # noqa: WPS213
     """Ensure fetch_patient_demographic_diagnosis_summary successfully fetches the no empty statistics."""
+    now = timezone.make_aware(dt.datetime(2025, 1, 8, 12, 0, 0))
+    mocker.patch('django.utils.timezone.now', return_value=now)
     django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
     legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
     legacy_factories.LegacyPatientControlFactory(
@@ -2979,12 +2981,12 @@ def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
     legacy_factories.LegacyDiagnosisFactory(
         patient_ser_num=legacy_pat1,
         description_en='Test Diagnosis1',
-        creation_date=timezone.now() - dt.timedelta(days=1),
+        creation_date=now - dt.timedelta(days=1),
     )
     legacy_factories.LegacyDiagnosisFactory(
         patient_ser_num=legacy_pat1,
         description_en='Test Diagnosis2',
-        creation_date=timezone.now(),
+        creation_date=now,
     )
     legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat2, description_en='Test Diagnosis3')
     demographic_diagnosis_summary = stats_queries.fetch_patient_demographic_diagnosis_summary(dt.date.min, dt.date.max)
@@ -2993,6 +2995,12 @@ def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
     assert demographic_diagnosis_summary[1]['patient_ser_num'] == 52
     assert demographic_diagnosis_summary[0]['latest_diagnosis_description'] == 'Test Diagnosis2'
     assert demographic_diagnosis_summary[1]['latest_diagnosis_description'] == 'Test Diagnosis3'
+    assert demographic_diagnosis_summary[0]['registration_date_utc'] == now
+    assert demographic_diagnosis_summary[1]['registration_date_utc'] == now
+    assert demographic_diagnosis_summary[0]['latest_diagnosis_date_utc'] == now
+    assert demographic_diagnosis_summary[1]['latest_diagnosis_date_utc'] == dt.datetime(
+        2018, 1, 1, 5, 0, tzinfo=dt.timezone.utc,
+    )
 
 
 def _create_relationship_records() -> dict[str, Any]:
