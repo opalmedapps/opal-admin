@@ -937,6 +937,25 @@ def test_accessrequestrequestorform_relationship_type_existing_self() -> None:
     assert disabled_options == disabled_types
 
 
+def test_accessrequestrequestorform_relationship_type_descrition() -> None:
+    """Ensure that the relationshi type descriptions are set correctly to AvailableRadioSelect."""
+    patient = factories.Patient()
+    factories.Relationship(patient=patient, type=RelationshipType.objects.self_type())
+
+    form = forms.AccessRequestRequestorForm(
+        patient=patient,
+    )
+
+    options = form.fields['relationship_type'].widget.option_descriptions
+    assert options[1] == '{0}'.format(
+        'The patient is the requestor and is caring for themselves, Age: 14-older',
+    )
+    assert options[3] == '{0}{1}'.format(
+        'A parent or guardian of a minor who is considered',
+        ' incapacitated in terms of self-care, Age: 14-18',
+    )
+
+
 @pytest.mark.parametrize('user_type', [
     None,
     constants.UserType.NEW.name,
