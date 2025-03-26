@@ -112,7 +112,10 @@ coverage:
 build docs:
   stage: Build
   script:
+    - which pip
+    - pip list
     - pip install -r requirements/docs.txt
+    - which mkdocs
     - mkdocs build
   # cannot restrict to only merge requests due to the following issue:
   # https://gitlab.com/gitlab-org/gitlab/-/issues/31310
