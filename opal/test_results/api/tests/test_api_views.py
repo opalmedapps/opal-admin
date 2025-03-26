@@ -132,6 +132,54 @@ class TestCreatePathologyView:
         assert test_results_models.GeneralTest.objects.count() == 0
         assert legacy_models.LegacyDocument.objects.count() == 0
 
+    def test_pathology_create_raises_site_not_exist_exception(
+        self,
+        api_client: APIClient,
+        tmp_path: Path,
+        mocker: MockerFixture,
+        settings: SettingsWrapper,
+        interface_engine_user: User,
+    ) -> None:
+        """Ensure the endpoint raises exception in case of not getting a Site instance via receiving facility."""
+        settings.PATHOLOGY_REPORTS_PATH = tmp_path
+        valid_data = self._get_valid_input_data()
+        Institution()
+        Site(code=valid_data.get('receiving_facility'))
+
+        patient = Patient(
+            ramq='TEST01161972',
+            uuid=PATIENT_UUID,
+        )
+
+        Relationship(
+            patient=patient,
+            type=patient_models.RelationshipType.objects.self_type(),
+        )
+
+        LegacyPatientFactory(
+            patientsernum=patient.legacy_id,
+        )
+
+        # mock the current timezone to simulate the local time
+        generated_at = timezone.localtime(timezone.now())
+        mocker.patch.object(timezone, 'now', return_value=generated_at)
+
+        api_client.force_login(interface_engine_user)
+
+        valid_data.update({'receiving_facility': ''})
+        response = api_client.post(
+            reverse('api:patient-pathology-create', kwargs={'uuid': patient.uuid}),
+            data=valid_data,
+            format='json',
+        )
+        assertContains(
+            response=response,
+            text='Site matching query does not exist.',
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        assert test_results_models.GeneralTest.objects.count() == 0
+        assert legacy_models.LegacyDocument.objects.count() == 0
+
     def test_pathology_create_success(
         self,
         api_client: APIClient,
