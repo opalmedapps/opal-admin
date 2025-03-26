@@ -1,3 +1,10 @@
+# run pipelines for default branch, tags, and all types of merge request pipelines
+# to support merge trains
+# see: https://gitlab.com/gitlab-org/gitlab/-/issues/13159#note_373865588
+include:
+  # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Workflows/MergeRequest-Pipelines.gitlab-ci.yml
+  - template: 'Workflows/MergeRequest-Pipelines.gitlab-ci.yml'
+
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
 # Change pip's cache directory to be inside the project directory since we can
@@ -119,7 +126,7 @@ markdownlint:
   extends:
     - .default_needs
   image:
-    name: davidanson/markdownlint-cli2:v0.9.2
+    name: davidanson/markdownlint-cli2:v0.10.0
     # overwrite default entrypoint (which is a call to markdownlint-cli2)
     entrypoint: [""]
   # this is not a Python script so we don't need to do all this extra stuff

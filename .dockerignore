@@ -1,6 +1,7 @@
 .*
 !.coveragerc
 !.env
+!.env.sample
 !.pylintrc
 
 htmlcov/**
