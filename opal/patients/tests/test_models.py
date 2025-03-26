@@ -239,7 +239,7 @@ def test_relationship_str() -> None:
 
     relationship = factories.Relationship.build(patient=patient, caregiver=profile)
 
-    assert str(relationship) == 'Kobe Briant <--> John Wayne [Caregiver]'
+    assert str(relationship) == 'Briant, Kobe <--> Wayne, John [Caregiver]'
 
 
 def test_relationship_factory() -> None:
@@ -376,7 +376,7 @@ def test_hospitalpatient_str() -> None:
     site = factories.Site(name="Montreal Children's Hospital")
     hospital_patient = factories.HospitalPatient(site=site)
 
-    assert str(hospital_patient) == 'Bart Simpson (MONT: 9999996)'
+    assert str(hospital_patient) == 'Simpson, Bart (MONT: 9999996)'
 
 
 def test_hospitalpatient_one_patient_many_sites() -> None:
