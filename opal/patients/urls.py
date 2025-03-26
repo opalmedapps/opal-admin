@@ -22,14 +22,9 @@ urlpatterns = [
         name='relationships-pending-update',
     ),
     path(
-        'relationships/search/',
-        views.CaregiverAccessView.as_view(),
-        name='relationships-search-list',
-    ),
-    path(
-        'relationships/search/<int:pk>/update/',
-        views.ManageSearchUpdateView.as_view(),
-        name='relationships-search-update',
+        'relationships/pending/<int:pk>/readonly/',
+        views.ManagePendingReadOnlyView.as_view(),
+        name='relationships-pending-readonly',
     ),
     # Relationship Types Pages
     path(
