@@ -348,10 +348,10 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
             # form type is the search form which has the patient attribute
             patient = form.patient  # type: ignore[attr-defined]
             # TODO: patient could also be an actual Patient instance, need to add support
-            # convert it to a dictionary to be able to serialize it into JSON
             if isinstance(patient, Patient):
                 storage['patient'] = patient.pk  # type: ignore[assignment]
             else:
+                # convert it to a dictionary to be able to serialize it into JSON
                 data_dict = patient._asdict()  # noqa: WPS437
                 data_dict['mrns'] = [mrn._asdict() for mrn in data_dict['mrns']]  # noqa: WPS437
                 # use DjangoJSONEncoder which supports date/datetime
