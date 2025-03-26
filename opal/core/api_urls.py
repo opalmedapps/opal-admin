@@ -162,6 +162,11 @@ urlpatterns = [
         CreateDatabankConsentView.as_view(),
         name='databank-consent-create',
     ),
+    path(
+        'patients/<uuid:uuid>/health-data/viewed/',
+        data_views.ViewedQuantitySampleView.as_view(),
+        name='patient-viewed-health-data-update',
+    ),
 
 
     # QUESTIONNAIRES ENDPOINTS

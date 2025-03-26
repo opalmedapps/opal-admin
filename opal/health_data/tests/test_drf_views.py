@@ -12,7 +12,8 @@ from pytest_django.asserts import assertNumQueries
 from rest_framework import status
 from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
 
-from opal.patients.factories import Patient
+from opal.health_data import factories as health_data_factories
+from opal.patients import factories as patient_factories
 from opal.users.models import User
 
 from ..api import views
@@ -41,7 +42,7 @@ def test_quantitysample_unauthenticated_unauthorized(
     listener_user: User,
 ) -> None:
     """Ensure that the API to create quantity samples requires an authenticated user."""
-    patient = Patient()
+    patient = patient_factories.Patient()
     url = reverse('api:patients-data-quantity-create', kwargs={'uuid': patient.uuid})
 
     response = api_client.options(url)
@@ -61,7 +62,7 @@ def test_quantitysample_unauthenticated_unauthorized(
 
 def test_quantitysample_create_data_dict(admin_api_client: APIClient) -> None:
     """Ensure that the default create behaviour by passing a dictionary works."""
-    patient = Patient()
+    patient = patient_factories.Patient()
     data = _create_sample_data()
 
     response = admin_api_client.post(
@@ -81,7 +82,7 @@ def test_quantitysample_create_data_dict(admin_api_client: APIClient) -> None:
 
 def test_quantitysample_create_data_list(admin_api_client: APIClient) -> None:
     """Ensure that the endpoint can create a list of new quantity sample instances at once."""
-    patient = Patient()
+    patient = patient_factories.Patient()
     data = [
         _create_sample_data(),
         _create_sample_data(60, QuantitySampleType.HEART_RATE, SampleSourceType.CLINICIAN),
@@ -102,7 +103,7 @@ def test_quantitysample_create_data_list(admin_api_client: APIClient) -> None:
 
 def test_quantitysample_create_single_num_queries(admin_user: User) -> None:
     """Ensure that creating a single sample by passing a list uses the expected number of queries."""
-    patient = Patient()
+    patient = patient_factories.Patient()
     data = [_create_sample_data()]
     view = views.CreateQuantitySampleView.as_view()
     factory = APIRequestFactory()
@@ -124,7 +125,7 @@ def test_quantitysample_create_single_num_queries(admin_user: User) -> None:
 
 def test_quantitysample_create_multiple_num_queries(admin_user: User) -> None:
     """Ensure that creating multiple samples does not cause an explosion in queries executed."""
-    patient = Patient()
+    patient = patient_factories.Patient()
     data = [
         _create_sample_data(),
         _create_sample_data(60, QuantitySampleType.HEART_RATE, SampleSourceType.CLINICIAN),
@@ -160,3 +161,65 @@ def test_quantitysample_list_no_patient(admin_api_client: APIClient) -> None:
     response = admin_api_client.get(reverse('api:patients-data-quantity-create', kwargs={'uuid': uuid4()}))
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_viewed_health_data_update_unauthorized(api_client: APIClient) -> None:
+    """Ensure `patient-viewed-health-data-update` endpoint returns 403 error for unauthorized user."""
+    response = api_client.patch(
+        reverse('api:patient-viewed-health-data-update', kwargs={'uuid': uuid4()}),
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_viewed_health_data_update_not_found_error(user_api_client: APIClient) -> None:
+    """Ensure `patient-viewed-health-data-update` endpoint returns 404 not found error for non-existing patient."""
+    response = user_api_client.patch(
+        reverse('api:patient-viewed-health-data-update', kwargs={'uuid': uuid4()}),
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_viewed_health_data_update_with_no_quantities(user_api_client: APIClient) -> None:
+    """Ensure that the `patient-viewed-health-data-update` endpoint does not fail if patient has no quantities."""
+    patient = patient_factories.Patient()
+
+    response = user_api_client.patch(
+        reverse('api:patient-viewed-health-data-update', kwargs={'uuid': patient.uuid}),
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert QuantitySample.objects.count() == 0
+
+
+def test_viewed_health_data_update_for_specific_patient(user_api_client: APIClient) -> None:
+    """Ensure that the `/health-data/viewed/` endpoint updates quantities that belong to a specific patient."""
+    marge_patient = patient_factories.Patient(legacy_id=51, ramq='9999996')
+    homer_patient = patient_factories.Patient(legacy_id=52, ramq='9999997')
+
+    health_data_factories.QuantitySample(patient=marge_patient)
+    health_data_factories.QuantitySample(patient=marge_patient)
+    health_data_factories.QuantitySample(patient=homer_patient)
+
+    response = user_api_client.patch(
+        reverse('api:patient-viewed-health-data-update', kwargs={'uuid': marge_patient.uuid}),
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert QuantitySample.objects.count() == 3
+    assert QuantitySample.objects.exclude(
+        viewed_at__isnull=True,
+        viewed_by__exact='',
+    ).count() == 2
+
+    client_user_id = user_api_client.session.get('_auth_user_id', '')
+    user = User.objects.get(id=client_user_id)
+    assert QuantitySample.objects.exclude(  # type: ignore [union-attr]
+        viewed_at__isnull=True,
+        viewed_by__exact='',
+    ).first().viewed_by == user.username
+    assert QuantitySample.objects.exclude(  # type: ignore [union-attr]
+        viewed_at__isnull=True,
+        viewed_by__exact='',
+    ).first().viewed_at
