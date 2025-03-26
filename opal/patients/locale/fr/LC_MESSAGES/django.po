@@ -763,10 +763,3 @@ msgstr "Générer le code du registration"
 #: opal/patients/views.py
 msgid "Create Access Request"
 msgstr "Créer une demande d'accès"
-
-#~ msgid ""
-#~ "A self-relationship was selected but the caregiver appears to be someone "
-#~ "other than the patient."
-#~ msgstr ""
-#~ "Une relation de type « soi » a été sélectionnée mais le proche aidant "
-#~ "semble être quelqu'un d'autre que le patient."
