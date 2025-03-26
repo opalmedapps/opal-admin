@@ -238,7 +238,7 @@ class ExistingUserRegistrationRegisterSerializer(DynamicFieldsSerializer[Registr
 
     caregiver = _NestedCaregiverSerializer(
         source='relationship.caregiver',
-        fields=('language', 'username', 'email'),
+        fields=('language', 'username'),
         many=False,
     )
 
