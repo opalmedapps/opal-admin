@@ -433,8 +433,6 @@ msgid "{days} days"
 msgstr ""
 
 #: opal/patients/tables.py
-#, fuzzy
-#| msgid "No caregiver could be found."
 msgid "No caregiver requests found."
 msgstr "Aucun aidant n'a pu être retrouvé."
 
