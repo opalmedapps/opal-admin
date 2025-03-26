@@ -1,10 +1,16 @@
-import datetime
-from typing import Tuple, Type
+import json
+from datetime import datetime
+from http import HTTPStatus
+from typing import Any, Type
+from unittest.mock import MagicMock
 
 from django.contrib.auth import get_user_model
 
 import pytest
+import requests
+from pytest_mock.plugin import MockerFixture
 
+from opal.services.hospital.hospital import OIEService
 from opal.users.factories import Caregiver
 from opal.users.models import User
 
@@ -12,6 +18,48 @@ from .. import factories, forms
 
 UserModel: Type[User] = get_user_model()
 pytestmark = pytest.mark.django_db
+ENCODING = 'utf-8'
+OIE_PATIENT_DATA = dict({
+    'dateOfBirth': '1953-01-01 00:00:00',
+    'firstName': 'SANDRA',
+    'lastName': 'TESTMUSEMGHPROD',
+    'sex': 'F',
+    'alias': '',
+    'ramq': 'TESS53510111',
+    'ramqExpiration': '2018-01-31 23:59:59',
+    'mrns': [
+        {
+            'site': 'MGH',
+            'mrn': '9999993',
+            'active': True,
+        },
+    ],
+})
+
+oie_service = OIEService()
+
+
+def _mock_requests_post(
+    mocker: MockerFixture,
+    response_data: dict[str, Any],
+) -> MagicMock:
+    """Mock actual HTTP POST web API call to the OIE.
+
+    Args:
+        mocker (MockerFixture): object that provides the same interface to functions in the mock module
+        response_data (dict[str, str]): generated mock response data
+
+    Returns:
+        MagicMock: object that mocks HTTP post request to the OIE requests
+    """
+    mock_post = mocker.patch('requests.post')
+    response = requests.Response()
+    response.status_code = HTTPStatus.OK
+
+    response._content = json.dumps(response_data).encode(ENCODING)
+    mock_post.return_value = response
+
+    return mock_post
 
 
 def test_site_selection_exist() -> None:
@@ -37,48 +85,137 @@ def test_site_selection_not_exist() -> None:
     assert not form.is_valid()
 
 
-# tuple with valid medical card type and medical number
-# will update the test data once the validator is done in another ticket
-test_valid_medical_card_type_and_number: list[Tuple] = [
-    ('mrn', 'MRNT99996666'),
-    ('ramq', 'RAMQ99996666'),
-    ('mrn', 'MRNT00001111'),
-]
-
-
-@pytest.mark.parametrize(('card_type', 'card_number'), test_valid_medical_card_type_and_number)
-def test_search_form_valid(
-    card_type: str,
-    card_number: str,
-) -> None:
-    """Ensure that the search form is valid."""
+def test_find_patient_by_mrn_invalid_mrn() -> None:
+    """Ensure that the `find_patient_by_mrn` catch an error with an invalid MRN."""
     form_data = {
-        'medical_card': card_type,
-        'medical_number': card_number,
+        'medical_card': 'mrn',
+        'medical_number': '',
+        'site_code': 'RVH',
     }
+
+    form = forms.SearchForm(data=form_data)
+    assert not form.is_valid()
+    assert 'This field is required.' in form.errors['medical_number']
+    assert 'Provided MRN or site is invalid.' in form.errors['medical_number']
+
+
+def test_find_patient_by_mrn_invalid_site_code() -> None:
+    """Ensure that the `find_patient_by_mrn` catch an error with an invalid site code."""
+    form_data = {
+        'medical_card': 'mrn',
+        'medical_number': '9999996',
+        'site_code': '',
+    }
+
+    form = forms.SearchForm(data=form_data)
+    assert not form.is_valid()
+    assert form.errors['medical_number'] == ['Provided MRN or site is invalid.']
+
+
+def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
+    """
+    Ensure that the form is not valid and return an error message.
+
+    Mock find_patient_by_mrn and pretend it was failed.
+    """
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'error',
+            'data': None,
+        },
+    )
+
+    form_data = {
+        'medical_card': 'mrn',
+        'medical_number': '9999993',
+        'site_code': 'MGH',
+    }
+
+    form = forms.SearchForm(data=form_data)
+    assert not form.is_valid()
+    assert form.errors['medical_number'] == ['reponse data is invalid']
+
+
+def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
+    """
+    Ensure that the form is valid by returning the expected OIE data structure.
+
+    Mock find_patient_by_mrn and pretend it was successful
+    """
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+    form_data = {
+        'medical_card': 'mrn',
+        'medical_number': '9999993',
+        'site_code': 'MGH',
+    }
+
     form = forms.SearchForm(data=form_data)
     assert form.is_valid()
 
 
-# tuple with invalid medical card type and medical number
-test_invalid_medical_card_type_and_number: list[Tuple] = [
-    ('ramq', 'ramq99996666'),
-]
-
-
-@pytest.mark.parametrize(('card_type', 'card_number'), test_invalid_medical_card_type_and_number)
-def test_search_form_invalid_ramq_field(
-    card_type: str,
-    card_number: str,
-) -> None:
-    """Ensure that the search form is valid."""
+def test_find_patient_by_ramq_invalid_ramq() -> None:
+    """Ensure that the `find_patient_by_ramq` catch an error with an invalid site ramq."""
     form_data = {
-        'medical_card': card_type,
-        'medical_number': card_number,
+        'medical_card': 'ramq',
+        'medical_number': 'ram99996666',
     }
+
     form = forms.SearchForm(data=form_data)
     assert not form.is_valid()
     assert form.errors['medical_number'] == ['Enter a valid RAMQ number consisting of 4 letters followed by 8 digits']
+
+
+def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
+    """
+    Ensure that the form is not valid and return an error message.
+
+    Mock find_patient_by_ramq and pretend it was failed.
+    """
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'error',
+            'data': None,
+        },
+    )
+
+    form_data = {
+        'medical_card': 'ramq',
+        'medical_number': 'RAMQ99996666',
+    }
+
+    form = forms.SearchForm(data=form_data)
+    assert not form.is_valid()
+    assert form.errors['medical_number'] == ['reponse data is invalid']
+
+
+def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
+    """
+    Ensure that the form is valid by returning the expected OIE data structure.
+
+    Mock find_patient_by_ramq and pretend it was successful
+    """
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+    form_data = {
+        'medical_card': 'ramq',
+        'medical_number': 'RAMQ99996666',
+    }
+
+    form = forms.SearchForm(data=form_data)
+    assert form.is_valid()
 
 
 def test_is_correct_checked() -> None:
@@ -88,7 +225,6 @@ def test_is_correct_checked() -> None:
     }
 
     form = forms.ConfirmPatientForm(data=form_data)
-
     assert form.is_valid()
 
 
@@ -112,7 +248,7 @@ def test_requestor_form_not_check_if_required() -> None:
 
     form = forms.RequestorDetailsForm(
         data=form_data,
-        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
+        date_of_birth=datetime(2004, 1, 1, 9, 20, 30),
     )
     assert not form.is_valid()
     assert form.errors['requestor_form'] == ['Form request is required.']
@@ -131,7 +267,7 @@ def test_disabled_option_exists() -> None:
     }
     form = forms.RequestorDetailsForm(
         data=form_data,
-        date_of_birth=datetime.datetime(2004, 1, 1, 9, 20, 30),
+        date_of_birth=datetime(2004, 1, 1, 9, 20, 30),
     )
 
     options = form.fields['relationship_type'].widget.options('relationship-type', '')

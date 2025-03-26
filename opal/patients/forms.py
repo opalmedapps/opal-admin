@@ -1,5 +1,5 @@
 """This module provides forms for Patients."""
-from datetime import date, datetime
+from datetime import date
 from typing import Any, Dict, Optional, Set, Union
 
 from django import forms
@@ -14,7 +14,7 @@ from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
 
 from opal.core import validators
 from opal.core.form_layouts import CancelButton
-from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.services.hospital.hospital import OIEService
 from opal.users.models import Caregiver, User
 
 from . import constants
@@ -49,94 +49,6 @@ class SelectSiteForm(forms.Form):
                 Submit('wizard_goto_step', _('Next')),
             ),
         )
-
-
-def _patient_data() -> OIEPatientData:
-    """
-    Return the fake patient data pretended to get from OIE calling.
-
-    Returns:
-        patient data structure in 'OIEPatientData'
-    """
-    return OIEPatientData(
-        date_of_birth=datetime.strptime('1984-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
-        first_name='Marge',
-        last_name='Simpson',
-        sex='F',
-        alias='',
-        ramq='MARG99991313',
-        ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
-        mrns=[
-            OIEMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MCH',
-                mrn='9999994',
-                active=True,
-            ),
-            OIEMRNData(
-                site='RVH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
-
-
-def _find_patient_by_mrn_fail(mrn: str, site: str) -> Any:
-    """
-    Search patient info by MRN code.
-
-    Args:
-        mrn: Medical Record Number (MRN) code (e.g., 9999993)
-        site: site code (e.g., MGH)
-
-    Returns:
-        patient info or an error in JSON format
-    """
-    return {
-        'status': 'error',
-        'data': {
-            'message': 'Provided MRN or site is invalid.',
-            'responseData': {'status': 'error', 'data': None},
-        },
-    }
-
-
-def _find_patient_by_mrn_success(mrn: str, site: str) -> Any:
-    """
-    Search patient info by MRN code.
-
-    Args:
-        mrn: Medical Record Number (MRN) code (e.g., 9999993)
-        site: site code (e.g., MGH)
-
-    Returns:
-        patient info or an error in JSON format
-    """
-    return {
-        'status': 'success',
-        'data': _patient_data(),
-    }
-
-
-def _find_patient_by_ramq(ramq: str) -> Any:
-    """
-    Search patient info by RAMQ code.
-
-    Args:
-        ramq (str): RAMQ code
-
-    Returns:
-        patient info or an error in JSON format
-    """
-    return {
-        'status': 'success',
-        'data': _patient_data(),
-    }
 
 
 class SearchForm(forms.Form):
@@ -192,6 +104,7 @@ class SearchForm(forms.Form):
         medical_card_field = self.cleaned_data.get('medical_card')
         medical_number_field = self.cleaned_data.get('medical_number')
         site_code_field = self.cleaned_data.get('site_code')
+        medical_number_field = '' if medical_number_field is None else str(medical_number_field)
 
         response = {}
         # Medicare Card Number (RAMQ)
@@ -202,10 +115,10 @@ class SearchForm(forms.Form):
                 self.add_error('medical_number', error_msg)
             else:
                 # Search patient info by RAMQ.
-                response = _find_patient_by_ramq(str(medical_number_field))
+                response = OIEService().find_patient_by_ramq(str(medical_number_field))
         # Medical Record Number (MRN)
         else:
-            response = _find_patient_by_mrn_success(str(medical_number_field), str(site_code_field))
+            response = OIEService().find_patient_by_mrn(medical_number_field, str(site_code_field))
 
         # add error message to the tempate
         if response and response['status'] == 'error':

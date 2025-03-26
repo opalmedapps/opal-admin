@@ -1,7 +1,9 @@
 import io
+import json
 from datetime import date, datetime
 from http import HTTPStatus
 from typing import Any, Tuple
+from unittest.mock import MagicMock
 
 from django.contrib.auth.models import AbstractUser
 from django.contrib.sessions.middleware import SessionMiddleware
@@ -11,8 +13,10 @@ from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
+import requests
 from dateutil.relativedelta import relativedelta
 from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
+from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Site
@@ -20,6 +24,74 @@ from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.factories import Caregiver
 
 from .. import constants, factories, forms, models, tables, views
+
+ENCODING = 'utf-8'
+OIE_PATIENT_DATA = dict({
+    'dateOfBirth': '1953-01-01 00:00:00',
+    'firstName': 'SANDRA',
+    'lastName': 'TESTMUSEMGHPROD',
+    'sex': 'F',
+    'alias': '',
+    'ramq': 'TESS53510111',
+    'ramqExpiration': '2018-01-31 23:59:59',
+    'mrns': [
+        {
+            'site': 'MGH',
+            'mrn': '9999993',
+            'active': True,
+        },
+    ],
+})
+CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
+    date_of_birth=datetime.strptime('1984-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
+    first_name='Marge',
+    last_name='Simpson',
+    sex='F',
+    alias='',
+    ramq='MARG99991313',
+    ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
+    mrns=[
+        OIEMRNData(
+            site='MGH',
+            mrn='9999993',
+            active=True,
+        ),
+        OIEMRNData(
+            site='MCH',
+            mrn='9999994',
+            active=True,
+        ),
+        OIEMRNData(
+            site='RVH',
+            mrn='9999993',
+            active=True,
+        ),
+    ],
+)
+
+
+def _mock_requests_post(
+    mocker: MockerFixture,
+    response_data: dict[str, Any],
+) -> MagicMock:
+    """Mock actual HTTP POST web API call to the OIE.
+
+    Args:
+        mocker (MockerFixture): object that provides the same interface to functions in the mock module
+        response_data (dict[str, str]): generated mock response data
+
+    Returns:
+        MagicMock: object that mocks HTTP post request to the OIE requests
+    """
+    mock_post = mocker.patch('requests.post')
+    response = requests.Response()
+    response.status_code = HTTPStatus.OK
+
+    response._content = json.dumps(response_data).encode(ENCODING)
+    mock_post.return_value = response
+
+    return mock_post
+
 
 # Add any future GET-requestable patients app pages here for faster test writing
 test_url_template_data: list[Tuple] = [
@@ -274,8 +346,17 @@ def test_form_finish(
     user_client: Client,
     url_name: str,
     template: str,
+    mocker: MockerFixture,
 ) -> None:
     """Ensure that the form can go through all the steps."""
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+
     url = reverse(url_name)
     wizard_step_data = _wizard_step_data(factories.Site())
     response = user_client.get(url)
@@ -299,8 +380,16 @@ def test_form_finish(
     assert response.context['header_title'] == 'Requestor Details'
 
 
-def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noqa: C901 WPS231
+def test_access_request_done_redirects_temp(user_client: Client, mocker: MockerFixture) -> None:  # noqa: C901 WPS231
     """Ensure that when the page is submitted it redirects to the final page."""
+    _mock_requests_post(
+        mocker,
+        {
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+
     url = reverse('patients:access-request')
     site = factories.Site()
     relationship = factories.RelationshipType()
@@ -630,17 +719,17 @@ def test_create_patient() -> None:
     response, instance = test_view(request)
 
     form_data = {
-        'patient_record': forms._patient_data(),
+        'patient_record': CUSTOMIZED_OIE_PATIENT_DATA,
     }
     patient = instance._create_patient(form_data=form_data)
 
     assert response.status_code == HTTPStatus.OK
-    assert patient.ramq == forms._patient_data().ramq
-    assert patient.sex == forms._patient_data().sex
-    assert patient.date_of_birth == forms._patient_data().date_of_birth
+    assert patient.ramq == CUSTOMIZED_OIE_PATIENT_DATA.ramq
+    assert patient.sex == CUSTOMIZED_OIE_PATIENT_DATA.sex
+    assert patient.date_of_birth == CUSTOMIZED_OIE_PATIENT_DATA.date_of_birth
     assert str(patient) == '{0} {1}'.format(
-        forms._patient_data().first_name,
-        forms._patient_data().last_name,
+        CUSTOMIZED_OIE_PATIENT_DATA.first_name,
+        CUSTOMIZED_OIE_PATIENT_DATA.last_name,
     )
 
 
@@ -656,7 +745,7 @@ def test_get_current_relationship() -> None:
         'user_type': '1',
         'user_email': 'marge.simpson@gmail.com',
         'user_phone': '+15141111111',
-        'patient_record': forms._patient_data(),
+        'patient_record': CUSTOMIZED_OIE_PATIENT_DATA,
         'relationship_type': factories.RelationshipType(name='Self'),
     }
 
@@ -806,7 +895,7 @@ def test_qr_code_class_type() -> None:
 
 def test_some_mrns_have_same_site_code() -> None:
     """Test some MRN records have the same site code."""
-    patient_data = forms._patient_data()
+    patient_data = CUSTOMIZED_OIE_PATIENT_DATA
     patient_mrn_records = OIEPatientData(
         date_of_birth=patient_data.date_of_birth,
         first_name=patient_data.first_name,
@@ -838,7 +927,7 @@ def test_some_mrns_have_same_site_code() -> None:
 
 def test_all_mrns_have_same_site_code() -> None:
     """Test all MRN records have the same site code."""
-    patient_data = forms._patient_data()
+    patient_data = CUSTOMIZED_OIE_PATIENT_DATA
     patient_mrn_records = OIEPatientData(
         date_of_birth=patient_data.date_of_birth,
         first_name=patient_data.first_name,
@@ -870,7 +959,7 @@ def test_all_mrns_have_same_site_code() -> None:
 
 def test_no_mrns_have_same_site_code() -> None:
     """Test No MRN records have the same site code."""
-    patient_data = forms._patient_data()
+    patient_data = CUSTOMIZED_OIE_PATIENT_DATA
     patient_mrn_records = OIEPatientData(
         date_of_birth=patient_data.date_of_birth,
         first_name=patient_data.first_name,
@@ -902,7 +991,7 @@ def test_no_mrns_have_same_site_code() -> None:
 
 def test_error_message_mrn_with_same_site_code() -> None:
     """Test error message shows up once some MRN records having the same site code."""
-    patient_data = forms._patient_data()
+    patient_data = CUSTOMIZED_OIE_PATIENT_DATA
     patient_mrn_records = OIEPatientData(
         date_of_birth=patient_data.date_of_birth,
         first_name=patient_data.first_name,
