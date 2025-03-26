@@ -852,3 +852,24 @@ class LegacyPatientActivityLog(models.Model):
     class Meta:
         managed = False
         db_table = 'PatientActivityLog'
+
+
+class LegacyPatientDeviceIdentifier(models.Model):
+    """PatientDeviceIdentifier from the legacy OpalDB database."""
+
+    patient_device_identifier_ser_num = models.BigAutoField(db_column='PatientDeviceIdentifierSerNum', primary_key=True)
+    device_id = models.CharField(db_column='DeviceId', max_length=255)
+    app_version = models.CharField(db_column='appVersion', max_length=16)
+    registration_id = models.CharField(db_column='RegistrationId', max_length=256)
+    device_type = models.SmallIntegerField(db_column='DeviceType', default=0)  # 0 = iOS, 1 = Android, 3 = browser
+    security_answer_ser_num = models.IntegerField(db_column='SecurityAnswerSerNum', null=True)
+    attempt = models.IntegerField(db_column='Attempt', default=0)
+    trusted = models.SmallIntegerField(db_column='Trusted', default=0)
+    timeout_timestamp = models.DateTimeField(db_column='TimeoutTimestamp', null=True)
+    last_updated = models.DateTimeField(db_column='LastUpdated', null=True, auto_now=True)
+    username = models.CharField(db_column='Username', max_length=255, default='')
+    security_answer = models.CharField(db_column='SecurityAnswer', max_length=256, default='')
+
+    class Meta:
+        managed = False
+        db_table = 'PatientDeviceIdentifier'

@@ -138,7 +138,7 @@ class LegacyAppointmentFactory(DjangoModelFactory):
     scheduled_end_time = timezone.make_aware(dt.datetime(2018, 1, 2))
     checkin = 1
     status = 'Open'
-    state = 'active'
+    state = 'Active'
     readstatus = 0
     readby = '[]'
     roomlocation_en = 'CVIS Clinic Room 1'
@@ -570,3 +570,23 @@ class LegacyPatientActivityLogFactory(DjangoModelFactory):
     date_time = timezone.now() - dt.timedelta(days=1)
     lastupdated = timezone.now() - dt.timedelta(days=1)
     app_version = '100.100.100'
+
+
+class LegacyPatientDeviceIdentifierFactory(DjangoModelFactory):
+    """LegacyPatientDeviceIdentifier factory."""
+
+    class Meta:
+        model = models.LegacyPatientDeviceIdentifier
+
+    patient_device_identifier_ser_num = Sequence(lambda number: number + 1)
+    device_id = Faker('uuid4')
+    app_version = '100.100.100'
+    registration_id = ''
+    device_type = 0
+    security_answer_ser_num = None
+    attempt = 0
+    trusted = 1
+    timeout_timestamp = None
+    last_updated = timezone.now()
+    username = Faker('user_name')
+    security_answer = Faker('uuid4')

@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import models
 
 from opal.caregivers import models as caregivers_models
+from opal.legacy import models as legacy_models
 from opal.patients import models as patients_models
 from opal.users import models as users_models
 
@@ -65,9 +66,15 @@ def fetch_caregivers_summary(
     )
 
 
-# TODO: add (start_date, end_date) parameters to the fetch_patients_summary() function.
-def fetch_patients_summary() -> dict[str, Any]:
+def fetch_patients_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+) -> dict[str, Any]:
     """Fetch grouped patients summary from `Patient` model.
+
+    Args:
+        start_date: the beginning of the time period of the patients summary (inclusive)
+        end_date: the end of the time period of the patients summary (inclusive)
 
     Returns:
         patients summary for a given time period
@@ -75,15 +82,53 @@ def fetch_patients_summary() -> dict[str, Any]:
     access_types = [access_type[0] for access_type in patients_models.DataAccessType.choices]
     access_dict = {}
     for access_type in access_types:
-        key_name = f'{access_type.lower()}_access'
+        key_name = f'access_{access_type.lower()}'
         access_dict[key_name] = models.Count('id', filter=models.Q(data_access=access_type))
 
-    return patients_models.Patient.objects.aggregate(
+    return patients_models.Patient.objects.filter(
+        created_at__date__gte=start_date,
+        created_at__date__lte=end_date,
+    ).aggregate(
         total=models.Count('id'),
         deceased=models.Count('id', filter=models.Q(date_of_death__isnull=False)),
         male=models.Count('id', filter=models.Q(sex=patients_models.SexType.MALE)),
         female=models.Count('id', filter=models.Q(sex=patients_models.SexType.FEMALE)),
-        other_sex=models.Count('id', filter=models.Q(sex=patients_models.SexType.OTHER)),
-        unknown_sex=models.Count('id', filter=models.Q(sex=patients_models.SexType.UNKNOWN)),
+        sex_other=models.Count('id', filter=models.Q(sex=patients_models.SexType.OTHER)),
+        sex_unknown=models.Count('id', filter=models.Q(sex=patients_models.SexType.UNKNOWN)),
         **access_dict,
+    )
+
+
+# TODO: QSCCD-2168
+# Use Django's `Device` model instead of `LegacyPatientDeviceIdentifier` once QSCCD-628 and QSCCD-630 are finished.
+def fetch_devices_summary(
+    start_date: dt.date,
+    end_date: dt.date,
+) -> dict[str, Any]:
+    """Fetch grouped device identifiers summary from `LegacyPatientDeviceIdentifier` model.
+
+    Args:
+        start_date: the beginning of the time period of the device identifiers summary (inclusive)
+        end_date: the end of the time period of the device identifiers summary (inclusive)
+
+    Returns:
+        device identifiers summary for a given time period
+    """
+    return legacy_models.LegacyPatientDeviceIdentifier.objects.filter(
+        last_updated__date__gte=start_date,
+        last_updated__date__lte=end_date,
+    ).aggregate(
+        device_total=models.Count('patient_device_identifier_ser_num'),
+        device_ios=models.Count(
+            'patient_device_identifier_ser_num',
+            filter=models.Q(device_type=0),
+        ),
+        device_android=models.Count(
+            'patient_device_identifier_ser_num',
+            filter=models.Q(device_type=1),
+        ),
+        device_browser=models.Count(
+            'patient_device_identifier_ser_num',
+            filter=models.Q(device_type=3),
+        ),
     )

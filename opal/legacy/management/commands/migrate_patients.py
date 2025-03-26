@@ -64,6 +64,7 @@ class Command(BaseCommand):
                     last_name=legacy_patient.last_name,
                     ramq=legacy_patient.ramq,
                     data_access=data_access,
+                    created_at=legacy_patient.registration_date,
                 )
                 migrated_patient.full_clean()
                 migrated_patient.save()

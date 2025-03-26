@@ -7,6 +7,7 @@ from pytest_mock import MockerFixture
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers import models as caregiver_models
+from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients import models as patient_models
 from opal.usage_statistics import queries as stats_queries
@@ -209,16 +210,19 @@ def test_fetch_caregivers_summary() -> None:
 
 def test_empty_fetch_patients_summary() -> None:
     """Ensure fetch_patients_summary() query can return an empty result without errors."""
-    caregivers_summary = stats_queries.fetch_patients_summary()
+    caregivers_summary = stats_queries.fetch_patients_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
     assert caregivers_summary == {
         'total': 0,
         'deceased': 0,
         'male': 0,
         'female': 0,
-        'other_sex': 0,
-        'unknown_sex': 0,
-        'all_access': 0,
-        'ntk_access': 0,
+        'sex_other': 0,
+        'sex_unknown': 0,
+        'access_all': 0,
+        'access_ntk': 0,
     }
 
 
@@ -246,16 +250,65 @@ def test_fetch_patients_summary() -> None:
         legacy_id=57, ramq='TEST01161980', date_of_death=timezone.now(),
     )
     patient_factories.Patient(
-        legacy_id=58, ramq='TEST01161981', sex=patient_models.Patient.SexType.FEMALE,
+        legacy_id=58,
+        ramq='TEST01161981',
+        sex=patient_models.Patient.SexType.FEMALE,
+        created_at=timezone.now() - dt.timedelta(days=3),
     )
-    caregivers_summary = stats_queries.fetch_patients_summary()
+    caregivers_summary = stats_queries.fetch_patients_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
     assert caregivers_summary == {
-        'total': 8,
+        'total': 7,
         'deceased': 2,
         'male': 3,
-        'female': 3,
-        'other_sex': 1,
-        'unknown_sex': 1,
-        'all_access': 6,
-        'ntk_access': 2,
+        'female': 2,
+        'sex_other': 1,
+        'sex_unknown': 1,
+        'access_all': 5,
+        'access_ntk': 2,
+    }
+
+
+@pytest.mark.django_db(databases=['legacy'])
+def test_empty_fetch_devices_summary() -> None:
+    """Ensure fetch_devices_summary() query can return an empty result without errors."""
+    devices_summary = stats_queries.fetch_devices_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert devices_summary == {
+        'device_total': 0,
+        'device_ios': 0,
+        'device_android': 0,
+        'device_browser': 0,
+    }
+
+
+@pytest.mark.django_db(databases=['legacy'])
+def test_fetch_devices_summary(mocker: MockerFixture) -> None:
+    """Ensure fetch_devices_summary() query successfully returns device statistics."""
+    legacy_factories.LegacyPatientDeviceIdentifierFactory()
+    legacy_factories.LegacyPatientDeviceIdentifierFactory()
+    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=1)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=1)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=3)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=3)
+
+    # Previous day records
+    previous_day = timezone.now() - dt.timedelta(days=1)
+    mock_timezone = mocker.patch('django.utils.timezone.now')
+    mock_timezone.return_value = previous_day
+    legacy_factories.LegacyPatientDeviceIdentifierFactory(last_updated=previous_day)
+    legacy_factories.LegacyPatientDeviceIdentifierFactory(device_type=1, last_updated=previous_day)
+    devices_summary = stats_queries.fetch_devices_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert devices_summary == {
+        'device_total': 6,
+        'device_ios': 2,
+        'device_android': 2,
+        'device_browser': 2,
     }
