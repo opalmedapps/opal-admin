@@ -22,7 +22,7 @@ class QuestionnaireReportRequestSerializer(serializers.Serializer):
 
     patient_id = serializers.IntegerField()
 
-    def validate_patient_id(self, value: int) -> bool:
+    def validate_patient_id(self, value: int) -> int:
         """Check that patient id (PatientSerNum) exists in the OpalDB.
 
         Args:
@@ -30,5 +30,10 @@ class QuestionnaireReportRequestSerializer(serializers.Serializer):
 
         Returns:
             Boolean value showing the result of the patient id validation
+
+        Raises:
+            ValidationError: if provided patient ID does not exist in the database
         """
-        return LegacyPatient.objects.filter(patientsernum=value).exists()
+        if not LegacyPatient.objects.filter(patientsernum=value).exists():
+            raise serializers.ValidationError('Provided patient ID does not exist.')
+        return value

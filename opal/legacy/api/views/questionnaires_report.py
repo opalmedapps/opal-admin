@@ -51,7 +51,7 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
             report_service = reports.ReportService()
             encoded_report = report_service.generate_questionnaire_report(
                 reports.QuestionnaireReportRequestData(
-                    patient_id=int(request.data['patient_id']),
+                    patient_id=serializer.validated_data.get('patient_id'),
                     logo_path=Path(Institution.objects.get(pk=1).logo.path),
                     language=request.headers['Accept-Language'],
                 ),
@@ -59,11 +59,11 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
 
             if encoded_report == '':
                 # Log an error message
-                self.logger.error('An error occured during report generation.')
+                self.logger.error('An error occurred during report generation.')
                 return response.Response(
                     {
                         'status': 'error',
-                        'message': 'An error occured during report generation.',
+                        'message': 'An error occurred during report generation.',
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -73,10 +73,10 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
             export_result = oie.export_pdf_report(
                 hospital.OIEReportExportData(
                     mrn=HospitalPatient.objects.filter(
-                        patient__legacy_id=serializer.validated_data.patient_id,
+                        patient__legacy_id=serializer.validated_data.get('patient_id'),
                     ).values_list('mrn', flat=True).get(pk=1),
                     site=HospitalPatient.objects.filter(
-                        patient__legacy_id=serializer.validated_data.patient_id,
+                        patient__legacy_id=serializer.validated_data.get('patient_id'),
                     ).values_list('site__name', flat=True).get(pk=1),
                     base64_content=encoded_report,
                     document_number='FMU',  # TODO: clarify where to get the value
@@ -85,6 +85,6 @@ class QuestionnairesReportCreateAPIView(generics.CreateAPIView):
             )
 
             if 'status' not in export_result or export_result['status'] == 'error':
-                self.logger.error('An error occured while exporting a PDF report to the OIE.')
+                self.logger.error('An error occurred while exporting a PDF report to the OIE.')
 
             return response.Response(export_result)
