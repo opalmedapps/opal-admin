@@ -65,7 +65,7 @@ class GetCaregiverPatientsList(APIView):
         return response
 
 
-class ApiVerifyEmailBasicView(APIView):
+class RetrieveRegistrationCodeMixin(APIView):
     """Basic Class for the verifiy email apis."""
 
     def get_queryset(self) -> QuerySet[RegistrationCode]:
@@ -83,7 +83,7 @@ class ApiVerifyEmailBasicView(APIView):
         ).filter(code=code, status=RegistrationCodeStatus.NEW)
 
 
-class ApiVerifyEmailView(ApiVerifyEmailBasicView):
+class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
     """Class to save the user's email and email verification code.
 
     And send email to the user with the verification code.
@@ -136,12 +136,14 @@ class ApiVerifyEmailView(ApiVerifyEmailBasicView):
                     },
                 )
             else:
-                raise drf_serializers.ValidationError({'detail': _('Resend email after 10 seconds.')})
+                raise drf_serializers.ValidationError({
+                    'detail': _('Please wait 10 seconds before requesting a new verification code.'),
+                })
 
         return Response()
 
 
-class ApiVerifyEmailCodeView(ApiVerifyEmailBasicView):
+class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
     """Class to verify the user's email with received verification code."""
 
     permission_classes = [IsAuthenticated]

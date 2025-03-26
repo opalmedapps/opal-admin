@@ -12,4 +12,4 @@ def generate_random_number(length: int) -> str:
     Returns:
         return a string number
     """
-    return ''.join(secrets.choice(string.digits) for ii in range(length))
+    return ''.join(secrets.choice(string.digits) for _ in range(length))

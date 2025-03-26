@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: opal/caregivers/api/views.py
-msgid "Resend email after 10 seconds."
+msgid "Please wait 10 seconds before requesting a new verification code."
 msgstr ""
 
 #: opal/caregivers/api/viewsets.py

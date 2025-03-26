@@ -54,7 +54,7 @@ def test_get_caregiver_patient_list_fields(api_client: APIClient, admin_user: Us
     assert response.data[0]['status']
 
 
-def test_regitration_encryption_return_values(api_client: APIClient, admin_user: User) -> None:
+def test_registration_encryption_return_values(api_client: APIClient, admin_user: User) -> None:
     """Test status code and registration code value."""
     api_client.force_login(user=admin_user)
     registration_code = caregiver_factory.RegistrationCode()
@@ -65,7 +65,7 @@ def test_regitration_encryption_return_values(api_client: APIClient, admin_user:
     assert response.data['code'] == registration_code.code
 
 
-def test_regitration_encryption_with_invalid_hash(api_client: APIClient, admin_user: User) -> None:
+def test_registration_encryption_invalid_hash(api_client: APIClient, admin_user: User) -> None:
     """Return 404 if the hash is invalid."""
     api_client.force_login(user=admin_user)
     registration_code = caregiver_factory.RegistrationCode()
