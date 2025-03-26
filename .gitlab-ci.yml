@@ -161,6 +161,8 @@ django migrations:
 
 django translations:
   stage: Checks
+  extends:
+    - .default_needs
   script:
     # install dependencies for makemessages and git diff
     - apt update && apt-get install -y gettext git
@@ -168,8 +170,6 @@ django translations:
     - echo "Checking that translation files have been updated ..."
     - python manage.py makemessages --add-location file -l fr
     - git diff --ignore-matching-lines=POT-Creation-Date --exit-code
-  needs:
-    - job: setup
 
 django translations fuzzy:
   stage: Checks
