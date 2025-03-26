@@ -89,14 +89,18 @@ class QuestionnairesReportView(APIView):
         export_result = self.oie.export_pdf_report(
             OIEReportExportData(
                 mrn=serializer.validated_data.get('mrn'),
-                site=serializer.validated_data.get('site_name'),
+                site=serializer.validated_data.get('site'),
                 base64_content=encoded_report,
                 document_number='FMU',  # TODO: clarify where to get the value
                 document_date=timezone.localtime(timezone.now()),  # TODO: get the exact time of the report creation
             ),
         )
 
-        if 'status' not in export_result or export_result['status'] == 'error':
+        if (
+            not export_result
+            or 'status' not in export_result
+            or export_result['status'] == 'error'
+        ):
             self.logger.error('An error occurred while exporting a PDF report to the OIE.')
 
         return response.Response(export_result)
