@@ -31,7 +31,11 @@ class Site(DjangoModelFactory):
 
     name = factory.Faker('company')
     name_fr = factory.Faker('company', locale='fr')
-    code = factory.lazy_attribute(lambda site: site.name[:4].upper())
+    code = factory.lazy_attribute(
+        # ensure that spaces in the name don't get used as part of the code
+        # spaces are truncated leading to a code with a smaller length
+        lambda site: site.name.replace(' ', 'x')[:4].upper(),
+    )
     parking_url = 'https://parking.example.com'
     parking_url_fr = 'https://parking.example.com/fr'
     direction_url = 'https://directions.example.com'
