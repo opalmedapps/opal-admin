@@ -100,6 +100,19 @@ def update_caregiver(user: User, info: dict[str, Any]) -> None:
     user.save()
 
 
+def update_caregiver_profile(profile: caregiver_models.CaregiverProfile, info: dict[str, Any]) -> None:
+    """
+    Update CaregiverProfile information.
+
+    Args:
+        profile: CaregiverProfile object
+        info: Caregiver info to be updated
+    """
+    profile.legacy_id = info['legacy_id']
+    profile.full_clean()
+    profile.save()
+
+
 def insert_security_answers(
     caregiver_profile: caregiver_models.CaregiverProfile,
     security_answers: list,

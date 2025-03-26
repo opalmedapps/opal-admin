@@ -1,7 +1,7 @@
 """Collection of managers for the caregiver app."""
 import operator
 from functools import reduce
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from django.db import models
 from django.db.models.functions import Coalesce
@@ -54,34 +54,6 @@ class RelationshipManager(models.Manager['Relationship']):
             for legacy_id in relationships.values_list('patient__legacy_id', flat=True)
             if legacy_id is not None
         ]
-
-    def get_relationship_by_patient_caregiver(
-        self,
-        relationship_type: str,
-        user_id: int,
-        ramq: Optional[str],
-    ) -> models.QuerySet['Relationship']:
-        """
-        Query manager to get a `Relationship` record filtered by given parameters.
-
-        Args:
-            relationship_type (str): caregiver relationship type
-            user_id (int): user id
-            ramq (str): patient's RAMQ number
-
-        Returns:
-            Queryset to get the filtered `Relationship` record
-        """
-        return self.select_related(
-            'patient',
-            'type',
-            'caregiver',
-            'caregiver__user',
-        ).filter(
-            patient__ramq=ramq,
-            type__name=relationship_type,
-            caregiver__user__id=user_id,
-        )
 
 
 class RelationshipTypeManager(models.Manager['RelationshipType']):

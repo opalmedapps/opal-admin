@@ -14,7 +14,7 @@ from opal.caregivers.models import (
 from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.hospital_settings.api.serializers import InstitutionSerializer
 from opal.hospital_settings.models import Institution
-from opal.patients.api.serializers import HospitalPatientSerializer, PatientSerializer
+from opal.patients.api.serializers import HospitalPatientSerializer, PatientSerializer, RelationshipTypeSerializer
 from opal.patients.models import Patient
 
 
@@ -73,27 +73,6 @@ class RegistrationCodePatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegistrationCode
         fields = ['patient', 'institution']
-
-
-class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
-    """Serializer that is providing detailed info of a patient using `RegistrationCode` model."""
-
-    patient = PatientSerializer(
-        source='relationship.patient',
-        fields=('uuid', 'first_name', 'last_name', 'date_of_birth', 'sex', 'ramq', 'legacy_id'),
-        many=False,
-        read_only=True,
-    )
-    hospital_patients = HospitalPatientSerializer(
-        source='relationship.patient.hospital_patients',
-        fields=('mrn', 'site_code'),
-        many=True,
-        read_only=True,
-    )
-
-    class Meta:
-        model = RegistrationCode
-        fields = ['patient', 'hospital_patients']
 
 
 class SecurityQuestionSerializer(serializers.ModelSerializer):
@@ -162,7 +141,40 @@ class CaregiverSerializer(DynamicFieldsSerializer):
             'phone_number',
             'username',
             'devices',
+            'legacy_id',
         ]
+
+
+class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
+    """Serializer that is providing detailed info of a patient using `RegistrationCode` model."""
+
+    caregiver = CaregiverSerializer(
+        source='relationship.caregiver',
+        fields=('uuid', 'first_name', 'last_name', 'legacy_id'),
+        many=False,
+        read_only=True,
+    )
+    patient = PatientSerializer(
+        source='relationship.patient',
+        fields=('uuid', 'first_name', 'last_name', 'date_of_birth', 'sex', 'ramq', 'legacy_id'),
+        many=False,
+        read_only=True,
+    )
+    hospital_patients = HospitalPatientSerializer(
+        source='relationship.patient.hospital_patients',
+        fields=('mrn', 'site_code'),
+        many=True,
+        read_only=True,
+    )
+    relationship_type = RelationshipTypeSerializer(
+        source='relationship.type',
+        fields=('name', 'role_type'),
+        many=False,
+    )
+
+    class Meta:
+        model = RegistrationCode
+        fields = ['caregiver', 'patient', 'hospital_patients', 'relationship_type']
 
 
 class RegistrationRegisterSerializer(DynamicFieldsSerializer):
@@ -179,7 +191,7 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer):
 
     caregiver = CaregiverSerializer(
         source='relationship.caregiver',
-        fields=('language', 'phone_number', 'username'),
+        fields=('language', 'phone_number', 'username', 'legacy_id'),
         many=False,
     )
     security_answers = SecurityAnswerSerializer(

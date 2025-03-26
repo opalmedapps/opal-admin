@@ -33,9 +33,6 @@ def has_multiple_mrns_with_same_site_code(patient_record: OIEPatientData) -> boo
     Returns:
         True if the number of MRN records with the same site code is greater than 1
     """
-    if isinstance(patient_record, Patient):
-        return False
-
     mrns = patient_record.mrns
     key_counts = Counter(mrn_dict.site for mrn_dict in mrns)
     return any(count > 1 for (site, count) in key_counts.items())

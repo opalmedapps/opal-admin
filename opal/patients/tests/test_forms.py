@@ -8,11 +8,12 @@ import pytest
 from crispy_forms.utils import render_crispy_form
 from dateutil.relativedelta import relativedelta
 from pytest_mock.plugin import MockerFixture
+from requests.exceptions import RequestException
 
 from opal.caregivers.factories import CaregiverProfile
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.services.twilio import TwilioServiceError
-from opal.users.factories import Caregiver
+from opal.users.factories import Caregiver, User
 
 from .. import constants, factories, forms
 from ..filters import ManageCaregiverAccessFilter
@@ -599,7 +600,7 @@ def test_accessrequestsearchform_mrn_found_patient_model() -> None:
 
 def test_accessrequestsearchform_search_patient_missing_info(mocker: MockerFixture) -> None:
     """Ensure that `_search_patient` function add error to form when no data is provided."""
-    oie_service = mocker.patch(
+    mock_find = mocker.patch(
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
             'status': 'success',
@@ -611,7 +612,6 @@ def test_accessrequestsearchform_search_patient_missing_info(mocker: MockerFixtu
         'medical_number': 'RAMQ12345678',
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
-    form.oie_service = oie_service
     form._search_patient(
         card_type='',
         medical_number='',
@@ -621,6 +621,7 @@ def test_accessrequestsearchform_search_patient_missing_info(mocker: MockerFixtu
     # asserting that correct error message is added to non-field form errors list
     err_msg = 'No patient could be found.'
     assert form.non_field_errors()[0] == err_msg
+    mock_find.assert_called_once_with('RAMQ12345678')
 
 
 def test_accessrequestsearchform_mrn_fail_oie(mocker: MockerFixture) -> None:
@@ -792,6 +793,65 @@ def test_accessrequestsearchform_no_test_patient(mocker: MockerFixture) -> None:
     assert form.patient is None
     assert len(form.non_field_errors()) == 1
     assert form.non_field_errors()[0] == 'Patient is not a test patient.'
+
+
+def test_accessrequestconfirmpatientform_init() -> None:
+    """Ensure that the form is bound for early evaluation."""
+    form = forms.AccessRequestConfirmPatientForm(patient=OIE_PATIENT_DATA)
+
+    assert form.is_bound
+
+
+def test_accessrequestconfirmpatientform_is_deceased_oie() -> None:
+    """Ensure that proper error message is added to form error list when oie patient is deceased."""
+    oie_patient = OIE_PATIENT_DATA._replace(deceased=True)
+    form = forms.AccessRequestConfirmPatientForm(patient=oie_patient)
+    err_msg = 'Unable to complete action with this patient. Please contact Medical Records.'
+
+    form.is_valid()
+
+    assert form.non_field_errors()[0] == err_msg
+
+
+def test_accessrequestconfirmpatientform_is_deceased_patient_model() -> None:
+    """Ensure that proper error message is added to form error list when `Patient` model patient is deceased."""
+    patient = factories.Patient(date_of_death=timezone.now())
+
+    form = forms.AccessRequestConfirmPatientForm(patient=patient)
+    err_msg = 'Unable to complete action with this patient. Please contact Medical Records.'
+
+    form.is_valid()
+
+    assert form.non_field_errors()[0] == err_msg
+
+
+def test_accessrequestconfirmpatientform_has_multiple_mrns_oie() -> None:
+    """Ensure that proper error message is added to form error list when oie patient has more than one `MRN`."""
+    oie_patient = OIE_PATIENT_DATA._replace(
+        mrns=[
+            OIEMRNData(
+                site='MCH',
+                mrn='9999993',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MCH',
+                mrn='9999994',
+                active=True,
+            ),
+            OIEMRNData(
+                site='RVH',
+                mrn='9999993',
+                active=True,
+            ),
+        ],
+    )
+    form = forms.AccessRequestConfirmPatientForm(patient=oie_patient)
+    err_msg = 'Patient has more than one active MRN at the same hospital, please contact Medical Records.'
+
+    form.is_valid()
+
+    assert form.non_field_errors()[0] == err_msg
 
 
 def test_accessrequestrequestorform_form_filled_default() -> None:
@@ -1125,7 +1185,7 @@ def test_accessrequestrequestorform_existing_user_validate_self() -> None:
 
 
 def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() -> None:
-    """Ensure `clean()` can handle a name mismatch for self relationships."""
+    """Ensure `clean()` can handle a name mismatch for self relationships for existing users."""
     CaregiverProfile(
         user__first_name='Ned',
         user__last_name='Flanders',
@@ -1151,6 +1211,24 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() 
     )
 
 
+def test_accessrequestrequestorform_new_user_validate_self_name_mismatch() -> None:
+    """Ensure the form will ignore provided names for a self relationship."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.NEW.name,
+            'relationship_type': RelationshipType.objects.self_type(),
+            'id_checked': True,
+            'first_name': 'Hans',
+            'last_name': 'Wurst',
+        },
+    )
+
+    assert form.is_valid()
+    assert form.cleaned_data['first_name'] == OIE_PATIENT_DATA.first_name
+    assert form.cleaned_data['last_name'] == OIE_PATIENT_DATA.last_name
+
+
 def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch_new_patient() -> None:
     """Ensure `clean()` can handle a name mismatch for self relationships when the patient is new."""
     caregiver = factories.CaregiverProfile(
@@ -1170,7 +1248,6 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch_ne
     form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA, data=data)
 
     assert not form.is_valid()
-    print(form.errors)
     assert len(form.non_field_errors()) == 1
     assert form.non_field_errors()[0] == (
         'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
@@ -1334,18 +1411,40 @@ def test_accessrequestrequestorform_self_names_prefilled_empty_initial() -> None
 
 
 def test_accessrequestrequestorform_self_names_prefilled_other_initial() -> None:
-    """Ensure the name fields are filled with the patient's name even if the initial data contains empty strings."""
+    """Ensure the name fields are filled with the patient's name even if the initial data contains data."""
     form = forms.AccessRequestRequestorForm(
         patient=OIE_PATIENT_DATA,
-        data={'relationship_type': RelationshipType.objects.self_type().pk},
         # this happens when switching to self due to the up-validate request handling
-        initial={'first_name': 'Hans', 'last_name': 'Wurst'},
+        initial={
+            'relationship_type': str(RelationshipType.objects.self_type().pk),
+            'first_name': 'Hans',
+            'last_name': 'Wurst',
+        },
     )
 
     assert form.fields['first_name'].initial == OIE_PATIENT_DATA.first_name
-    assert form['first_name'].value() == 'Hans'
+    assert form['first_name'].value() == OIE_PATIENT_DATA.first_name
     assert form.fields['last_name'].initial == OIE_PATIENT_DATA.last_name
-    assert form['last_name'].value() == 'Wurst'
+    assert form['last_name'].value() == OIE_PATIENT_DATA.last_name
+
+
+def test_accessrequestrequestorform_non_self_names_prefilled_other_initial() -> None:
+    """Ensure the name fields are not filled with any value when it's not self anymore."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={},
+        # this happens when switching from self due to the up-validate request handling
+        initial={
+            'relationship_type': str(RelationshipType.objects.guardian_caregiver().pk),
+            'first_name': OIE_PATIENT_DATA.first_name,
+            'last_name': OIE_PATIENT_DATA.last_name,
+        },
+    )
+
+    assert form.fields['first_name'].initial is None
+    assert form['first_name'].value() is None
+    assert form.fields['last_name'].initial is None
+    assert form['last_name'].value() is None
 
 
 def test_accessrequestrequestorform_disable_fields() -> None:
@@ -1360,63 +1459,34 @@ def test_accessrequestrequestorform_disable_fields() -> None:
         assert field.disabled
 
 
-def test_accessrequestconfirmpatientform_init() -> None:
-    """Ensure that the form is bound for early evaluation."""
-    form = forms.AccessRequestConfirmPatientForm(patient=OIE_PATIENT_DATA)
+def test_accessrequestconfirmform() -> None:
+    """Ensure the confirm form is invalid by default."""
+    form = forms.AccessRequestConfirmForm(username='noone')
 
-    assert form.is_bound
-
-
-def test_accessrequestconfirmpatientform_is_deceased_oie() -> None:
-    """Ensure that proper error message is added to form error list when oie patient is deceased."""
-    oie_patient = OIE_PATIENT_DATA._replace(deceased=True)
-    form = forms.AccessRequestConfirmPatientForm(patient=oie_patient)
-    err_msg = 'Unable to complete action with this patient. Please contact Medical Records.'
-
-    form.is_valid()
-
-    assert form.non_field_errors()[0] == err_msg
+    assert not form.is_valid()
 
 
-def test_accessrequestconfirmpatientform_is_deceased_patient_model() -> None:
-    """Ensure that proper error message is added to form error list when `Patient` model patient is deceased."""
-    patient = factories.Patient(date_of_death=timezone.now())
+def test_accessrequestconfirmform_invalid_password(admin_user: User, mocker: MockerFixture) -> None:
+    """Ensure that an invalid password fails the form validation."""
+    # mock authentication and pretend it was unsuccessful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = False
 
-    form = forms.AccessRequestConfirmPatientForm(patient=patient)
-    err_msg = 'Unable to complete action with this patient. Please contact Medical Records.'
+    form = forms.AccessRequestConfirmForm(username=admin_user.username, data={
+        'password': 'invalid',
+    })
 
-    form.is_valid()
+    assert not form.is_valid()
+    assert form.has_error('password')
 
-    assert form.non_field_errors()[0] == err_msg
 
+def test_accessrequestconfirmform_valid_password(admin_user: User) -> None:
+    """Ensure that a valid user's password makes the form valid."""
+    form = forms.AccessRequestConfirmForm(username=admin_user.username, data={
+        'password': 'password',
+    })
 
-def test_accessrequestconfirmpatientform_has_multiple_mrns_oie() -> None:
-    """Ensure that proper error message is added to form error list when oie patient has more than one `MRN`."""
-    oie_patient = OIE_PATIENT_DATA._replace(
-        mrns=[
-            OIEMRNData(
-                site='MCH',
-                mrn='9999993',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MCH',
-                mrn='9999994',
-                active=True,
-            ),
-            OIEMRNData(
-                site='RVH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
-    form = forms.AccessRequestConfirmPatientForm(patient=oie_patient)
-    err_msg = 'Patient has more than one active MRN at the same hospital, please contact Medical Records.'
-
-    form.is_valid()
-
-    assert form.non_field_errors()[0] == err_msg
+    assert form.is_valid()
 
 
 def test_accessrequestsendsmsform_incomplete_data(mocker: MockerFixture) -> None:
@@ -1458,6 +1528,30 @@ def test_accessrequestsendsmsform_send_error(mocker: MockerFixture) -> None:
     mock_send = mocker.patch(
         'opal.services.twilio.TwilioService.send_sms',
         side_effect=TwilioServiceError('catastrophe!'),
+    )
+
+    form = forms.AccessRequestSendSMSForm(
+        '123456',
+        data={
+            'language': 'en',
+            # magic Twilio number: https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To
+            'phone_number': '+15005550001',
+        },
+    )
+
+    form.full_clean()
+
+    assert not form.is_valid()
+    assert len(form.non_field_errors()) == 1
+    assert form.non_field_errors()[0] == 'An error occurred while sending the SMS'
+    mock_send.assert_called_once_with('+15005550001', mocker.ANY)
+
+
+def test_accessrequestsendsmsform_send_request_error(mocker: MockerFixture) -> None:
+    """Ensure that the form shows an error if the connection to Twilio fails."""
+    mock_send = mocker.patch(
+        'opal.services.twilio.TwilioService.send_sms',
+        side_effect=RequestException('SSL key too weak'),
     )
 
     form = forms.AccessRequestSendSMSForm(

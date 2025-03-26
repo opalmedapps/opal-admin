@@ -1,4 +1,4 @@
-"""This module provides views for hospital-specific settings."""
+"""This module provides views for the patients app."""
 import base64
 import json
 from collections import OrderedDict
@@ -332,9 +332,10 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
 
         current_step = management_form.cleaned_data.get(self.current_step_name)
 
-        if current_step and current_step in self.forms:
+        # ensure that the step is valid and that session data was initialized
+        if current_step and current_step in self.forms and self.session_key_name in request.session:
             next_step = current_step
-            # get all current forms and validate them
+            # get all forms up to the current step and validate the current form
             current_forms = self._get_forms(current_step)
             current_form = current_forms[-1]
 
@@ -387,17 +388,9 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
             prefix = self._get_prefix(current_form.__class__)
             context_data[f'{prefix}_form'] = current_form
 
-        disable_next = False
-
         if len(current_forms) >= 2 and current_forms[0].is_valid():
-            patient_form = current_forms[1]
-
-            if patient_form.patient:
-                patients = [patient_form.patient]
-            else:
-                patients = []
-
-            disable_next = not patient_form.is_valid()
+            patient_form: forms.AccessRequestSearchPatientForm = current_forms[1]
+            patients = [patient_form.patient]
 
             if isinstance(patient_form.patient, Patient):
                 context_data['patient_table'] = tables.PatientTable(patients)
@@ -417,9 +410,6 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
 
             if relationship_form.is_existing_user_selected(relationship_form.cleaned_data):
                 context_data['next_button_text'] = _('Create Access Request')
-
-        # TODO: might not be needed anymore
-        context_data['next_button_disabled'] = disable_next
 
         return context_data
 
@@ -629,6 +619,8 @@ class AccessRequestView(  # noqa: WPS214, WPS215 (too many methods, too many bas
             #
             # initial requires the field name without the prefix,
             # strip it from the POST data which contains keys with the prefix
+            # NOTE: this is not ideal since even the current form will get initial data this way
+            # which can cause issues when the form itself has actual disabled fields
             initial = {
                 key.replace(f'{current_step}-', ''): value
                 for key, value in data.items()
