@@ -111,8 +111,8 @@ class TestApiRetrieveRegistrationDetails:
             'api:registration-code',
             kwargs={'code': registration_code.code},
         ))
-        assert response.status_code == HTTPStatus.NOT_FOUND
-        assert response.json() == {'detail': 'Not found.'}
+        assert response.status_code == HTTPStatus.FORBIDDEN
+        assert response.json() == {'detail': 'You do not have permission to perform this action.'}
 
     def test_registration_code_detailed(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test api registration code with detailed serializer."""

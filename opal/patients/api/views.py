@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models.query import QuerySet
 
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import ListAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -25,20 +26,31 @@ from ..utils import insert_security_answers, update_caregiver, update_patient_le
 class RetrieveRegistrationDetailsView(RetrieveAPIView):
     """Class handling GET requests for registration code values."""
 
-    queryset = (
-        caregiver_models.RegistrationCode.objects.select_related(
+    lookup_url_kwarg = 'code'
+    lookup_field = 'code'
+
+    def get_queryset(self) -> QuerySet[caregiver_models.RegistrationCode]:
+        """
+        Override get_queryset to filter RegistrationCode by registration code.
+
+        Raises:
+            PermissionDenied: return forbbiden error for deceased patients.
+
+        Returns:
+            The queryset of RegistrationCode
+        """
+        queryset = caregiver_models.RegistrationCode.objects.select_related(
             'relationship',
             'relationship__patient',
         ).prefetch_related(
             'relationship__patient__hospital_patients',
         ).filter(
             status=caregiver_models.RegistrationCodeStatus.NEW,
-            relationship__patient__date_of_death=None,
         )
-    )
-
-    lookup_url_kwarg = 'code'
-    lookup_field = 'code'
+        patient = queryset.get().relationship.patient
+        if patient.date_of_death:
+            raise PermissionDenied()
+        return queryset
 
     def get_serializer_class(self, *args: Any, **kwargs: Any) -> Type[serializers.BaseSerializer]:
         """Override 'get_serializer_class' to switch the serializer based on the GET parameter `detailed`.
