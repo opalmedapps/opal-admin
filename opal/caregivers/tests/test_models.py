@@ -280,7 +280,7 @@ def test_registrationcode_codes_length_lt_min() -> None:
 def test_registrationcode_creation_date_is_today() -> None:
     """Ensure the creation date  is today when creating a new registration code."""
     registration_code = factories.RegistrationCode()
-    assert str(registration_code.created_at.date()) == str(datetime.date.today())
+    assert registration_code.created_at.date() == datetime.date.today()
 
 
 class TestEmailVerification:
