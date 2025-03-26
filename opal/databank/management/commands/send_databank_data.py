@@ -1,8 +1,9 @@
 """Command for sending data to the Databank."""
 import json
 from collections import defaultdict
-from typing import Any, Optional
 from datetime import datetime
+from typing import Any, Optional
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
