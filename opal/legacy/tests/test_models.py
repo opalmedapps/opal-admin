@@ -137,3 +137,33 @@ def test_legacy_test_control() -> None:
     """Test whether the factory creates a valid legacy TestControl model instance."""
     test_test_control = factories.LegacyTestControlFactory()
     test_test_control.full_clean()
+
+
+def test_legacy_oauser() -> None:
+    """Test whether the factory creates a valid legacy OAUser model instance."""
+    test_oauser = factories.LegacyOAUserFactory()
+    test_oauser.full_clean()
+
+
+def test_legacy_oarole() -> None:
+    """Test whether the factory creates a valid legacy oaRole model instance."""
+    test_oarole = factories.LegacyOAUserFactory()
+    test_oarole.full_clean()
+
+
+def test_legacy_oauserrole() -> None:
+    """Test whether the factory creates a valid legacy oaUserRole model instance."""
+    test_oauserrole = factories.LegacyOAUserRoleFactory()
+    test_oauserrole.full_clean()
+
+
+def test_legacy_module() -> None:
+    """Test whether the factory creates a valid legacy module model instance."""
+    test_module = factories.LegacyModuleFactory()
+    test_module.full_clean()
+
+
+def test_legacy_oarolemodule() -> None:
+    """Test whether the factory creates a valid legacy OARoleModule model instance."""
+    test_oarolemodule = factories.LegacyOARoleModuleFactory()
+    test_oarolemodule.full_clean()
