@@ -3,7 +3,7 @@ from typing import Dict, cast
 
 from pytest_mock.plugin import MockerFixture
 
-from ..services.hospital import OIECommunicationService
+from ..hospital import OIECommunicationService
 
 OIE_data = {
     'status': 'success',
