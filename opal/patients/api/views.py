@@ -226,8 +226,8 @@ class PatientCaregiverDevicesView(RetrieveAPIView[Patient]):
     """Class handling GET requests for patient caregivers."""
 
     queryset = Patient.objects.prefetch_related(
-        'relationships__caregiver__user',
-        'relationships__caregiver__devices',
+        'caregivers__user',
+        'caregivers__devices',
     )
     permission_classes = (IsLegacyBackend,)
     serializer_class = caregiver_serializers.PatientCaregiverDevicesSerializer
