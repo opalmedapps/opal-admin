@@ -14,7 +14,7 @@ import pandas as pd
 from ..core.audit import update_request_event_query_string
 from ..users.models import User
 from .backend import get_all_questionnaires, get_questionnaire_detail, get_temp_table, make_temp_tables
-from .models import ExportReportPermission, QuestionnaireProfile
+from .models import QuestionnaireProfile
 from .tables import ReportTable
 
 language_map = {'fr': 1, 'en': 2}  # All queries assume the integer representation of opal languages
@@ -31,7 +31,6 @@ class IndexTemplateView(TemplateView):
 class QuestionnaireReportDashboardTemplateView(PermissionRequiredMixin, TemplateView):
     """This `TemplateView` provides a basic rendering for viewing a user's saved questionnaires dashboard."""
 
-    model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     template_name = 'questionnaires/export_reports/reports-dashboard.html'
 
@@ -60,7 +59,6 @@ class QuestionnaireReportDashboardTemplateView(PermissionRequiredMixin, Template
 class QuestionnaireReportListTemplateView(PermissionRequiredMixin, TemplateView):
     """This `TemplateView` provides a basic rendering for viewing the list of available questionnaires."""
 
-    model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     template_name = 'questionnaires/export_reports/reports-list.html'
 
@@ -85,7 +83,6 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
     """This `TemplateView` provides a basic rendering for selecting query parameters."""
 
     template_name = 'questionnaires/export_reports/reports-filter.html'
-    model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
@@ -133,7 +130,6 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
     """This `TemplateView` provides a basic rendering for viewing the selected report."""
 
     template_name = 'questionnaires/export_reports/reports-detail.html'
-    model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
@@ -203,7 +199,6 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
     """This view returns the same page after downloading the csv to client side."""
 
     template_name = 'questionnaires/export_reports/reports-detail.html'
-    model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
@@ -242,7 +237,6 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
     """This view returns the same page after downloading the xlsx to client side."""
 
     template_name = 'questionnaires/export_reports/reports-detail.html'
-    model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
