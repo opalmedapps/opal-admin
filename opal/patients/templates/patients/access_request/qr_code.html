@@ -7,13 +7,44 @@
 {% block content %}
 <section class="content">
   <div class="container-fluid">
-    <div class="row">
-      <div class="col-auto">{{ header_title }}</div>
-      <div class="col"><hr></div>
+    <div class="vstack">
+      <div class="row">
+        <div class="col-auto"><span class="fa fa-qrcode fa-fw"></span>&nbsp;&nbsp;{{ header_title }}</div>
+        <div class="col"><hr></div>
+        <div class="col-12 mb-3">{% translate "Please follow the instructions below" %}</div>
+      </div>
     </div>
     <div class="card">
-      <div class="card-body">
-        <img src="data:image/svg+xml;utf8;base64,{{ qrcode|safe }}">
+        <div class="row">
+          <div class="card-body col-8 p-5">
+            <div class="vstack gap-3">
+              <div>{% translate "A unique one-time Opal registration code has been created for the following patient:" %}</div>
+              <ul>
+                <div class="row mt-3"><div class="font-weight-bold">{% translate "Name:" %}</div><div>&nbsp;{{ patient_name }} </div></div>
+                <div class="row"><div class="font-weight-bold">{% translate "Hospital Name:" %} </div><div>&nbsp;{{ hospital_name }} </div></div>
+              </ul>
+              <li>
+                {% translate "Ask the patient to capture the QR code using a QR reader" %}
+                <ul class="mb-0">
+                  {% translate "OR write the patient's code on an Opal registration form and give it to the patient" %}<br>
+                  {% translate "OR enter the patient's cell phone number and click 'Send SMS' to send them their code by text message." %}
+                </ul>
+              </li>
+              <li>{% translate "Inform the patient that their code will expire in 72 hours." %}</li>
+              <li>{% translate "The patient should complete their registration at" %} <a href="https://registration.opalmedapps.ca/" class="stretching-link text-decoration-underline text-reset">registration.opalmedapps.ca</a></li>
+            </div>
+          </div>
+          <div class="card-body col-4 p-5">
+            <div class="vstack gap-3">
+              <div class="text-center font-weight-bold">{% translate "Code" %}</div>
+              <div class="text-center">{{ code }}</div>
+              <div><img src="data:image/svg+xml;utf8;base64,{{ qrcode|safe }}" class="img-fluid d-block mx-auto text-center w-75"></div>
+            </div>
+          </div>
+          <div class="card-footer bg-transparent font-weight-bold">
+            <span>{{ submission_time }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
