@@ -11,7 +11,7 @@ When it comes to permissions, the simplest form of adding a new permission is to
 3. user-specific permissions other than standard `is_staff`.
 4. group-specific permissions where only certain group of users are allowed to access/use certain features of the system.
 
-The Django admin panel provides nice ready-to-use GUI to manage those permissions, it allows adding permissions to specific users. In addition, it allows forming new groups and assign permissions to them. However, it does not provide a way to add custom permissions. In this documentation, custom permissions are explained.
+The Django admin panel provides a nice ready-to-use GUI to manage model permissions, it allows the adding of permissions to specific users. In addition, it allows the forming of new groups and the assigning of permissions to them. However, it does not provide a way to add custom permissions. In this documentation, custom permissions are explained.
 
 ## Adding Custom Permissions
 
