@@ -36,6 +36,7 @@ if TYPE_CHECKING:
         LegacyNotification,
         LegacyPatient,
         LegacyPatientActivityLog,
+        LegacyPatientControl,
         LegacyPatientTestResult,
         LegacyQuestionnaire,
         LegacyTxTeamMessage,
@@ -361,11 +362,15 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
             'last_updated',
         )
 
+
+class LegacyPatientControlManager(models.Manager['LegacyPatientControl']):
+    """LegacyPatientControl model manager."""
+
     def get_aggregated_patient_received_data(
         self,
         start_datetime_period: datetime,
         end_datetime_period: datetime,
-    ) -> ValuesQuerySet['LegacyPatient', dict[str, Any]]:
+    ) -> ValuesQuerySet['LegacyPatientControl', dict[str, Any]]:
         """Retrieve aggregated patients' received data statistics for a given time period.
 
         The statistics are fetched from the legacy `OpalDB` tables.
@@ -389,7 +394,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
             apps.get_model('legacy', 'LegacyQuestionnaire'),
             apps.get_model('legacy', 'LegacyPatientTestResult'),
         )
-        patient_out_ref = models.OuterRef('patientsernum')
+        patient_out_ref = models.OuterRef('patient')
         date_added_range = (start_datetime_period, end_datetime_period)
         zero_count = models.Value(0)
 
@@ -544,7 +549,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         return self.annotate(
             **annotation_subqueries,
         ).values(
-            'patientsernum',
+            'patient',
             *annotation_subqueries,
         )
 

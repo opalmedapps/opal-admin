@@ -114,6 +114,8 @@ class LegacyPatientControl(models.Model):
     lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now_add=True)
     transferflag = models.SmallIntegerField(db_column='TransferFlag', default=0)
 
+    objects: managers.LegacyPatientControlManager = managers.LegacyPatientControlManager()
+
     class Meta:
         managed = False
         db_table = 'PatientControl'

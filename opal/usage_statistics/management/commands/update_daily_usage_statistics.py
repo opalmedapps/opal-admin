@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from django_stubs_ext.aliases import ValuesQuerySet
 
-from opal.legacy.models import LegacyPatient, LegacyPatientActivityLog
+from opal.legacy.models import LegacyPatientActivityLog, LegacyPatientControl
 from opal.patients.models import Patient, Relationship, RelationshipStatus
 from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
 from opal.users.models import User
@@ -196,7 +196,7 @@ class Command(BaseCommand):
             start_datetime_period: the beginning of the time period of received data statistics being extracted
             end_datetime_period: the end of the time period of received data statistics being extracted
         """
-        received_data = LegacyPatient.objects.get_aggregated_patient_received_data(
+        received_data = LegacyPatientControl.objects.get_aggregated_patient_received_data(
             start_datetime_period=start_datetime_period,
             end_datetime_period=end_datetime_period,
         )
@@ -205,7 +205,7 @@ class Command(BaseCommand):
 
         DailyPatientDataReceived.objects.bulk_create(
             DailyPatientDataReceived(
-                patient_id=patients_dict[data.pop('patientsernum')],
+                patient_id=patients_dict[data.pop('patient')],
                 **data,
             ) for data in received_data
         )
