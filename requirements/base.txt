@@ -27,5 +27,5 @@ requests==2.28.2  # https://github.com/psf/requests
 
 # Export Report functionality
 #
-pandas==1.5.2  # https://pypi.org/project/pandas/
+pandas==1.5.3  # https://pypi.org/project/pandas/
 openpyxl==3.0.10  # https://pypi.org/project/openpyxl/
