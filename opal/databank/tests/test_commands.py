@@ -13,6 +13,7 @@ from opal.core.test_utils import CommandTestMixin, RequestMockerTest
 from opal.databank import factories as databank_factories
 from opal.databank import models as databank_models
 from opal.legacy import factories as legacy_factories
+from opal.legacy.models import LegacyPatientTestResult
 from opal.legacy_questionnaires import factories as legacy_questionnaire_factories
 from opal.patients import factories as patient_factories
 
@@ -968,6 +969,122 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command._update_databank_patient_shared_data(databank_patient1, {})
         assert databank_models.SharedData.objects.all().count() == 0
         assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
+
+    def test_nest_and_serialize_queryset_questionnaires(self) -> None:
+        """Verify the custom nesting behaviour works as expected for questionnaires."""
+        django_pat1 = patient_factories.Patient()
+        yesterday = datetime.now() - timedelta(days=1)
+        consent_instance = databank_factories.DatabankConsent(
+            patient=django_pat1,
+            has_appointments=True,
+            has_diagnoses=True,
+            has_demographics=True,
+            has_questionnaires=True,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(yesterday),
+        )
+        # Mock the questionnaire queryset object since we dont use a normal pytest test_QuestionnaireDB connection
+        questionnaire_answer_object = lambda idx: {  # noqa: E731
+            'answer_questionnaire_id': 190,
+            'creation_date': datetime(2024, 5, 5, 13, 17, 42),
+            'questionnaire_id': 12,
+            'questionnaire_title': 'Edmonton Symptom Assessment System',
+            'question_id': idx,
+            'question_text': 'Generic question text',
+            'question_display_order': 1,
+            'question_type_id': 2,
+            'question_type_text': 'Slider',
+            'question_answer_id': idx,
+            'last_updated': datetime(2024, 5, 8, 14, 11, 12),
+            'answer_value': str(idx),
+        }
+        queryset = [questionnaire_answer_object(idx) for idx in range(5)]  # type: ignore[no-untyped-call]
+        command = send_databank_data.Command()
+        result = command._nest_and_serialize_queryset(consent_instance.guid, queryset, 'QSTN')
+
+        assert 'GUID' in result
+        assert 'QSTN' in result
+        assert isinstance(result['QSTN'], list)
+        outer_keys = {
+            'answer_questionnaire_id',
+            'creation_date',
+            'questionnaire_id',
+            'questionnaire_title',
+            'question_answers',
+        }
+        inner_keys = {
+            'question_id',
+            'question_text',
+            'question_display_order',
+            'question_type_id',
+            'question_type_text',
+            'question_answer_id',
+            'last_updated',
+            'answer_value',
+        }
+        for item in result['QSTN']:
+            for key in outer_keys:
+                assert key in item
+            assert isinstance(item['question_answers'], list)
+            for answer in item['question_answers']:
+                for key2 in inner_keys:
+                    assert key2 in answer
+
+    def test_nest_and_serialize_queryset_labs(self) -> None:
+        """Verify the custom nesting behaviour works as expected for labs."""
+        django_pat1 = patient_factories.Patient()
+        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        yesterday = datetime.now() - timedelta(days=1)
+        consent_instance = databank_factories.DatabankConsent(
+            patient=django_pat1,
+            has_appointments=True,
+            has_diagnoses=True,
+            has_demographics=True,
+            has_questionnaires=True,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(yesterday),
+        )
+        # Create test data
+        for _ in range(5):
+            legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+
+        # Mock the labs queryset
+        queryset = LegacyPatientTestResult.objects.get_databank_data_for_patient(
+            patient_ser_num=consent_instance.patient.legacy_id,
+            last_synchronized=consent_instance.last_synchronized,
+        )
+        command = send_databank_data.Command()
+        result = command._nest_and_serialize_queryset(consent_instance.guid, queryset, 'LABS')
+
+        assert 'GUID' in result
+        assert 'LABS' in result
+        assert isinstance(result['LABS'], list)
+        outer_keys = {
+            'test_group_name',
+            'test_group_indicator',
+            'specimen_collected_date',
+            'components',
+        }
+        inner_keys = {
+            'abnormal_flag',
+            'last_updated',
+            'test_result_id',
+            'component_result_date',
+            'test_component_sequence',
+            'test_component_name',
+            'test_value',
+            'test_units',
+            'max_norm_range',
+            'min_norm_range',
+            'source_system',
+        }
+        for item in result['LABS']:
+            for key in outer_keys:
+                assert key in item
+            assert isinstance(item['components'], list)
+            for answer in item['components']:
+                for key2 in inner_keys:
+                    assert key2 in answer
 
     def _create_custom_oie_response(self, module: databank_models.DataModuleType) -> dict[str, list[Any]]:
         """Prepare a response message according to module and success/failure.
