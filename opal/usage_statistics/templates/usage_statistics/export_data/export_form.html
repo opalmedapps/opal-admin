@@ -11,3 +11,35 @@
 {% block content %}
   {% crispy form %}
 {% endblock %}
+
+{% block javascript %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var allReportsCheckbox = document.getElementById('id_all_reports');
+    var reportCheckboxes = [
+        document.getElementById('id_summary_report'),
+        document.getElementById('id_data_received_report'),
+        document.getElementById('id_app_activity_report'),
+        document.getElementById('id_individual_patient_report'),
+    ];
+
+    function toggleReportCheckboxes() {
+        if (allReportsCheckbox.checked) {
+            reportCheckboxes.forEach(function(checkbox) {
+                checkbox.checked = true;
+                checkbox.disabled = true;
+            });
+        } else {
+            reportCheckboxes.forEach(function(checkbox) {
+                checkbox.disabled = false;
+            });
+        }
+    }
+
+    allReportsCheckbox.addEventListener('change', toggleReportCheckboxes);
+
+    // Initialize on page load
+    toggleReportCheckboxes();
+  });
+</script>
+{% endblock %}
