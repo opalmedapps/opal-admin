@@ -27,8 +27,8 @@ class RoleType(models.TextChoices):
 
     # 'self' is a reserved keyword in Python requiring a noqa here.
     SELF = 'SELF', _('Self')  # noqa: WPS117
-    PARENT_GUARDIAN = 'PARENTGUARDIAN', _('Parent/Guardian')
     CAREGIVER = 'CAREGIVER', _('Caregiver')
+    PARENT_GUARDIAN = 'PARENTGUARDIAN', _('Parent/Guardian')
 
 
 class RelationshipType(models.Model):
