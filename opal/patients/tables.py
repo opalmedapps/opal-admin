@@ -31,8 +31,8 @@ class RelationshipTypeTable(tables.Table):
             'start_age',
             'end_age',
             'form_required',
-            'actions',
             'can_answer_questionnaire',
+            'actions',
         ]
         empty_text = _('No relationship types defined.')
         attrs = {
