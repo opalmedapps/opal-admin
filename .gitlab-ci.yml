@@ -43,6 +43,7 @@ stages:
 setup:
   stage: .pre
   script:
+    - apt update && apt-get install -y git
     - python -m venv .venv
     - source .venv/bin/activate
     - pip install --upgrade pip
