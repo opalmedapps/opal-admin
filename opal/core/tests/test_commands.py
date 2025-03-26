@@ -3,7 +3,8 @@ from django.contrib.auth.models import Group
 import pytest
 from rest_framework.authtoken.models import Token
 
-from opal.caregivers.models import CaregiverProfile, SecurityQuestion
+from opal.caregivers import factories as caregiver_factories
+from opal.caregivers.models import CaregiverProfile, SecurityAnswer, SecurityQuestion
 from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
 from opal.patients import factories
@@ -26,6 +27,7 @@ class TestInsertTestData(CommandTestMixin):
         assert HospitalPatient.objects.count() == 6
         assert CaregiverProfile.objects.count() == 4
         assert Relationship.objects.count() == 9
+        assert SecurityAnswer.objects.count() == 9
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_existing_data_cancel(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -43,6 +45,7 @@ class TestInsertTestData(CommandTestMixin):
         monkeypatch.setattr('builtins.input', lambda _: 'yes')
         relationship = factories.Relationship()
         hospital_patient = factories.HospitalPatient()
+        security_answer = caregiver_factories.SecurityAnswer(user=relationship.caregiver)
 
         institution = Institution.objects.get()
         site = Site.objects.get()
@@ -63,6 +66,7 @@ class TestInsertTestData(CommandTestMixin):
         assert not Patient.objects.filter(pk=patient.pk).exists()
         assert not CaregiverProfile.objects.filter(pk=caregiver_profile.pk).exists()
         assert not Caregiver.objects.filter(pk=caregiver.pk).exists()
+        assert not SecurityAnswer.objects.filter(pk=security_answer.pk).exists()
 
         # new data was created
         assert Institution.objects.count() == 1
@@ -71,6 +75,19 @@ class TestInsertTestData(CommandTestMixin):
         assert HospitalPatient.objects.count() == 6
         assert CaregiverProfile.objects.count() == 4
         assert Relationship.objects.count() == 9
+        assert SecurityAnswer.objects.count() == 9
+
+    def test_create_security_answers(self) -> None:
+        """Ensure that the security answer's question depends on the user's language."""
+        stdout, _stderr = self._call_command('insert_test_data')
+
+        caregiver_en = CaregiverProfile.objects.get(user__first_name='Marge')
+        question_en = SecurityAnswer.objects.filter(user=caregiver_en)[0].question
+        caregiver_fr = CaregiverProfile.objects.get(user__first_name='Bart')
+        question_fr = SecurityAnswer.objects.filter(user=caregiver_fr)[0].question
+
+        assert question_en == 'What is the name of your first pet?'
+        assert question_fr == 'Quel est le nom de votre premier animal de compagnie?'
 
 
 class TestInitializeData(CommandTestMixin):

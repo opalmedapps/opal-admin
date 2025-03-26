@@ -174,7 +174,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             # TODO: look in the Patient model first, only if not found search via OIE
             # TODO: ensure that the patient is only retrieved once when doing the search (should already be handled)
             if card_type == constants.MedicalCard.ramq.name:
-                self.patient = Patient.objects.filter(first_name='Marge').first()
+                self.patient = Patient.objects.filter(ramq=medical_number).first()
             else:
                 # TODO: handle connection errors here, i.e., raise helpful validation error
                 self.patient = self._fake_oie_response()
