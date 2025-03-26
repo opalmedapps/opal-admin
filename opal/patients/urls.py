@@ -18,7 +18,7 @@ urlpatterns = [
     ),
     path(
         'relationships/pending/<int:pk>/update/',
-        views.PendingRelationshipCreateUpdateView.as_view(),
+        views.PendingRelationshipUpdateView.as_view(),
         name='relationships-pending-update',
     ),
     path(
