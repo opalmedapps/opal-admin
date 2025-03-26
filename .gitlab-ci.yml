@@ -101,8 +101,10 @@ xray:
     - uname -a
     - x-ray-scan -version
   script:
-    - mv requirements/development.txt requirements/requirements.txt
-    - x-ray-scan -p "$CI_PROJECT_DIR/requirements" -o "$OUTPUT_DIR"
+    - mv requirements/base.txt requirements.txt
+    - tail -n +2 requirements/development.txt >> requirements.txt
+    - cat requirements.txt
+    - x-ray-scan -p "$CI_PROJECT_DIR" -o "$OUTPUT_DIR"
     - ls -la .
     - ls -la $CI_PROJECT_DIR
     - ls -la $OUTPUT_DIR
