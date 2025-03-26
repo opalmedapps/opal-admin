@@ -1,10 +1,7 @@
 """Module providing API views for the `pharmacy` app."""
-import uuid
 from typing import Any
 
-from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.request import Request
@@ -12,8 +9,6 @@ from rest_framework.response import Response
 
 from opal.core.api.views import HL7CreateView
 from opal.core.drf_permissions import IsInterfaceEngine
-from opal.hospital_settings.models import Site
-from opal.patients.models import Patient
 
 from ..models import PhysicianPrescriptionOrder
 from .serializers import PhysicianPrescriptionOrderSerializer
@@ -38,57 +33,14 @@ class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):
         Returns:
             API Response with code and headers
         """
+        patient = request.data.pop('patient')
         transformed_data = self._transform_parsed_to_serializer_structure(request.data)
-        if not self._validate_uuid_matches_pid_segment(request.data, self.kwargs['uuid']):
-            return Response(
-                {
-                    'status': 'error',
-                    'message': 'PID segment data did not match uuid provided in url.',
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        patient: Patient = get_object_or_404(Patient, uuid=self.kwargs['uuid'])
         transformed_data['patient'] = patient.pk
         serializer = self.get_serializer(data=transformed_data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def _validate_uuid_matches_pid_segment(
-        self,
-        parsed_data: dict[str, Any],
-        url_uuid: uuid.UUID,
-    ) -> bool:
-        """Ensure the PID segment parsed from the message matches the uuid from the url.
-
-        Args:
-            parsed_data: segmented dictionary parsed from the HL7 request data
-            url_uuid: UUID string passed in the endpoint url kwarg
-
-        Raises:
-            ValidationError: If no patient could be found at all, or multiple are found
-
-        Returns:
-            True if the patient identified in the PID segment exists in the database and matches the UUID
-        """
-        # Filter out invalid sites from the raw site list given by the hospital (e.g `HNAM_PERSONID`)
-        valid_sites = {site_tuple[0] for site_tuple in Site.objects.all().values_list('acronym')}
-        valid_pid_mrn_sites = [
-            mrn_site for mrn_site in parsed_data.get('PID', None)['mrn_sites'] if mrn_site[1] in valid_sites
-        ]
-        try:
-            patient = Patient.objects.get_patient_by_site_mrn_list(
-                site_mrn_list=[
-                    {
-                        'site': {'acronym': site},
-                        'mrn': mrn,
-                    } for mrn, site in valid_pid_mrn_sites
-                ],
-            )
-        except (Patient.DoesNotExist, Patient.MultipleObjectsReturned):
-            raise ValidationError('Patient identified by HL7 PID could not be uniquely found in database.')
-        return url_uuid == patient.uuid
 
     def _transform_parsed_to_serializer_structure(self, parsed_data: dict[str, Any]) -> dict[str, Any]:  # noqa: WPS210
         """Transform the parsed segment data dictionary into the expected structure for the serializer.
