@@ -304,3 +304,72 @@ def test_hospitalpatient_many_patients_one_site() -> None:
 
     with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
         HospitalPatient.objects.create(patient=patient2, site=site, mrn='9999996')
+
+
+# tests for reason field constraints and validations
+def test_relationship_no_reason_invalid_revoked() -> None:
+    """Ensure that error is thrown when reason is empty and status is revoked."""
+    relationship = factories.Relationship()
+    relationship.reason = ''
+    relationship.status = RelationshipStatus.REVOKED
+
+    expected_message = 'Reason is mandatory when status is denied or revoked.'
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        relationship.clean()
+
+
+def test_relationship_no_reason_invalid_denied() -> None:
+    """Ensure that error is thrown when reason is empty and status is denied."""
+    relationship = factories.Relationship()
+    relationship.reason = ''
+    relationship.status = RelationshipStatus.DENIED
+
+    expected_message = 'Reason is mandatory when status is denied or revoked.'
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        relationship.clean()
+
+
+def test_relationship_valid_reason_pass_denied() -> None:
+    """Ensure that error is not thrown when reason field has content and status is denied."""
+    relationship = factories.Relationship()
+    relationship.status = RelationshipStatus.DENIED
+
+    relationship.clean()
+
+
+def test_relationship_valid_reason_pass_revoked() -> None:
+    """Ensure that error is not thrown when reason field has content and status is revoked."""
+    relationship = factories.Relationship()
+    relationship.status = RelationshipStatus.REVOKED
+
+    relationship.clean()
+
+
+def test_relationship_saved_valid_reason() -> None:
+    """Ensure that reason is saved properly in status other than expired or denied."""
+    relationship = factories.Relationship()
+    relationship.reason = 'Reason 1'
+    relationship.status = RelationshipStatus.EXPIRED
+
+    relationship.clean()
+    assert relationship.reason == 'Reason 1'
+
+
+def test_relationship_saved_reason_valid_denied() -> None:
+    """Ensure that reason is saved properly in status denied."""
+    relationship = factories.Relationship()
+    relationship.reason = 'Reason 1'
+    relationship.status = RelationshipStatus.DENIED
+
+    relationship.clean()
+    assert relationship.reason == 'Reason 1'
+
+
+def test_relationship_saved_reason_valid_revoked() -> None:
+    """Ensure that reason is saved properly in status revoked."""
+    relationship = factories.Relationship()
+    relationship.reason = 'Reason 1'
+    relationship.status = RelationshipStatus.REVOKED
+
+    relationship.clean()
+    assert relationship.reason == 'Reason 1'

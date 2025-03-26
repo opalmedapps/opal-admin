@@ -1,15 +1,12 @@
 image: python:3.9.13-slim-bullseye
 
-services:
-  - mariadb:10.7.1-focal
-
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+  MARIADB_ROOT_PASSWORD: $DB_ROOT_PASSWORD
   # ensure that user has permissions for test DB to be used by pytest
   MARIADB_DATABASE: test_$DB_NAME
   MARIADB_USER: $DB_USER
@@ -35,7 +32,7 @@ before_script:
   # reuse the same database as for the other tests to make it easier
   - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
   - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
-  - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=$DB_NAME/" .env
+  - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=OpalDB/" .env
   - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
   - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
   # generate secret key
@@ -94,7 +91,13 @@ mypy:
 
 test:
   stage: Test
+  # set up DB service only for the test job since it is not used by others
+  services:
+    - mariadb:10.7.1-focal
   script:
+    # create second DB for legacy DB tests
+    - apt update && apt-get install -y default-mysql-client
+    - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - pytest --version
     - coverage run -m pytest --junitxml=report.xml
   artifacts:

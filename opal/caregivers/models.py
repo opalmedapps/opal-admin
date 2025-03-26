@@ -104,6 +104,68 @@ class SecurityAnswer(models.Model):
         return self.question
 
 
+class DeviceType(models.TextChoices):
+    """Choices of 'type' for the [opal.caregivers.models.Device][] model."""
+
+    BROWSER = 'WEB', _('Browser')
+    IOS = 'IOS', _('iOS')
+    ANDROID = 'AND', _('Android')
+
+
+class Device(models.Model):
+    """Mobile device used by a caregiver to log into the app."""
+
+    caregiver = models.ForeignKey(
+        to=CaregiverProfile,
+        verbose_name=_('Caregiver Profile'),
+        related_name='devices',
+        on_delete=models.CASCADE,
+    )
+
+    type = models.CharField(  # noqa: A003
+        verbose_name=_('Device Type'),
+        max_length=3,
+        choices=DeviceType.choices,
+    )
+
+    device_id = models.CharField(
+        verbose_name=_('Device ID'),
+        max_length=100,
+    )
+
+    is_trusted = models.BooleanField(
+        verbose_name=_('Trusted Device'),
+        default=False,
+    )
+
+    class Meta:
+        verbose_name = _('Device')
+        verbose_name_plural = _('Devices')
+
+        constraints = [
+            models.CheckConstraint(
+                name='%(app_label)s_%(class)s_type_valid',  # noqa: WPS323
+                check=models.Q(type__in=DeviceType.values),
+            ),
+            models.UniqueConstraint(
+                name='%(app_label)s_%(class)s_unique_caregiver_device',  # noqa: WPS323
+                fields=['caregiver_id', 'device_id'],
+            ),
+        ]
+
+    def __str__(self) -> str:
+        """
+        Represent a Device as a string, showing its device_id and device type.
+
+        Returns:
+            The string representation of a Device.
+        """
+        return '{device_id} ({type})'.format(
+            device_id=self.device_id,
+            type=self.type,
+        )
+
+
 class RegistrationCodeStatus(models.TextChoices):
     """Valid choice of status of a `RegistrationCode`."""
 

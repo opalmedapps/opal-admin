@@ -1,8 +1,9 @@
 """Collection of api views used to send data to opal app through the listener request relay."""
 
-from django.http import HttpRequest, HttpResponse
+from typing import Any
 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -18,7 +19,7 @@ class AppHomeView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: HttpRequest) -> HttpResponse:
+    def get(self, request: Request) -> Response:
         """
         Handle GET requests from `api/app/home`.
 
@@ -43,7 +44,7 @@ class AppChartView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: HttpRequest) -> HttpResponse:
+    def get(self, *args: Any, **kwargs: Any) -> Response:
         """
         Handle GET requests from `api/app/chart`.
 
@@ -51,23 +52,24 @@ class AppChartView(APIView):
         and will provide them for the selected patient instead until the profile selector is finished.
 
         Args:
-            request: Http request made by the listener.
+            args: additional arguments
+            kwargs: additional keyword arguments
 
         Returns:
             Http response with the data needed to display the chart view.
         """
-        patient_sernum = get_patient_sernum(request.headers['Appuserid'])
+        legacy_id = kwargs['legacy_id']
         unread_count = {
-            'unread_appointment_count': models.LegacyAppointment.objects.get_unread_queryset(patient_sernum).count(),
-            'unread_document_count': models.LegacyDocument.objects.get_unread_queryset(patient_sernum).count(),
+            'unread_appointment_count': models.LegacyAppointment.objects.get_unread_queryset(legacy_id).count(),
+            'unread_document_count': models.LegacyDocument.objects.get_unread_queryset(legacy_id).count(),
             'unread_txteammessage_count': models.LegacyTxTeamMessage.objects.get_unread_queryset(
-                patient_sernum,
+                legacy_id,
             ).count(),
             'unread_educationalmaterial_count': models.LegacyEducationalMaterial.objects.get_unread_queryset(
-                patient_sernum,
+                legacy_id,
             ).count(),
             'unread_questionnaire_count': models.LegacyQuestionnaire.objects.get_unread_queryset(
-                patient_sernum,
+                legacy_id,
             ).count(),
         }
 
@@ -85,7 +87,7 @@ class CaregiverPermissionsView(APIView):
     # The essential work for this request is done by CaregiverPatientPermissions
     permission_classes = [IsAuthenticated, CaregiverPatientPermissions]
 
-    def get(self, request: HttpRequest, legacy_id: int) -> HttpResponse:
+    def get(self, request: Request, legacy_id: int) -> Response:
         """
         Handle GET requests on `patients/legacy/<legacy_id>/check_permissions`.
 

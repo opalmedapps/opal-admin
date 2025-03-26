@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-29 09:17-0400\n"
+"POT-Creation-Date: 2022-08-11 21:20+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -73,6 +73,38 @@ msgstr "Réponse de sécurité"
 #: opal/caregivers/models.py
 msgid "Security Answers"
 msgstr "Réponses de sécurité"
+
+#: opal/caregivers/models.py
+msgid "Browser"
+msgstr "Navigateur"
+
+#: opal/caregivers/models.py
+msgid "iOS"
+msgstr "iOS"
+
+#: opal/caregivers/models.py
+msgid "Android"
+msgstr "Android"
+
+#: opal/caregivers/models.py
+msgid "Device Type"
+msgstr "Type d'appareil"
+
+#: opal/caregivers/models.py
+msgid "Device ID"
+msgstr "Identifiant de l'appareil"
+
+#: opal/caregivers/models.py
+msgid "Trusted Device"
+msgstr "Appareil de confiance"
+
+#: opal/caregivers/models.py
+msgid "Device"
+msgstr "Appareil"
+
+#: opal/caregivers/models.py
+msgid "Devices"
+msgstr "Appareils"
 
 #: opal/caregivers/models.py
 msgid "New"

@@ -5,9 +5,9 @@ from django.core.validators import MaxValueValidator, MinLengthValidator, MinVal
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from opal.caregivers.managers import CaregiverManager
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Site
+from opal.patients.managers import RelationshipManager
 
 from . import constants
 
@@ -178,24 +178,35 @@ class Relationship(models.Model):
         related_name='relationship',
         verbose_name=_('Relationship Type'),
     )
+
     status = models.CharField(
         verbose_name=_('Relationship Status'),
         max_length=3,
         choices=RelationshipStatus.choices,
         default=RelationshipStatus.PENDING,
     )
+
+    reason = models.CharField(
+        verbose_name=_('Reason of Status Change'),
+        max_length=255,
+        blank=True,
+        default=None,
+    )
+
     request_date = models.DateField(
         verbose_name=_('Relationship Request Date'),
     )
+
     start_date = models.DateField(
         verbose_name=_('Relationship Start Date'),
     )
+
     end_date = models.DateField(
         verbose_name=_('Relationship End Date'),
         null=True,
         blank=True,
     )
-    objects: CaregiverManager = CaregiverManager()
+    objects: RelationshipManager = RelationshipManager()
 
     class Meta:
         verbose_name = _('Relationship')
@@ -225,13 +236,17 @@ class Relationship(models.Model):
         )
 
     def clean(self) -> None:
-        """Validate if start date is earlier than end date.
+        """Validate date and reason fields.
 
         Raises:
-            ValidationError: the error shows when end date is earlier than start date
+            ValidationError: the error shows when enteries do not comply with the validation rules.
         """
         if self.end_date is not None and self.start_date >= self.end_date:
             raise ValidationError({'start_date': _('Start date should be earlier than end date.')})
+        # validate status is not empty if status is revoked or denied.
+        if not self.reason:
+            if self.status in RelationshipStatus.REVOKED or self.status in RelationshipStatus.DENIED:
+                raise ValidationError({'reason': _('Reason is mandatory when status is denied or revoked.')})
 
 
 class HospitalPatient(models.Model):

@@ -49,9 +49,17 @@ def test_api_languages_defined(settings: SettingsWrapper) -> None:
 
 
 def test_api_app_chart_defined(settings: SettingsWrapper) -> None:
-    """Ensure that the REST API app chart endpoints are defined."""
-    app_chart_path = '/{api_root}/app/chart/'.format(api_root=settings.API_ROOT)
-    assert reverse('api:app-chart') == app_chart_path
+    """
+    Ensure that the REST API app chart endpoints are defined.
+
+    PatientSernum 51 is define in DBV for testing purpose.
+    """
+    legacy_db_patient_sernum = 51
+    app_chart_path = '/{api_root}/app/chart/{legacy_id}/'.format(
+        api_root=settings.API_ROOT,
+        legacy_id=legacy_db_patient_sernum,
+    )
+    assert reverse('api:app-chart', kwargs={'legacy_id': legacy_db_patient_sernum}) == app_chart_path
     assert resolve(app_chart_path).view_name == 'api:app-chart'
 
 

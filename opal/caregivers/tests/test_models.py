@@ -10,7 +10,7 @@ from pytest_django.asserts import assertRaisesMessage
 from opal.users import factories as user_factories
 
 from .. import factories
-from ..models import CaregiverProfile
+from ..models import CaregiverProfile, Device, DeviceType
 
 pytestmark = pytest.mark.django_db
 
@@ -144,6 +144,56 @@ def test_security_answer_factory_multiple() -> None:
 
     assert answer != answer2
     assert answer.user != answer2.user
+
+
+def test_device_str() -> None:
+    """The `str` method returns the device_id and device type."""
+    device = factories.Device(device_id='1a2b3c', type=DeviceType.ANDROID)
+    assert str(device) == '1a2b3c (AND)'
+
+
+def test_device_factory() -> None:
+    """Ensure the Device factory is building properly."""
+    device = factories.Device()
+    device.full_clean()
+
+
+def test_device_factory_multiple() -> None:
+    """Ensure the Device factory can build multiple default model instances."""
+    device1 = factories.Device()
+    device2 = factories.Device()
+
+    assert device1.device_id != device2.device_id
+
+
+def test_device_untrusted_default() -> None:
+    """Ensure that a Device is untrusted by default."""
+    device = Device()
+    assert not device.is_trusted
+
+
+def test_device_same_caregiver_same_device() -> None:
+    """Ensure that a Device's caregiver_id and device_id combination is unique."""
+    caregiver = factories.CaregiverProfile(id=1)
+    factories.Device(caregiver=caregiver, device_id='1a2b3c')
+
+    with assertRaisesMessage(IntegrityError, "Duplicate entry '1-1a2b3c' for key 'caregivers_device_unique_caregiver_device'"):  # type: ignore[arg-type] # noqa: E501
+        factories.Device(caregiver=caregiver, device_id='1a2b3c')
+
+
+def test_device_diff_caregivers_same_device() -> None:
+    """Ensure that the unique caregiver_id + device_id doesn't prevent two caregivers from sharing a device."""
+    caregiver1 = factories.CaregiverProfile()
+    caregiver2 = factories.CaregiverProfile()
+    factories.Device(caregiver=caregiver1, device_id='1a2b3c')
+    factories.Device(caregiver=caregiver2, device_id='1a2b3c')
+
+
+def test_device_same_caregiver_diff_devices() -> None:
+    """Ensure that the unique caregiver_id + device_id doesn't prevent a caregiver from having several devices."""
+    caregiver = factories.CaregiverProfile()
+    factories.Device(caregiver=caregiver, device_id='1a2b3c')
+    factories.Device(caregiver=caregiver, device_id='a1b2c3')
 
 
 def test_registrationcode_str() -> None:  # pylint: disable-msg=too-many-locals

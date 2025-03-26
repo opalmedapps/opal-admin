@@ -10,8 +10,7 @@ import requests
 from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
-from opal.legacy.models import LegacyPatient
-from opal.utils.base64_util import Base64Util
+from opal.utils.base64 import Base64Util
 
 
 class QuestionnaireReportRequestData(NamedTuple):
@@ -65,7 +64,7 @@ class ReportService():
         Returns:
             str: encoded base64 string of the generated PDF report
         """
-        pload = json.dumps({
+        payload = json.dumps({
             'patient_id': report_data.patient_id,
             'logo_base64': Base64Util().encode_image_to_base64(report_data.logo_path),
             'language': report_data.language,
@@ -77,7 +76,7 @@ class ReportService():
             response = requests.post(
                 url=settings.LEGACY_QUESTIONNAIRES_REPORT_URL,
                 headers=headers,
-                data=pload,
+                data=payload,
             )
         except RequestException:
             return ''
@@ -109,8 +108,8 @@ class ReportService():
         """
         languages = dict(settings.LANGUAGES)
 
-        return (  # check if patient_id (PatientSerNum) exists
-            LegacyPatient.objects.filter(patientsernum=report_data.patient_id).exists()
+        return (  # check if patient_id is a positive number
+            report_data.patient_id >= 0
             # check if logo_path exists
             and report_data.logo_path.exists()
             # check if language exists
