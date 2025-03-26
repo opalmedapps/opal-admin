@@ -64,9 +64,12 @@ def registration_user(client: Client, django_user_model: User) -> User:
     Returns:
         a user instance with the `can_perform_registration` permission
     """
-    user = django_user_model.objects.create_user(username='test_registration_user')
+    user: User = django_user_model.objects.create_user(username='test_registration_user')
     permission = Permission.objects.get(codename='can_perform_registration')
     user.user_permissions.add(permission)
+
+    user.set_password('testpassword')
+    user.save()
 
     client.force_login(user)
 
