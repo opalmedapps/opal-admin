@@ -26,10 +26,7 @@ class Command(BaseCommand):
         for legacy_question in legacy_questions:
             # Import a security question if not found.
             try:
-                SecurityQuestion.objects.get(
-                    title_en=legacy_question.questiontext_en,
-                    is_active=True,
-                )
+                SecurityQuestion.objects.get(title_en=legacy_question.questiontext_en)
             except SecurityQuestion.DoesNotExist:
                 SecurityQuestion.objects.create(
                     title_en=legacy_question.questiontext_en,
