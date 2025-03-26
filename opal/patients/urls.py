@@ -21,6 +21,16 @@ urlpatterns = [
         views.ManagePendingUpdateView.as_view(),
         name='relationships-pending-update',
     ),
+    path(
+        'relationships/search/',
+        views.CaregiverAccessView.as_view(),
+        name='relationships-search-list',
+    ),
+    path(
+        'relationships/search/<int:pk>/update/',
+        views.ManageSearchUpdateView.as_view(),
+        name='relationships-search-update',
+    ),
     # Relationship Types Pages
     path(
         'relationship-types/',
@@ -42,17 +52,7 @@ urlpatterns = [
         views.RelationshipTypeDeleteView.as_view(),
         name='relationshiptype-delete',
     ),
-    path(
-        'relationships/search/',
-        views.CaregiverAccessView.as_view(),
-        name='relationships-search',
-    ),
-    path(
-        'relationships/search/<int:pk>/update/',
-        views.ManageSearchUpdateView.as_view(),
-        name='relationships-search-update',
-    ),
-    # Patients pages
+    # Access request pages
     path(
         'access-request/',
         views.AccessRequestView.as_view(views.AccessRequestView.form_list),

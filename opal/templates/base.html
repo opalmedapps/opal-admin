@@ -1,3 +1,4 @@
+{% load extra_filters %}
 {% load static %}
 {% load i18n %}
 
@@ -5,9 +6,11 @@
   Fragment that is reusable across the page so that the page heading can be shown in various places.
   See: https://mitchel.me/slippers/docs/using-components/#assigning-output-to-a-variable
 {% endcomment %}
-{% fragment as page_heading %}
+{% fragment as raw_page_heading %}
   {% block heading %}empty block <code>heading</code>{% endblock %}
 {% endfragment %}
+{# strip whitespace and newlines to support more readable blocks #}
+{% var page_heading=raw_page_heading|striplines %}
 
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">

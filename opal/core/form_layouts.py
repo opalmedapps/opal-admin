@@ -1,6 +1,4 @@
 """Module providing custom crispy layout objects."""
-from typing import Optional
-
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.layout import HTML, Field, Layout, Submit
@@ -19,7 +17,7 @@ class CancelButton(HTML):
     The button is a link styled as a button via CSS classes.
     """
 
-    def __init__(self, url: str, extra_css: Optional[str] = None) -> None:
+    def __init__(self, url: str) -> None:
         """
         Initialize the cancel button.
 
@@ -29,15 +27,8 @@ class CancelButton(HTML):
 
         Args:
             url: URL to the page that the button will be link to
-            extra_css: optional additional CSS classes to add to the cancel button
         """
-        cancel_text = _('Cancel')
-        css_classes = 'btn btn-secondary me-2'
-
-        if extra_css:
-            css_classes = f'{css_classes} {extra_css}'
-
-        html = f'<a class="{css_classes}" href="{url}">{cancel_text}</a>'
+        html = f'{{% form_cancel href="{url}" %}}'
 
         super().__init__(html)
 
