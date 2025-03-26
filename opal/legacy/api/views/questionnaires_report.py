@@ -11,7 +11,6 @@ from rest_framework import response, status, views
 from rest_framework.request import Request
 
 from opal.core.drf_permissions import IsORMSUser
-
 from opal.legacy.utils import generate_questionnaire_report, get_questionnaire_data
 from opal.patients.models import Patient
 from opal.services.hospital.hospital import SourceSystemReportExportData, SourceSystemService

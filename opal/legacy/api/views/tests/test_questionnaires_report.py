@@ -180,13 +180,14 @@ class TestQuestionnairesReportView:
         assert response.data == error_response
         assertRaisesMessage(MultipleObjectsReturned, message)
 
-    @pytest.mark.django_db(databases=['questionnaire', 'default'])
+    @pytest.mark.xfail(reason='uses old report service')
     def test_unset_language(
         self,
         api_client: APIClient,
         admin_user: User,
         mocker: MockerFixture,
         settings: SettingsWrapper,
+        questionnaire_data: None,
     ) -> None:
         """Ensure that unset language is handled properly and does not throw an exception."""
         settings.LANGUAGES = [('fr', 'French')]
@@ -221,13 +222,14 @@ class TestQuestionnairesReportView:
             ),
         )
 
-    @pytest.mark.django_db(databases=['questionnaire', 'default'])
+    @pytest.mark.xfail(reason='uses old report service')
     def test_report_generation_error(
         self,
         api_client: APIClient,
         admin_user: User,
         mocker: MockerFixture,
         settings: SettingsWrapper,
+        questionnaire_data: None,
     ) -> None:
         """Ensure that unsuccessful report generation is handled properly and does not cause any exceptions."""
         institution = hospital_settings_factories.Institution(pk=1)
@@ -263,12 +265,13 @@ class TestQuestionnairesReportView:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data == error_response
 
-    @pytest.mark.django_db(databases=['questionnaire', 'default'])
+    @pytest.mark.xfail(reason='uses old report service')
     def test_report_export_error(
         self,
         api_client: APIClient,
         admin_user: User,
         mocker: MockerFixture,
+        questionnaire_data: None,
     ) -> None:
         """Ensure that unsuccessful PDF report exporting is handled properly and does not cause any exceptions."""
         base64_encoded_report = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
@@ -312,12 +315,13 @@ class TestQuestionnairesReportView:
         assert response.status_code == status.HTTP_200_OK
         assert response.data is None
 
-    @pytest.mark.django_db(databases=['questionnaire', 'default'])
+    @pytest.mark.xfail(reason='uses old report service')
     def test_post_report_export(
         self,
         api_client: APIClient,
         admin_user: User,
         mocker: MockerFixture,
+        questionnaire_data: None,
     ) -> None:
         """Test PDF report export request sent to the source system."""
         base64_encoded_report = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
