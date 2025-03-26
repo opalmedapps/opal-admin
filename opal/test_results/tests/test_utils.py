@@ -5,7 +5,7 @@ import pytest
 from _pytest.logging import LogCaptureFixture  # noqa: WPS436
 from pytest_mock.plugin import MockerFixture
 
-from opal.hospital_settings import factories
+from opal.hospital_settings import factories as hospital_settings_factories
 from opal.hospital_settings.models import Site
 
 from ..utils import (  # noqa: WPS450
@@ -15,6 +15,8 @@ from ..utils import (  # noqa: WPS450
     _parse_notes,
     _parse_observations,
 )
+
+pytestmark = pytest.mark.django_db
 
 
 def _create_empty_parsed_observations() -> dict[str, list]:
@@ -195,22 +197,24 @@ def test_parse_observations_success() -> None:
     }
 
 
-@pytest.mark.django_db()
 def test_get_site_instance_success() -> None:
-    """Ensure that _get_site_instance() pass valid receiving facility successfully return Site instance."""
-    factories.Site(code='RVH')
+    """Ensure that _get_site_instance() successfully return Site instance."""
+    hospital_settings_factories.Site(code='RVH')
     site = _get_site_instance(receiving_facility='RVH')
 
     assert Site.objects.filter(pk=site.pk).exists()
 
 
-@pytest.mark.django_db()
 def test_get_site_instance_failed(caplog: LogCaptureFixture) -> None:
-    """Ensure that _get_site_instance() doesn't get Site instance and logs an error."""
-    factories.Site(code='RVH')
-
-    error = 'A Site instance is not found due to the receiving facility is empty string.'
-    site = _get_site_instance(receiving_facility='')
+    """Ensure that _get_site_instance() returns an empty Site for non-existent receiving facility."""
+    hospital_settings_factories.Site(code='RVH')
+    receiving_facility = ''
+    error = (
+        'An error occurred during pathology report generation.'
+        + 'Given receiving_facility code does not exist: {0}.'
+        + 'Proceeded generation with an empty Site.'
+    ).format(receiving_facility)
+    site = _get_site_instance(receiving_facility=receiving_facility)
     assert caplog.records[0].message == error
     assert caplog.records[0].levelname == 'ERROR'
     assert site.name == ''

@@ -464,6 +464,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         mrns_and_sites_multiline = '\n'.join(
             [f'{site_mrn["site_code"]}# : {site_mrn["mrn"]}' for site_mrn in sites_and_mrns],
         )
+        site_city = f'{str(self.pathology_data.site_city)} ({str(self.pathology_data.site_province)}) {str(self.pathology_data.site_postal_code)}' if str(self.pathology_data.site_city) else ''  # noqa: E501, WPS221
+        site_phone = f'Tél. : {str(self.pathology_data.site_phone)}' if str(self.pathology_data.site_phone) else ''  # noqa: E501, WPS221
         return [
             {
                 'name': 'site_logo',
@@ -482,7 +484,6 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'priority': 0,
                 'multiline': False,
             },
-            # TODO: update hardcoded "Royal Victoria Hospital"
             {
                 'name': 'site_name',
                 'type': 'T',
@@ -496,7 +497,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': 'Royal Victoria Hospital',
+                'text': str(self.pathology_data.site_name),
                 'priority': 0,
                 'multiline': False,
             },
@@ -513,7 +514,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': '1001, boulevard Décarie',
+                'text': str(self.pathology_data.site_building_address),
                 'priority': 0,
                 'multiline': False,
             },
@@ -530,7 +531,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': 'Montréal (Québec) H4A 3J1',
+                'text': site_city,
                 'priority': 0,
                 'multiline': False,
             },
@@ -547,7 +548,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': 'Tél. : 514 934 4400',
+                'text': site_phone,
                 'priority': 0,
                 'multiline': False,
             },

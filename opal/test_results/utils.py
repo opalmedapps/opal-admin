@@ -10,7 +10,7 @@ from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import Patient
 from opal.services.reports import PathologyData, ReportService
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def generate_pathology_report(
@@ -35,7 +35,7 @@ def generate_pathology_report(
     # Report service for generating pathology reports
     report_service = ReportService()
 
-    # Got Site object by filtering with receiving_facility from pathology data
+    # Find Site record filtering by receiving_facility field (a.k.a. site code)
     site = _get_site_instance(pathology_data['receiving_facility'])
 
     return report_service.generate_pathology_report(
@@ -138,7 +138,9 @@ def _parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def _get_site_instance(receiving_facility: str) -> Site:
-    """Got Site instance.
+    """Fetch Site record by given receiving_facility code.
+
+    If Site cannot be found, log the incident and return a Site with empty fields.
 
     Args:
         receiving_facility: the receiving facility code
@@ -149,7 +151,14 @@ def _get_site_instance(receiving_facility: str) -> Site:
     try:
         return Site.objects.get(code=receiving_facility)
     except Site.DoesNotExist:
-        logger.error('A Site instance is not found due to the receiving facility is empty string.')
+        LOGGER.error(
+            (
+                'An error occurred during pathology report generation.'
+                + 'Given receiving_facility code does not exist: {0}.'
+                + 'Proceeded generation with an empty Site.'
+            ).format(receiving_facility),
+        )
+
         return Site(
             name='',
             street_name='',
