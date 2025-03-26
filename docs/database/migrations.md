@@ -53,6 +53,12 @@ In rarer cases, a migration interrupted by a failure may leave the database and 
 In these cases, you might have a column that exists in your database, but that Django doesn't think exists,
 or vice-versa.
 
+??? question "Why does this happen?"
+    MySQL databases don't support transactions for schema alterations, which means that a failure midway through
+    will not be rolled back. This is why it's possible to end up with a partially completed migration.
+
+    Source: https://docs.djangoproject.com/en/dev/topics/migrations/#mysql
+
 To recover from such a failure, you'll need direct database access. Use a database client to connect to the `backend-db`
 used by Django (check the Docker container for the right port to use), or spin up an instance of adminer in Docker
 to connect to the database.
