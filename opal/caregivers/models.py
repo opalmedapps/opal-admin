@@ -133,12 +133,15 @@ class Device(models.Model):
     class Meta:
         verbose_name = _('Device')
         verbose_name_plural = _('Devices')
-        unique_together = [['caregiver_id', 'device_id']]
 
         constraints = [
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_type_valid',  # noqa: WPS323
                 check=models.Q(type__in=DeviceType.values),
+            ),
+            models.UniqueConstraint(
+                name='%(app_label)s_%(class)s_unique_caregiver_device',  # noqa: WPS323
+                fields=['caregiver_id', 'device_id'],
             ),
         ]
 

@@ -161,6 +161,16 @@ def test_device_untrusted_default() -> None:
     assert not device.is_trusted
 
 
+def test_device_unique_caregiver_device() -> None:
+    """Ensure that a Device's caregiver_id and device_id combination is unique."""
+    caregiver = factories.CaregiverProfile()
+    factories.Device(caregiver=caregiver, device_id='1a2b3c')
+    device2 = factories.Device(caregiver=caregiver, device_id='1a2b3c')
+
+    with assertRaisesMessage(ValidationError, 'Device with this Caregiver Profile and Device ID already exists.'):  # type: ignore[arg-type] # noqa: E501
+        device2.full_clean()
+
+
 def test_registrationcode_str() -> None:  # pylint: disable-msg=too-many-locals
     """The `str` method returns the registration code and status."""
     registration_code = factories.RegistrationCode()
