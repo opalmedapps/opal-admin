@@ -67,7 +67,7 @@ msgstr "Retour"
 
 #: opal/templates/components/form_cancel.html
 msgid "Done"
-msgstr "Fini"
+msgstr "Terminer"
 
 #: opal/templates/components/form_cancel.html
 msgid "Cancel"

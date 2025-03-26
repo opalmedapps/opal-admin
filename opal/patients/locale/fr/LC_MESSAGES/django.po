@@ -103,7 +103,7 @@ msgstr "Le demandeur a rempli le formulaire de demande"
 
 #: opal/patients/forms.py
 msgid "Requestor ID checked"
-msgstr "ID du demandeur vérifié"
+msgstr "Cartes d'identité du demandeur vérifiées"
 
 #: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
 #: opal/patients/templates/patients/relationships/view_relationship.html
@@ -140,7 +140,7 @@ msgid ""
 "A self-relationship was selected but the caregiver appears to be someone "
 "other than the patient."
 msgstr ""
-"une relation de type « soi » a été sélectionnée mais le proche aidant semble "
+"Une relation de type « soi » a été sélectionnée mais le proche aidant semble "
 "être quelqu'un d'autre que le patient."
 
 #: opal/patients/forms.py
@@ -453,7 +453,7 @@ msgid ""
 "There already exists an active relationship between the patient and "
 "caregiver."
 msgstr ""
-"Il existe déjà une relation active entre le patient et Le proche aidant."
+"Il existe déjà une relation active entre le patient et le proche aidant."
 
 #: opal/patients/models.py
 msgid "Site"
@@ -518,7 +518,7 @@ msgstr "Détails du demandeur"
 
 #: opal/patients/templates/patients/access_request/confirmation.html
 msgid "Opal Registration: Confirmation"
-msgstr "Inscription à Opal: Confirmation"
+msgstr "Inscription à Opal : Confirmation"
 
 #: opal/patients/templates/patients/access_request/confirmation.html
 msgid ""
@@ -551,7 +551,7 @@ msgstr ""
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Opal Registration: Code"
-msgstr "Inscription à Opal: Code"
+msgstr "Inscription à Opal : Code"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid ""
@@ -567,7 +567,7 @@ msgstr "Code d'inscription"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "QR Code"
-msgstr "QR Code"
+msgstr "Code QR"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Send code via SMS"
@@ -583,7 +583,7 @@ msgstr "Instructions"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Do not print this page!"
-msgstr "N'imprimer pas cette page!"
+msgstr "N'imprimez pas cette page !"
 
 #: opal/patients/templates/patients/access_request/confirmation_code.html
 msgid "Inform the requestor that the code is valid for 72 hours."
@@ -683,14 +683,14 @@ msgstr "Afficher l'accès des proches aidants"
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid "This screen allows you to view an access that has expired."
-msgstr "Cet écran vous permet de visualiser un accès arrivé à expiration."
+msgstr "Cet écran vous permet de visualiser un accès expiré."
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
 msgid ""
 "Caregiver accesses that have expired cannot be changed, they can only be "
 "viewed."
 msgstr ""
-"Les accès de proches aidants arrivés à expiration ne peuvent pas être "
+"Les accès de proches aidants expirés ne peuvent pas être "
 "modifiés, ils peuvent seulement être consultés."
 
 #: opal/patients/templates/patients/relationships/view_relationship.html
