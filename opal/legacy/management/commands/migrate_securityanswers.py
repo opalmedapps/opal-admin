@@ -11,6 +11,8 @@ from opal.users.models import User
 class Command(BaseCommand):
     """Command to migrate Security Answer from legacy DB to backend DB."""
 
+    help = 'migrate Security Answer from legacy DB to backend DB'  # noqa: A003
+
     def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: C901 WPS231 WPS210
         """
         Handle migrate Security Answer from legacy DB to backend DB.
