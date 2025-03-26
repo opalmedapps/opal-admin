@@ -56,7 +56,7 @@ class PatientTable(tables.Table):
 
 
 class ExistingUserTable(tables.Table):
-    """A table for user types."""
+    """A table for existing user information."""
 
     class Meta:
         model = User

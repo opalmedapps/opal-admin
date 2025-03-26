@@ -76,7 +76,7 @@ msgstr "Nouvel utilisateur ou utilisateur existant?"
 
 #: opal/patients/forms.py
 msgid "Email Address"
-msgstr "Corriel"
+msgstr "Adresse courriel"
 
 #: opal/patients/forms.py
 msgid "Phone Number"
@@ -103,7 +103,7 @@ msgstr "Créer une relation à soi pour le patient"
 
 #: opal/patients/forms.py
 msgid "ID Checked?"
-msgstr "ID vérifié?"
+msgstr "Identité vérifiée?"
 
 #: opal/patients/forms.py
 msgid "Generate Access Request"

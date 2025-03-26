@@ -445,13 +445,8 @@ class ExistingUserForm(forms.Form):
         self.relationship_type = relationship_type
         self.patient_record = patient_record
 
-    def clean(self) -> None:  # noqa: C901 WPS210 WPS231
-        """
-        Validate the user selection.
-
-        Raises:
-            ValidationError: If the user cannot be found in User model.
-        """
+    def clean(self) -> None:
+        """Validate the user selection."""
         super().clean()
         user_email_field = self.cleaned_data.get('user_email')
         user_phone_field = self.cleaned_data.get('user_phone')
@@ -475,40 +470,73 @@ class ExistingUserForm(forms.Form):
             self.add_error('user_phone', phone_error_msg)
             is_phone_valid = False
 
+        self._set_requestor_relationship(
+            is_email_valid,
+            is_phone_valid,
+            user_email_field,
+            user_phone_field,
+            error_message,
+        )
+
+    def _set_requestor_relationship(    # noqa: WPS211 WPS231
+        self,
+        is_email_valid: bool,
+        is_phone_valid: bool,
+        user_email_field: Any,
+        user_phone_field: Any,
+        error_message: str,
+    ) -> None:
+        """
+        Check if there is no 'Self' relationship related to this requestor himself/herself.
+
+        If no, create the relationship record with the value 'Self'.
+        If yes, show user details.
+
+        Args:
+            is_email_valid: email address is valid by default
+            is_phone_valid: phone number is valid by default
+            user_email_field: cleaned data for user email
+            user_phone_field: cleaned data for phone number
+            error_message: error message if the caregiver does not exist
+
+        Raises:
+            ValidationError: If the caregiver cannot be found.
+        """
         # Search user info by both email and phone number in our django User model
         if is_email_valid and is_phone_valid:
             try:
                 user = Caregiver.objects.get(email=user_email_field, phone_number=user_phone_field)
             except Caregiver.DoesNotExist:
                 raise ValidationError(error_message)
-            else:
-                # Check if there is no 'Self' relationship related to this requestor himself/herself
-                relationships = Relationship.objects.get_relationship_by_patient_caregiver(
-                    'Self',
-                    user.first_name,
-                    user.last_name,
-                    user.email,
-                    user.phone_number,
-                    self.patient_record.ramq,
+
+            # Check if there is no 'Self' relationship related to this requestor himself/herself
+            # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done.
+            relationships = Relationship.objects.get_relationship_by_patient_caregiver(
+                'Self',
+                user.first_name,
+                user.last_name,
+                user.id,
+                self.patient_record.ramq,
+            )
+            # If no, create the relationship record with the value 'Self'
+            # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done
+            if not relationships and str(self.relationship_type) == 'Self':
+                Relationship.objects.create(
+                    patient=Patient.objects.get(ramq=self.patient_record.ramq),
+                    caregiver=CaregiverProfile.objects.get(user_id=user.id),
+                    type=self.relationship_type,
+                    reason=_('Create self relationship for patient'),
+                    request_date=date.today(),
+                    start_date=date.today(),
                 )
-                # If no, create the relationship record with the value 'Self'
-                if not relationships and str(self.relationship_type) == 'Self':
-                    Relationship.objects.create(
-                        patient=Patient.objects.get(ramq=self.patient_record.ramq),
-                        caregiver=CaregiverProfile.objects.get(user_id=user.id),
-                        type=self.relationship_type,
-                        reason=_('Create self relationship for patient'),
-                        request_date=date.today(),
-                        start_date=date.today(),
-                    )
-                # If yes, show user details
-                elif relationships:
-                    self.cleaned_data['user_record'] = {  # type: ignore[index]
-                        'first_name': user.first_name,
-                        'last_name': user.last_name,
-                        'email': user.email,
-                        'phone_number': user.phone_number,
-                    }
+            # If yes, show user details
+            elif relationships:
+                self.cleaned_data['user_record'] = {  # type: ignore[index]
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email': user.email,
+                    'phone_number': user.phone_number,
+                }
 
 
 class ConfirmExistingUserForm(forms.Form):

@@ -32,8 +32,7 @@ class RelationshipManager(models.Manager):
         relationship_type: str,
         first_name: str,
         last_name: str,
-        email: str,
-        phone_number: str,
+        user_id: int,
         ramq: str,
     ) -> models.QuerySet:
         """
@@ -43,8 +42,7 @@ class RelationshipManager(models.Manager):
             relationship_type (str): caregiver relationship type
             first_name (str): user first name
             last_name (str): user last name
-            email (str): user email address
-            phone_number (str): user phone number
+            user_id (int): user id
             ramq (str): patient's RAMQ numebr
 
         Returns:
@@ -60,8 +58,7 @@ class RelationshipManager(models.Manager):
             patient__last_name=last_name,
             patient__ramq=ramq,
             type__name=relationship_type,
-            caregiver__user__email=email,
-            caregiver__user__phone_number=phone_number,
+            caregiver__user__id=user_id,
         )
 
 
