@@ -90,11 +90,8 @@ class TestChartAppView:
         api_client.force_login(user=admin_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
         response = api_client.get(reverse('api:app-chart'))
-        assert 'unread_appointment_count' in response.data
-        assert 'unread_document_count' in response.data
-        assert 'unread_txteammessage_count' in response.data
-        assert 'unread_educationalmaterial_count' in response.data
-        assert 'unread_questionnaire_count' in response.data
+        assert 'unread_count' in response.data
+        assert len(response.data['unread_count']) == 5
 
     def test_get_unread_appointment_count(self) -> None:
         """Test if function returns number of unread appointments."""
