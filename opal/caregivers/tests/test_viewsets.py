@@ -35,7 +35,7 @@ def test_get_specific_active_security_question(api_client: APIClient, admin_user
         ),
     )
     assert response.status_code == HTTPStatus.OK
-    assert response.data['results'][0]['title_en'] == security_question.title
+    assert response.data['title_en'] == security_question.title
 
 
 def test_get_answer_list(api_client: APIClient, admin_user: AbstractUser) -> None:
