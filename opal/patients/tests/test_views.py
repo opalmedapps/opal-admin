@@ -27,7 +27,6 @@ from opal.users.models import User
 
 from .. import constants, factories, forms, models, tables
 # Add any future GET-requestable patients app pages here for faster test writing
-from ..validators import has_multiple_mrns_with_same_site_code
 from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView
 
 pytestmark = pytest.mark.django_db
@@ -1007,78 +1006,6 @@ def test_qr_code_class_type(registration_user: Client) -> None:
 
     assert response.status_code == HTTPStatus.OK
     assert isinstance(instance._generate_qr_code('Wcyxh2Ucwu'), io.BytesIO)
-
-
-def test_some_mrns_have_same_site_code() -> None:
-    """Test some MRN records have the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
-        mrns=[
-            OIEMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MGH',
-                mrn='9999994',
-                active=True,
-            ),
-            OIEMRNData(
-                site='RVH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
-    assert has_multiple_mrns_with_same_site_code(patient_data) is True
-
-
-def test_all_mrns_have_same_site_code() -> None:
-    """Test all MRN records have the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
-        mrns=[
-            OIEMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MGH',
-                mrn='9999994',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
-    assert has_multiple_mrns_with_same_site_code(patient_data) is True
-
-
-def test_no_mrns_have_same_site_code() -> None:
-    """Test No MRN records have the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
-        mrns=[
-            OIEMRNData(
-                site='MGH',
-                mrn='9999993',
-                active=True,
-            ),
-            OIEMRNData(
-                site='MCH',
-                mrn='9999994',
-                active=True,
-            ),
-            OIEMRNData(
-                site='RVH',
-                mrn='9999993',
-                active=True,
-            ),
-        ],
-    )
-    assert has_multiple_mrns_with_same_site_code(patient_data) is False
 
 
 def test_error_message_mrn_with_same_site_code() -> None:
