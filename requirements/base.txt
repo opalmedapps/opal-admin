@@ -1,6 +1,6 @@
 # Django
 #
-django==4.1.12
+django==4.1.13
 django-environ==0.11.2  # https://github.com/joke2k/django-environ
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions
 django-modeltranslation==0.18.11  # https://django-modeltranslation.readthedocs.io/en/latest/
@@ -37,7 +37,7 @@ whitenoise==6.6.0  # http://whitenoise.evans.io/en/stable/index.html
 
 # Export Report functionality
 #
-pandas==2.1.1  # https://pypi.org/project/pandas/
+pandas==2.1.2  # https://pypi.org/project/pandas/
 openpyxl==3.1.2  # https://pypi.org/project/openpyxl/
 
 # Interactive data visualization

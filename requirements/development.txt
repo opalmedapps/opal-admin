@@ -15,11 +15,11 @@ isort==5.12.0  # https://github.com/PyCQA/isort
 
 # mypy library stubs
 # see: https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
-django-stubs==4.2.4  # https://github.com/typeddjango/django-stubs
-djangorestframework-stubs==3.14.3  # https://github.com/typeddjango/djangorestframework-stubs
+django-stubs==4.2.6  # https://github.com/typeddjango/django-stubs
+djangorestframework-stubs==3.14.4  # https://github.com/typeddjango/djangorestframework-stubs
 pandas-stubs==2.1.1.230928
-types-beautifulsoup4==4.12.0.6
-types-fpdf2==2.7.4.2
+types-beautifulsoup4==4.12.0.7
+types-fpdf2==2.7.4.3
 types-requests==2.31.0.10
 types-python-dateutil==2.8.19.14
 
@@ -47,7 +47,7 @@ wemake-python-styleguide==0.18.0
 # pep8-naming==  # https://github.com/PyCQA/pep8-naming
 
 # Additional flake8 plugins
-flake8-builtins==2.1.0  # https://github.com/gforcada/flake8-builtins
+flake8-builtins==2.2.0  # https://github.com/gforcada/flake8-builtins
 flake8-django==1.2  # https://github.com/rocioar/flake8-django
 flake8-pytest==1.4  # https://github.com/vikingco/flake8-pytest
 flake8-pytest-style==1.7.2  # https://github.com/m-burst/flake8-pytest-style
