@@ -106,7 +106,12 @@ class ReportService():
 
         # Return a `None` if response status code is not success (e.g., different than 2**)
         if status.is_success(response.status_code) is False:
-            self.logger.error('The status code of the response from the PHP report service should be "200".')
+            self.logger.error(
+                'The status code of the response from the PHP report service should be "200".\n{0}\n{1}'.format(
+                    response.reason,
+                    response.text,
+                ),
+            )
             return None
 
         # Return a `None` string if cannot read encoded pdf report
