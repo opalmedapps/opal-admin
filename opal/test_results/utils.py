@@ -54,7 +54,7 @@ def generate_pathology_report(
             patient_ramq=patient.ramq if patient.ramq else '',
             patient_sites_and_mrns=list(
                 patient.hospital_patients.all().annotate(
-                    site_code=models.F('site__code'),
+                    site_code=models.F('site__acronym'),
                 ).values('mrn', 'site_code'),
             ),
             test_number=pathology_data['case_number'] if 'case_number' in pathology_data else '',
@@ -150,7 +150,7 @@ def _get_site_instance(receiving_facility: str) -> Site:
         A Site instance
     """
     try:
-        return Site.objects.get(code=receiving_facility)
+        return Site.objects.get(acronym=receiving_facility)
     except Site.DoesNotExist:
         LOGGER.error(
             (
@@ -179,8 +179,12 @@ def _find_doctor_name(note_text: str) -> str:
     Returns:
         doctor's name found in the pathology note
     """
-    # TODO: implement regex
-    return ''
+    # Regular expression pattern
+    pattern = r'Electronically signed on [\d\-A-Z]+ \d{1,2}:\d{2} [apm]{2}\\.br\\By (.+?)(?:,,|$)'
+    match = re.search(pattern, note_text)
+
+    # Extract and return doctor's full name
+    return match.group(1).strip() if match else ''
 
 
 def _find_note_date(note_text: str) -> datetime:

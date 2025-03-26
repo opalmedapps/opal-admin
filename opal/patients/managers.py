@@ -134,14 +134,14 @@ class PatientQueryset(models.QuerySet['Patient']):
         filters = [
             models.Q(
                 hospital_patients__mrn=item.get('mrn'),
-                hospital_patients__site__code=item['site']['code'],
+                hospital_patients__site__acronym=item['site']['acronym'],
             )
             for item in site_mrn_list
         ]
 
         # Use 'reduce' operation with 'operator.or_' to combine the Q objects
         # https://www.geeksforgeeks.org/reduce-in-python/
-        # The resulting query: {... WHERE ((mrn=9999996 AND code=RVH) OR (mrn=99999997 AND code=MGH)) }
+        # The resulting query: {... WHERE ((mrn=9999996 AND acronym=RVH) OR (mrn=99999997 AND acronym=MGH)) }
         query = reduce(operator.or_, filters)
 
         # Get `Patient` object filtered by MRNs AND sites

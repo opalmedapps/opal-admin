@@ -109,7 +109,7 @@ class SiteCreateUpdateView(PermissionRequiredMixin, CreateUpdateView[Site]):
         'parking_url_fr',
         'direction_url_en',
         'direction_url_fr',
-        'code',
+        'acronym',
         'institution',
         'longitude',
         'latitude',

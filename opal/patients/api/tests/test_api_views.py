@@ -220,7 +220,7 @@ class TestRetrieveRegistrationDetailsView:
             'hospital_patients': [
                 {
                     'mrn': hospital_patient.mrn,
-                    'site_code': site.code,
+                    'site_code': site.acronym,
                 },
             ],
             'relationship_type': {
@@ -587,10 +587,10 @@ class TestPatientDemographicView:
             raw=json.dumps(response.json()),
             expected_data=[
                 {
-                    'site_code': ['Provided "RVH" site code does not exist.'],
+                    'site_code': ['Provided "RVH" site acronym does not exist.'],
                 },
                 {
-                    'site_code': ['Provided "MGH" site code does not exist.'],
+                    'site_code': ['Provided "MGH" site acronym does not exist.'],
                 },
             ],
         )
@@ -607,10 +607,10 @@ class TestPatientDemographicView:
             raw=json.dumps(response.json()),
             expected_data=[
                 {
-                    'site_code': ['Provided "RVH" site code does not exist.'],
+                    'site_code': ['Provided "RVH" site acronym does not exist.'],
                 },
                 {
-                    'site_code': ['Provided "MGH" site code does not exist.'],
+                    'site_code': ['Provided "MGH" site acronym does not exist.'],
                 },
             ],
         )
@@ -621,8 +621,8 @@ class TestPatientDemographicView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint raises a NotFound exception if provided MRN/site pairs do not exist."""
-        Site(code='RVH')
-        Site(code='MGH')
+        Site(acronym='RVH')
+        Site(acronym='MGH')
 
         api_client.force_login(interface_engine_user)
 
@@ -670,12 +670,12 @@ class TestPatientDemographicView:
         HospitalPatient(
             patient=patient_one,
             mrn='9999996',
-            site=Site(code='RVH'),
+            site=Site(acronym='RVH'),
         )
         HospitalPatient(
             patient=patient_two,
             mrn='9999997',
-            site=Site(code='MGH'),
+            site=Site(acronym='MGH'),
         )
 
         api_client.force_login(interface_engine_user)
@@ -728,12 +728,12 @@ class TestPatientDemographicView:
         HospitalPatient(
             patient=patient,
             mrn='9999996',
-            site=Site(code='RVH'),
+            site=Site(acronym='RVH'),
         )
         HospitalPatient(
             patient=patient,
             mrn='9999997',
-            site=Site(code='MGH'),
+            site=Site(acronym='MGH'),
         )
 
         api_client.force_login(interface_engine_user)
@@ -769,8 +769,8 @@ class TestPatientDemographicView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint can update patient info when the patient does not have a self relationship (no user)."""
-        rvh_site = Site(code='RVH')
-        mgh_site = Site(code='MGH')
+        rvh_site = Site(acronym='RVH')
+        mgh_site = Site(acronym='MGH')
         patient = Patient(ramq='TEST01161972')
 
         HospitalPatient(
@@ -833,12 +833,12 @@ class TestPatientDemographicView:
         HospitalPatient(
             patient=patient,
             mrn='9999996',
-            site=Site(code='RVH'),
+            site=Site(acronym='RVH'),
         )
         HospitalPatient(
             patient=patient,
             mrn='9999997',
-            site=Site(code='MGH'),
+            site=Site(acronym='MGH'),
         )
 
         api_client.force_login(interface_engine_user)
@@ -940,7 +940,10 @@ class TestPatientCaregiverDevicesView:
         assert response.json() == {
             'first_name': patient.first_name,
             'last_name': patient.last_name,
-            'institution_code': institution.code,
+            'institution': {
+                'acronym_en': institution.acronym_en,
+                'acronym_fr': institution.acronym_fr,
+            },
             'data_access': 'ALL',
             'caregivers': [
                 {
@@ -1131,7 +1134,7 @@ class TestPatientExistsView:
             data=self.input_data_cases['invalid_site'],
             format='json',
         )
-        assert 'Provided "XXX" site code does not exist.' in response.data[0]['site_code']
+        assert 'Provided "XXX" site acronym does not exist.' in response.data[0]['site_code']
         assert response.status_code == HTTPStatus.BAD_REQUEST
 
     def test_patient_exists_patient_not_found(self, api_client: APIClient, admin_user: User) -> None:
@@ -1193,8 +1196,8 @@ class TestPatientExistsView:
 
     def _create_patient_identifiers(self) -> None:
         """Set up patients with required identifiers."""
-        site = Site(code='RVH')
-        Site(code='LAC')
+        site = Site(acronym='RVH')
+        Site(acronym='LAC')
         HospitalPatient(
             patient=Patient(),
             mrn='9999996',

@@ -263,7 +263,7 @@ class PatientUpdateView(UpdateAPIView):
 
 
 class PatientExistsView(APIView):
-    """Class to return the Patient uuid & legacy_id given an input list of mrns and site codes.
+    """Class to return the Patient uuid & legacy_id given an input list of mrns and site acronyms.
 
     `get_patient_by_site_mrn_list` constructs a bitwise OR query comprised of each mrn+site pair for an efficient query.
 
@@ -277,9 +277,9 @@ class PatientExistsView(APIView):
 
     ```
     WHERE
-    (site__location.code = 'RVH' AND hospital_patient.mrn = '9999996')
+    (site__location.acronym = 'RVH' AND hospital_patient.mrn = '9999996')
     OR
-    (site__location.code = 'LAC' AND hospital_patient.mrn = '0765324')
+    (site__location.acronym = 'LAC' AND hospital_patient.mrn = '0765324')
     AND hospital_patient.is_active = True;
     ```
     """
