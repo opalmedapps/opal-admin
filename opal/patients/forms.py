@@ -7,6 +7,8 @@ from django.utils.translation import gettext_lazy as _
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
 
+from opal.core import validators
+
 from . import constants
 from .models import Site
 
@@ -53,6 +55,7 @@ class SearchForm(forms.Form):
     medical_number = forms.CharField(
         widget=forms.TextInput(),
         label=_('Please Input The Card Number'),
+        validators=[validators.validate_ramq],
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
