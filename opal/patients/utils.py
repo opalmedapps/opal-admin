@@ -172,8 +172,9 @@ def create_caregiver_profile(first_name: str, last_name: str) -> caregiver_model
     Create new caregiver and caregiver profile instances.
 
     The caregiver profile is associated to the caregiver.
-    The caregiver is not active and only has a first and last name.
-    No email, username or password.
+    The caregiver has a randomly generated username and is not active by default to require registration first.
+    The caregiver also only has a first and last name.
+    No email or password.
 
     Args:
         first_name: the first name of the caregiver
