@@ -60,17 +60,16 @@ class Command(BaseCommand):
         # groups
         # TODO: if we need French names for groups as well we will create our own Group model
         # maybe this can be done later
-        # TODO: TBD: are administrators and superusers the same?
-        # then an Administrators group is unnecessary
         medical_records = Group.objects.create(name='Medical Records')
-        Group.objects.create(name='Clinicians')
-        receptionists = Group.objects.create(name='Receptionists')
+        registrants = Group.objects.create(name='Registrants')
         Group.objects.create(name=settings.ORMS_USER_GROUP)
+        administrators = Group.objects.create(name='Administrators')
 
         # users
         # TODO: should non-human users have a different user type (right now it would be clinician/clinical staff)?
         listener = User.objects.create(username='Listener')
         interface_engine = User.objects.create(username='Interface Engine')
+        legacy_backend = User.objects.create(username='Legacy OpalAdmin Backend')
 
         # permissions
         view_institution = _find_permission('hospital_settings', 'view_institution')
@@ -100,18 +99,25 @@ class Command(BaseCommand):
         # Medical Records
         medical_records.permissions.add(_find_permission('patients', 'can_manage_relationships'))
 
-        # Receptionists
-        receptionists.permissions.add(_find_permission('patients', 'can_perform_registration'))
+        # Registrants
+        registrants.permissions.add(_find_permission('patients', 'can_perform_registration'))
 
-        # Clinicians
-        # TODO: determine which permissions are specifically needed
+        # Administrators
+        administrators.permissions.set([
+            _find_permission('patients', 'can_manage_relationshiptypes'),
+            _find_permission('hospital_settings', 'can_manage_institutions'),
+            _find_permission('hospital_settings', 'can_manage_sites'),
+            _find_permission('questionnaires', 'export_report'),
+        ])
 
         # create tokens for the API users
         token_listener = Token.objects.create(user=listener)
         token_interface_engine = Token.objects.create(user=interface_engine)
+        token_legacy_backend = Token.objects.create(user=legacy_backend)
 
-        self.stdout.write(f'Listener token: {token_listener}')
-        self.stdout.write(f'Interface Engine token: {token_interface_engine}')
+        self.stdout.write(f'{listener.username} token: {token_listener}')
+        self.stdout.write(f'{interface_engine.username} token: {token_interface_engine}')
+        self.stdout.write(f'{legacy_backend.username} token: {token_legacy_backend}')
 
 
 def _create_security_questions() -> None:

@@ -7,17 +7,17 @@ from django.utils.translation import gettext_lazy as _
 from opal.users.models import User
 
 
-class ExportReportPermission(models.Model):  # noqa: DJ08
+class Questionnaire(models.Model):  # noqa: DJ08 (currently not a model that is instantiated)
     """Dummy model to allow for 'modelless' permissions in Questionnaires app."""
 
     class Meta:
         managed = False
         default_permissions = ()
         permissions = (
-            ('export_report', 'Export Reports Permission'),
+            ('export_report', 'Export Reports'),
         )
-        verbose_name = _('Export Report')
-        verbose_name_plural = _('Export Reports')
+        verbose_name = _('Questionnaire')
+        verbose_name_plural = _('Questionnaires')
 
 
 class QuestionnaireProfile(models.Model):

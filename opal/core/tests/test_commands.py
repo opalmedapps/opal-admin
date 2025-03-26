@@ -134,16 +134,18 @@ class TestInitializeData(CommandTestMixin):
         stdout, _stderr = self._call_command('initialize_data')
 
         assert Group.objects.count() == 4
-        assert User.objects.count() == 2
-        assert Token.objects.count() == 2
+        assert User.objects.count() == 3
+        assert Token.objects.count() == 3
         assert SecurityQuestion.objects.count() == 6
 
         listener_token = Token.objects.get(user__username='Listener')
         interface_engine_token = Token.objects.get(user__username='Interface Engine')
+        legacy_backend_token = Token.objects.get(user__username='Legacy OpalAdmin Backend')
 
         assert 'Data successfully created\n' in stdout
         assert f'Listener token: {listener_token.key}' in stdout
         assert f'Interface Engine token: {interface_engine_token.key}' in stdout
+        assert f'Legacy OpalAdmin Backend token: {legacy_backend_token}' in stdout
 
     def test_insert_existing_data_group(self) -> None:
         """An error is shown if a group already exists."""
