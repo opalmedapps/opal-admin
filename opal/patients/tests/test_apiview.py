@@ -9,12 +9,56 @@ from django.urls import reverse
 import pytest
 from rest_framework.test import APIClient
 
-from opal.caregivers.factories import RegistrationCode
+from opal.caregivers.factories import CaregiverProfile, RegistrationCode
 from opal.hospital_settings.factories import Institution, Site
-
-from ..factories import HospitalPatient, Patient, Relationship
+from opal.patients.factories import HospitalPatient, Patient, Relationship
 
 pytestmark = pytest.mark.django_db
+
+
+def test_my_caregiver_list(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test the return of the caregivers list for a given patient."""
+    api_client.force_login(user=admin_user)
+    patient = Patient()
+    caregiver1 = CaregiverProfile()
+    caregiver2 = CaregiverProfile()
+    relationship1 = Relationship(patient=patient, caregiver=caregiver1)
+    relationship2 = Relationship(patient=patient, caregiver=caregiver2, status='CON')
+
+    response = api_client.get(reverse(
+        'api:caregivers-list',
+        kwargs={'legacy_patient_id': patient.legacy_id},
+    ))
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()[0] == {
+        'caregiver_id': caregiver1.user.id,
+        'first_name': caregiver1.user.first_name,
+        'last_name': caregiver1.user.last_name,
+        'status': relationship1.status,
+    }
+    assert response.json()[1] == {
+        'caregiver_id': caregiver2.user.id,
+        'first_name': caregiver2.user.first_name,
+        'last_name': caregiver2.user.last_name,
+        'status': relationship2.status,
+    }
+
+
+def test_my_caregiver_list_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test the failure of the caregivers list for a given patient."""
+    api_client.force_login(user=admin_user)
+    patient = Patient()
+    caregiver1 = CaregiverProfile()
+    caregiver2 = CaregiverProfile()
+    Relationship(patient=patient, caregiver=caregiver1)
+    Relationship(patient=patient, caregiver=caregiver2)
+    response = api_client.get(reverse(
+        'api:caregivers-list',
+        kwargs={'legacy_patient_id': 1654161},
+    ))
+
+    assert not response.data
 
 
 def test_registration_code(api_client: APIClient, admin_user: AbstractUser) -> None:
