@@ -159,7 +159,7 @@ class PatientCaregiverDevicesView(RetrieveAPIView[Patient]):
         'caregivers__user',
         'caregivers__devices',
     )
-    permission_classes = (IsLegacyBackend,)
+    permission_classes = (IsLegacyBackend | IsListener,)
     serializer_class = caregiver_serializers.PatientCaregiverDevicesSerializer
 
     lookup_url_kwarg = 'legacy_id'
