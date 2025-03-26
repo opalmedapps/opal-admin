@@ -24,15 +24,18 @@ Django admin panel provides nice ready-to-use GUI to manage those permissions, i
 In order to add permissions, and allow its use in the Django Admin Site, follow this guide:
 
 1. Add permission to Meta information of the model. This example is applied on the `Site` model in the `hospital_settings` app
-```python
-class Meta:
+
+    ```python
+    class Meta:
         permissions = (('new_perm','New Custom Permission'),)
         ordering = ['name']
         verbose_name = _('Site')
         verbose_name_plural = _('Sites')
-```
+    ```
+
 
 2. Run
+
    ```python
    python manage.py makemigrations
    python manage.py migrate
@@ -57,23 +60,27 @@ class Meta:
 By now there should be a new permission available to be used. To restrict the access to the view to only those who have this new permission follow this guide:
 
 1. Import [`PermissionRequiredMixin`](https://docs.djangoproject.com/en/dev/topics/auth/default/#the-permissionrequiredmixin-mixin) Django package.
-```python
-from django.contrib.auth.mixins import PermissionRequiredMixin
-```
+
+    ```python
+    from django.contrib.auth.mixins import PermissionRequiredMixin
+    ```
+
 
 2. Pass it to the view. Considering the site example for the same model considered above.
-```python
-     class SiteListView(PermissionRequiredMixin, SingleTableView):
-         model = Site
-         # use app_name.codename of the permission
-         required_permissions=('hospital_settings.new_perm',)
-         table_class = tables.SiteTable
-         template_name = 'hospital_settings/site/site_list.html'
-```
+
+   ```python
+        class SiteListView(PermissionRequiredMixin, SingleTableView):
+            model = Site
+            # use app_name.codename of the permission
+            required_permissions=('hospital_settings.new_perm',)
+            table_class = tables.SiteTable
+            template_name = 'hospital_settings/site/site_list.html'
+   ```
 
 ### Applying certain restrictions on front-end at using template tags
 
 Use the template tag [`{{ perms }}`](https://docs.djangoproject.com/en/dev/topics/auth/default/#permissions) in the HTML template for further restrictions:
+
 ```html
 {% if perms.hospital_settings.new_perm %}
     <!-- Do Something -->
