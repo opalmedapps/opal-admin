@@ -112,7 +112,7 @@ class OIEValidator:  # noqa: WPS214
 
             if message:
                 # TODO: improve
-                friendly_message = message.replace('Patient 00000000null not found', 'not_found')
+                friendly_message = message.replace('Patient not found', 'not_found')
                 friendly_message = friendly_message.replace(
                     'Not Opal test patient',
                     'no_test_patient',
@@ -167,9 +167,9 @@ class OIEValidator:  # noqa: WPS214
 
         if date_of_birth:
             try:
-                datetime.datetime.strptime(date_of_birth, '%Y-%m-%d %H:%M:%S')
-            except ValueError:
-                errors.append('Patient data dateOfBirth format is incorrect, should be YYYY-MM-DD HH:mm:ss')
+                datetime.datetime.strptime(date_of_birth, '%Y-%m-%d')
+            except ValueError as exc:
+                errors.append(f'dateOfBirth is invalid: {exc}')
 
         # check firstName
         first_name = None
@@ -222,9 +222,9 @@ class OIEValidator:  # noqa: WPS214
             errors.append('Patient data does not have the attribute ramqExpiration')
         if ramq_expiration:
             try:
-                datetime.datetime.strptime(ramq_expiration, '%Y-%m-%d %H:%M:%S')
-            except ValueError:
-                errors.append('Patient data ramqExpiration format is incorrect, should be YYYY-MM-DD HH:mm:ss')
+                datetime.datetime.strptime(ramq_expiration, '%Y%m')
+            except ValueError as exc:  # noqa: WPS440 (exc from other tr-except is undefined here)
+                errors.append(f'Patient data ramqExpiration is invalid: {exc}')
 
         # check mrns
         mrns = None
