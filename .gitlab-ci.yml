@@ -15,11 +15,11 @@ default:
     - uname -a
 
 stages:
-  - Build
-  - Static Analysis
-  - Checks
+  - build
+  - static analysis
+  - checks
   - test
-  - Documentation
+  - documentation
 
 .default_needs:
   needs:
@@ -49,7 +49,7 @@ stages:
     - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
 
 build image:
-  stage: Build
+  stage: build
   image: docker:25.0.3
   services:
     - docker:25.0.3-dind
@@ -84,7 +84,7 @@ build image:
 # Run additional Repository X-Ray job to enhance code suggestions with additional context
 # https://docs.gitlab.com/ee/user/project/repository/code_suggestions/repository_xray.html
 xray:
-  stage: Build
+  stage: build
   image: registry.gitlab.com/gitlab-org/code-creation/repository-x-ray:latest
   allow_failure: true
   rules:
@@ -111,7 +111,7 @@ xray:
       - "$OUTPUT_DIR/*/*.json"
 
 flake8:
-  stage: Static Analysis
+  stage: static analysis
   extends:
     - .default_needs
     - .default_before
@@ -129,7 +129,7 @@ flake8:
       codequality: gl-code-quality-report.json
 
 mypy:
-  stage: Static Analysis
+  stage: static analysis
   extends:
     - .default_needs
     - .default_before
@@ -148,7 +148,7 @@ mypy:
       codequality: codequality.json
 
 markdownlint:
-  stage: Static Analysis
+  stage: static analysis
   extends:
     - .default_needs
   image:
@@ -210,7 +210,7 @@ coverage:
         path: coverage.xml
 
 django migrations:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
     - .default_before
@@ -220,7 +220,7 @@ django migrations:
     - python manage.py makemigrations --dry-run --check
 
 django translations:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
   script:
@@ -233,7 +233,7 @@ django translations:
     - git diff --ignore-matching-lines=POT-Creation-Date --exit-code *.po
 
 django translations fuzzy:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
   script:
@@ -248,7 +248,7 @@ django translations fuzzy:
 
 
 django translations commented:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
   script:
@@ -262,7 +262,7 @@ django translations commented:
         fi
 
 django auto-named migrations:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
   script:
@@ -274,7 +274,7 @@ django auto-named migrations:
     - (! find ./opal -regex '.*/migrations/.*_auto_.*\.py$' | grep -q .)
 
 django checks:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
     - .default_before
@@ -284,7 +284,7 @@ django checks:
     - python manage.py check --fail-level WARNING
 
 django template validation:
-  stage: Checks
+  stage: checks
   extends:
     - .default_needs
     - .default_before
@@ -295,7 +295,7 @@ django template validation:
 
 # Try building the documentation site to ensure there are no issues
 build docs:
-  stage: Documentation
+  stage: documentation
   extends:
     - .default_before
   needs:
@@ -310,7 +310,7 @@ build docs:
 # see: https://squidfunk.github.io/mkdocs-material/publishing-your-site/#gitlab-pages
 #
 pages:
-  stage: Documentation
+  stage: documentation
   extends:
     - .default_before
   only:
