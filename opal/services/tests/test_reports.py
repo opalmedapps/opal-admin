@@ -17,16 +17,20 @@ pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 BASE64_ENCODED_REPORT = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
 ENCODING = 'utf-8'
-INVALID_PATIENT_SER_NUM = -1
 LOGO_PATH = Path('opal/tests/fixtures/test_logo.png')
 NON_STRING_VALUE = 123
-PATIENT_SER_NUM = 51
-PATIENT_NAME = 'Bart Simpson'
-PATIENT_SITE = 'RVH'
-PATIENT_MRN = '9999996'
 TEST_LEGACY_QUESTIONNAIRES_REPORT_URL = 'http://localhost:80/report'
 
 reports_service = ReportService()
+
+QUESTIONNAIRE_REPORT_REQUEST_DATA = QuestionnaireReportRequestData(
+    patient_id=51,
+    patient_name='Bart Simpson',
+    patient_site='RVH',
+    patient_mrn='9999996',
+    logo_path=LOGO_PATH,
+    language='en',
+)
 
 
 def _create_generated_report_data(status: HTTPStatus) -> dict[str, dict[str, str]]:
@@ -73,27 +77,15 @@ def _mock_requests_post(
 
 def test_is_questionnaire_report_data_valid() -> None:
     """Ensure `QuestionnaireReportRequestData` successfully validates."""
-    report_data = QuestionnaireReportRequestData(
-        patient_id=PATIENT_SER_NUM,
-        patient_name=PATIENT_NAME,
-        patient_site=PATIENT_SITE,
-        patient_mrn=PATIENT_MRN,
-        logo_path=LOGO_PATH,
-        language='en',
+    assert reports_service._is_questionnaire_report_request_data_valid(
+        QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
-
-    assert reports_service._is_questionnaire_report_request_data_valid(report_data)
 
 
 def test_is_questionnaire_report_invalid_patient() -> None:
     """Ensure invalid `QuestionnaireReportRequestData` (invalid patient) are handled and does not result in an error."""
-    report_data = QuestionnaireReportRequestData(
-        patient_id=INVALID_PATIENT_SER_NUM,
-        patient_name=PATIENT_NAME,
-        patient_site=PATIENT_SITE,
-        patient_mrn=PATIENT_MRN,
-        logo_path=LOGO_PATH,
-        language='en',
+    report_data = QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
+        patient_id=-1,
     )
 
     assert reports_service._is_questionnaire_report_request_data_valid(report_data) is False
@@ -101,13 +93,8 @@ def test_is_questionnaire_report_invalid_patient() -> None:
 
 def test_is_questionnaire_report_invalid_logo() -> None:
     """Ensure invalid `QuestionnaireReportRequestData` (invalid logo) are handled and does not result in an error."""
-    report_data = QuestionnaireReportRequestData(
-        patient_id=PATIENT_SER_NUM,
-        patient_name=PATIENT_NAME,
-        patient_site=PATIENT_SITE,
-        patient_mrn=PATIENT_MRN,
+    report_data = QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
         logo_path=Path('invalid/logo/path'),
-        language='en',
     )
 
     assert reports_service._is_questionnaire_report_request_data_valid(report_data) is False
@@ -115,12 +102,7 @@ def test_is_questionnaire_report_invalid_logo() -> None:
 
 def test_is_questionnaire_report_invalid_language() -> None:
     """Ensure invalid `QuestionnaireReportRequestData` (invalid language) are handled without errors."""
-    report_data = QuestionnaireReportRequestData(
-        patient_id=PATIENT_SER_NUM,
-        patient_name=PATIENT_NAME,
-        patient_site=PATIENT_SITE,
-        patient_mrn=PATIENT_MRN,
-        logo_path=LOGO_PATH,
+    report_data = QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
         language='invalid_language',
     )
 
@@ -138,14 +120,7 @@ def test_request_base64_report(mocker: MockerFixture) -> None:
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     response_base64_report = reports_service._request_base64_report(
-        QuestionnaireReportRequestData(
-            patient_id=PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
-            logo_path=LOGO_PATH,
-            language='en',
-        ),
+        QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -172,14 +147,7 @@ def test_request_base64_report_error(mocker: MockerFixture) -> None:
     mock_post.side_effect = RequestException('request failed')
 
     base64_report = reports_service._request_base64_report(
-        QuestionnaireReportRequestData(
-            patient_id=PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
-            logo_path=LOGO_PATH,
-            language='en',
-        ),
+        QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -194,14 +162,7 @@ def test_request_base64_report_bad_request(mocker: MockerFixture) -> None:
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
     base64_report = reports_service._request_base64_report(
-        QuestionnaireReportRequestData(
-            patient_id=PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
-            logo_path=LOGO_PATH,
-            language='en',
-        ),
+        QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.BAD_REQUEST
@@ -215,14 +176,7 @@ def test_request_base64_report_json_key_error(mocker: MockerFixture) -> None:
     mock_post.return_value._content = json.dumps({}).encode(ENCODING)
 
     base64_report = reports_service._request_base64_report(
-        QuestionnaireReportRequestData(
-            patient_id=PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
-            logo_path=LOGO_PATH,
-            language='en',
-        ),
+        QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -236,14 +190,7 @@ def test_request_base64_report_json_decode_error(mocker: MockerFixture) -> None:
     mock_post.return_value._content = 'test string'.encode(ENCODING)
 
     base64_report = reports_service._request_base64_report(
-        QuestionnaireReportRequestData(
-            patient_id=PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
-            logo_path=LOGO_PATH,
-            language='en',
-        ),
+        QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -256,14 +203,7 @@ def test_request_base64_report_is_string(mocker: MockerFixture) -> None:
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service._request_base64_report(
-        QuestionnaireReportRequestData(
-            patient_id=PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
-            logo_path=LOGO_PATH,
-            language='en',
-        ),
+        QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -282,14 +222,7 @@ def test_request_base64_report_not_string(mocker: MockerFixture) -> None:
     mock_post.return_value._content = json.dumps(data).encode(ENCODING)
 
     base64_report = reports_service._request_base64_report(
-        QuestionnaireReportRequestData(
-            patient_id=PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
-            logo_path=LOGO_PATH,
-            language='en',
-        ),
+        QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -306,21 +239,14 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
     mock_post.return_value.status_code = HTTPStatus.OK
 
     reports_service._request_base64_report(
-        QuestionnaireReportRequestData(
-            patient_id=PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
-            logo_path=LOGO_PATH,
-            language='en',
-        ),
+        QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
 
     headers = {'Content-Type': 'application/json'}
     payload = json.dumps({
-        'patient_id': PATIENT_SER_NUM,
+        'patient_id': 51,
         'patient_name': 'Bart Simpson',
         'patient_site': 'RVH',
         'patient_mrn': '9999996',
@@ -342,14 +268,7 @@ def test_questionnaire_report(mocker: MockerFixture) -> None:
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
-        QuestionnaireReportRequestData(
-            patient_id=PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
-            logo_path=LOGO_PATH,
-            language='en',
-        ),
+        QUESTIONNAIRE_REPORT_REQUEST_DATA,
     )
 
     assert mock_post.return_value.status_code == HTTPStatus.OK
@@ -364,13 +283,8 @@ def test_questionnaire_report_error(mocker: MockerFixture) -> None:
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
     base64_report = reports_service.generate_questionnaire_report(
-        QuestionnaireReportRequestData(
-            patient_id=INVALID_PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
-            logo_path=LOGO_PATH,
-            language='en',
+        QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
+            patient_id=-1,
         ),
     )
 
@@ -384,13 +298,8 @@ def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
-        QuestionnaireReportRequestData(
-            patient_id=INVALID_PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
-            logo_path=LOGO_PATH,
-            language='en',
+        QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
+            patient_id=-1,
         ),
     )
 
@@ -404,13 +313,8 @@ def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
-        QuestionnaireReportRequestData(
-            patient_id=PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
+        QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
             logo_path=Path('invalid/logo/path'),
-            language='en',
         ),
     )
 
@@ -424,12 +328,7 @@ def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     base64_report = reports_service.generate_questionnaire_report(
-        QuestionnaireReportRequestData(
-            patient_id=PATIENT_SER_NUM,
-            patient_name=PATIENT_NAME,
-            patient_site=PATIENT_SITE,
-            patient_mrn=PATIENT_MRN,
-            logo_path=LOGO_PATH,
+        QUESTIONNAIRE_REPORT_REQUEST_DATA._replace(
             language='invalid language',
         ),
     )
