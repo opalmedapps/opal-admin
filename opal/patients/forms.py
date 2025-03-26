@@ -715,8 +715,10 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         """
         super().__init__(*args, **kwargs)
         # get the selected type
+        initial_type = RelationshipType.objects.get(role_type=RoleType.SELF.name)
         selected_type = self['type'].value()
-        initial_type = RelationshipType.objects.get(pk=selected_type)
+        if selected_type:
+            initial_type = RelationshipType.objects.get(pk=selected_type)
 
         self.fields['status'].choices = [  # type: ignore[attr-defined]
             (choice.value, choice.label) for choice in Relationship.valid_statuses(
