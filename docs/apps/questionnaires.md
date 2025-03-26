@@ -39,9 +39,9 @@ To grant the `export_report` permission:
 *Additionally, there must already be an account created for the researcher in the reporting tool app itself, either using django's `createsuperuser` functionality, or through it's own admin portal.*
 
 1. Login to OpalAdmin as a user with `export_report` permissions.
-2. Select `Export Reports` > `ePRO Data Extractions` this will automatically launch a new window connecting to the
-3. Login to the reporting tool with the dedicated researcher account existing in the reporting tool's database.
-4. Click `View all questionnaires` to display the list of available ePRO questionnaires with non-test answers.
+2. Select `Export Reports` > `ePRO Data Extractions` this will automatically launch a new window connecting to the reporting tool.
+3. Login to the reporting tool with the dedicated researcher/user account existing in the reporting tool's database.
+4. Click `View all questionnaires` to display the list of available ePRO questionnaires for which there exists production data.
 5. Select desired questionnaire, optionally tick "Follow in my dashboard" for easier future access
 6. Filter results by any combination of data range, patient ids, and questions.
 7. Click `View Report`
