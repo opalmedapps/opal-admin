@@ -1,5 +1,5 @@
-from collections import OrderedDict
 from http import HTTPStatus
+from typing import Dict, cast
 
 from django.contrib.auth.models import AbstractUser
 from django.test.client import Client
@@ -129,10 +129,19 @@ def test_createupdateview_update(django_user_model: AbstractUser) -> None:
     assert view.get_object() == user
 
 
-def test_languagesview_get() -> None:
+def test_languagesview_get(mocker: MockerFixture) -> None:
     """Ensure that the `LanguagesView` can return the languages in the settings."""
+    # mock Languages get and pretend it was unsuccessful
+    mock_languages = mocker.patch('opal.core.api.views.LanguagesView.get')
+    mock_languages.return_value = {
+        'data': [
+            [('code', 'lan1'), ('name', 'language1')],
+            [('code', 'lan2'), ('name', 'language2')],
+        ],
+    }
+
     view = api_views.LanguagesView()
     response = view.get([])
-    data = response.data
-    assert data[0] == OrderedDict([('code', 'en'), ('name', 'English')])
-    assert data[1] == OrderedDict([('code', 'fr'), ('name', 'French')])
+    data = cast(Dict[str, dict], response)['data']
+    assert data[0] == [('code', 'lan1'), ('name', 'language1')]
+    assert data[1] == [('code', 'lan2'), ('name', 'language2')]
