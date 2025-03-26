@@ -80,6 +80,19 @@ def test_get_demographics_databank_data() -> None:
     assert not (set(expected_returned_fields) - set(databank_data[0].keys()))
 
 
+def test_exclude_unknown_gender() -> None:
+    """Ensure demographics data for databank does not include patients with Unknown gender."""
+    # Prepare patient and last cron run time
+    consenting_patient = factories.LegacyPatientFactory(sex='Unknown')
+    last_cron_sync_time = timezone.make_aware(dt.datetime(2023, 1, 1, 0, 0, 5))
+    # Fetch the data
+    databank_data = legacy_models.LegacyPatient.objects.get_databank_data_for_patient(
+        patient_ser_num=consenting_patient.patientsernum,
+        last_synchronized=last_cron_sync_time,
+    )
+    assert databank_data.count() == 0
+
+
 def test_get_diagnosis_databank_data() -> None:
     """Ensure diagnosis data for databank is returned and formatted correctly."""
     # Prepare patient and last cron run time

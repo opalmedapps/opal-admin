@@ -23,7 +23,7 @@ class ORMSLoginView(LoginView):
     def login(self) -> None:
         """Check user's group and credentials.
 
-        Only users that belong to the `ORMS_GROUP_NAME` can login to the system.
+        Only superusers and users that belong to the `ORMS_GROUP_NAME` can login to the system.
 
         Accept the following POST parameters: username, password
 
@@ -34,7 +34,7 @@ class ORMSLoginView(LoginView):
         """
         user = self.serializer.validated_data['user']
 
-        if user.groups.filter(
+        if user.is_superuser or user.groups.filter(
             name=settings.ORMS_GROUP_NAME,
         ).exists():
             super().login()

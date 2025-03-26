@@ -1,16 +1,3 @@
-
-SELECT
-   A.*,
-   answerTextBox.VALUE AS answer_value
-FROM
-   tempAnswerDetails A,
-   answerTextBox
-WHERE
-   answerTextBox.answerId = A.question_answer_id
-   AND A.question_type_id = 3
-
-UNION
-
 SELECT
    A.*,
    answerSlider.VALUE AS answer_value
