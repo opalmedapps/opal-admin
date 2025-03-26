@@ -1,8 +1,7 @@
 FROM python:3.11.8-alpine3.19 as build
 
-RUN apk upgrade --no-cache \
-  # dependencies for building Python packages
-  && apk add --no-cache build-base \
+# dependencies for building Python packages
+RUN apk add --no-cache build-base \
   # install git in case dependencies are installed from version control
   && apk add --no-cache git \
   # mysqlclient dependencies
