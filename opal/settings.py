@@ -272,3 +272,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
+
+# Easy Audit Log
+# Log requests to the admin site
+DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = [r'^/admin/jsi18n/', r'^/static/', r'^/favicon.ico$']
