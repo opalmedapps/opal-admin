@@ -185,7 +185,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         mock_post.side_effect = requests.RequestException('No connection adapters were found for HOST')
         mock_post.return_value.status_code = HTTPStatus.BAD_GATEWAY
         command = send_databank_data.Command()
-        command._send_to_oie_and_handle_response({})
+        command._send_to_oie_and_handle_response({}, 60)
         captured = capsys.readouterr()
         assert 'OIE connection Error: No connection adapters were found for HOST' in captured.err
 
@@ -225,7 +225,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         mock_post = RequestMockerTest.mock_requests_post(mocker, response_data)
         mock_post.return_value.status_code = HTTPStatus.BAD_GATEWAY
         command = send_databank_data.Command()
-        command._send_to_oie_and_handle_response(databank_data_to_send)
+        command._send_to_oie_and_handle_response(databank_data_to_send, 60)
         captured = capsys.readouterr()
         assert '502 oie response error' in captured.err
         assert 'Bad Gateway' in captured.err
@@ -270,7 +270,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         mock_post = RequestMockerTest.mock_requests_post(mocker, response_data)
         mock_post.return_value.status_code = HTTPStatus.NOT_FOUND
         command = send_databank_data.Command()
-        command._send_to_oie_and_handle_response(databank_data_to_send)
+        command._send_to_oie_and_handle_response(databank_data_to_send, 60)
         captured = capsys.readouterr()
         assert '404 oie response error' in captured.err
         assert 'Resource not found' in captured.err
