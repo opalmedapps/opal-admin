@@ -1,7 +1,6 @@
 """Command for Security Answer migration."""
 from typing import Any, Optional
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer
