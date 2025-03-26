@@ -3,7 +3,6 @@
 TODO
 - Determine how to capture activity clicked via the Home tab Notifications menu.
 These are logged different in PAL than regular Chart activity.
-- Ticket to fix the PAL logging of Account language change, bug described in spike doc
 - Add last_received and total received fields to PatientDataReceived function for Diagnosis, Announcement?
 """
 
@@ -73,7 +72,7 @@ class Command(BaseCommand):
             )
 
             if confirm != 'yes':
-                self.stdout.write('Test data insertion cancelled')
+                self.stdout.write('Usage statistics update is cancelled')
                 return
 
             DailyUserAppActivity.objects.all().delete()
@@ -117,48 +116,19 @@ class Command(BaseCommand):
         Args:
             activities: `LegacyPatientActivityLog` records to be populated to `DailyUserAppActivity`
         """
+        daily_app_activities = []
+
         for activity in activities:
             user = User.objects.filter(username=activity['username']).first()
             patient_data_owner = Patient.objects.filter(legacy_id=activity['target_patient_id']).first()
             caregiver_profile = CaregiverProfile.objects.filter(user=user).first()
 
-            # TODO: Decide if this final check is worth doing
-            # Since the original query returns each unique pairing of patient+user, we have the potential to have
-            #     several 'useless' records created here.
-            # For example, if Fred Flintstone logged in once, did nothing and logged out
-            #     in the query reference time period, then here we would create one row for
-            # Fred's user activity with count_login=1, and everything else 0/null.
-            #     PLUS another record for each Patient the user fred is associated with
-            #     (So one for Fred<-->Pebbles and one for Fred<-->Fred)
-            # These extra 2 empty rows will be created even if all of their values are 0/null,
-            #     because the Relationship itself is confirmed.
-            # That can potentially add a lot of bloat to this table.
-            # So one option is to just filter out these 'useless' records from being saved
-            conditions = [
-                activity['last_login'] is not None,
-                activity['count_logins'] > 0,
-                activity['count_checkins'] > 0,
-                activity['count_documents'] > 0,
-                activity['count_educational_materials'] > 0,
-                activity['count_feedback'] > 0,
-                activity['count_questionnaires_complete'] > 0,
-                activity['count_labs'] > 0,
-                activity['count_update_security_answers'] > 0,
-                activity['count_update_passwords'] > 0,
-                activity['count_update_language'] > 0,
-                activity['count_device_ios'] > 0,
-                activity['count_device_android'] > 0,
-                activity['count_device_browser'] > 0,
-            ]
-            # The other option to solve this problem would be to filter out these 0/null results in the original query
-            # using a secondary filter to mimic the MySQL `HAVING` clause, eg
-            # .filter(
-            #     Q(last_login__isnull=False) |
-            #     Q(count_logins__gt=0) |
-            #     Q(count_checkins__gt=0) |
+            activity.pop('target_patient_id')
+            activity.pop('username')
 
-            if any(conditions):
+            daily_app_activities.append(
                 DailyUserAppActivity(
+                    **activity,
                     action_by_user=user,
                     # Feedback: It makes sense to filter only confirmed relationships... I think?
                     user_relationship_to_patient=Relationship.objects.filter(
@@ -167,19 +137,8 @@ class Command(BaseCommand):
                         status=RelationshipStatus.CONFIRMED,
                     ).first(),
                     patient=patient_data_owner,
-                    last_login=activity['last_login'],
-                    count_logins=activity['count_logins'],
-                    count_checkins=activity['count_checkins'],
-                    count_documents=activity['count_documents'],
-                    count_educational_materials=activity['count_educational_materials'],
-                    count_feedback=activity['count_feedback'],
-                    count_questionnaires_complete=activity['count_questionnaires_complete'],
-                    count_labs=activity['count_labs'],
-                    count_update_security_answers=activity['count_update_security_answers'],
-                    count_update_passwords=activity['count_update_passwords'],
-                    count_update_language=activity['count_update_language'],
-                    count_device_ios=activity['count_device_ios'],
-                    count_device_android=activity['count_device_android'],
-                    count_device_browser=activity['count_device_browser'],
                     date_added=timezone.now().date(),
-                ).save()
+                ),
+            )
+
+        DailyUserAppActivity.objects.bulk_create(daily_app_activities)
