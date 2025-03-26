@@ -1,10 +1,9 @@
-import json
 from http import HTTPStatus
-from unittest.mock import MagicMock
 
 import requests
 from pytest_mock.plugin import MockerFixture
 
+from opal.core.test_utils import RequestMockerTest
 from opal.services.hospital.hospital_communication import OIEHTTPCommunicationManager
 from opal.services.hospital.hospital_error import OIEErrorHandler
 
@@ -22,52 +21,6 @@ def _create_response_data() -> dict[str, str]:
     return {'status': 'success'}
 
 
-def _mock_requests_post(
-    mocker: MockerFixture,
-    generated_response_data: dict[str, str],
-) -> MagicMock:
-    """Mock actual HTTP POST web API call to the OIE.
-
-    Args:
-        mocker (MockerFixture): object that provides the same interface to functions in the mock module
-        generated_response_data (dict[str, str]): generated mock response data
-
-    Returns:
-        MagicMock: object that mocks HTTP post request to the OIE for exporting reports
-    """
-    mock_post = mocker.patch('requests.post')
-    response = requests.Response()
-    response.status_code = HTTPStatus.OK
-
-    response._content = json.dumps(generated_response_data).encode(ENCODING)
-    mock_post.return_value = response
-
-    return mock_post
-
-
-def _mock_requests_get(
-    mocker: MockerFixture,
-    generated_response_data: dict[str, str],
-) -> MagicMock:
-    """Mock actual HTTP GET web API call to the OIE.
-
-    Args:
-        mocker (MockerFixture): object that provides the same interface to functions in the mock module
-        generated_response_data (dict[str, str]): generated mock response data
-
-    Returns:
-        MagicMock: object that mocks HTTP get request to the OIE for exporting reports
-    """
-    mock_get = mocker.patch('requests.get')
-    response = requests.Response()
-    response.status_code = HTTPStatus.OK
-
-    response._content = json.dumps(generated_response_data).encode(ENCODING)
-    mock_get.return_value = response
-
-    return mock_get
-
-
 # __init__
 
 def test_init() -> None:
@@ -82,7 +35,7 @@ def test_submit_success(mocker: MockerFixture) -> None:
     """Ensure successful submit request returns json response with successful HTTP status."""
     # mock actual OIE API call
     generated_data = _create_response_data()
-    mock_post = _mock_requests_post(mocker, generated_data)
+    mock_post = RequestMockerTest._mock_requests_post(mocker, generated_data)
 
     response_data = communication_manager.submit(
         endpoint='/test/endpoint',
@@ -99,7 +52,7 @@ def test_submit_error(mocker: MockerFixture) -> None:
     """Ensure request failure is handled and does not result in an error."""
     # mock actual OIE API call to raise a request error
     generated_data = _create_response_data()
-    mock_post = _mock_requests_post(mocker, generated_data)
+    mock_post = RequestMockerTest._mock_requests_post(mocker, generated_data)
     mock_post.side_effect = requests.RequestException('request failed')
     mock_post.return_value.status_code = HTTPStatus.BAD_REQUEST
 
@@ -122,7 +75,7 @@ def test_submit_invalid_payload(mocker: MockerFixture) -> None:
     """Ensure invalid payload is handled and does not result in an error."""
     # mock actual OIE API call to raise a request error
     error_response = {'message': 'request failed'}
-    mock_post = _mock_requests_post(mocker, error_response)
+    mock_post = RequestMockerTest._mock_requests_post(mocker, error_response)
 
     response_data = communication_manager.submit(
         endpoint='/test/endpoint',
@@ -139,7 +92,7 @@ def test_submit_invalid_port(mocker: MockerFixture) -> None:
     """Ensure invalid port is handled and does not result in an error."""
     # mock actual OIE API call to raise a request error
     error_response = {'message': 'request failed'}
-    mock_post = _mock_requests_post(mocker, error_response)
+    mock_post = RequestMockerTest._mock_requests_post(mocker, error_response)
 
     response_data = communication_manager.submit(
         endpoint=':-1/test/endpoint',
@@ -156,7 +109,7 @@ def test_submit_invalid_metadata(mocker: MockerFixture) -> None:
     """Ensure invalid metadata are handled and do not result in an error."""
     # mock actual OIE API call to raise a request error
     error_response = {'message': 'request failed'}
-    mock_post = _mock_requests_post(mocker, error_response)
+    mock_post = RequestMockerTest._mock_requests_post(mocker, error_response)
 
     response_data = communication_manager.submit(
         endpoint='/test/endpoint',
@@ -174,7 +127,7 @@ def test_submit_json_decode_error(mocker: MockerFixture) -> None:
     """Ensure request failure is handled and does not result in an error."""
     # mock actual OIE API call to raise a request error
     error_response = 'invalid json'
-    mock_post = _mock_requests_post(mocker, error_response)  # type: ignore[arg-type]
+    mock_post = RequestMockerTest._mock_requests_post(mocker, error_response)  # type: ignore[arg-type]
     mock_post.side_effect = requests.exceptions.JSONDecodeError(
         'request failed',
         error_response,
@@ -203,7 +156,7 @@ def test_fetch_success(mocker: MockerFixture) -> None:
     """Ensure successful fetch request returns json response with successful HTTP status."""
     # mock actual OIE API call
     generated_data = _create_response_data()
-    mock_get = _mock_requests_get(mocker, generated_data)
+    mock_get = RequestMockerTest._mock_requests_get(mocker, generated_data)
 
     response_data = communication_manager.fetch(
         endpoint='/test/endpoint',
@@ -220,7 +173,7 @@ def test_fetch_error(mocker: MockerFixture) -> None:
     """Ensure request failure is handled and does not result in an error."""
     # mock actual OIE API call to raise a request error
     generated_data = _create_response_data()
-    mock_get = _mock_requests_get(mocker, generated_data)
+    mock_get = RequestMockerTest._mock_requests_get(mocker, generated_data)
     mock_get.side_effect = requests.RequestException('request failed')
     mock_get.return_value.status_code = HTTPStatus.BAD_REQUEST
 
@@ -241,7 +194,7 @@ def test_fetch_invalid_parameters(mocker: MockerFixture) -> None:
     """Ensure invalid parameters are handled and do not result in an error."""
     # mock actual OIE API call to raise a request error
     error_response = {'message': 'request failed'}
-    mock_get = _mock_requests_get(mocker, error_response)
+    mock_get = RequestMockerTest._mock_requests_get(mocker, error_response)
 
     response_data = communication_manager.fetch(
         endpoint='/test/endpoint',
@@ -258,7 +211,7 @@ def test_fetch_invalid_port(mocker: MockerFixture) -> None:
     """Ensure invalid port is handled and does not result in an error."""
     # mock actual OIE API call to raise a request error
     error_response = {'message': 'request failed'}
-    mock_get = _mock_requests_get(mocker, error_response)
+    mock_get = RequestMockerTest._mock_requests_get(mocker, error_response)
 
     response_data = communication_manager.fetch(
         endpoint=':-1/test/endpoint',
@@ -274,7 +227,7 @@ def test_fetch_invalid_metadata(mocker: MockerFixture) -> None:
     """Ensure invalid metadata are handled and do not result in an error."""
     # mock actual OIE API call to raise a request error
     error_response = {'message': 'request failed'}
-    mock_get = _mock_requests_get(mocker, error_response)
+    mock_get = RequestMockerTest._mock_requests_get(mocker, error_response)
 
     response_data = communication_manager.fetch(
         endpoint='/test/endpoint',
@@ -291,7 +244,7 @@ def test_fetch_json_decode_error(mocker: MockerFixture) -> None:
     """Ensure request failure is handled and does not result in an error."""
     # mock actual OIE API call to raise a request error
     error_response = 'invalid json response'
-    mock_get = _mock_requests_get(mocker, error_response)  # type: ignore[arg-type]
+    mock_get = RequestMockerTest._mock_requests_get(mocker, error_response)  # type: ignore[arg-type]
     mock_get.side_effect = requests.exceptions.JSONDecodeError(
         'request failed',
         error_response,
