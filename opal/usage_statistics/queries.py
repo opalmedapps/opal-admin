@@ -5,7 +5,7 @@ from typing import Any, TypeVar
 
 from django.conf import settings
 from django.db import models
-from django.db.models.functions import Cast, ExtractYear, TruncDay, TruncMonth, TruncYear
+from django.db.models.functions import Cast, ExtractYear, Trunc, TruncDay, TruncMonth, TruncYear
 
 from opal.caregivers import models as caregivers_models
 from opal.legacy import models as legacy_models
@@ -653,9 +653,9 @@ def fetch_patient_demographic_diagnosis_summary(
         sex=models.F('patient__sex'),
         email=models.F('patient__email'),
         language=models.F('patient__language'),
-        registration_date=models.F('patient__registration_date'),
+        registration_date_utc=Trunc('patient__registration_date', 'second', tzinfo=dt.UTC),
         latest_diagnosis_description=models.F('patient__legacydiagnosis__description_en'),
-        latest_diagnosis_date=models.F('patient__legacydiagnosis__creation_date'),
+        latest_diagnosis_date_utc=Trunc('patient__legacydiagnosis__creation_date', 'second', tzinfo=dt.UTC),
     ).values(
         'patient_ser_num',
         'age',
@@ -663,16 +663,10 @@ def fetch_patient_demographic_diagnosis_summary(
         'sex',
         'email',
         'language',
-        'registration_date',
+        'registration_date_utc',
         'latest_diagnosis_description',
-        'latest_diagnosis_date',
+        'latest_diagnosis_date_utc',
     )
-
-    for patient in demographics_and_diagnosis:
-        patient['registration_date_utc'] = patient['registration_date'].astimezone(dt.timezone.utc)
-        patient['latest_diagnosis_date_utc'] = patient['latest_diagnosis_date'].astimezone(dt.timezone.utc)
-        patient.pop('registration_date')
-        patient.pop('latest_diagnosis_date')
 
     return list(demographics_and_diagnosis)
 
