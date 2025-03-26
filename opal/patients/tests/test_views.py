@@ -406,7 +406,7 @@ def test_caregiver_access_update_form_name_changed(relationship_user: Client) ->
 
     form = response.context['form']
     assert not form.is_valid()
-    message = 'The caregiver name can currently not be changed.'
+    message = "The caregiver's name cannot currently be changed."
     assert message in response.context['form'].errors[NON_FIELD_ERRORS]
 
 

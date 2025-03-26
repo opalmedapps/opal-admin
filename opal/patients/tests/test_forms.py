@@ -474,7 +474,7 @@ def test_caregiver_access_form_update_self_name_not_changed() -> None:
     form = forms.RelationshipAccessForm(data=form_data, instance=relationship)
 
     assert not form.is_valid()
-    message = 'The caregiver name can currently not be changed.'
+    message = "The caregiver's name cannot currently be changed."
     assert message in form.errors[NON_FIELD_ERRORS]
 
 

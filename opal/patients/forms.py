@@ -949,7 +949,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
                 caregiver.first_name != caregiver_firstname
                 and caregiver.last_name != caregiver_lastname
             ):
-                error = _('The caregiver name can currently not be changed.')
+                error = _("The caregiver's name cannot currently be changed.")
                 self.add_error(NON_FIELD_ERRORS, error)
 
         return self.cleaned_data

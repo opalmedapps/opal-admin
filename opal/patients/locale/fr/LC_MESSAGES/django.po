@@ -240,7 +240,7 @@ msgid "Save"
 msgstr "Enregistrer"
 
 #: opal/patients/forms.py
-msgid "The caregiver name can currently not be changed."
+msgid "The caregiver's name cannot currently be changed."
 msgstr "Le nom du proche aidant ne peut actuellement pas être modifié."
 
 #: opal/patients/models.py
