@@ -32,10 +32,10 @@ class TestInsertTestData(CommandTestMixin):
 
     def test_insert(self) -> None:
         """Ensure that test data is inserted when there is no existing data."""
-        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
+        stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert Institution.objects.count() == 1
-        assert Institution.objects.get().acronym == 'MUHC'
+        assert Institution.objects.get().acronym == 'OMI'
         assert Site.objects.count() == 5
         assert Patient.objects.count() == 8
         assert HospitalPatient.objects.count() == 10
@@ -49,10 +49,10 @@ class TestInsertTestData(CommandTestMixin):
 
     def test_insert_chusj(self) -> None:
         """Ensure that test data for Sainte-Justine is inserted when there is no existing data."""
-        stdout, _stderr = self._call_command('insert_test_data', 'CHUSJ')
+        stdout, _stderr = self._call_command('insert_test_data', 'OHIGPH')
 
         assert Institution.objects.count() == 1
-        assert Institution.objects.get().acronym == 'CHUSJ'
+        assert Institution.objects.get().acronym == 'OHIGPH'
         assert Site.objects.count() == 1
         assert Patient.objects.count() == 2
         assert HospitalPatient.objects.count() == 2
@@ -69,7 +69,7 @@ class TestInsertTestData(CommandTestMixin):
         monkeypatch.setattr('builtins.input', lambda _: 'foo')
         relationship = factories.Relationship()
 
-        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
+        stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert stdout == 'Test data insertion cancelled\n'
         relationship.refresh_from_db()
@@ -87,7 +87,7 @@ class TestInsertTestData(CommandTestMixin):
         caregiver_profile = CaregiverProfile.objects.get()
         caregiver = Caregiver.objects.get()
 
-        stdout, _stderr = self._call_command('insert_test_data', 'MUHC')
+        stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert 'Existing test data deleted' in stdout
         assert 'Test data successfully created' in stdout

@@ -31,7 +31,7 @@ class InstitutionOption(Enum):
     """The institutions that test data can be created for."""
 
     muhc = 'OMI'
-    chusj = 'OHIGHP'
+    chusj = 'OHIGPH'
 
     def __str__(self) -> str:
         """
