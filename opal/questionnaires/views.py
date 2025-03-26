@@ -1,8 +1,8 @@
 """This module provides views for questionnaire settings."""
 import datetime
 import logging
-import tempfile
 from http import HTTPStatus
+from io import BytesIO, StringIO
 from typing import Any
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -184,13 +184,13 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
         report_dict = get_temp_table()
         df = pd.DataFrame.from_dict(report_dict)
 
-        with tempfile.NamedTemporaryFile() as temp_file:
-            df.to_csv(temp_file.name, index=False, header=True)
-            return HttpResponse(
-                temp_file.read(),
-                content_type='text/csv',
-                headers={'Content-Disposition': f'attachment; filename = {filename}'},
-            )
+        buffer = StringIO()
+        df.to_csv(buffer, index=False, header=True)
+        return HttpResponse(
+            buffer.getvalue(),
+            content_type='text/csv',
+            headers={'Content-Disposition': f'attachment; filename = {filename}'},
+        )
 
 
 # EXPORT REPORTS VIEW REPORT (Downloaded xlsx)
@@ -223,38 +223,36 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         filename = f'questionnaire-{qid}-{datesuffix}.xlsx'
         report_dict = get_temp_table()
         df = pd.DataFrame.from_dict(report_dict)
+        buffer = BytesIO()
 
-        with tempfile.NamedTemporaryFile(suffix='.xlsx') as temp_file:
-            if tabs == 'none':
-                # return everything as one xlsx sheet, no dellineation by sheet
-                df.to_excel(temp_file.name, sheet_name='Sheet1', index=False, header=True)
-            else:
-                # sort by patient or question id
-                column_name = 'patient_id' if tabs == 'patients' else 'question_id'
-                sheet_prefix = 'patient' if tabs == 'patients' else 'question_id'
-                sort_rows_column = 'question_id' if tabs == 'patients' else 'patient_id'
+        if tabs == 'none':
+            # return everything as one xlsx sheet, no dellineation by sheet
+            df.to_excel(buffer, sheet_name='Sheet1', index=False, header=True)
+        else:
+            # sort by patient or question id
+            column_name = 'patient_id' if tabs == 'patients' else 'question_id'
+            sheet_prefix = 'patient' if tabs == 'patients' else 'question_id'
+            sort_rows_column = 'question_id' if tabs == 'patients' else 'patient_id'
 
-                ids = df[column_name].unique()
-                ids.sort()
+            ids = df[column_name].unique()
+            ids.sort()
 
-                with pd.ExcelWriter(temp_file.name) as writer:
-                    for current_id in ids:
-                        patient_rows = df.loc[df[column_name] == current_id]
-                        patient_rows = patient_rows.sort_values(
-                            by=['last_updated', sort_rows_column],
-                            ascending=[True, True],
-                        )
-                        patient_rows.to_excel(
-                            writer,
-                            sheet_name=f'{sheet_prefix}-{current_id}',
-                            index=False,
-                            header=True,
-                        )
-
-            file_content = temp_file.read()
+            with pd.ExcelWriter(buffer) as writer:
+                for current_id in ids:
+                    patient_rows = df.loc[df[column_name] == current_id]
+                    patient_rows = patient_rows.sort_values(
+                        by=['last_updated', sort_rows_column],
+                        ascending=[True, True],
+                    )
+                    patient_rows.to_excel(
+                        writer,
+                        sheet_name=f'{sheet_prefix}-{current_id}',
+                        index=False,
+                        header=True,
+                    )
 
         return HttpResponse(
-            file_content,
+            buffer.getvalue(),
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             headers={'Content-Disposition': f'attachment; filename = {filename}'},
         )

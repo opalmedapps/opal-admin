@@ -1,3 +1,4 @@
+from datetime import date
 from http import HTTPStatus
 from typing import Tuple
 
@@ -230,3 +231,77 @@ def test_update_request_event_detail_template(user_client: Client, admin_user: A
     assert response.status_code == HTTPStatus.OK
     assert request_event.method == method
     assert request_event.query_string == q_string
+
+
+def test_detail_template_download_csv(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure downloading of csv data works as expected."""
+    user_client.force_login(admin_user)
+    # trigger generation of temp tables
+    response = user_client.post(
+        path=reverse('questionnaires:reports-detail'),
+        data={
+            'start': ['2016-11-25'],
+            'end': ['2020-02-27'],
+            'patientIDs': ['3'],
+            'questionIDs': ['823', '824', '811', '830', '832'],
+            'questionnaireid': ['11'],
+        },
+    )
+    assert response.status_code == HTTPStatus.OK
+    response = user_client.post(
+        path=reverse('questionnaires:reports-download-csv'),
+        data={
+            'questionnaireid': ['11'],
+        },
+    )
+    assert response.status_code == HTTPStatus.OK
+    headers = response.headers
+    assert headers.get('Content-Type') == 'text/csv'
+    filename = f'attachment; filename = questionnaire-11-{date.today().isoformat()}.csv'  # noqa: WPS237
+    assert headers.get('Content-Disposition') == filename
+    assert int(headers.get('Content-Length', 0)) > 0
+
+
+def test_detail_template_download_xlsx(user_client: Client, admin_user: AbstractUser) -> None:
+    """Ensure downloading of xlsx data works as expected."""
+    user_client.force_login(admin_user)
+    # trigger generation of temp tables
+    response = user_client.post(
+        path=reverse('questionnaires:reports-detail'),
+        data={
+            'start': ['2016-11-25'],
+            'end': ['2020-02-27'],
+            'patientIDs': ['3'],
+            'questionIDs': ['823', '824', '811', '830', '832'],
+            'questionnaireid': ['11'],
+        },
+    )
+    assert response.status_code == HTTPStatus.OK
+    response_one = user_client.post(
+        path=reverse('questionnaires:reports-download-xlsx'),
+        data={
+            'questionnaireid': ['11'],
+            'tabs': ['none'],
+        },
+    )
+    response_two = user_client.post(
+        path=reverse('questionnaires:reports-download-xlsx'),
+        data={
+            'questionnaireid': ['11'],
+            'tabs': ['patients'],
+        },
+    )
+    response_three = user_client.post(
+        path=reverse('questionnaires:reports-download-xlsx'),
+        data={
+            'questionnaireid': ['11'],
+            'tabs': ['questions'],
+        },
+    )
+    for resp in (response_one, response_two, response_three):
+        assert resp.status_code == HTTPStatus.OK
+    for header in (response_one.headers, response_two.headers, response_three.headers):
+        assert header.get('Content-Type') == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        filename = f'attachment; filename = questionnaire-11-{date.today().isoformat()}.xlsx'  # noqa: WPS237
+        assert header.get('Content-Disposition') == filename
+        assert int(header.get('Content-Length', 0)) > 0
