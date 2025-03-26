@@ -48,4 +48,9 @@ urlpatterns = [
         views.AccessRequestView.as_view(),
         name='access-request',
     ),
+    path(
+        'access-request/confirmation/',
+        views.AccessRequestConfirmationView.as_view(),
+        name='access-request-confirmation',
+    ),
 ]
