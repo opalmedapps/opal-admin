@@ -50,7 +50,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
         Returns:
             The object of RegistrationCode
         """
-        registration_code = self.get_queryset().get()
+        registration_code = super().get_queryset().get()
         if registration_code.relationship.patient.date_of_death:
             raise PermissionDenied()
         return registration_code
