@@ -5,7 +5,7 @@ from django.utils import timezone
 import pytest
 
 from .. import factories
-from ..models import LegacyAppointment, LegacyDiagnosis, LegacyPatient, LegacyTestResult
+from ..models import LegacyAppointment, LegacyDiagnosis, LegacyPatient, LegacyPatientTestResult
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
@@ -116,12 +116,12 @@ def test_get_labs_databank_data() -> None:
     non_consenting_patient = factories.LegacyPatientFactory(patientsernum=52)
     last_cron_sync_time = timezone.make_aware(datetime(2023, 1, 1, 0, 0, 5))
     # Prepare labs data
-    factories.LegacyTestResultFactory(patient_ser_num=consenting_patient)
-    factories.LegacyTestResultFactory(patient_ser_num=consenting_patient)
-    factories.LegacyTestResultFactory(patient_ser_num=consenting_patient)
-    factories.LegacyTestResultFactory(patient_ser_num=non_consenting_patient)
+    factories.LegacyPatientTestResultFactory(patient_ser_num=consenting_patient)
+    factories.LegacyPatientTestResultFactory(patient_ser_num=consenting_patient)
+    factories.LegacyPatientTestResultFactory(patient_ser_num=consenting_patient)
+    factories.LegacyPatientTestResultFactory(patient_ser_num=non_consenting_patient)
     # Fetch the data
-    databank_data = LegacyTestResult.objects.get_databank_data_for_patient(
+    databank_data = LegacyPatientTestResult.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
         last_synchronized=last_cron_sync_time,
     )
@@ -129,19 +129,18 @@ def test_get_labs_databank_data() -> None:
     # Define expected result to ensure query doesn't get accidentally altered
     expected_returned_fields = {
         'test_result_id',
-        'test_component_date',
+        'specimen_collected_date',
+        'component_result_date',
         'test_group_name',
+        'test_group_indicator',
+        'test_component_sequence',
         'test_component_name',
-        'test_name',
         'test_value',
         'test_units',
         'max_norm_range',
         'min_norm_range',
         'abnormal_flag',
-        'approved_flag',
-        'valid_flag',
         'source_system',
-        'source_system_id',
         'last_updated',
     }
     for lab in databank_data:

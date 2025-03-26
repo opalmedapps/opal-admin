@@ -29,8 +29,8 @@ if TYPE_CHECKING:
         LegacyEducationalMaterial,
         LegacyNotification,
         LegacyPatient,
+        LegacyPatientTestResult,
         LegacyQuestionnaire,
-        LegacyTestResult,
         LegacyTxTeamMessage,
     )
 
@@ -325,8 +325,8 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         )
 
 
-class LegacyTestResultManager(models.Manager['LegacyTestResult']):
-    """LegacyTestResult model manager."""
+class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
+    """LegacyPatientTestResult model manager."""
 
     def get_databank_data_for_patient(
         self,
@@ -344,37 +344,39 @@ class LegacyTestResultManager(models.Manager['LegacyTestResult']):
             Lab data
         """
         return self.select_related(
+            'test_expression_ser_num',
+            'test_group_expression_ser_num',
             'patient_ser_num',
-            'test_result_control_ser_num',
+            'test_expression_ser_num__source_database',
         ).filter(
-            patient_ser_num__patientsernum=patient_ser_num,
+            patient_ser_num=patient_ser_num,
             last_updated__gt=last_synchronized,
         ).annotate(
-            test_result_id=models.F('test_result_ser_num'),
-            test_component_date=models.F('test_date'),
-            test_group_name=models.F('test_result_control_ser_num__group_en'),
-            test_component_name=models.F('component_name'),
-            test_name=models.F('test_result_control_ser_num__name_en'),
+            test_result_id=models.F('patient_test_result_ser_num'),
+            specimen_collected_date=models.F('collected_date_time'),
+            component_result_date=models.F('result_date_time'),
+            test_group_name=models.F('test_group_expression_ser_num__expression_name'),
+            test_group_indicator=models.F('test_group_expression_ser_num__test_group_expression_ser_num'),
+            test_component_sequence=models.F('sequence_num'),
+            test_component_name=models.F('test_expression_ser_num__expression_name'),
+            test_value=models.F('test_value_numeric'),
             test_units=models.F('unit_description'),
-            max_norm_range=models.F('max_norm'),
-            min_norm_range=models.F('min_norm'),
-            valid_flag=models.F('valid_entry'),
-            source_system=models.F('source_database__source_database_name'),
-            source_system_id=models.F('test_result_aria_ser'),
+            max_norm_range=models.F('normal_range_max'),
+            min_norm_range=models.F('normal_range_min'),
+            source_system=models.F('test_expression_ser_num__source_database__source_database_name'),
         ).values(
             'test_result_id',
-            'test_component_date',
+            'specimen_collected_date',
+            'component_result_date',
             'test_group_name',
+            'test_group_indicator',
+            'test_component_sequence',
             'test_component_name',
-            'test_name',
             'test_value',
             'test_units',
             'max_norm_range',
             'min_norm_range',
             'abnormal_flag',
-            'approved_flag',
-            'valid_flag',
             'source_system',
-            'source_system_id',
             'last_updated',
-        )
+        ).order_by('component_result_date', 'test_group_indicator', 'test_component_sequence')
