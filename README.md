@@ -7,7 +7,7 @@
 This project has the following requirements to be available on your system:
 
 * [Docker Desktop](https://docs.docker.com/desktop/) (or Docker Engine on Linux)
-* Python 3.9 or higher
+* Python 3.10 or higher
 
 ## Getting Started
 
@@ -113,7 +113,7 @@ The steps below refer to an interpreter path, which is the following (depending 
 
     1. Make sure that your project folder is open, and open any `.py` file.
     2. In the bottom-right corner of the screen, next to `Python`, you should see your Python version,
-       followed by .venv, for example: `3.9.10 ('.venv':venv)`.
+       followed by .venv, for example: `3.10.9 ('.venv':venv)`.
     3. If you don't see this, click on the version number or empty field next to `Python`.
     4. Select or browse to the interpreter path above.
 
