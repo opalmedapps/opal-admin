@@ -41,6 +41,15 @@ In order for linting, type checking, unit testing etc. to be available in your I
 3. `python -m pip install --upgrade pip`
 4. `python -m pip install -r requirements/development.txt`
 
+### Migrate Database and Create Superuser
+
+Before you can start, you need to migrate the database and create a superuser. Execute the following commands either in the virtual environment or in the `app` container.
+
+1. `python manage.py migrate`
+2. `python manage.py createsuperuser`
+
+Once this is done, you can go to [http://localhost:8000](http://localhost:8000) to access the frontend. Go to [http://localhost:8000/admin](http://localhost:8000/admin) to log in to the Django admin site with the superuser you created. [http://localhost:8000/api](http://localhost:8000/api) shows the available REST API endpoints to you.
+
 ### Pre-commit
 
 This project contains a configuration for [`pre-commit`](https://pre-commit.com/) (see `.pre-commit-config.yaml`).
