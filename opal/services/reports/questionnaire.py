@@ -316,7 +316,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
             return 1
         return math.ceil((total_questionnaires - first_page_count) / subsequent_page_count) + 1
 
-    def _draw_questionnaire_result(self) -> None:  # noqa: WPS213
+    def _draw_questionnaire_result(self) -> None:
         for index, data in enumerate(self.questionnaire_data):
 
             if index > 0:  # Skip empty first page
