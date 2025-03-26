@@ -1667,6 +1667,70 @@ def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, dja
     assert len(patients) == 3
 
 
+def test_not_display_duplicated_patient(relationship_user: Client, django_user_model: User) -> None:
+    """
+    Ensure that `Search Patient Access` template does not display duplicated `Patient Details` search results.
+
+    The search is performed by using MRN number and Site name.
+    """
+    patient1 = factories.Patient(first_name='aaa', ramq='OTES01161973')
+    patient2 = factories.Patient(first_name='bbb', ramq='OTES01161972')
+
+    site1 = factories.Site(name='MCH')
+    site2 = factories.Site(name='RVH')
+
+    hospital_patient1 = factories.HospitalPatient(mrn='9999991', site=site1, patient=patient1)
+    factories.HospitalPatient(mrn='9999992', site=site2, patient=patient1)
+    factories.HospitalPatient(mrn='9999991', site=site2, patient=patient2)
+
+    user = Caregiver()
+    caregiver_profile = factories.CaregiverProfile(user=user)
+    factories.Relationship(
+        caregiver=caregiver_profile,
+        patient=patient1,
+        type=models.RelationshipType.objects.self_type(),
+    )
+    factories.Relationship(
+        caregiver=caregiver_profile,
+        patient=patient2,
+        type=models.RelationshipType.objects.guardian_caregiver(),
+    )
+
+    form_data = {
+        'card_type': 'mrn',
+        'site': site2.id,
+        'medical_number': hospital_patient1.mrn,
+    }
+    query_string = urllib.parse.urlencode(form_data)
+    response = relationship_user.get(
+        path=reverse('patients:relationships-pending-list'),
+        QUERY_STRING=query_string,
+    )
+
+    # get filter
+    mrn_filter = response.context['filter']
+
+    # Check filter's queryset
+    assertQuerysetEqual(
+        mrn_filter.qs,
+        models.Relationship.objects.filter(
+            patient__hospital_patients__mrn=hospital_patient1.mrn,
+            patient__hospital_patients__site=site2,
+        ),
+        ordered=False,
+    )
+
+    # Check number of tables
+    soup = BeautifulSoup(response.content, 'html.parser')
+    search_tables = soup.find_all('tbody')
+    assert len(search_tables) == 1
+
+    # Check how many patients are displayed, should be one
+    # To confirm there is no duplicated patients
+    patients = search_tables[0].find_all('tr')
+    assert len(patients) == 1
+
+
 def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, django_user_model: User) -> None:
     """
     Ensure that `Search Patient Access` template displays `Patient Details` table and `Caregiver Details` table.
