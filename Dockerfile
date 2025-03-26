@@ -39,7 +39,6 @@ RUN addgroup --system appuser \
   && adduser --system --ingroup appuser appuser \
   && chown -R appuser:appuser /app
 
-
 # get Python packages lib and bin
 COPY --from=build /usr/local/bin /usr/local/bin
 COPY --from=build /usr/local/lib /usr/local/lib
@@ -59,6 +58,9 @@ RUN cp .env.sample .env \
   && rm .env
 
 USER appuser
+
+# ensure the uploads directory exists with appuser as the owner
+RUN mkdir -p ./opal/media/uploads
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 CMD [ "./start.sh" ]
