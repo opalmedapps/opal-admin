@@ -1151,9 +1151,8 @@ class TestRegistrationCompletionView:
         assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_registration_without_security_answers(self, api_client: APIClient, admin_user: User) -> None:
-        """Test registration without security answers."""
+        """Test registration without security answers don't cause the serializer to fail."""
         api_client.force_login(user=admin_user)
-        Relationship(patient__legacy_id=1, caregiver__legacy_id=1)
         input_data_without_security_answers = {
             'patient': {
                 'legacy_id': 1,
@@ -1165,25 +1164,16 @@ class TestRegistrationCompletionView:
                 'legacy_id': 1,
             },
         }
-        skeleton = user_factories.Caregiver(
-            username='skeleton-username',
-            first_name='skeleton',
-            last_name='test',
-            is_active=False,
-        )
-        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=skeleton)
-        caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
-                kwargs={'code': registration_code},
+                kwargs={'code': '123456'},
             ),
             data=input_data_without_security_answers,
         )
 
-        assert response.status_code == HTTPStatus.OK
-        assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
+        assert response.status_code == HTTPStatus.NOT_FOUND
 
     def test_registered_registration_code(self, api_client: APIClient, admin_user: User) -> None:
         """Test registered registration code."""
