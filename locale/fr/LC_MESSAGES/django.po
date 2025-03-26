@@ -134,8 +134,8 @@ msgid "The Opal team"
 msgstr "L’Équipe Opal"
 
 #: opal/templates/sidebar_base.html
-msgid "Go back to Legacy OpalAdmin"
-msgstr "Retourner à l'ancien OpalAdmin"
+msgid "Go back to OpalAdmin Menu"
+msgstr "Retourner au menu d'OpalAdmin"
 
 #: opal/templates/sidebar_items.html
 msgid "Home"
