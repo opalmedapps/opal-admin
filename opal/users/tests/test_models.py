@@ -7,6 +7,8 @@ from django.db.utils import IntegrityError
 import pytest
 from pytest_django.asserts import assertRaisesMessage
 
+from config.settings.base import ADMIN_GROUP_NAME
+
 from .. import factories
 from ..models import Caregiver, ClinicalStaff, User, UserType
 
@@ -188,3 +190,37 @@ def test_clinicalstaff_objects() -> None:
 
     assert ClinicalStaff.objects.count() == 1
     assert ClinicalStaff.objects.first() == clinical_staff
+
+
+def test_user_admin_group_add_signal() -> None:
+    """User properties `is_staff` and `is_superuser` are activated when added to the defined admin Group ."""
+    clinical_staff = factories.User()
+    # create an admin group
+    admingroup = factories.Group(name=ADMIN_GROUP_NAME)
+    admingroup.save()
+    # add user to the created admin group
+    clinical_staff.groups.add(admingroup)
+
+    # assert that staff and superuser properties are activated
+    assert clinical_staff.is_superuser
+    assert clinical_staff.is_staff
+
+
+def test_user_admin_group_remove_signal() -> None:
+    """User properties `is_staff` and `is_superuser` are deactivated when removed from the defined admin group."""
+    # create a user
+    clinical_staff = factories.User()
+    # activate superuser and staff properties
+    clinical_staff.is_staff = True
+    clinical_staff.is_superuser = True
+    # create admin group
+    admingroup = factories.Group(name=ADMIN_GROUP_NAME)
+    admingroup.save()
+    # add user to admin group
+    clinical_staff.groups.add(admingroup)
+    # remove user from admin group
+    clinical_staff.groups.remove(admingroup)
+
+    # assert that properties are deactivated
+    assert not clinical_staff.is_superuser
+    assert not clinical_staff.is_staff
