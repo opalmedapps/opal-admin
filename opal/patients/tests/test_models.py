@@ -307,7 +307,6 @@ def test_hospitalpatient_many_patients_one_site() -> None:
     patient2 = factories.Patient(
         first_name='bbb',
         last_name='222',
-        ramq='TEST',
     )
     site = factories.Site(name="Montreal Children's Hospital")
 
