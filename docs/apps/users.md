@@ -44,15 +44,10 @@ classDiagram
         <<proxy>>
     }
 
-    class CaregiverProfile {
-
-    }
-
     AbstractUser <|-- User
     UserManager <|-- ClinicalStaffManager
     UserManager <|-- CaregiverManager
     User <|-- ClinicalStaff
     User <|-- Caregiver
     User --> "base_type" UserType
-    CaregiverProfile --> "user" User
 ```

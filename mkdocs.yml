@@ -15,6 +15,7 @@ nav:
   - Home: index.md
   - Apps:
       - Users: apps/users.md
+      - Caregivers: apps/caregivers.md
   - REST API:
       - Authentication: authentication.md
   - Translation: translation.md
