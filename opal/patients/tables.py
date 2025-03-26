@@ -136,16 +136,31 @@ class RelationshipCaregiverTable(tables.Table):
 
     status = tables.Column(
         verbose_name=_('Status'),
+        attrs={
+            'th': {'align': 'center'},
+        },
     )
 
-    actions = tables.Column(
+    actions = tables.TemplateColumn(
         verbose_name=_('Actions'),
+        template_name='tables/edit_pencil_icon.html',
+        attrs={
+            'td': {'align': 'center'},
+        },
         orderable=False,
     )
 
     class Meta:
         model = Relationship
-        fields = ['first_name', 'last_name', 'relationship_type', 'start_date', 'end_date', 'status', 'actions']
+        fields = [
+            'first_name',
+            'last_name',
+            'relationship_type',
+            'start_date',
+            'end_date',
+            'status',
+            'actions',
+        ]
         empty_text = _('No caregivers.')
         attrs = {
             'class': 'table table-bordered table-hover',
