@@ -270,6 +270,8 @@ check crontab:
   extends:
     - .default_needs
     - .default_before
+  services:
+    - mariadb:10.6.17-focal
   script:
     # Check that the crontab references the correct commands and that they execute
     - scripts/check_crontab.sh
