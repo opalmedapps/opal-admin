@@ -44,6 +44,8 @@ stages:
     - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
     # set up QuestionnaireDB connection as well
     - sed -i "s/^LEGACY_QUESTIONNAIRE_DATABASE_NAME=.*/LEGACY_QUESTIONNAIRE_DATABASE_NAME=QuestionnaireDB/" .env
+    # set up OpalRPT connection
+    - sed -i "s/^LEGACY_REPORT_DATABASE_NAME=.*/LEGACY_REPORT_DATABASE_NAME=OpalRPT/" .env
     # generate secret key
     - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
     - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
@@ -150,6 +152,7 @@ pytest:
     - apk add --no-cache mariadb-client
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
+    - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalRPT\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - pytest --version
     # -m "" runs all tests, even the ones marked as slow
     - coverage run -m pytest -m "" --junitxml=report.xml
