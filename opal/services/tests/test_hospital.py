@@ -9,8 +9,8 @@ from pytest_mock.plugin import MockerFixture
 from requests import RequestException, Response
 from requests.auth import HTTPBasicAuth
 
-from ..patients.factories import HospitalPatient
-from ..services.hospital import OIECommunicationService, OIEReportExportData
+from opal.patients.factories import HospitalPatient
+from opal.services.hospital import OIECommunicationService, OIEReportExportData
 
 ENCODING = 'utf-8'
 BASE64_ENCODED_REPORT = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'

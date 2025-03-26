@@ -9,9 +9,9 @@ from pytest_mock.plugin import MockerFixture
 from requests import Response
 from requests.exceptions import RequestException
 
-from ..legacy.factories import LegacyPatientFactory
-from ..services.reports import QuestionnaireReportRequestData, ReportService
-from ..utils.base64 import Base64Util
+from opal.legacy.factories import LegacyPatientFactory
+from opal.services.reports import QuestionnaireReportRequestData, ReportService
+from opal.utils.base64 import Base64Util
 
 BASE64_ENCODED_REPORT = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
 ENCODING = 'utf-8'
