@@ -3,6 +3,8 @@ from typing import Any
 
 from rest_framework import serializers
 
+from opal.patients.models import Patient
+
 from ..models import QuantitySample
 
 
@@ -13,19 +15,37 @@ class QuantitySampleListSerializer(serializers.ListSerializer):
         """
         Bulk create new `QuantitySample` instances.
 
-        The samples are created for the patient that is provided in the serializer context.
-
         Args:
             validated_data: a list of validated data dictionaries
 
         Returns:
             the list of created `QuantitySample` instances
         """
-        # add patient reference to each element
-        for element in validated_data:
-            element['patient'] = self.context['patient']
-
         return QuantitySample.objects.bulk_create(QuantitySample(**data) for data in validated_data)
+
+
+class CurrentPatientDefault:
+    """
+    Callable that extracts the patient from the serializer context.
+
+    See: https://www.django-rest-framework.org/api-guide/fields/#default
+    """
+
+    requires_context = True
+
+    def __call__(self, serializer_field: serializers.Field) -> Patient:
+        """
+        Return the patient from the serializer context.
+
+        Args:
+            serializer_field: the serializer field
+
+        Returns:
+            the patient
+        """
+        patient: Patient = serializer_field.context['patient']
+
+        return patient  # noqa: WPS331
 
 
 class QuantitySampleSerializer(serializers.ModelSerializer[QuantitySample]):
@@ -36,25 +56,13 @@ class QuantitySampleSerializer(serializers.ModelSerializer[QuantitySample]):
     See: https://www.django-rest-framework.org/api-guide/serializers/#customizing-listserializer-behavior
     """
 
-    def create(self, validated_data: dict[str, Any]) -> QuantitySample:
-        """
-        Create a new `QuantitySample` instance.
-
-        The sample is created for the patient that is provided in the serializer context.
-
-        Args:
-            validated_data: the validated data dictionary
-
-        Returns:
-            the newly created `QuantitySample` instance
-        """
-        # add patient reference to create a new instance
-        validated_data['patient'] = self.context['patient']
-
-        return super().create(validated_data)
+    patient = serializers.PrimaryKeyRelatedField(
+        queryset=Patient.objects.all(),
+        default=CurrentPatientDefault(),
+    )
 
     class Meta:
         model = QuantitySample
-        fields = ('type', 'value', 'start_date', 'device', 'source')
+        fields = ('patient', 'type', 'value', 'start_date', 'device', 'source')
         # See: https://www.django-rest-framework.org/api-guide/serializers/#customizing-multiple-create
         list_serializer_class = QuantitySampleListSerializer
