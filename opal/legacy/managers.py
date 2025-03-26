@@ -38,7 +38,7 @@ _Model = TypeVar('_Model', bound=models.Model)
 
 
 class UnreadQuerySetMixin(models.Manager[_Model]):
-    """legacy models unread count mixin."""
+    """LegacyModels unread count mixin."""
 
     def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet[_Model]:
         """
