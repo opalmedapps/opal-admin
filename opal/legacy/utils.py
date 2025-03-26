@@ -1,6 +1,9 @@
 """Utility functions used by legacy API views."""
+from django.db.models import F  # noqa: WPS347 (vague import)
 
-from .models import LegacyUsers
+from opal.patients.models import HospitalPatient
+
+from .models import LegacyPatientHospitalIdentifier, LegacyUsers
 
 
 def get_patient_sernum(username: str) -> int:
@@ -31,3 +34,22 @@ def update_legacy_user_type(caregiver_legacy_id: int, new_type: str) -> None:
         new_type: The new UserType to set for the user.
     """
     LegacyUsers.objects.filter(usersernum=caregiver_legacy_id).update(usertype=new_type)
+
+
+def insert_hospital_identifiers(legacy_id: int) -> None:
+    """
+    Insert the legacy hospital identifiers for the patient.
+
+    Args:
+        legacy_id: the legacy ID of the patient
+    """
+    hospital_identifiers = [
+        LegacyPatientHospitalIdentifier(
+            patient_id=legacy_id,
+            mrn=hospital_patient.mrn,
+            is_active=hospital_patient.is_active,
+            hospital_id=hospital_patient.site_code,
+        )
+        for hospital_patient in HospitalPatient.objects.select_related('site').annotate(site_code=F('site__code'))
+    ]
+    LegacyPatientHospitalIdentifier.objects.bulk_create(hospital_identifiers)
