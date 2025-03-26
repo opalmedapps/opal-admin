@@ -1,10 +1,10 @@
 """Test module for security question api endpoints."""
+from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 
 from rest_framework.test import APIClient
 
 from opal.caregivers.factories import SecurityAnswer, SecurityQuestion
-from django.contrib.auth.models import AbstractUser
 
 
 def test_get_all_active_security_questions(api_client: APIClient, admin_user: AbstractUser) -> None:

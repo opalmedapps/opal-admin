@@ -32,7 +32,7 @@ random_question = SecurityQuestionViewSet.as_view({
 })
 
 update_question = SecurityQuestionViewSet.as_view({
-    'put': 'update',
+    'put': 'update_question',
 })
 
 verify_answer = SecurityQuestionViewSet.as_view({

@@ -39,7 +39,7 @@ class SecurityQuestionViewSet(viewsets.ModelViewSet):
         serializer = self.serializer_class(queryset, many=True, read_only=True)
         return Response(serializer.data)
 
-    def update(self, request: Request) -> Response:
+    def update_question(self, request: Request) -> Response:
         """
         Handle PUT requests for updating a security question.
 
