@@ -183,7 +183,7 @@ django translations:
 
 django translations fuzzy:
   stage: Checks
-  # this is not a Python script so we don't need to do all this extra stuff
+  # this is not a Python script so we don't need to do all this extra stuff from the default before_script
   before_script:
     - python --version
   script:
@@ -198,7 +198,7 @@ django translations fuzzy:
 
 django auto-named migrations:
   stage: Checks
-  # this is not a Python script so we don't need to do all this extra stuff
+  # this is not a Python script so we don't need to do all this extra stuff from the default before_script
   before_script:
     - python --version
   script:
