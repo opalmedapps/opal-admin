@@ -20,6 +20,8 @@ LEGACY_PATIENT_QUERY = """
             WHEN UPPER(Sex) = "MALE" THEN "M"
             WHEN UPPER(Sex) = "F" THEN "F"
             WHEN UPPER(Sex) = "FEMALE" THEN "F"
+            WHEN UPPER(Sex) = "OTHER" THEN "O"
+            WHEN UPPER(Sex) = "O" THEN "O"
             ELSE "UNDEFINED"
         END
         ) AS Sex,

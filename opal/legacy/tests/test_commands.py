@@ -438,8 +438,8 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 class TestPatientsDeviationsCommand(CommandTestMixin):
     """Test class for the custom command that detects `Patient` model/tables deviations."""
 
-    def test_deviations_no_patients(self) -> None:
-        """Ensure the command does not fail if there are no patient records."""
+    def test_no_deviations(self) -> None:
+        """Ensure the command does not fail if there are no patient and caregiver records."""
         message, error = self._call_command('find_patients_deviations')
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
