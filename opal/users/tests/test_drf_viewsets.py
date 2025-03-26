@@ -473,7 +473,7 @@ def test_api_set_manager_user_action_pass(api_client: APIClient, admin_user: Use
     # assert user does not have any group yet
     assert not clinical_user.groups.all()
 
-    response = api_client.post(reverse(
+    response = api_client.put(reverse(
         'api:users-set-manager-user',
         kwargs={'username': clinical_user.username},
     ))
@@ -495,7 +495,7 @@ def test_api_unset_manager_user_action_pass(api_client: APIClient, admin_user: U
     clinical_user = user_factories.ClinicalStaff()
     clinical_user.groups.add(manager_group)
 
-    response = api_client.post(reverse(
+    response = api_client.put(reverse(
         'api:users-unset-manager-user',
         kwargs={'username': clinical_user.username},
     ))
@@ -513,7 +513,7 @@ def test_api_set_manager_wrong_user_action_fail(api_client: APIClient, admin_use
     user_factories.GroupFactory()
     user_factories.GroupFactory(name=USER_MANAGER_GROUP_NAME)
 
-    response = api_client.post(reverse(
+    response = api_client.put(reverse(
         'api:users-set-manager-user',
         kwargs={'username': 'not_exist_user'},
     ))
@@ -530,7 +530,7 @@ def test_api_unset_manager_wrong_user_action_fail(api_client: APIClient, admin_u
     user_factories.GroupFactory()
     user_factories.GroupFactory(name=USER_MANAGER_GROUP_NAME)
 
-    response = api_client.post(reverse(
+    response = api_client.put(reverse(
         'api:users-unset-manager-user',
         kwargs={'username': 'not_exist_user'},
     ))
@@ -547,7 +547,7 @@ def test_api_set_manager_no_group_action_fail(api_client: APIClient, admin_user:
     user_factories.GroupFactory()
     clinical_user = user_factories.ClinicalStaff()
 
-    response = api_client.post(reverse(
+    response = api_client.put(reverse(
         'api:users-set-manager-user',
         kwargs={'username': clinical_user.username},
     ))
@@ -564,7 +564,7 @@ def test_api_unset_manager_no_group_action_fail(api_client: APIClient, admin_use
     user_factories.GroupFactory()
     clinical_user = user_factories.ClinicalStaff()
 
-    response = api_client.post(reverse(
+    response = api_client.put(reverse(
         'api:users-unset-manager-user',
         kwargs={'username': clinical_user.username},
     ))
