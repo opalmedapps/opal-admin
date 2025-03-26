@@ -520,7 +520,7 @@ def test_api_set_manager_wrong_user_action_fail(api_client: APIClient, admin_use
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.data['detail'] == 'user not found.'
+    assert str(response.data['detail']) == 'Not found.'
 
 
 def test_api_unset_manager_wrong_user_action_fail(api_client: APIClient, admin_user: User) -> None:
@@ -537,7 +537,7 @@ def test_api_unset_manager_wrong_user_action_fail(api_client: APIClient, admin_u
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.data['detail'] == 'user not found.'
+    assert str(response.data['detail']) == 'Not found.'
 
 
 def test_api_set_manager_no_group_action_fail(api_client: APIClient, admin_user: User) -> None:
@@ -554,7 +554,7 @@ def test_api_set_manager_no_group_action_fail(api_client: APIClient, admin_user:
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.data['detail'] == 'manager group not found.'
+    assert str(response.data['detail']) == 'manager group not found.'
 
 
 def test_api_unset_manager_no_group_action_fail(api_client: APIClient, admin_user: User) -> None:
@@ -571,4 +571,4 @@ def test_api_unset_manager_no_group_action_fail(api_client: APIClient, admin_use
 
     # assert retrieved info
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.data['detail'] == 'manager group not found.'
+    assert str(response.data['detail']) == 'manager group not found.'
