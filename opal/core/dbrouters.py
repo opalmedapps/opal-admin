@@ -43,7 +43,7 @@ class LegacyDbRouter(object):
             hints: a dictionary of hints
 
         Returns:
-            the DB that should be used for read operations, `None` if there is no suggestion
+            the DB that should be used for write operations, `None` if there is no suggestion
         """
         if model._meta.app_label == self.legacy_app_label:  # noqa: WPS437
             return self.legacy_db_name
