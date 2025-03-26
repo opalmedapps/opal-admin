@@ -56,6 +56,15 @@ This project contains a configuration for [`pre-commit`](https://pre-commit.com/
 
 Install the `pre-commit` hooks via `pre-commit install`.
 
+## Documentation
+
+The documentation is deployed to [https://mschoettle.gitlab.io/backend-prototype](https://mschoettle.gitlab.io/backend-prototype). It is deployed automatically when commits are pushed to `main`.
+
+To view the documentation during development, run the following commands:
+
+1. `pip install -r requirements/docs.txt`
+2. `mkdocs serve`
+
 ## Development
 
 ### Dependencies
