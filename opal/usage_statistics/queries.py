@@ -526,7 +526,7 @@ def fetch_received_questionnaires_summary(
 def fetch_users_latest_login_year_summary(
     start_date: dt.date,
     end_date: dt.date,
-) -> dict[Any, int]:
+) -> dict[str, int]:
     """Fetch users' latest login statistics grouped by year.
 
     The goal of the query is to find in a given date range how many users stopped using the app in each year.
@@ -547,7 +547,7 @@ def fetch_users_latest_login_year_summary(
         year=ExtractYear(models.Max('last_login')),
     )
 
-    latest_logins_by_year = Counter(item['year'] for item in latest_logins)
+    latest_logins_by_year = Counter(str(item['year']) for item in latest_logins)
     return dict(latest_logins_by_year)
 
 
@@ -635,17 +635,8 @@ def fetch_patient_demographic_diagnosis_summary(
     Returns:
         demographic information and latest diagnosis per patient.
     """
-    diagnosis_id_list = legacy_models.LegacyDiagnosis.objects.values('patient_ser_num').annotate(
-        diagnosis_id=models.Max('diagnosis_ser_num'),
-    ).values_list(
-        'diagnosis_id',
-        flat=True,
-    )
     # TODO: update the query when Diagnosis model is implemented into new backend system
-    demographics_and_diagnosis = legacy_models.LegacyPatientControl.objects.filter(
-        models.Q(patient__legacydiagnosis__diagnosis_ser_num__in=diagnosis_id_list)
-        | models.Q(patient__legacydiagnosis__diagnosis_ser_num__isnull=True),
-    ).annotate(
+    demographics_and_diagnosis = legacy_models.LegacyPatientControl.objects.annotate(
         patient_ser_num=models.F('patient__patientsernum'),
         age=models.F('patient__age'),
         date_of_birth=models.F('patient__date_of_birth'),
