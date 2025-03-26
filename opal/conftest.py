@@ -249,7 +249,7 @@ def orms_system_user(django_user_model: User) -> User:
 
 
 @pytest.fixture(autouse=True)
-def _set_orms_enabled(settings: LazySettings) -> None:
+def set_orms_enabled(settings: LazySettings) -> None:  # noqa: PT004
     """Fixture enables ORMS by default for all unit tests.
 
     Args:
@@ -259,7 +259,7 @@ def _set_orms_enabled(settings: LazySettings) -> None:
 
 
 @pytest.fixture
-def _set_orms_disabled(settings: LazySettings) -> None:
+def set_orms_disabled(settings: LazySettings) -> None:  # noqa: PT004
     """Fixture disables ORMS for the unit test.
 
     Args:

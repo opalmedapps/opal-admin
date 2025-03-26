@@ -210,7 +210,7 @@ class TestInitializeData(CommandTestMixin):  # noqa: WPS338
         assert f'opaladmin-backend-legacy token: {legacy_backend_token.key}' in stdout
         assert f'orms token: {orms_token.key}' in stdout
 
-    @pytest.mark.usefixtures('_set_orms_disabled')
+    @pytest.mark.usefixtures('set_orms_disabled')
     def test_insert_orms_disabled(self) -> None:
         """Ensure that orms specific data is not inserted if ORMS disabled."""
         stdout, _stderr = self._call_command('initialize_data')
@@ -277,7 +277,7 @@ class TestInitializeData(CommandTestMixin):  # noqa: WPS338
         assert f'opaladmin-backend-legacy token: {legacy_backend_token.key}' in stdout
         assert f'orms token: {orms_token.key}' in stdout
 
-    @pytest.mark.usefixtures('_set_orms_disabled')
+    @pytest.mark.usefixtures('set_orms_disabled')
     def test_insert_tokens_orms_disabled(self) -> None:
         """Ensure that initial data is inserted except orms data if ORMS disabled."""
         listener = User.objects.create(username='listener')
@@ -366,7 +366,7 @@ class TestInitializeData(CommandTestMixin):  # noqa: WPS338
         token_legacy_backend.refresh_from_db()
         token_orms.refresh_from_db()
 
-    @pytest.mark.usefixtures('_set_orms_disabled')
+    @pytest.mark.usefixtures('set_orms_disabled')
     def test_insert_existing_data_force_delete_orms_disabled(self) -> None:
         """Existing data with the exception of system users is deleted before inserted and skips ORMS data."""
         stdout, stderr = self._call_command('initialize_data')

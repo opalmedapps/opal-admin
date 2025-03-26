@@ -496,7 +496,7 @@ def test_initialize_new_opal_patient_orms_success(mocker: MockerFixture) -> None
     )
 
 
-@pytest.mark.usefixtures('_set_orms_disabled')
+@pytest.mark.usefixtures('set_orms_disabled')
 def test_initialize_new_opal_patient_orms_success_disabled(mocker: MockerFixture) -> None:
     """An info message is logged when the call to ORMS is not executed because it is disabled."""
     RequestMockerTest.mock_requests_post(mocker, {'status': 'Success'})
