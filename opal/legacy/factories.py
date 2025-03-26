@@ -537,7 +537,7 @@ class LegacyPatientActivityLogFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyPatientActivityLog
 
-    activity_ser_num = Faker('random_int')
+    activity_ser_num = Sequence(lambda number: number + 1)
     # Possible request values:
     #   - AccountChange
     #   - DeviceIdentifier
