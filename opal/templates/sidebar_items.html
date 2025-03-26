@@ -54,24 +54,4 @@
   {% endif %}
 </ul>
 
-<div class="dropdown pt-3 border-top">
-  <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-    {% icon icon="user-circle" size="lg" %}
-    <strong>{{ request.user.username }}</strong>
-  </a>
-  <ul class="dropdown-menu text-small shadow">
-    {% comment %} <li>
-      <a class="dropdown-item" href="#">{% translate "Profile" %}</a>
-    </li>
-    <li>
-      <hr class="dropdown-divider" />
-    </li> {% endcomment %}
-    <li>
-      <form id="logout-form" method="post" action="{% url 'logout' %}" novalidate>
-        {% csrf_token %}
-        <button class="dropdown-item" type="submit">{% translate "Log Out" %}</button>
-      </form>
-    </li>
-  </ul>
-</div>
 {% endblock %}
