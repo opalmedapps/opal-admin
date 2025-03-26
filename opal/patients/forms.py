@@ -249,7 +249,7 @@ class ConfirmPatientForm(forms.Form):
 
 
 class RequestorDetailsForm(forms.Form):
-    """This `RequestorDetailsForm` provides an radio button to choose relationship to the patient."""
+    """This `RequestorDetailsForm` provides a radio button to choose the relationship to the patient."""
 
     types = forms.ModelChoiceField(
         queryset=RelationshipType.objects.all(),
