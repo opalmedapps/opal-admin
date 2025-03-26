@@ -59,7 +59,7 @@ class RegistrationCompletionView(APIView):
 
     serializer_class = caregiver_serializers.RegistrationRegisterSerializer
 
-    # TODO
+    # TODO Remove or keep permission here
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
