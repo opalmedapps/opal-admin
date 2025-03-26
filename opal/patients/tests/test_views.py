@@ -1,9 +1,7 @@
 import io
-import json
 from datetime import date, datetime
 from http import HTTPStatus
 from typing import Any, Tuple
-from unittest.mock import MagicMock
 
 from django.contrib.auth.models import AbstractUser
 from django.contrib.sessions.middleware import SessionMiddleware
@@ -13,7 +11,6 @@ from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
-import requests
 from dateutil.relativedelta import relativedelta
 from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 from pytest_mock.plugin import MockerFixture
@@ -25,23 +22,6 @@ from opal.users.factories import Caregiver
 
 from .. import constants, factories, forms, models, tables, views
 
-ENCODING = 'utf-8'
-OIE_PATIENT_DATA = dict({
-    'dateOfBirth': '1953-01-01 00:00:00',
-    'firstName': 'SANDRA',
-    'lastName': 'TESTMUSEMGHPROD',
-    'sex': 'F',
-    'alias': '',
-    'ramq': 'TESS53510111',
-    'ramqExpiration': '2018-01-31 23:59:59',
-    'mrns': [
-        {
-            'site': 'MGH',
-            'mrn': '9999993',
-            'active': True,
-        },
-    ],
-})
 CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
     date_of_birth=datetime.strptime('1984-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
     first_name='Marge',
@@ -68,29 +48,6 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
         ),
     ],
 )
-
-
-def _mock_requests_post(
-    mocker: MockerFixture,
-    response_data: dict[str, Any],
-) -> MagicMock:
-    """Mock actual HTTP POST web API call to the OIE.
-
-    Args:
-        mocker (MockerFixture): object that provides the same interface to functions in the mock module
-        response_data (dict[str, str]): generated mock response data
-
-    Returns:
-        MagicMock: object that mocks HTTP post request to the OIE requests
-    """
-    mock_post = mocker.patch('requests.post')
-    response = requests.Response()
-    response.status_code = HTTPStatus.OK
-
-    response._content = json.dumps(response_data).encode(ENCODING)
-    mock_post.return_value = response
-
-    return mock_post
 
 
 # Add any future GET-requestable patients app pages here for faster test writing
@@ -349,11 +306,11 @@ def test_form_finish(
     mocker: MockerFixture,
 ) -> None:
     """Ensure that the form can go through all the steps."""
-    _mock_requests_post(
-        mocker,
-        {
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
             'status': 'success',
-            'data': OIE_PATIENT_DATA,
+            'data': CUSTOMIZED_OIE_PATIENT_DATA,
         },
     )
 
@@ -382,11 +339,11 @@ def test_form_finish(
 
 def test_access_request_done_redirects_temp(user_client: Client, mocker: MockerFixture) -> None:  # noqa: C901 WPS231
     """Ensure that when the page is submitted it redirects to the final page."""
-    _mock_requests_post(
-        mocker,
-        {
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
             'status': 'success',
-            'data': OIE_PATIENT_DATA,
+            'data': CUSTOMIZED_OIE_PATIENT_DATA,
         },
     )
 

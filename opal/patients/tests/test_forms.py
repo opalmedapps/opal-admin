@@ -1,16 +1,11 @@
-import json
 from datetime import datetime
-from http import HTTPStatus
-from typing import Any, Type
-from unittest.mock import MagicMock
+from typing import Type
 
 from django.contrib.auth import get_user_model
 
 import pytest
-import requests
 from pytest_mock.plugin import MockerFixture
 
-from opal.services.hospital.hospital import OIEService
 from opal.users.factories import Caregiver
 from opal.users.models import User
 
@@ -18,7 +13,6 @@ from .. import factories, forms
 
 UserModel: Type[User] = get_user_model()
 pytestmark = pytest.mark.django_db
-ENCODING = 'utf-8'
 OIE_PATIENT_DATA = dict({
     'dateOfBirth': '1953-01-01 00:00:00',
     'firstName': 'SANDRA',
@@ -35,31 +29,6 @@ OIE_PATIENT_DATA = dict({
         },
     ],
 })
-
-oie_service = OIEService()
-
-
-def _mock_requests_post(
-    mocker: MockerFixture,
-    response_data: dict[str, Any],
-) -> MagicMock:
-    """Mock actual HTTP POST web API call to the OIE.
-
-    Args:
-        mocker (MockerFixture): object that provides the same interface to functions in the mock module
-        response_data (dict[str, str]): generated mock response data
-
-    Returns:
-        MagicMock: object that mocks HTTP post request to the OIE requests
-    """
-    mock_post = mocker.patch('requests.post')
-    response = requests.Response()
-    response.status_code = HTTPStatus.OK
-
-    response._content = json.dumps(response_data).encode(ENCODING)
-    mock_post.return_value = response
-
-    return mock_post
 
 
 def test_site_selection_exist() -> None:
@@ -118,11 +87,13 @@ def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
 
     Mock find_patient_by_mrn and pretend it was failed.
     """
-    _mock_requests_post(
-        mocker,
-        {
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
+        return_value={
             'status': 'error',
-            'data': None,
+            'data': {
+                'message': 'reponse data is invalid',
+            },
         },
     )
 
@@ -143,13 +114,14 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
 
     Mock find_patient_by_mrn and pretend it was successful
     """
-    _mock_requests_post(
-        mocker,
-        {
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
+        return_value={
             'status': 'success',
             'data': OIE_PATIENT_DATA,
         },
     )
+
     form_data = {
         'medical_card': 'mrn',
         'medical_number': '9999993',
@@ -178,11 +150,13 @@ def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
 
     Mock find_patient_by_ramq and pretend it was failed.
     """
-    _mock_requests_post(
-        mocker,
-        {
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
             'status': 'error',
-            'data': None,
+            'data': {
+                'message': 'reponse data is invalid',
+            },
         },
     )
 
@@ -202,13 +176,14 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
 
     Mock find_patient_by_ramq and pretend it was successful
     """
-    _mock_requests_post(
-        mocker,
-        {
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
             'status': 'success',
             'data': OIE_PATIENT_DATA,
         },
     )
+
     form_data = {
         'medical_card': 'ramq',
         'medical_number': 'RAMQ99996666',

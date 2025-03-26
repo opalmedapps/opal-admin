@@ -97,6 +97,7 @@ class SearchForm(forms.Form):
                 Submit('wizard_goto_step', _('Next')),
             ),
         )
+        self.oie_service = OIEService()
 
     def clean(self) -> None:
         """Validate medical number fields."""
@@ -104,7 +105,7 @@ class SearchForm(forms.Form):
         medical_card_field = self.cleaned_data.get('medical_card')
         medical_number_field = self.cleaned_data.get('medical_number')
         site_code_field = self.cleaned_data.get('site_code')
-        medical_number_field = '' if medical_number_field is None else str(medical_number_field)
+        medical_number_field = str(medical_number_field or '')
 
         response = {}
         # Medicare Card Number (RAMQ)
@@ -115,10 +116,10 @@ class SearchForm(forms.Form):
                 self.add_error('medical_number', error_msg)
             else:
                 # Search patient info by RAMQ.
-                response = OIEService().find_patient_by_ramq(str(medical_number_field))
+                response = self.oie_service.find_patient_by_ramq(str(medical_number_field))
         # Medical Record Number (MRN)
         else:
-            response = OIEService().find_patient_by_mrn(medical_number_field, str(site_code_field))
+            response = self.oie_service.find_patient_by_mrn(medical_number_field, str(site_code_field))
 
         # add error message to the tempate
         if response and response['status'] == 'error':
