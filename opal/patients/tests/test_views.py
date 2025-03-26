@@ -1,5 +1,6 @@
 import io
 import re
+import urllib
 from datetime import date, datetime
 from http import HTTPStatus
 from typing import Any, Tuple
@@ -25,8 +26,11 @@ from opal.users.factories import Caregiver
 
 from ...users.models import User
 from .. import constants, factories, forms, models, tables
+from ..filters import ManageCaregiverAccessFilter
 # Add any future GET-requestable patients app pages here for faster test writing
-from ..views import AccessRequestView, PendingRelationshipListView
+from ..views import AccessRequestView, CaregiverAccessView, PendingRelationshipListView
+
+pytestmark = pytest.mark.django_db
 
 CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
     date_of_birth=datetime.strptime('1984-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
@@ -58,7 +62,7 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
 )
 
 test_url_template_data: list[Tuple] = [
-    (reverse('patients:relationships-search'), 'patients/relationships-search/form.html'),
+    (reverse('patients:relationships-search'), 'patients/relationships-search/relationship_filter.html'),
 ]
 
 
@@ -1403,3 +1407,179 @@ def test_relationshiptype_response_no_menu(user_client: Client, django_user_mode
     response = user_client.get('/hospital-settings/')
 
     assertNotContains(response, 'Relationship Types')
+
+
+# Search Patient Access tests
+
+def test_caregiver_access_tables(user_client: Client, django_user_model: User) -> None:
+    """Ensure `CaregiverAccessView` uses the `RelationshipPatientTable` and `RelationshipCaregiverTable` tables."""
+    user = django_user_model.objects.create(username='test_caregiver_access_user')
+    user_client.force_login(user)
+
+    response = user_client.get(reverse('patients:relationships-search'))
+
+    assert response.context['tables'][0].__class__ == tables.PatientTable
+    assert response.context['tables'][1].__class__ == tables.RelationshipCaregiverTable
+
+
+def test_caregiver_access_filter(user_client: Client, django_user_model: User) -> None:
+    """Ensure `CaregiverAccessView` uses the `ManageCaregiverAccessFilter`."""
+    user = django_user_model.objects.create(username='test_caregiver_access_user')
+    user_client.force_login(user)
+
+    response = user_client.get(reverse('patients:relationships-search'))
+
+    assert response.context['filter'].__class__ == ManageCaregiverAccessFilter
+
+
+def test_caregiver_access_empty_tables_displayed(user_client: Client, django_user_model: User) -> None:
+    """Ensure that `Search Patient Access` template displays empty `Patient Details` and `Caregiver Details` tables."""
+    user = django_user_model.objects.create(username='test_caregiver_access_user')
+    user_client.force_login(user)
+
+    factories.Relationship(type=factories.RelationshipType(role_type=models.RoleType.SELF))
+    factories.Relationship(type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER))
+    factories.Relationship(type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER))
+
+    request = RequestFactory().get(reverse('patients:relationships-search'))
+    request.user = user
+
+    response = CaregiverAccessView.as_view()(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assertContains(response, '<td colspan="5">No patient could be found.</td>')
+    assertContains(response, '<td colspan="7">No caregiver could be found.</td>')
+
+
+def test_caregiver_access_tables_displayed_by_mrn(user_client: Client, django_user_model: User) -> None:
+    """
+    Ensure that `Search Patient Access` template displays `Patient Details` table and `Caregiver Details` table.
+
+    The search is performed by using MRN number.
+    """
+    user = django_user_model.objects.create(username='test_caregiver_access_user')
+    user_client.force_login(user)
+
+    hospital_patient = factories.HospitalPatient()
+    factories.Relationship(
+        patient=hospital_patient.patient,
+        type=factories.RelationshipType(role_type=models.RoleType.SELF),
+    )
+    factories.Relationship(
+        patient=hospital_patient.patient,
+        type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER),
+    )
+    factories.Relationship(
+        patient=hospital_patient.patient,
+        type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER),
+    )
+    factories.Relationship(
+        patient=factories.Patient(ramq='TEST123'),
+        type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER),
+    )
+
+    form_data = {
+        'medical_card_type': 'mrn',
+        'site': hospital_patient.site.id,
+        'medical_number': hospital_patient.mrn,
+        'search': 'Search',
+    }
+    query_string = urllib.parse.urlencode(form_data)
+    response = user_client.get(
+        path=reverse('patients:relationships-search'),
+        QUERY_STRING=query_string,
+    )
+    response.content.decode('utf-8')
+    assert response.status_code == HTTPStatus.OK
+
+    # Check 'medical_number' field name
+    mrn_filter = response.context['filter']
+    assert mrn_filter.filters['medical_number'].field_name == 'hospital_patients__mrn'
+
+    # Check filter's queryset
+    assertQuerysetEqual(
+        mrn_filter.qs,
+        models.Patient.objects.filter(hospital_patients__mrn=hospital_patient.mrn),
+        ordered=False,
+    )
+
+    # Check number of tables
+    soup = BeautifulSoup(response.content, 'html.parser')
+    search_tables = soup.find_all('tbody')
+    assert len(search_tables) == 2
+
+    # Check how many patients are displayed
+    patients = search_tables[0].find_all('tr')
+    assert len(patients) == 1
+
+    # Check how many caregivers are displayed
+    caregivers = search_tables[1].find_all('tr')
+    assert len(caregivers) == 3
+
+
+def test_caregiver_access_tables_displayed_by_ramq(user_client: Client, django_user_model: User) -> None:
+    """
+    Ensure that `Search Patient Access` template displays `Patient Details` table and `Caregiver Details` table.
+
+    The search is performed by using RAMQ number.
+    """
+    user = django_user_model.objects.create(username='test_caregiver_access_user')
+    user_client.force_login(user)
+
+    hospital_patient = factories.HospitalPatient(
+        patient=factories.Patient(ramq='OTES01161973'),
+    )
+    factories.Relationship(
+        patient=hospital_patient.patient,
+        type=factories.RelationshipType(name=models.RoleType.SELF),
+    )
+    factories.Relationship(
+        patient=hospital_patient.patient,
+        type=factories.RelationshipType(name=models.RoleType.CAREGIVER),
+    )
+    factories.Relationship(
+        patient=hospital_patient.patient,
+        type=factories.RelationshipType(name=models.RoleType.CAREGIVER),
+    )
+    factories.Relationship(
+        patient=factories.Patient(ramq='TEST123'),
+        type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER),
+    )
+
+    form_data = {
+        'medical_card_type': 'ramq',
+        'site': '',
+        'medical_number': hospital_patient.patient.ramq,
+        'search': 'Search',
+    }
+    query_string = urllib.parse.urlencode(form_data)
+    response = user_client.get(
+        path=reverse('patients:relationships-search'),
+        QUERY_STRING=query_string,
+    )
+    response.content.decode('utf-8')
+    assert response.status_code == HTTPStatus.OK
+
+    # Check 'medical_number' field name
+    ramq_filter = response.context['filter']
+    assert ramq_filter.filters['medical_number'].field_name == 'ramq'
+
+    # Check filter's queryset
+    assertQuerysetEqual(
+        ramq_filter.qs,
+        models.Patient.objects.filter(ramq=hospital_patient.patient.ramq),
+        ordered=False,
+    )
+
+    # Check number of tables
+    soup = BeautifulSoup(response.content, 'html.parser')
+    search_tables = soup.find_all('tbody')
+    assert len(search_tables) == 2
+
+    # Check how many patients are displayed
+    patients = search_tables[0].find_all('tr')
+    assert len(patients) == 1
+
+    # Check how many caregivers are displayed
+    caregivers = search_tables[1].find_all('tr')
+    assert len(caregivers) == 3
