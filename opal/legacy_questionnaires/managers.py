@@ -47,9 +47,9 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
 
         if relationship_types:
             if relationship_types.filter(can_answer_questionnaire=True):
-                respondent_contents.append('Caregiver')
-            if not relationship_types.filter(role_type='SELF'):
                 respondent_contents.append('Patient')
+            if not relationship_types.filter(role_type='SELF'):
+                respondent_contents.append('Caregiver')
 
         return self.filter(
             legacyanswerquestionnaire__status=0,                             # 0 = New questionnaires
