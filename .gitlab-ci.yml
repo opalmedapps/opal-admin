@@ -99,7 +99,7 @@ xray:
   # replace default before_script section
   before_script:
     - uname -a
-    - x-ray-scan -v
+    - x-ray-scan -version
   script:
     - x-ray-scan --help
     - echo "$CI_PROJECT_DIR"
