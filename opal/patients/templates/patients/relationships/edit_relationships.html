@@ -1,43 +1,25 @@
-{% extends "layouts/base.html" %}
+{% extends "base.html" %}
 {% load l10n %}
 {% load i18n %}
 {% load crispy_forms_tags %}
 
-{% block content-header-page-name %}
-  {% if object %}{% translate "Manage" %}{% else %}{% translate "Create" %}{% endif %} {% translate "Caregiver Access Requests" %}
+{% block heading %}
+  {% translate "Edit Caregiver Access Request" %}
 {% endblock %}
 
 {% block content %}
-{% comment %} Main content {% endcomment %}
-  <section class="content">
-    {% comment %} Default box {% endcomment %}
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-body">
-                  <p><span class="font-weight-bold">{% translate "Caregiver" %}</span>:&nbsp;{{relationship.caregiver}}</p>
-                  <p><span class="font-weight-bold">{% translate "Patient" %}</span>:&nbsp;{{relationship.patient}}</p>
-                  <p><span class="font-weight-bold">{% translate "RAMQ" %}</span>:&nbsp;{{relationship.patient.ramq}}</p>
-                  <p><span class="font-weight-bold">{% translate "Date of Birth"%}</span>:&nbsp;{{relationship.patient.date_of_birth | localize}}</p>
-                  <p><span class="font-weight-bold">{% translate "Relationship" %}</span>:&nbsp;{{relationship.type}}</p>
-                  </div>
-                    {% comment %} /.card-body {% endcomment %}
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                      <form method="post" novalidate>
-                        {% csrf_token %}
-
-                        {% crispy form %}
-                      </form>
-                    </div>
-                    {% comment %} /.card-body {% endcomment %}
-                </div>
-            </div>
-        </div>
+  <div class="card mb-3">
+    <div class="card-body">
+      <p><span class="fw-bold">{% translate "Caregiver" %}</span>:&nbsp;{{relationship.caregiver}}</p>
+      <p><span class="fw-bold">{% translate "Patient" %}</span>:&nbsp;{{relationship.patient}}</p>
+      <p><span class="fw-bold">{% translate "RAMQ" %}</span>:&nbsp;{{relationship.patient.ramq}}</p>
+      <p><span class="fw-bold">{% translate "Date of Birth"%}</span>:&nbsp;{{relationship.patient.date_of_birth | localize}}</p>
+      <p><span class="fw-bold">{% translate "Relationship" %}</span>:&nbsp;{{relationship.type}}</p>
     </div>
-    {% comment %} /.card {% endcomment %}
-  </section>
-{% comment %} /.content {% endcomment %}
+  </div>
+  <div class="card">
+    <div class="card-body">
+      {% crispy form %}
+    </div>
+  </div>
 {% endblock %}
