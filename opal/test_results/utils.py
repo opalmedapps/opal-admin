@@ -184,9 +184,7 @@ def _find_doctor_name(note_text: str) -> str:
     match = re.search(pattern, note_text)
 
     # Extract and return doctor's full name
-    if match:
-        return match.group(1).strip()
-    return ''
+    return match.group(1).strip() if match else ''
 
 
 def _find_note_date(note_text: str) -> datetime:
