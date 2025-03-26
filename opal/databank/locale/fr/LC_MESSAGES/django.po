@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-26 14:49-0400\n"
+"POT-Creation-Date: 2023-05-16 15:58+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -68,40 +68,40 @@ msgstr "Consentements à la banque de données"
 
 #: opal/databank/models.py
 msgid "Appointments"
-msgstr ""
+msgstr "Rendez-vous"
 
 #: opal/databank/models.py
 msgid "Diagnoses"
-msgstr ""
+msgstr "Diagnostics"
 
 #: opal/databank/models.py
 msgid "Demographics"
-msgstr ""
+msgstr "La démographie"
 
 #: opal/databank/models.py
 msgid "Labs"
-msgstr ""
+msgstr "Laboratoires"
 
 #: opal/databank/models.py
 msgid "Questionnaires"
-msgstr ""
+msgstr "Questionnaires"
 
 #: opal/databank/models.py
 msgid "Sent At"
-msgstr ""
+msgstr "Envoyé en"
 
 #: opal/databank/models.py
 msgid "Data ID"
-msgstr ""
+msgstr "ID de données"
 
 #: opal/databank/models.py
 msgid "Data Type"
-msgstr ""
+msgstr "Type de données"
 
 #: opal/databank/models.py
 msgid "Shared Datum"
-msgstr ""
+msgstr "Données partagées"
 
 #: opal/databank/models.py
 msgid "Shared Data"
-msgstr ""
+msgstr "Données partagées"

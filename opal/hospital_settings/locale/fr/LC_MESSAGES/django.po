@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-31 13:57-0400\n"
+"POT-Creation-Date: 2023-05-16 15:58+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -71,11 +71,11 @@ msgstr "Itinéraire vers l’hôpital (URL)"
 
 #: opal/hospital_settings/models.py
 msgid "Longitude"
-msgstr ""
+msgstr "Longitude"
 
 #: opal/hospital_settings/models.py
 msgid "Latitude"
-msgstr ""
+msgstr "Latitude"
 
 #: opal/hospital_settings/models.py
 msgid "Can manage sites"
@@ -93,7 +93,7 @@ msgstr "Sites"
 
 #: opal/hospital_settings/tables.py
 msgid "Actions"
-msgstr ""
+msgstr "Actions"
 
 #: opal/hospital_settings/tables.py
 msgid "No institutions defined."
