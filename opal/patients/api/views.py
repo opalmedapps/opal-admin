@@ -146,4 +146,4 @@ class RegistrationRegisterView(APIView):
         else:
             db_error = 'Saved the patient data successfully.'
 
-        return Response({'data': db_error})
+        return Response({'detail': db_error})

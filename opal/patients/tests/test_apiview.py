@@ -134,7 +134,7 @@ def test_registration_register_success(api_client: APIClient, admin_user: Abstra
     assert registration_code.status == RegistrationCodeStatus.REGISTERED
     assert len(security_answers) == 2
     assert response.json() == {
-        'data': 'Saved the patient data successfully.',
+        'detail': 'Saved the patient data successfully.',
     }
 
 
@@ -183,5 +183,5 @@ def test_registration_register_invalid_email(api_client: APIClient, admin_user: 
     assert registration_code.status == RegistrationCodeStatus.NEW
     assert not security_answers
     assert response.json() == {
-        'data': "({'email': [ValidationError(['Enter a valid email address.'])]}, None, None)",
+        'detail': "({'email': [ValidationError(['Enter a valid email address.'])]}, None, None)",
     }
