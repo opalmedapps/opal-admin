@@ -1,6 +1,7 @@
 """Module providing business logic for generating PDF reports using legacy PHP endpoints."""
 
 import base64
+import imghdr
 import json
 from pathlib import Path
 
@@ -11,12 +12,12 @@ from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
 
-class QuestionnaireReportService():
+class ReportService():
     """Service that provides functionality for generating questionnaire pdf reports."""
 
     content_type = 'application/json'
 
-    def generate(
+    def generate_questionnaire_report(
         self,
         patient_id: int,
         logo_path: str,
@@ -54,7 +55,7 @@ class QuestionnaireReportService():
         """
         pload = json.dumps({
             'patient_id': patient_id,
-            'logo_base64': self._encode_to_base64(logo_path),
+            'logo_base64': self._encode_image_to_base64(logo_path),
             'language': language,
         })
 
@@ -82,7 +83,7 @@ class QuestionnaireReportService():
         # Check if ['data']['base64EncodedReport'] is a string and return its value. If not a string, return empty one.
         return base64_report if isinstance(base64_report, str) else ''
 
-    def _encode_to_base64(self, logo_path: str) -> str:
+    def _encode_image_to_base64(self, logo_path: str) -> str:
         """Create base64 string of a given image.
 
         Args:
@@ -92,9 +93,16 @@ class QuestionnaireReportService():
             str: encoded base64 string of the logo image
         """
         try:
+            # Return an empty string if a given file is not an image
+            if imghdr.what(Path(logo_path)) is None:
+                return ''
+        except IOError:
+            return ''
+
+        try:
             with Path(logo_path).open(mode='rb') as image_file:
                 data = base64.b64encode(image_file.read())
-        except Exception:
+        except IOError:
             return ''
 
         return data.decode('utf-8')
@@ -114,5 +122,5 @@ class QuestionnaireReportService():
 
         try:
             return base64.b64encode(base64.b64decode(string)) == bytes(string, 'ascii')
-        except Exception:
+        except ValueError:
             return False

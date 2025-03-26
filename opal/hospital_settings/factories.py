@@ -15,8 +15,8 @@ class Institution(DjangoModelFactory):
 
     name = 'McGill University Health Centre'
     name_fr = 'Centre universitaire de santé McGill'
-    logo = factory.django.ImageField(from_path='opal/hospital_settings/tests/fixtures/test_logo.png')
-    logo_fr = factory.django.ImageField(from_path='opal/hospital_settings/tests/fixtures/test_logo.png')
+    logo = factory.django.ImageField(from_path='opal/tests/fixtures/test_logo.png')
+    logo_fr = factory.django.ImageField(from_path='opal/tests/fixtures/test_logo.png')
     code = factory.lazy_attribute(lambda institution: institution.name[:4].upper())
 
 
