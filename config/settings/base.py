@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
 from pathlib import Path
+from typing import Any
 
 from django.utils.translation import gettext_lazy as _
 
@@ -229,7 +230,7 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 # https://docs.djangoproject.com/en/dev/topics/auth/passwords/#enabling-password-validation
-AUTH_PASSWORD_VALIDATORS = [
+AUTH_PASSWORD_VALIDATORS: list[dict[str, Any]] = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },

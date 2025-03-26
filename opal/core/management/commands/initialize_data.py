@@ -1,4 +1,5 @@
 """Management command for inserting test data."""
+import secrets
 from typing import Any
 
 from django.conf import settings
@@ -10,7 +11,48 @@ from rest_framework.authtoken.models import Token
 
 from opal.caregivers.models import SecurityQuestion
 from opal.core import constants
+from opal.legacy import models as legacy_models
 from opal.users.models import ClinicalStaff
+
+
+def token(value: str) -> str:
+    """
+    Validate token string.
+
+    Args:
+        value: The token string to validate
+
+    Raises:
+        ValueError: If the token string is not 40 characters long
+
+    Returns:
+        the token string
+    """
+    if len(value) != constants.TOKEN_LENGTH:
+        raise ValueError('Token must be 40 characters long')
+
+    return value
+
+
+def password(value: str) -> str:
+    """
+    Validate that the password has a minimum required length.
+
+    Args:
+        value: the password string to validate
+
+    Raises:
+        ValueError: If the password is too short
+
+    Returns:
+        the password string
+    """
+    minimum_length = constants.ADMIN_PASSWORD_MIN_LENGTH
+
+    if len(value) < minimum_length:
+        raise ValueError(f'Password must be at least {minimum_length} characters long')
+
+    return value
 
 
 class Command(BaseCommand):
@@ -38,6 +80,40 @@ class Command(BaseCommand):
             default=False,
             help='Force deleting existing data first before initializing (default: false)',
         )
+        password_help = (
+            'password for the admin user to be used'
+            + f' instead of generating a random one (minimum length: {constants.ADMIN_PASSWORD_MIN_LENGTH}'
+        )
+        parser.add_argument(
+            '--admin-password',
+            type=password,
+            default=None,
+            help=password_help,
+        )
+        parser.add_argument(
+            '--listener-token',
+            type=token,
+            default=None,
+            help='token for the listener user to be used instead of generating a random one (length: 40)',
+        )
+        parser.add_argument(
+            '--listener-registration-token',
+            type=token,
+            default=None,
+            help='token for the listener-registration user to be used instead of generating a random one (length: 40)',
+        )
+        parser.add_argument(
+            '--interface-engine-token',
+            type=token,
+            default=None,
+            help='token for the interface-engine user to be used instead of generating a random one (length: 40)',
+        )
+        parser.add_argument(
+            '--opaladmin-backend-legacy-token',
+            type=token,
+            default=None,
+            help='token for the opaladmin backend user to be used instead of generating a random one (length: 40)',
+        )
 
     @transaction.atomic
     def handle(self, *args: Any, **options: Any) -> None:
@@ -49,7 +125,7 @@ class Command(BaseCommand):
 
         Args:
             args: additional arguments
-            options: additional keyword arguments
+            options: the options keyword arguments passed to the command
         """
         if any([
             Group.objects.all().exists(),
@@ -63,25 +139,34 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.WARNING('Deleting existing data'))
 
-            # keep system users
-            ClinicalStaff.objects.exclude(
-                username__in=[
-                    constants.USERNAME_LISTENER,
-                    constants.USERNAME_LISTENER_REGISTRATION,
-                    constants.USERNAME_INTERFACE_ENGINE,
-                    constants.USERNAME_BACKEND_LEGACY,
-                ],
-            ).delete()
-            Group.objects.all().delete()
-            SecurityQuestion.objects.all().delete()
+            self._delete_data()
 
             self.stdout.write(self.style.SUCCESS('Data successfully deleted'))
 
-        self._create_data()
+        self._create_data(**options)
+        self._create_legacy_data(**options)
 
         self.stdout.write(self.style.SUCCESS('Data successfully created'))
 
-    def _create_data(self) -> None:  # noqa: WPS210, WPS213
+    def _delete_data(self) -> None:
+        """
+        Delete existing data that was initialized.
+
+        Keeps the system users so that they keep their existing API tokens.
+        """
+        # keep system users
+        ClinicalStaff.objects.exclude(
+            username__in=[
+                constants.USERNAME_LISTENER,
+                constants.USERNAME_LISTENER_REGISTRATION,
+                constants.USERNAME_INTERFACE_ENGINE,
+                constants.USERNAME_BACKEND_LEGACY,
+            ],
+        ).delete()
+        Group.objects.all().delete()
+        SecurityQuestion.objects.all().delete()
+
+    def _create_data(self, **options: Any) -> None:  # noqa: WPS210, WPS213
         """
         Create all initial data.
 
@@ -90,6 +175,9 @@ class Command(BaseCommand):
             * groups and their permissions
             * users
             * tokens for system users
+
+        Args:
+            options: the options keyword arguments passed to the command
         """
         _create_security_questions()
 
@@ -176,15 +264,59 @@ class Command(BaseCommand):
         ])
 
         # get existing or create new tokens for the API users
-        token_listener, _ = Token.objects.get_or_create(user=listener)
-        token_listener_registration, _ = Token.objects.get_or_create(user=listener_registration)
-        token_interface_engine, _ = Token.objects.get_or_create(user=interface_engine)
-        token_legacy_backend, _ = Token.objects.get_or_create(user=legacy_backend)
+        predefined_token = options['listener_token']
+        token_listener, _ = Token.objects.get_or_create(user=listener, defaults={'key': predefined_token})
+
+        predefined_token = options['listener_registration_token']
+        token_listener_registration, _ = Token.objects.get_or_create(
+            user=listener_registration,
+            defaults={'key': predefined_token},
+        )
+
+        predefined_token = options['interface_engine_token']
+        token_interface_engine, _ = Token.objects.get_or_create(
+            user=interface_engine,
+            defaults={'key': predefined_token},
+        )
+
+        predefined_token = options['opaladmin_backend_legacy_token']
+        token_legacy_backend, _ = Token.objects.get_or_create(
+            user=legacy_backend,
+            defaults={'key': predefined_token},
+        )
 
         self.stdout.write(f'{listener.username} token: {token_listener}')
         self.stdout.write(f'{listener_registration.username} token: {token_listener_registration}')
         self.stdout.write(f'{interface_engine.username} token: {token_interface_engine}')
         self.stdout.write(f'{legacy_backend.username} token: {token_legacy_backend}')
+
+    def _create_legacy_data(self, **options: Any) -> None:
+        # create a legacy admin user with the system administrator role
+        admin_role = legacy_models.LegacyOARole.objects.get(name_en='System Administrator')
+        legacy_models.LegacyOAUser.objects.create(
+            username='admin',
+            # the password does not matter since legacy OpalAdmin
+            # does not support logging in with AD or regular login at the same time
+            # i.e., if AD login is enabled a regular log in is not possible
+            password=secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES),
+            oa_role=admin_role,
+            user_type=legacy_models.LegacyOAUserType.HUMAN,
+        )
+
+        password_option: str = options['admin_password']
+        raw_password = (
+            password_option
+            if password_option
+            else secrets.token_urlsafe(constants.ADMIN_PASSWORD_MIN_LENGTH_BYTES)
+        )
+        ClinicalStaff.objects.create_superuser(username='admin', email=None, password=raw_password)
+
+        message = 'Created superuser with username "admin"'
+
+        if not password_option:
+            message += ' and generated password: {raw_password}'  # noqa: WPS336 (explicit over implicit)
+
+        self.stdout.write(message)
 
 
 def _create_security_questions() -> None:
