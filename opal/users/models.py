@@ -16,6 +16,7 @@ from typing import Any, ClassVar, Set, TypeAlias
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, Group, UserManager
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.base import ModelBase
@@ -185,14 +186,18 @@ def post_save_user_signal_handler(  # noqa: WPS211
         args: argument sent with the request
         kwargs: extra keyword arguments
     """
-    if model == Group and action == 'post_add':
-        administrators_pk = Group.objects.get(name=ADMIN_GROUP_NAME).pk
+    if model == Group:
+        try:
+            administrators_pk = Group.objects.get(name=ADMIN_GROUP_NAME).pk
+        except ObjectDoesNotExist:
+            return
+
         if administrators_pk in pk_set:
-            instance.is_superuser = True
-            instance.is_staff = True
-    elif model == Group and action == 'post_remove':
-        administrators_pk = Group.objects.get(name=ADMIN_GROUP_NAME).pk
-        if administrators_pk in pk_set:
-            instance.is_superuser = False
-            instance.is_staff = False
-    instance.save()
+            if action == 'post_add':
+                instance.is_superuser = True
+                instance.is_staff = True
+            elif action == 'post_remove':
+                instance.is_superuser = False
+                instance.is_staff = False
+
+        instance.save()
