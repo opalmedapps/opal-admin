@@ -479,6 +479,10 @@ DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = ['^/admin/jsi18n/', '^/static/', '
 
 # Make events read-only to disallow deleting
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
+# Propagate exceptions during debug
+DJANGO_EASY_AUDIT_PROPAGATE_EXCEPTIONS = DEBUG
+# Disable extra DB calls to check whether user exists
+DJANGO_EASY_AUDIT_CHECK_IF_REQUEST_USER_EXISTS = False  # noqa: WPS118
 
 # Crispy forms
 # https://django-crispy-forms.readthedocs.io/en/latest/index.html
