@@ -191,8 +191,8 @@ def test_relationships_pending_list(relationship_user: Client) -> None:
     caregivertype2 = factories.RelationshipType(name='caregiver_2')
     caregivertype3 = factories.RelationshipType(name='caregiver_3')
     relationships = [
-        factories.Relationship(type=caregivertype2, request_date='2017-01-01'),
-        factories.Relationship(type=caregivertype3, request_date='2016-01-01'),
+        factories.Relationship(type=caregivertype2, request_date=date.fromisoformat('2017-01-01')),
+        factories.Relationship(type=caregivertype3, request_date=date.fromisoformat('2016-01-01')),
     ]
 
     response = relationship_user.get(reverse('patients:relationships-list'))
@@ -337,7 +337,7 @@ def test_form_search_result_update_view(relationship_user: Client) -> None:
     assert response_get.context_data['view'].__class__ == ManageCaregiverAccessUpdateView  # type: ignore[attr-defined]
 
 
-def test_form_search_result_default_sucess_url(relationship_user: Client) -> None:
+def test_form_search_result_default_success_url(relationship_user: Client) -> None:
     """Ensures that the correct cancel url and success url are provided in the response."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
@@ -352,7 +352,7 @@ def test_form_search_result_default_sucess_url(relationship_user: Client) -> Non
     )
 
 
-def test_form_search_result_http_referer(relationship_user: Client) -> None:
+def test_form_search_result_http_referrer(relationship_user: Client) -> None:
     """Ensures that the correct cancel url and success url are provided in the response."""
     relationshiptype = factories.RelationshipType(pk=11, name='relationshiptype')
     caregiver = factories.CaregiverProfile()
@@ -610,6 +610,30 @@ def test_relationship_update_success(relationship_user: Client) -> None:
     # assertions
     relationship_record = models.Relationship.objects.get(pk=1)
     assert relationship_record.caregiver.user.last_name == data['last_name']
+
+
+def test_relationship_update_up_validate(relationship_user: Client) -> None:
+    """The manage caregiver access update view handles up-validate requests and does not validate the form."""
+    relationship = factories.Relationship(
+        type=models.RelationshipType.objects.parent_guardian(),
+        status=models.RelationshipStatus.PENDING,
+    )
+    form_data = model_to_dict(relationship)
+    form_data['type'] = models.RelationshipType.objects.self_type()
+
+    response = relationship_user.post(
+        path=reverse('patients:relationships-view-update', kwargs={'pk': relationship.pk}),
+        HTTP_X_Up_Validate='type',
+    )
+
+    assert response.status_code == HTTPStatus.OK
+
+    form: forms.forms.Form = response.context['form']
+
+    assert not form.is_bound
+    assert not form.data
+    assert 'relationship' in response.context
+    assert 'cancel_url' in response.context
 
 
 # relationshiptype tests
