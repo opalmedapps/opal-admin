@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-22 10:33-0400\n"
+"POT-Creation-Date: 2023-03-22 10:49-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -473,11 +473,11 @@ msgstr ""
 
 #: opal/patients/templates/patients/access_request/qr_code.html
 msgid ""
-"OR enter the patient's cell phone number and click 'Send SMS' to send "
-"them their code by text message"
+"OR enter the patient's cell phone number and click 'Send SMS' to send them "
+"their code by text message."
 msgstr ""
 "OU entrez le numéro de téléphone portable du patient et cliquez sur 'Envoyer "
-"SMS' pour lui envoyer son code par SMS"
+"SMS' pour lui envoyer son code par SMS."
 
 #: opal/patients/templates/patients/access_request/qr_code.html
 msgid "Inform the patient that their code will expire in 72 hours."
