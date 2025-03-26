@@ -38,6 +38,7 @@ before_script:
 stages:
   - Static Analysis
   - Test
+  - Build
   - Documentation
 
 setup:
@@ -106,6 +107,18 @@ coverage:
   artifacts:
     reports:
       cobertura: coverage.xml
+
+# Try building the documentation site to ensure there are no issues
+build docs:
+  stage: Build
+  script:
+    - pip install -r requirements/docs.txt
+    - mkdocs build
+  # only run during merge request
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  needs:
+    - job: coverage
 
 # Publish docs to GitLab Pages
 # see: https://squidfunk.github.io/mkdocs-material/publishing-your-site/#gitlab-pages
