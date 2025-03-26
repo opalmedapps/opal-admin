@@ -595,8 +595,9 @@ class ManageSearchUpdateView(ManageRelationshipUpdateMixin):
         context = super().get_context_data(**kwargs)
         # to pass url to crispy form to be able to re-use the same form for different purposes
         default_success_url = reverse_lazy('patients:relationships-search')
+        url_renderer = self.request.META.get('HTTP_REFERER')
         # provide previous link with parameters to update on clicking cancel button
-        if self.request.META.get('HTTP_REFERER'):
+        if url_renderer and 'search=' in url_renderer:
             context['cancel_url'] = self.request.META.get('HTTP_REFERER')
         # to maintain the value of `cancel_url` when there is a validation error
         else:
