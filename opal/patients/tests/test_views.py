@@ -1665,12 +1665,12 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
             'patients:relationships-search-update',
             kwargs={'pk': 1},
         ),
-        HTTP_REFERER='patient/test/search-query',
+        HTTP_REFERER='patient/test/search=query',
     )
 
     # assert cancel_url being set when HTTP_REFERER is not empty
     cancel_url = response_get.context_data['view'].get_context_data()['cancel_url']  # type: ignore[attr-defined]
-    assert cancel_url == 'patient/test/search-query'
+    assert cancel_url == 'patient/test/search=query'
 
     response_post = relationship_user.post(
         reverse(
