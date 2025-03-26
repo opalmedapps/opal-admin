@@ -1153,6 +1153,7 @@ class TestRegistrationCompletionView:
     def test_registration_without_security_answers(self, api_client: APIClient, admin_user: User) -> None:
         """Test registration without security answers don't cause the serializer to fail."""
         api_client.force_login(user=admin_user)
+
         input_data_without_security_answers = {
             'patient': {
                 'legacy_id': 1,
@@ -1164,16 +1165,35 @@ class TestRegistrationCompletionView:
                 'legacy_id': 1,
             },
         }
+        # Build existing caregiver
+        caregiver = user_factories.Caregiver(
+            username='test-username',
+            first_name='caregiver',
+            last_name='test',
+        )
+        caregiver_factories.CaregiverProfile(user=caregiver)
+        # Build skeleton user
+        # Build relationships: code -> relationship -> patient
+        skeleton = user_factories.Caregiver(
+            username='skeleton-username',
+            first_name='skeleton',
+            last_name='test',
+        )
+        skeleton_profile = caregiver_factories.CaregiverProfile(user=skeleton)
+        relationship = Relationship(caregiver=skeleton_profile)
+        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+        caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
 
         response = api_client.post(
             reverse(
                 'api:registration-register',
-                kwargs={'code': '123456'},
+                kwargs={'code': registration_code},
             ),
             data=input_data_without_security_answers,
         )
 
-        assert response.status_code == HTTPStatus.NOT_FOUND
+        assert response.status_code == HTTPStatus.OK
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
 
     def test_registered_registration_code(self, api_client: APIClient, admin_user: User) -> None:
         """Test registered registration code."""
