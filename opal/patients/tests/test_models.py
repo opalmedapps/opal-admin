@@ -117,7 +117,7 @@ def test_patient_factory_multiple() -> None:
     patient = factories.Patient()
     patient2 = factories.Patient()
 
-    assert patient != patient2
+    assert patient == patient2
 
 
 def test_patient_invalid_sex() -> None:
@@ -130,11 +130,13 @@ def test_patient_invalid_sex() -> None:
 def test_patient_health_insurance_number_unique() -> None:
     """Ensure that the health insurance number is unique."""
     factories.Patient(health_insurance_number='TEST')
+    patient = factories.Patient(health_insurance_number='TEST2')
 
     message = "Duplicate entry 'TEST' for key 'health_insurance_number'"
 
     with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
-        factories.Patient(health_insurance_number='TEST')
+        patient.health_insurance_number = 'TEST'
+        patient.save()
 
 
 def test_relationship_str() -> None:
@@ -161,7 +163,7 @@ def test_relationship_factory_multiple() -> None:
     relationship2 = factories.Relationship()
 
     assert relationship != relationship2
-    assert relationship.patient != relationship2.patient
+    assert relationship.patient == relationship2.patient
     assert relationship.caregiver != relationship2.caregiver
     assert relationship.type == relationship2.type
 
@@ -231,7 +233,7 @@ def test_hospitalpatient_factory_multiple() -> None:
     hospital_patient2 = factories.HospitalPatient()
 
     assert hospital_patient != hospital_patient2
-    assert hospital_patient.patient != hospital_patient2.patient
+    assert hospital_patient.patient == hospital_patient2.patient
     assert hospital_patient.site != hospital_patient2.site
 
 

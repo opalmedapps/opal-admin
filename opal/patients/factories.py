@@ -38,6 +38,7 @@ class Patient(DjangoModelFactory):
 
     class Meta:
         model = models.Patient
+        django_get_or_create = ('health_insurance_number',)
 
     first_name = 'Patient First Name'
     last_name = 'Patient Last Name'
