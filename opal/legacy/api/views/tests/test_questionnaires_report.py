@@ -284,3 +284,45 @@ class TestQuestionnairesReportView:
         mock_logger.assert_called_once_with(message)
         assert response.status_code == status.HTTP_200_OK
         assert response.data is None
+
+    def test_post_report_export(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        mocker: MockerFixture,
+    ) -> None:
+        """Test PDF report export request sent to the OIE."""
+        base64_encoded_report = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
+        hospital_settings_factories.Institution(pk=1)
+        hospital_patient = patient_factories.HospitalPatient()
+
+        # mock an actual call to the legacy report generation service to raise a request error
+        mocker.patch(
+            'opal.services.reports.ReportService.generate_questionnaire_report',
+            return_value=base64_encoded_report,
+        )
+
+        mock_export_pdf_report = mocker.patch(
+            'opal.services.hospital.hospital.OIEService.export_pdf_report',
+            return_value={'status': 'success'},
+        )
+
+        document_date = timezone.localtime(timezone.now())
+        mocker.patch(
+            'django.utils.timezone.localtime',
+            return_value=document_date,
+        )
+
+        response = self.make_request(api_client, admin_user, hospital_patient.site.code, hospital_patient.mrn)
+
+        mock_export_pdf_report.assert_called_once_with(
+            OIEReportExportData(
+                mrn=hospital_patient.mrn,
+                site=hospital_patient.site.code,
+                base64_content=base64_encoded_report,
+                document_number='FMU',  # TODO: clarify where to get the value
+                document_date=document_date,  # TODO: get the exact time of the report creation
+            ),
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data == {'status': 'success'}
