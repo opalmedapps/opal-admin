@@ -21,7 +21,7 @@ from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
 from opal.patients.factories import HospitalPatient, Patient, Relationship
 from opal.users.factories import Caregiver
-from opal.users.models import User
+from opal.users.models import Caregiver as caregiver_model, User
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
@@ -364,7 +364,7 @@ class TestApiRegistrationCompletion:
         assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
         assert relationship.caregiver.id == caregiver_profile.id
         assert relationship.caregiver.user.id == caregiver.id
-        assert not User.objects.filter(username=skeleton.username).exists()
+        assert not caregiver_model.objects.filter(username=skeleton.username).exists()
         assert not caregiver_models.CaregiverProfile.objects.filter(user=skeleton).exists()
 
 
