@@ -6,6 +6,7 @@ This section explains the user permissions management and the convention of addi
 For more information see the [Django Documentation on permissions and authorization](https://docs.djangoproject.com/en/dev/topics/auth/default/#permissions-and-authorization).
 
 When it comes to permissions, the simplest form of adding a new permission is to use the Django standard admin panel and the standard models permissions. However, there are more complicated scenarios such as:
+
 1. front-end permissions at HTML component level.
 
 2. model view permissions, but no editing or changing.
