@@ -1,6 +1,15 @@
+import io
+import zipfile
 from typing import Any
 
 from .. import utils
+
+# Sample file contents
+file_contents = {
+    'file1.txt': b'Hello, this is file 1.',
+    'file2.txt': b'This is the content of file 2.',
+    'image.png': b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00',
+}
 
 
 def test_random_uuid_length() -> None:
@@ -45,6 +54,67 @@ def test_qr_code() -> None:
     code = utils.qr_code('https://opalmedapps.ca')
 
     assert code.startswith(b'<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<svg xmlns:svg="http://www.w3.org/2000/svg"')
+
+
+def test_create_zip_empty_list() -> None:
+    """Ensure create_zip does not fail when it receives an empty list."""
+    files: dict[str, bytes] = {}
+
+    # Invoke the function with the empty list
+    zip_bytes = utils.create_zip(files)
+
+    # Ensure the returned object is a bytes instance
+    assert isinstance(zip_bytes, bytes), 'The returned object should be a bytes object even the file list is empty.'
+
+    # Ensure the zip buffer is not None or empty
+    assert zip_bytes, 'The ZIP buffer should not be None or empty.'
+
+    # Open the zip file from the bytes object
+    with zipfile.ZipFile(io.BytesIO(zip_bytes), 'r') as zip_file:
+        # Get the list of files in the zip archive
+        zip_contents = zip_file.namelist()
+
+        # Assert that the zip archive is empty
+        assert not zip_contents, 'The zip archive should be empty when the file list is empty.'
+
+
+def test_create_zip_success() -> None:
+    """Ensure a ZIP file can be successfully created as an in-memory bytes object."""
+    zip_bytes = utils.create_zip(file_contents)
+
+    assert isinstance(zip_bytes, bytes), 'The returned object should be a bytes instance.'
+    assert zip_bytes, 'The ZIP buffer should not be empty.'
+
+
+def test_create_zip_contains_all_files() -> None:
+    """Ensure that all expected files are in the zip archive."""
+    zip_bytes = utils.create_zip(file_contents)
+
+    # Open the zip file from the bytes object
+    with zipfile.ZipFile(io.BytesIO(zip_bytes), 'r') as zip_file:
+        # Get the list of files in the zip archive
+        zip_contents = zip_file.namelist()
+
+        expected_files = list(file_contents.keys())
+
+        assert set(zip_contents) == set(expected_files), (
+            f'ZIP archive contents {zip_contents} do not match expected {expected_files}.'
+        )
+
+
+def test_create_zip_contains_files_contents() -> None:
+    """Ensure that in the ZIP archive the contents of each file are the same as the original ones."""
+    zip_bytes = utils.create_zip(file_contents)
+
+    # Open the zip file from the bytes object
+    with zipfile.ZipFile(io.BytesIO(zip_bytes), 'r') as zip_file:
+        expected_files = list(file_contents.keys())
+
+        # Verify the contents of each file
+        for filename in expected_files:
+            with zip_file.open(filename) as zipped_file:
+                content = zipped_file.read()
+                assert content == file_contents[filename], f'Contents of {filename} do not match.'
 
 
 def test_dict_to_csv_single_dict_success() -> None:

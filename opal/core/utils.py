@@ -5,6 +5,7 @@ import random
 import secrets
 import string
 import uuid
+import zipfile
 from typing import Any
 
 import qrcode
@@ -80,6 +81,24 @@ def qr_code(text: str) -> bytes:
     image.save(stream)
 
     return stream.getvalue()
+
+
+def create_zip(files: dict[str, bytes]) -> bytes:
+    """Create a ZIP file from a mapping of files.
+
+    The ZIP file is returned as bytes.
+
+    Args:
+        files: dictionary of files to be archived, where the key is filename and the value is `bytes` object.
+
+    Returns:
+        `bytes` object containing the ZIP file
+    """
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(file=zip_buffer, mode='w', compression=zipfile.ZIP_DEFLATED) as zip_file:
+        for filename, file_content in files.items():
+            zip_file.writestr(filename, file_content)
+    return zip_buffer.getvalue()
 
 
 def dict_to_csv(dicts: list[dict[str, Any]]) -> bytes:
