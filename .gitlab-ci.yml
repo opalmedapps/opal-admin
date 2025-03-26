@@ -108,21 +108,19 @@ mypy:
 markdownlint:
   stage: Static Analysis
   image:
-    name: davidanson/markdownlint-cli2:v0.5.1
+    name: davidanson/markdownlint-cli2:next
     # overwrite default entrypoint (which is a call to markdownlint-cli2)
     entrypoint: [""]
   # this is not a Python script so we don't need to do all this extra stuff
   before_script:
     - markdownlint-cli2 --version
-    # install our custom GitLab formatter to convert output to code quality artefact
-    - npm install .gitlab/markdownlint/markdownlint-cli2-formatter-gitlab
   script:
     # use the config file that is stored outside the root
-    - markdownlint-cli2-config .gitlab/markdownlint/.markdownlint-cli2.yaml "**/*.md" "#.venv" "#node_modules"
+    - markdownlint-cli2-config .gitlab/markdownlint/.markdownlint-cli2.yaml "**/*.md" "#.venv"
   artifacts:
     when: always
     reports:
-      codequality: markdownlint-cli2-results.json
+      codequality: markdownlint-cli2-codequality.json
 
 test:
   stage: Test
