@@ -114,6 +114,13 @@ class Command(BaseCommand):
             default=None,
             help='token for the opaladmin backend user to be used instead of generating a random one (length: 40)',
         )
+        # TODO: Make dependent on `ORMS_ENABLED`
+        parser.add_argument(
+            '--orms-token',
+            type=token,
+            default=None,
+            help='token for the orms system user to be used instead of generating a random one (length: 40)',
+        )
 
     @transaction.atomic
     def handle(self, *args: Any, **options: Any) -> None:
@@ -161,6 +168,7 @@ class Command(BaseCommand):
                 constants.USERNAME_LISTENER_REGISTRATION,
                 constants.USERNAME_INTERFACE_ENGINE,
                 constants.USERNAME_BACKEND_LEGACY,
+                constants.USERNAME_ORMS,
             ],
         ).delete()
         Group.objects.all().delete()
