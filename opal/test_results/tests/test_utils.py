@@ -45,10 +45,20 @@ def _create_empty_parsed_notes() -> dict[str, Any]:
     }
 
 
-def test_find_doctor_name_success() -> None:
+# tuple with note text and corresponding doctor names
+test_note_text_data: list[tuple[str, str]] = [
+    (r'Electronically signed on 18-OCT-2023 02:29 pm\.br\By ', 'Gertruda Evaristo, MD, MSc, FRCPC'),
+    (r'Electronically signed on 18-OCT-2023 02:29 pm\.br\By ', 'Timothy John Berners-Lee, MD'),
+    (r'Electronically signed on 18-OCT-2023 02:29 pm\.br\By ', 'Leonardo di ser Piero da Vinci'),
+    (r'Electronically signed on 18-OCT-2023 02:29 pm\.br\By ', 'Guillaume Levasseur de Beauplan, MD, FRCPC'),
+]
+
+
+@pytest.mark.parametrize(('text', 'name'), test_note_text_data)
+def test_find_doctor_name_success(text: str, name: str) -> None:
     """Ensure find_doctor() successfully finds doctor name in a string."""
-    note_text = r'Electronically signed on 18-OCT-2023 02:29 pm\.br\By Gertruda Evaristo, MD, FRCPC'
-    assert _find_doctor_name(note_text) == 'Gertruda Evaristo, MD, FRCPC'
+    note_text = text + name
+    assert _find_doctor_name(note_text) == name
 
 
 def test_find_doctor_name_fail() -> None:
