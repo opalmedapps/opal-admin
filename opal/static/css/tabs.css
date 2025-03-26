@@ -6,6 +6,10 @@
     font-weight: bold;
 }
 
+.nav-tabs .nav-link {
+  margin-bottom: 0;
+}
+
 .nav-link, .nav-link:hover, .nav-link:focus {
     color: var(--opal-purple);
     background-color: white;
