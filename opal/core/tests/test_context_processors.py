@@ -27,7 +27,7 @@ def test_current_app_no_resolver() -> None:
 
 @pytest.mark.django_db()
 def test_current_app_verbose_name_no_app(client: Client) -> None:
-    """Ensure that the `current_app` context processor can return the current app's verbose name."""
+    """Ensure that the `current_app` context processor can handle a `None` app_name."""
     response = client.get(reverse('start'))
     # HttpResponse also
     context = context_processors.current_app(response)  # type: ignore[arg-type]
