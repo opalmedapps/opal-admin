@@ -163,3 +163,5 @@ def test_general_test_observations_reverse_relationship() -> None:
     assert lab_test.observations.count() == 1
     for lab_observation in lab_test.observations:
         assert isinstance(lab_observation, models.LabObservation)
+
+    assert models.GeneralTest.objects.count() == 2

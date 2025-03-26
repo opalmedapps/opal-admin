@@ -72,7 +72,7 @@ class PathologyObservation(AbstractObservation):
         """Pathology observation string representation.
 
         Returns:
-            string repr
+            string representation of the `PathologyObservation` instance
         """
         return '{code}: {observed}'.format(
             code=str(self.identifier_code),
@@ -247,7 +247,7 @@ class GeneralTest(models.Model):
         verbose_name=_('Legacy Document ID'),
         blank=True,
         null=True,
-        help_text=_('OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to patients.'),
+        help_text=_('OpalDB.Document.DocumentSerNum, used for displaying pathology PDFs to patients.'),
     )
     case_number = models.CharField(
         verbose_name=_('Case Number'),
@@ -271,10 +271,10 @@ class GeneralTest(models.Model):
         ]
 
     def __str__(self) -> str:
-        """Return the patient, type, and specimen collection date.
+        """Return the string representation of the patient, type, and specimen collection date.
 
         Returns:
-            string repr
+            specimen's type and collection date associated with a patient
         """
         return '{patient} {type} Test instance [{date}]'.format(
             patient=str(self.patient),
