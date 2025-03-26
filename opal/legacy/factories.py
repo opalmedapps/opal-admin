@@ -145,6 +145,24 @@ class LegacyTxTeamMessageFactory(DjangoModelFactory):
     readstatus = 0
 
 
+class LegacyEducationalMaterialCategoryFactory(DjangoModelFactory):
+    """Educational material category from the legacy database."""
+
+    class Meta:
+        model = models.LegacyEducationalMaterialCategory
+
+    title_en = 'Clinical'
+
+
+class LegacyEducationalMaterialControlFactory(DjangoModelFactory):
+    """Educational material control factory from the legacy database."""
+
+    class Meta:
+        model = models.LegacyEducationalMaterialControl
+
+    educationalmaterialcategoryid = SubFactory(LegacyEducationalMaterialCategoryFactory)
+
+
 class LegacyEducationalMaterialFactory(DjangoModelFactory):
     """Educational material factory from the legacy database."""
 
@@ -152,6 +170,7 @@ class LegacyEducationalMaterialFactory(DjangoModelFactory):
         model = models.LegacyEducationalMaterial
 
     patientsernum = SubFactory(LegacyPatientFactory)
+    educationalmaterialcontrolsernum = SubFactory(LegacyEducationalMaterialControlFactory)
     readby = '[]'
     readstatus = 0
 

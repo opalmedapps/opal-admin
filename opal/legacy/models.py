@@ -210,6 +210,11 @@ class LegacyEducationalMaterial(models.Model):
     """Educationalmaterial model from the legacy database OpalDB."""
 
     educationalmaterialsernum = models.AutoField(db_column='EducationalMaterialSerNum', primary_key=True)
+    educationalmaterialcontrolsernum = models.ForeignKey(
+        'LegacyEducationalMaterialControl',
+        models.DO_NOTHING,
+        db_column='EducationalMaterialControlSerNum',
+    )
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
     readby = models.JSONField(db_column='ReadBy', default=list)
@@ -218,6 +223,33 @@ class LegacyEducationalMaterial(models.Model):
     class Meta:
         managed = False
         db_table = 'EducationalMaterial'
+
+
+class LegacyEducationalMaterialControl(models.Model):
+    """EducationalMaterialControl model from the legacy database OpalDB."""
+
+    educationalmaterialcontrolsernum = models.AutoField(db_column='EducationalMaterialControlSerNum', primary_key=True)
+    educationalmaterialcategoryid = models.ForeignKey(
+        'LegacyEducationalMaterialCategory',
+        models.DO_NOTHING,
+        db_column='EducationalMaterialCategoryId',
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'EducationalMaterialControl'
+
+
+class LegacyEducationalMaterialCategory(models.Model):
+    """EducationalMaterialCategory model from the legacy database OpalDB."""
+
+    id = models.AutoField(db_column='ID', primary_key=True)  # noqa: A003
+    title_en = models.CharField(db_column='title_EN', max_length=128)
+    title_fr = models.CharField(db_column='title_FR', max_length=128)
+
+    class Meta:
+        managed = False
+        db_table = 'EducationalMaterialCategory'
 
 
 class LegacyQuestionnaire(models.Model):
