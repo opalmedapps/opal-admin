@@ -676,7 +676,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
             else:
                 context_data = form.get_context()
 
-        context_data['relationship'] = self.get_object()
+        context_data['relationship'] = relationship_record
         # keep original cancel_url
         context_data['cancel_url'] = request.POST.get('cancel_url')
         # update the form with context data when post does not succeed
