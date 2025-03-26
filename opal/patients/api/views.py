@@ -256,7 +256,6 @@ class PatientExistsView(APIView):
     """
 
     permission_classes = [IsAuthenticated]
-    pagination_class = None
 
     def post(self, request: Request) -> Response:
         """
@@ -273,7 +272,7 @@ class PatientExistsView(APIView):
         """
         # Make `is_active` not required for cases when OIE calling the API without knowing if Patient is active in Opal
         serializer = HospitalPatientSerializer(
-            fields=['mrn', 'site_code'],
+            fields=('mrn', 'site_code'),
             data=request.data,
             many=True,
         )
