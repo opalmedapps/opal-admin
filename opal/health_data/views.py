@@ -1,6 +1,7 @@
 """This module provides views for any health-data related functionality."""
 from typing import Any, Dict, Optional
 
+from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
@@ -73,6 +74,9 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
         """
         if data:
             df = pd.DataFrame(data.values('start_date', 'value', 'device'))
+            # By default the timezone in the dataframe is UTC.
+            # Should be set to the local timezone: https://stackoverflow.com/a/50062101
+            df['start_date'] = df['start_date'].dt.tz_convert(settings.TIME_ZONE)
 
             #  Plotly chart customization: https://plotly.com/python/line-charts/
             figure = px.line(
