@@ -3,14 +3,8 @@ With these settings, tests run faster.
 
 Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/latest/index.html
 """
-import django_stubs_ext
-
 from .base import *
 from .base import env
-
-# Monkeypatching Django, so stubs will work for all generics
-# see: https://github.com/typeddjango/django-stubs/tree/master/django_stubs_ext
-django_stubs_ext.monkeypatch()
 
 # GENERAL
 # ------------------------------------------------------------------------------

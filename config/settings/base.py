@@ -16,6 +16,10 @@ from django.utils.translation import gettext_lazy as _
 import django_stubs_ext
 import environ
 
+# Monkeypatching Django, so stubs will work for all generics
+# see: https://github.com/typeddjango/django-stubs/tree/master/django_stubs_ext
+django_stubs_ext.monkeypatch()
+
 # get root of the project
 ROOT_DIR = Path(__file__).resolve(strict=True).parents[2]
 APPS_DIR = ROOT_DIR / 'opal'
