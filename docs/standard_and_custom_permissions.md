@@ -1,12 +1,11 @@
-# Standard Django Admin Permissions
+# Standard and Custom Permissions in Django
 
 This section explains the user permissions management and the convention of adding new permissions. The design and structure of such convention are inspired by standard Django project documentation.
 
 
-For more information see the [Django Documentation - PermissionRequiredMixin]( https://docs.djangoproject.com/en/4.1/topics/auth/default/#:~:text=The%20PermissionRequiredMixin%20mixin%C2%B6).
+For more information see the [Django Documentation on permissions and authorization](https://docs.djangoproject.com/en/dev/topics/auth/default/#permissions-and-authorization).
 
-When it comes to permissions, the simplest form of adding a new permission is to use the django standard admin panel and the standard models permissions. However, there are more complicated scenarios such as:
-
+When it comes to permissions, the simplest form of adding a new permission is to use the Django standard admin panel and the standard models permissions. However, there are more complicated scenarios such as:
 1. front-end permissions at HTML component level.
 
 2. model view permissions, but no editing or changing.
@@ -32,17 +31,17 @@ class Meta:
         verbose_name = _('Site')
         verbose_name_plural = _('Sites')
 ```
-*NOTES*
+!!! note
 
-1.1 `permissions = (('new_perm','New Custom Permission'),)`
-        the first argument is called codename, the second argument is called name. 
-
-1.2 In order to know what is the codename of a permission(s) for a specific model run the following command after running
-        `python manage.py shell_plus`
-```python
- for perm in Permission.objects.filter(content_type=ContentType.objects.get_for_model(Site))
-    print(perm.codename)
-```
+    a.`permissions = (('new_perm','New Custom Permission'),)`
+            the first argument is called codename, the second argument is called name. 
+    
+    b. In order to know what is the codename of a permission(s) for a specific model run the following command after running
+            `python manage.py shell_plus`
+    ```python
+     for perm in Permission.objects.filter(content_type=ContentType.objects.get_for_model(Site)):
+        print(perm.codename)
+    ```
 2. Run
    ```python
    python manage.py makemigrations
@@ -52,9 +51,9 @@ class Meta:
 
 ### Restricting access of model templates in views
 
-By far there should be a new permission available to be used. To restrict the access to the view to only those who have this new permission follow this guide:
+By now there should be a new permission available to be used. To restrict the access to the view to only those who have this new permission follow this guide:
 
-1. Import `PermissionRequiredMixin` Django package.
+1. Import [`PermissionRequiredMixin`](https://docs.djangoproject.com/en/dev/topics/auth/default/#the-permissionrequiredmixin-mixin) Django package.
 
    ```python
    from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -71,7 +70,7 @@ By far there should be a new permission available to be used. To restrict the ac
 
 ### Applying certain restrictions on front-end at using template tags
 
-Use the template tag `{{ perms }}` in the HTML file for further restrictions:
+Use the template tag [`{{ perms }}`](https://docs.djangoproject.com/en/dev/topics/auth/default/#permissions) in the HTML template for further restrictions:
 ```html
 {% if perms.hospital_settings.new_perm %}
     <!-- Do Something -->
@@ -81,9 +80,7 @@ Use the template tag `{{ perms }}` in the HTML file for further restrictions:
 
 ## Testing the permissions
 
-PermissionDenied exception is raised with any permission whether built-in or custom permission. Hence, we can use it to test
-if exception is raised. In the references below, there are more than one suggestion to test, however, the most compact and 
-straight forward testing is the following: in `test_views.py` file add the following:
+The [`PermissionDenied`]((https://docs.djangoproject.com/en/3.2/topics/testing/tools/#exceptions)) exception is raised with any permission, whether built-in or custom. Hence, we can use it to test if this exception is raised. In the references below, there is more than one suggestion to test. However, the most compact and straight forward way to test is the following: In the `test_views.py` file add the following:
 
 ```python
 from django.test import TestCase, RequestFactory
@@ -103,4 +100,4 @@ class TestPermission(TestCase):
 
 1. [How To Test - PermissionRequiredMixin]( https://splunktool.com/test-permissionrequiredmixin-raises-permissiondenied-instead-of-403)
 2. [How To raise 403 instead of PermissionDenied]( https://stackoverflow.com/questions/42284168/test-permissionrequiredmixin-raises-permissiondenied-instead-of-403)
-3. [PermissionDenied Exception](https://docs.djangoproject.com/en/1.10/topics/testing/tools/#exceptions)
+3. [PermissionDenied Exception](https://docs.djangoproject.com/en/3.2/topics/testing/tools/#exceptions)
