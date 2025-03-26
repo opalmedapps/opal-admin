@@ -1,10 +1,19 @@
 """Module that contains serializer classes for patient models."""
 
 from rest_framework import serializers
+
 from opal.patients.models import HospitalPatient, Patient, Relationship
 
 
-class PatientDetailSerializer(serializers.ModelSerializer):
+class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):
+    """Hospital patient serializer used to get encryption values for registration web site."""
+
+    class Meta:
+        model = HospitalPatient
+        fields = ['mrn', 'is_active']
+
+
+class PatientDetailedSerializer(serializers.ModelSerializer):
     """Patient serializer used to get encryption values for registration web site."""
 
     class Meta:
@@ -17,21 +26,13 @@ class PatientRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Patient
-        fields = ['ramq']
-
-
-class HospitalPatientRegistrationSerializer(serializers.ModelSerializer):
-    """Hospital patient serializer used to get encryption values for registration web site."""
-
-    class Meta:
-        model = HospitalPatient
-        fields = ['mrn', 'is_active']
+        fields = ['first_name', 'last_name']
 
 
 class HospitalInstitutionSerializer(serializers.ModelSerializer):
     """Hospital patient serializer used to get encryption values for registration web site."""
 
-    id = serializers.PrimaryKeyRelatedField(
+    institution_id = serializers.IntegerField(
         source='site.institution.id',
         read_only=True,
     )
@@ -43,7 +44,20 @@ class HospitalInstitutionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HospitalPatient
-        fields = ['id', 'name']
+        fields = ['institution_id', 'name']
+
+
+class HospitalSiteSerializer(serializers.ModelSerializer):
+    """Hospital patient serializer used to get encryption values for registration web site."""
+
+    site_code = serializers.CharField(
+        source='site.code',
+        read_only=True,
+    )
+
+    class Meta:
+        model = HospitalPatient
+        fields = ['mrn', 'site_code']
 
 
 class CaregiverPatientSerializer(serializers.ModelSerializer):

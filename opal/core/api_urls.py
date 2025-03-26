@@ -3,6 +3,7 @@ URL configuration for the project-wide REST API.
 
 Inspired by Two Scoops of Django Section 17.3.
 """
+# flake8: noqa
 from django.conf import settings
 from django.urls import path
 from django.urls.conf import include
@@ -12,12 +13,12 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 from opal.caregivers.api.views import GetCaregiverPatientsList, GetRegistrationEncryptionInfoView
 from opal.core.api import views as core_views
 from opal.hospital_settings.api import viewsets as settings_views
-from opal.patients.api.views import PatientRetieveView
 from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_general import AppGeneralView
 from opal.legacy.api.views.app_home import AppHomeView
 from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
+from opal.patients.api.views import PatientRetieveView
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
