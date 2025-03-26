@@ -943,22 +943,6 @@ def _relative_date(base_date: date, years: int) -> date:
     return base_date + relativedelta(years=years)
 
 
-def _calculate_birth_date(base_date: date, years: int) -> date:
-    """
-    Calculate a birth date based on the given date and the number of years.
-
-    The number of years can be negative, i.e., the date will be before the reference data.
-
-    Args:
-        base_date: the date from which to calculate
-        years: the number of years to add to the base date, use a negative number to subtract
-
-    Returns:
-        the birth date calculated via `base_date - years`
-    """
-    return _relative_date(base_date, years)
-
-
 def _create_pathology_result(
     patient: Patient,
     site: Site,
