@@ -163,9 +163,5 @@ msgid "Verfied"
 msgstr ""
 
 #: opal/caregivers/models.py
-msgid "Email Verification Code"
-msgstr ""
-
-#: opal/caregivers/models.py
-msgid "Email Verification Codes"
+msgid "Email Verification"
 msgstr ""
