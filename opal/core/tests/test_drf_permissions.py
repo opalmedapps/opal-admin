@@ -26,7 +26,7 @@ class TestCaregiverPatientPermissions:
 
     class_instance = CaregiverPatientPermissions()
 
-    def set_args(self, user_id: Optional[Any], patient_id: Optional[Any]) -> None:
+    def set_args(self, user_id: Optional[Any], patient_id: int | str | None) -> None:
         """Set the input arguments expected by CaregiverPatientPermissions."""
         if user_id:
             self.request.META['HTTP_Appuserid'] = user_id

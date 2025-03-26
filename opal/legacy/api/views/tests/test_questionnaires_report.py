@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.urls import reverse
@@ -11,6 +10,7 @@ from pytest_django.asserts import assertRaisesMessage
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from opal.hospital_settings import factories as hospital_settings_factories
@@ -31,7 +31,7 @@ class TestQuestionnairesReportView:
         admin_user: User,
         site: str,
         mrn: str,
-    ) -> Any:
+    ) -> Response:
         """
         Make a request to the API view being tested (QuestionnairesReportView).
 

@@ -73,7 +73,7 @@ class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
         kwargs['partial'] = True
         return self.update(request, *args, **kwargs)
 
-    def _get_object_or_none(self) -> Any:
+    def _get_object_or_none(self) -> _Model | None:
         """Attempt to retrieve object.
 
         If not found we use clone_request to check if the caller has the required permissions for a POST request.
@@ -98,3 +98,5 @@ class AllowPUTAsCreateMixin(GenericAPIView[_Model]):
                 # PATCH requests where the object does not exist should still
                 # return a 404 response.
                 raise
+
+        return None
