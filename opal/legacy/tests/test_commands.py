@@ -437,6 +437,16 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 
         assert profile.user.phone_number == ''
 
+    def test_import_user_caregiver_has_unusable_password(self) -> None:
+        """Ensure that migrated caregivers are assigned unusable passwords (since passwords aren't currently saved)."""
+        legacy_patient = legacy_factories.LegacyPatientFactory()
+        legacy_user = legacy_factories.LegacyUserFactory()
+
+        command = migrate_users.Command()
+        profile = command._create_caregiver_and_profile(legacy_patient, legacy_user)
+
+        assert not profile.user.has_usable_password()
+
 
 class TestPatientsDeviationsCommand(CommandTestMixin):
     """Test class for the custom command that detects `Patient` model/tables deviations."""

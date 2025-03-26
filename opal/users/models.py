@@ -12,7 +12,7 @@ This is based on Two Scoops of Django, Section 22.3.
 If a user type requires additional fields that are not common to all users,
 a dedicated profile should be used. This is based on Two Scoops of Django, Section 22.2.3.
 """  # noqa: E501
-from typing import Any, TypeAlias
+from typing import Any, ClassVar, TypeAlias
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, UserManager
@@ -119,7 +119,7 @@ class ClinicalStaff(User):
 
     base_type = UserType.CLINICAL_STAFF
 
-    objects = ClinicalStaffManager()
+    objects: ClassVar[ClinicalStaffManager] = ClinicalStaffManager()
 
     class Meta:
         proxy = True
@@ -127,7 +127,7 @@ class ClinicalStaff(User):
         verbose_name_plural = _('Clinical Staff')
 
 
-class CaregiverManager(UserManager[User]):
+class CaregiverManager(UserManager['User']):
     """
     UserManager for `Caregiver` users.
 
@@ -150,7 +150,7 @@ class Caregiver(User):
 
     base_type = UserType.CAREGIVER
 
-    objects = CaregiverManager()
+    objects: ClassVar[CaregiverManager] = CaregiverManager()
 
     class Meta:
         proxy = True
