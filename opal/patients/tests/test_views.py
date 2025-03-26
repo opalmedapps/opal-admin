@@ -407,8 +407,14 @@ def test_process_step_select_site_form() -> None:
     assert request.session['site_selection'] == site.pk
 
 
+@pytest.mark.django_db()
 def test_some_mrns_have_same_site_code() -> None:
     """Test some MRN records have the same site code."""
+    request = _init_session()
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
     patient_mrn_records = {
         'mrns': [
             {
@@ -428,11 +434,18 @@ def test_some_mrns_have_same_site_code() -> None:
             },
         ],
     }
-    assert views._has_multiple_mrns_with_same_site_code(patient_mrn_records) is True
+    assert response.status_code == HTTPStatus.OK
+    assert instance._has_multiple_mrns_with_same_site_code(patient_mrn_records) is True
 
 
+@pytest.mark.django_db()
 def test_all_mrns_have_same_site_code() -> None:
     """Test all MRN records have the same site code."""
+    request = _init_session()
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
     patient_mrn_records = {
         'mrns': [
             {
@@ -452,11 +465,18 @@ def test_all_mrns_have_same_site_code() -> None:
             },
         ],
     }
-    assert views._has_multiple_mrns_with_same_site_code(patient_mrn_records) is True
+    assert response.status_code == HTTPStatus.OK
+    assert instance._has_multiple_mrns_with_same_site_code(patient_mrn_records) is True
 
 
+@pytest.mark.django_db()
 def test_no_mrns_have_same_site_code() -> None:
     """Test No MRN records have the same site code."""
+    request = _init_session()
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
     patient_mrn_records = {
         'mrns': [
             {
@@ -476,4 +496,5 @@ def test_no_mrns_have_same_site_code() -> None:
             },
         ],
     }
-    assert views._has_multiple_mrns_with_same_site_code(patient_mrn_records) is False
+    assert response.status_code == HTTPStatus.OK
+    assert instance._has_multiple_mrns_with_same_site_code(patient_mrn_records) is False
