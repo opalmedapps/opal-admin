@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * feat: show systolic and diastolic blood pressure measurements on the same chart (!708)
 * feat: add REST API endpoint for creating pathology reports (!724)
 * feat: add a pathology PDF generator for producing reports (!791)
+* feat: add usage_statistics app to store users' and patients' activity statistics (!1100)
 
 ### Documentation
 
