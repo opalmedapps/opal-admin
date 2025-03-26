@@ -10,7 +10,7 @@ from rest_framework.test import APIClient
 from opal.users.models import User
 
 from .. import factories, models
-from ..api import views
+from ..api.views.app_home import AppHomeView
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
@@ -18,7 +18,7 @@ pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 class TestHomeAppView:
     """Class wrapper for home page request tests."""
 
-    class_instance = views.AppHomeView()
+    class_instance = AppHomeView()
 
     def test_get_home_data_request(self, api_client: APIClient, admin_user: User) -> None:
         """Test if the response as the required keys."""
