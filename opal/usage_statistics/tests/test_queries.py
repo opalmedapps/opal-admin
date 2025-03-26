@@ -118,7 +118,7 @@ def test_empty_fetch_grouped_registration_summary() -> None:
 def test_fetch_grouped_registration_summary_by_day(mocker: MockerFixture) -> None:
     """Ensure fetch_grouped_registration_summary query successfully returns registration statistics grouped by day."""
     relationships = _create_relationship_records()
-    current_datetime = timezone.localtime()
+    current_datetime = dt.datetime(2025, 1, 20, 20, tzinfo=dt.UTC)
     mock_timezone = mocker.patch('django.utils.timezone.now')
     mock_timezone.return_value = current_datetime
     caregiver_factories.RegistrationCode(
