@@ -59,11 +59,15 @@ class Command(BaseCommand):
 
         # groups
         # TODO: if we need French names for groups as well we will create our own Group model
+        # or an extra Group model (with a OneToOneField) with translated names
         # maybe this can be done later
         medical_records = Group.objects.create(name='Medical Records')
         registrants = Group.objects.create(name='Registrants')
-        administrators = Group.objects.create(name='System Administrators')
-        Group.objects.create(name=settings.ORMS_USER_GROUP)
+        hospital_managers = Group.objects.create(name='Hospital Settings Managers')
+        data_exporters = Group.objects.create(name='Questionnaire Data Exporters')
+        user_managers = Group.objects.create(name=settings.USER_MANAGER_GROUP_NAME)
+        Group.objects.create(name=settings.ORMS_GROUP_NAME)
+        Group.objects.create(name=settings.ADMIN_GROUP_NAME)
 
         # users
         # TODO: should non-human users have a different user type (right now it would be clinician/clinical staff)?
@@ -102,12 +106,24 @@ class Command(BaseCommand):
         # Registrants
         registrants.permissions.add(_find_permission('patients', 'can_perform_registration'))
 
-        # Administrators
-        administrators.permissions.set([
+        # Hospital Settings Managers
+        hospital_managers.permissions.set([
             _find_permission('patients', 'can_manage_relationshiptypes'),
             _find_permission('hospital_settings', 'can_manage_institutions'),
             _find_permission('hospital_settings', 'can_manage_sites'),
+        ])
+
+        # Questionnaire Data Exporters
+        data_exporters.permissions.set([
             _find_permission('questionnaires', 'export_report'),
+        ])
+
+        # User Managers
+        user_managers.permissions.set([
+            _find_permission('users', 'view_clinicalstaff'),
+            _find_permission('users', 'add_clinicalstaff'),
+            _find_permission('users', 'change_clinicalstaff'),
+            _find_permission('users', 'delete_clinicalstaff'),
         ])
 
         # create tokens for the API users

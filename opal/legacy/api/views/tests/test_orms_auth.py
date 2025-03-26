@@ -20,7 +20,7 @@ class TestORMSLoginView:
         settings: SettingsWrapper,
     ) -> None:
         """Ensure a user can successfully login."""
-        orms_group = Group.objects.create(name=settings.ORMS_USER_GROUP)
+        orms_group = Group.objects.create(name=settings.ORMS_GROUP_NAME)
         user = django_user_model.objects.create(username='testuser')
         user.set_password('testpass')
         user.groups.add(orms_group)
@@ -83,7 +83,7 @@ class TestORMSLoginView:
         api_client: APIClient,
         django_user_model: AbstractUser,
     ) -> None:
-        """Ensure the login endpoint returns an error if user is not part of the 'ORMS_USER_GROUP'."""
+        """Ensure the login endpoint returns an error if user is not part of the 'ORMS_GROUP_NAME'."""
         user = django_user_model.objects.create(username='testuser')
         user.set_password('testpass')
         user.save()
@@ -111,7 +111,7 @@ class TestORMSLoginView:
     ) -> None:
         """Ensure the endpoint handles different requests properly."""
         settings.AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
-        orms_group = Group.objects.create(name=settings.ORMS_USER_GROUP)
+        orms_group = Group.objects.create(name=settings.ORMS_GROUP_NAME)
         orms_user = django_user_model.objects.create(username='ormsuser')
         orms_user.set_password('ormspass')
         orms_user.groups.add(orms_group)
