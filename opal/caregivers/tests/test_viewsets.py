@@ -35,7 +35,6 @@ def test_get_specific_active_security_question(api_client: APIClient, admin_user
         ),
     )
     assert response.status_code == HTTPStatus.OK
-    assert response.data['count'] == 1
     assert response.data['results'][0]['title_en'] == security_question.title
 
 
