@@ -13,6 +13,7 @@ from opal.caregivers.api.views import GetCaregiverPatientsList, GetRegistrationE
 from opal.core.api import views as core_views
 from opal.hospital_settings.api import viewsets as settings_views
 from opal.legacy.api.views.app_chart import AppChartView
+from opal.legacy.api.views.app_general import AppGeneralView
 from opal.legacy.api.views.app_home import AppHomeView
 from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
@@ -43,5 +44,6 @@ urlpatterns = [
     ),
     path('registration/by-hash/<str:hash>/', GetRegistrationEncryptionInfoView.as_view(), name='registration-by-hash'),
     path('questionnaires/reviewed/', QuestionnairesReportView.as_view(), name='questionnaires-reviewed'),
+    path('app/general/', AppGeneralView.as_view(), name='app-general'),
     path('', include(router.urls)),
 ]

@@ -65,3 +65,9 @@ class UnreadCountSerializer(serializers.Serializer):
     unread_txteammessage_count = serializers.IntegerField()
     unread_educationalmaterial_count = serializers.IntegerField()
     unread_questionnaire_count = serializers.IntegerField()
+
+
+class AnnouncementUnreadCountSerializer(serializers.Serializer):
+    """Serializer for the unread count of Announcement queryset."""
+
+    unread_announcement_count = serializers.IntegerField(min_value=0)

@@ -197,7 +197,7 @@ class TestQuestionnairesReportView:
             QuestionnaireReportRequestData(
                 patient_id=hospital_patient.patient.legacy_id,
                 logo_path=Path(institution.logo.path),
-                language='EN',
+                language='en',
             ),
         )
 
