@@ -129,14 +129,35 @@ def test_patient_invalid_sex() -> None:
 
 def test_patient_ramq_unique() -> None:
     """Ensure that the health insurance number is unique."""
-    factories.Patient(ramq='TEST')
-    patient = factories.Patient(ramq='TEST2')
+    factories.Patient(ramq='TEST12345678')
+    patient = factories.Patient(ramq='TEST21234567')
 
-    message = "Duplicate entry 'TEST' for key 'ramq'"
+    message = "Duplicate entry 'TEST12345678' for key 'ramq'"
 
     with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
-        patient.ramq = 'TEST'
+        patient.ramq = 'TEST12345678'
         patient.save()
+
+
+def test_patient_ramq_max() -> None:
+    """Ensure the length of patient ramq is not greater than 12."""
+    patient = factories.Patient()
+    patient.ramq = '12345678901234'
+    expected_message = '{0}'.format(
+        "'ramq': ['Ensure this value has at most 12 characters (it has 14).'",
+    )
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        patient.clean_fields()
+
+
+def test_patient_ramq_min() -> None:
+    """Ensure the length of patient ramq is not less than 12."""
+    patient = factories.Patient(ramq='123456')
+    expected_message = '{0}'.format(
+        "'ramq': ['Ensure this value has at least 12 characters (it has 6).'",
+    )
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        patient.clean_fields()
 
 
 def test_relationship_str() -> None:
