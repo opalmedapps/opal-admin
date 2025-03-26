@@ -65,7 +65,6 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
         Returns:
             template rendered with updated context or HttpError
         """
-        print(request.POST.keys())
         context = self.get_context_data()
 
         if 'questionnaireid' in request.POST.keys():
