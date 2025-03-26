@@ -1,7 +1,6 @@
 import uuid
 from datetime import date, datetime
 from http import HTTPStatus
-from typing import cast
 
 from django.db import connections
 from django.utils import timezone
@@ -19,7 +18,7 @@ from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, RelationshipStatus, RelationshipType
 from opal.users import factories as user_factories
-from opal.users.models import ClinicalStaff, User
+from opal.users.models import ClinicalStaff
 
 from ..management.commands import migrate_caregivers
 
@@ -930,7 +929,7 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
 
         assert 'Total migrated users: 2 of which 0 Admins and 2 Registrants.\n' in message
         assert ClinicalStaff.objects.all().count() == 2
-        clincal_staff_user: User = cast(User, ClinicalStaff.objects.first())
+        clincal_staff_user = ClinicalStaff.objects.all()[0]
         assert clincal_staff_user.groups.get() == registrant_group
 
     def test_migrate_users_nonadmins_legacyoauser_pass(self) -> None:
