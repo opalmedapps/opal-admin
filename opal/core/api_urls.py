@@ -167,7 +167,11 @@ urlpatterns = [
         data_views.UnviewedQuantitySampleView.as_view(),
         name='unviewed-health-data-patient-list',
     ),
-
+    path(
+        'patients/<uuid:uuid>/health-data/viewed/',
+        data_views.ViewedQuantitySampleView.as_view(),
+        name='patient-viewed-health-data-update',
+    ),
 
     # QUESTIONNAIRES ENDPOINTS
     path(

@@ -2,10 +2,12 @@
 from typing import Any
 
 from django.db import models
+from django.utils import timezone
 
 from rest_framework import generics, permissions, serializers, status
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from opal.patients.models import Patient
 
@@ -120,3 +122,29 @@ class UnviewedQuantitySampleView(generics.GenericAPIView):
 
         # Return patients' unviewed counts of the QuantitySamples
         return Response(data=unviewed_counts, status=status.HTTP_200_OK)
+
+
+class ViewedQuantitySampleView(APIView):
+    """`APIView` for setting patient's `QuantitySample` records as viewed."""
+
+    # TODO: change to permission_classes = (IsOrms,) once permission is implemented
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request: Request, uuid: str) -> Response:
+        """Set patient's `QuantitySample` records as viewed.
+
+        Args:
+            request: HTTP request
+            uuid: patient's UUID for whom `QuantitySample` records are being set as viewed
+
+        Returns:
+            Response: successful response with no body
+        """
+        patient = generics.get_object_or_404(Patient.objects.all(), uuid=uuid)
+        QuantitySample.objects.filter(patient=patient).update(
+            viewed_at=timezone.now(),
+            viewed_by=request.user.get_username(),
+        )
+
+        # Return an empty response if patient's quantity samples updated successfully
+        return Response()

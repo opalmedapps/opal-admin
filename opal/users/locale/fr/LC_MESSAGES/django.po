@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-05 20:10+0300\n"
+"POT-Creation-Date: 2023-10-28 06:11+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,16 +23,20 @@ msgid "Extra"
 msgstr "Extra"
 
 #: opal/users/api/viewsets.py
-msgid "manager group not found."
-msgstr ""
+msgid "Manager group not found."
+msgstr "Groupe de gestionnaires introuvable."
 
 #: opal/users/api/viewsets.py
-msgid "user was added to the managers group successfully."
-msgstr ""
+msgid "User was added to the managers group successfully."
+msgstr "L'utilisateur a été ajouté au groupe de gestionnaires avec succès."
 
 #: opal/users/api/viewsets.py
-msgid "user was removed from the managers group successfully."
-msgstr ""
+msgid "User was removed from the managers group successfully."
+msgstr "L'utilisateur a été supprimé du groupe de gestionnaires avec succès."
+
+#: opal/users/api/viewsets.py
+msgid "User was deactivated successfully."
+msgstr "L'utilisateur a été désactivé avec succès."
 
 #: opal/users/apps.py
 msgid "Users"
