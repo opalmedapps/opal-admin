@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from django.conf import settings
+from django.utils.translation import activate, get_language
 
 import requests
 from requests.exceptions import JSONDecodeError, RequestException
@@ -30,12 +31,13 @@ class QuestionnaireReportService():
         """
         base64_report: str = ''
 
-        # TODO: choose language
-        # TODO: how do we know the institution
+        current_language = get_language()
+        activate(language)
         try:
             logo_path = Institution.objects.all()[0].logo.path
         except KeyError:
             return ''
+        activate(current_language)  # type: ignore
 
         base64_report = self._request_base64_report(patient_id, logo_path, language)
 
