@@ -389,16 +389,10 @@ def test_relationship_same_combination() -> None:
     """Ensure that a relationship with same patient-caregiver-type-status combo is unique."""
     patient = factories.Patient(first_name='Kobe', last_name='Briant')
     caregiver = user_factories.Caregiver(first_name='John', last_name='Wayne')
-    profile = CaregiverProfile(user=caregiver)
-
-    factories.Relationship.build(patient=patient, caregiver=profile)
-    factories.Relationship.build(patient=patient, caregiver=profile)
-    print(factories.Relationship.objects.all)
-    assert False
-
-    # with assertRaisesMessage(IntegrityError, "Duplicate entry for key 'patients_relationship_unique_constraint'"):  # type: ignore[arg-type] # noqa: E501
-    #     factories.Relationship.build(patient=patient, caregiver=profile)
-
+    profile = factories.CaregiverProfile(user=caregiver)
+    factories.Relationship(patient=patient, caregiver=profile)
+    with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
+        factories.Relationship(patient=patient, caregiver=profile)
 
 
 def test_relationship_diff_relation_same_status() -> None:
