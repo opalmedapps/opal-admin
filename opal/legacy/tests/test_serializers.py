@@ -108,12 +108,8 @@ def test_valid_announcement_serializer() -> None:
     }
     unread_serializer = AnnouncementUnreadCountSerializer(data=unread_count)
     assert unread_serializer.is_valid()
-    assert unread_serializer.validated_data == {
-        'unread_announcement_count': 5,
-    }
-    assert unread_serializer.data == {
-        'unread_announcement_count': 5,
-    }
+    assert unread_serializer.validated_data == unread_count
+    assert unread_serializer.data == unread_count
 
 
 def test_invalid_announcement_serializer() -> None:
@@ -130,9 +126,7 @@ def test_invalid_announcement_field_value_type() -> None:
     }
     unread_serializer = AnnouncementUnreadCountSerializer(data=unread_count)
     assert not unread_serializer.is_valid()
-    assert unread_serializer.data == {
-        'unread_announcement_count': 'a',
-    }
+    assert unread_serializer.data == unread_count
     assert unread_serializer.errors == {'unread_announcement_count': ['A valid integer is required.']}
 
 
@@ -153,8 +147,6 @@ def test_announcement_data_access_before_save() -> None:
     }
     unread_serializer = AnnouncementUnreadCountSerializer(data=unread_count)
     assert unread_serializer.is_valid()
-    assert unread_serializer.data == {
-        'unread_announcement_count': 5,
-    }
+    assert unread_serializer.data == unread_count
     with pytest.raises(AssertionError):
         unread_serializer.save()
