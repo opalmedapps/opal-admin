@@ -1,92 +1,41 @@
 import decimal
-from pathlib import Path
-
-from django.core.files.uploadedfile import SimpleUploadedFile
 
 import pytest
 
-from opal.hospital_settings.views import InstitutionCreateUpdateView, SiteCreateUpdateView
+from opal.hospital_settings.forms import InstitutionForm
+from opal.hospital_settings.views import SiteCreateUpdateView
 
 from .. import factories
+from ..models import Institution
 
 pytestmark = pytest.mark.django_db
 
 
-def test_institution_create() -> None:
-    """Ensure that the institution create form is valid."""
-    form_data = {
-        'name_en': 'TEST1_EN',
-        'name_fr': 'TEST1_FR',
-        'code': 'TST',
-    }
-
-    with Path('opal/hospital_settings/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
-        file_content = image_logo.read()
-
-    files_data = {
-        'logo_en': SimpleUploadedFile(
-            name='logo_en.png',
-            content=file_content,
-            content_type='image/png',
-        ),
-        'logo_fr': SimpleUploadedFile(
-            name='logo_fr.png',
-            content=file_content,
-            content_type='image/png',
-        ),
-    }
-
-    view = InstitutionCreateUpdateView()
-    form = view.get_form_class()(data=form_data, files=files_data)
-
-    assert form.is_valid()
+def test_institution_form_is_valid(institution_form: InstitutionForm) -> None:
+    """Ensure that the institution form is valid."""
+    assert institution_form.is_valid()
 
 
-def test_institution_create_with_missing_code() -> None:
+def test_institution_form_with_missing_code(incomplete_institution_form: InstitutionForm) -> None:
     """Ensure that the institution form checks for missing code field at the moment of creating a new institution."""
-    form_data = {
-        'name_en': 'TEST1_EN',
-        'name_fr': 'TEST1_FR',
-    }
-
-    view = InstitutionCreateUpdateView()
-    form = view.get_form_class()(data=form_data)
-
-    assert not form.is_valid()
+    assert not incomplete_institution_form.is_valid()
 
 
-def test_institution_update() -> None:
+def test_institution_update(institution_form: InstitutionForm) -> None:
     """Ensure that the institution form checks for missing code field at the moment of creating a new institution."""
-    institution = factories.Institution()
-
-    form_data = {
-        'name_en': 'TEST1_EN',
-        'name_fr': 'TEST1_FR',
-        'code': 'TST',
-    }
-
-    view = InstitutionCreateUpdateView()
-    form = view.get_form_class()(data=form_data, instance=institution)
-
-    assert form.is_valid()
-    form.save()
-    institution.refresh_from_db()
-    assert institution.name == 'TEST1_EN'
+    assert institution_form.is_valid()
+    institution_form.save()
+    assert Institution.objects.all()[0].name_en == institution_form.cleaned_data['name_en']
 
 
-def test_institution_update_with_missing_field() -> None:
-    """Ensure that the institution form checks for missing code field at the moment of updating an institution."""
-    institution = factories.Institution()
+def test_institution_update_with_missing_field(incomplete_institution_form: InstitutionForm) -> None:
+    """Ensure that the institution form checks for missing code field when creating/updating an institution."""
+    try:
+        incomplete_institution_form.save()
+    except ValueError:
+        assert not incomplete_institution_form.is_valid()
 
-    form_data = {
-        'name_en': 'TEST1_EN_EDIT',
-        'name_fr': 'TEST1_FR_EDIT',
-    }
-
-    view = InstitutionCreateUpdateView()
-    form = view.get_form_class()(data=form_data, instance=institution)
-
-    assert not form.is_valid()
+    assert Institution.objects.count() == 0
 
 
 # SITES
@@ -218,7 +167,13 @@ def test_site_update_with_missing_field() -> None:
     view = SiteCreateUpdateView()
     form = view.get_form_class()(data=form_data, instance=site)
 
-    assert not form.is_valid()
+    try:
+        form.save()
+    except ValueError:
+        assert not form.is_valid()
+
+    site.refresh_from_db()
+    assert site.name_en != form.data['name_en']
 
 
 def test_site_update_nonnumeric_location_fields() -> None:

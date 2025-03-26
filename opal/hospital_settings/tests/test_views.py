@@ -1,8 +1,6 @@
 from http import HTTPStatus
-from pathlib import Path
 from typing import Tuple
 
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms.models import model_to_dict
 from django.test import Client
 from django.urls.base import reverse
@@ -10,6 +8,8 @@ from django.urls.base import reverse
 import pytest
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertRedirects, assertTemplateUsed
+
+from opal.hospital_settings.forms import InstitutionForm
 
 from .. import factories
 from ..models import Institution, Site
@@ -185,124 +185,55 @@ def test_site_update_object_displayed(user_client: Client) -> None:
     assertContains(response, site.institution.name)
 
 
-def test_institution_created(user_client: Client) -> None:
+def test_institution_created(user_client: Client, institution_form: InstitutionForm) -> None:
     """Ensure that an institution can be successfully created."""
     url = reverse('hospital-settings:institution-create')
-    institution = factories.Institution.build()
-    form_data = model_to_dict(institution, exclude=['id'])
-    with Path('opal/hospital_settings/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
-        logo_content = image_logo.read()
 
-    form_data.update({
-        'logo': SimpleUploadedFile(
-            name='logo_en.png',
-            content=logo_content,
-            content_type='image/png',
-        ),
-    })
+    assert institution_form.is_valid()
 
-    form_data.update({
-        'logo_fr': SimpleUploadedFile(
-            name='logo_fr.png',
-            content=logo_content,
-            content_type='image/png',
-        ),
-    })
-
-    user_client.post(url, data=form_data)
+    user_client.post(url, data=institution_form.cleaned_data, files=institution_form.files)
 
     assert Institution.objects.count() == 1
-    assert Institution.objects.all()[0].name == institution.name
+    assert Institution.objects.all()[0].name == institution_form.cleaned_data['name_en']
 
 
-def test_institution_successful_create_redirects(user_client: Client) -> None:
+def test_institution_successful_create_redirects(user_client: Client, institution_form: InstitutionForm) -> None:
     """Ensure that after a successful creation of an institution, the page is redirected to the list page."""
     url = reverse('hospital-settings:institution-create')
-    institution = factories.Institution.build()
-    form_data = model_to_dict(institution, exclude=['id'])
-
-    with Path('opal/hospital_settings/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
-        logo_content = image_logo.read()
-
-    form_data.update({
-        'logo': SimpleUploadedFile(
-            name='logo_en.png',
-            content=logo_content,
-            content_type='image/png',
-        ),
-    })
-
-    form_data.update({
-        'logo_fr': SimpleUploadedFile(
-            name='logo_fr.png',
-            content=logo_content,
-            content_type='image/png',
-        ),
-    })
-    response = user_client.post(url, data=form_data)
+    assert institution_form.is_valid()
+    response = user_client.post(url, data=institution_form.cleaned_data, files=institution_form.files)
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
 
 
-def test_institution_updated(user_client: Client) -> None:
+def test_institution_updated(user_client: Client, institution_form: InstitutionForm) -> None:
     """Ensure that an institution can be successfully updated."""
-    institution = factories.Institution()
-    url = reverse('hospital-settings:institution-update', args=(institution.id,))
-    institution.name = 'updated'
-    form_data = model_to_dict(institution)
+    assert institution_form.is_valid()
 
-    with Path('opal/hospital_settings/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
-        logo_content = image_logo.read()
+    institution_form.save()
 
-    form_data.update({
-        'logo': SimpleUploadedFile(
-            name='logo_en.png',
-            content=logo_content,
-            content_type='image/png',
-        ),
-    })
+    form_data = institution_form.data
+    form_data['name_en'] = 'updated name_en'
+    form_data['name_fr'] = 'updated name_fr'
 
-    form_data.update({
-        'logo_fr': SimpleUploadedFile(
-            name='logo_fr.png',
-            content=logo_content,
-            content_type='image/png',
-        ),
-    })
+    url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
+    user_client.post(path=url, data=form_data, files=institution_form.files)
 
-    user_client.post(
-        path=url,
-        data=form_data,
-    )
-
-    assert Institution.objects.all()[0].name == 'updated'
+    assert Institution.objects.all()[0].name_en == 'updated name_en'
+    assert Institution.objects.all()[0].name_fr == 'updated name_fr'
 
 
-def test_institution_successful_update_redirects(user_client: Client, institution: Institution) -> None:
+def test_institution_successful_update_redirects(user_client: Client, institution_form: InstitutionForm) -> None:
     """Ensure that after a successful update of an institution, the page is redirected to the list page."""
-    url = reverse('hospital-settings:institution-update', args=(institution.id,))
-    form_data = model_to_dict(institution)
+    assert institution_form.is_valid()
+    institution_form.save()
+    url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
 
-    with Path('opal/hospital_settings/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
-        logo_content = image_logo.read()
+    form_data = institution_form.data
+    form_data['name_en'] = 'updated name_en'
+    form_data['name_fr'] = 'updated name_fr'
 
-    form_data.update({
-        'logo': SimpleUploadedFile(
-            name='logo_en.png',
-            content=logo_content,
-            content_type='image/png',
-        ),
-    })
-
-    form_data.update({
-        'logo_fr': SimpleUploadedFile(
-            name='logo_fr.png',
-            content=logo_content,
-            content_type='image/png',
-        ),
-    })
-
-    response = user_client.post(url, data=form_data)
+    response = user_client.post(url, data=form_data, files=institution_form.files)
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
 
