@@ -6,7 +6,7 @@ from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, 
 from django.db import transaction
 from django.db.models.query import QuerySet
 
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -19,7 +19,13 @@ from opal.caregivers.api import serializers as caregiver_serializers
 from opal.core.drf_permissions import CaregiverSelfPermissions, UpdateModelPermissions
 
 from .. import utils
-from ..api.serializers import CaregiverRelationshipSerializer, HospitalPatientSerializer, PatientDemographicSerializer
+from ..api.serializers import (
+    CaregiverRelationshipSerializer,
+    HospitalPatientSerializer,
+    PatientDemographicSerializer,
+    PatientExistsSerializer,
+    PatientSerializer,
+)
 from ..models import Patient, Relationship
 
 
@@ -226,3 +232,62 @@ class PatientCaregiversView(RetrieveAPIView):
 
     lookup_url_kwarg = 'legacy_id'
     lookup_field = 'legacy_id'
+
+
+class PatientExistsView(APIView):
+    """Class to return the Patient uuid & legacy_id given an input list of mrns and site codes.
+
+    `get_patient_by_site_mrn_list` constructs a bitwise OR query comprised of each mrn+site pair for an efficient query.
+
+    For example, for an input Mrn+Site list
+    [
+    {"site_code": "RVH", "mrn": "9999996"},
+    {"site_code": "LAC", "mrn": "0765324"}
+    ]
+
+    We want to query the database using the condition:
+
+    ```
+    WHERE
+    (site__location.code = 'RVH' AND hospital_patient.mrn = '9999996')
+    OR
+    (site__location.code = 'LAC' AND hospital_patient.mrn = '0765324')
+    AND hospital_patient.is_active = True;
+    ```
+    """
+
+    permission_classes = [IsAuthenticated]
+    pagination_class = None
+
+    def post(self, request: Request) -> Response:
+        """
+        Handle POST requests from `patients/exists`.
+
+        Args:
+            request: List of mrn & site dictionary objects
+
+        Raises:
+            NotFound: if `Patient` record has not been found through the provided `mrns` list of `HospitalPatients`
+
+        Returns:
+            uuid & legacy_id for the `Patient` object
+        """
+        serializer = PatientExistsSerializer(data=request.data, many=True)
+
+        if serializer.is_valid():
+            mrn_site_data = serializer.validated_data
+
+            try:
+                patient = Patient.objects.get_patient_by_site_mrn_list(mrn_site_data)
+            except (ObjectDoesNotExist, MultipleObjectsReturned):
+                raise NotFound(
+                    detail='{0} {1}'.format(
+                        'Cannot find patient record with the provided MRNs and sites or',
+                        'multiple patients found.',
+                    ),
+                )
+            return Response(
+                data=PatientSerializer(patient, fields=('uuid', 'legacy_id')).data,
+                status=status.HTTP_200_OK,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

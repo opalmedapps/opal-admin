@@ -48,12 +48,12 @@ class HospitalPatientSerializer(DynamicFieldsSerializer):
     """
 
     site_code = serializers.CharField(source='site.code')
-    # make the is_active field required
-    is_active = serializers.BooleanField(required=True)
 
     class Meta:
         model = HospitalPatient
         fields = ['mrn', 'is_active', 'site_code']
+        # make the is_active field required
+        extra_kwargs = {'is_active': {'required': True}}
 
     def validate_site_code(self, value: str) -> str:
         """Check that `site_code` exists in the database (e.g., RVH).
@@ -72,6 +72,21 @@ class HospitalPatientSerializer(DynamicFieldsSerializer):
                 '{0}{1}{2}'.format('Provided "', value, '" site code does not exist.'),
             )
         return value
+
+
+class PatientExistsSerializer(HospitalPatientSerializer):
+    """Serializer for patient identifiers.
+
+    Extention of existing HospitalPatientSerializer class which makes is_active not required
+    for use case of the OIE calling the API without knowing if Patient is active in Opal.
+    """
+
+    class Meta(HospitalPatientSerializer.Meta):
+        extra_kwargs: dict[str, dict[str, Any]] = {
+            'is_active': {
+                'required': False,
+            },
+        }
 
 
 class RelationshipTypeSerializer(DynamicFieldsSerializer):
