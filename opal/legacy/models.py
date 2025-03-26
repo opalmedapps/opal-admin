@@ -788,7 +788,7 @@ class LegacyOARole(models.Model):
     name_fr = models.CharField(db_column='name_FR', max_length=64)
     is_deleted = models.IntegerField(db_column='deleted', default=0)
     deleted_by = models.CharField(db_column='deletedBy', max_length=255)
-    creation_date = models.DateTimeField(db_column='creationDate')
+    creation_date = models.DateTimeField(db_column='creationDate', auto_now_add=True)
     created_by = models.CharField(db_column='createdBy', max_length=255)
     last_updated = models.DateTimeField(db_column='lastUpdated', auto_now=True)
     updated_by = models.CharField(db_column='updatedBy', max_length=255)

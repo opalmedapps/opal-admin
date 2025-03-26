@@ -12,6 +12,7 @@ from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer, SecurityQuestion
 from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
+from opal.legacy import models as legacy_models
 from opal.patients import factories
 from opal.patients.models import HospitalPatient, Patient, Relationship
 from opal.test_results.models import GeneralTest, Note, PathologyObservation
@@ -167,15 +168,20 @@ class TestInsertTestData(CommandTestMixin):
         assert bart.date_of_birth == date(2010, 2, 23)
 
 
-class TestInitializeData(CommandTestMixin):
+@pytest.mark.django_db(databases=['default', 'legacy'])
+class TestInitializeData(CommandTestMixin):  # noqa: WPS338
     """Test class to group the `initialize_data` command tests."""
+
+    @pytest.fixture(autouse=True)
+    def _add_legacy_role(self) -> None:
+        legacy_models.LegacyOARole.objects.create(name_en='System Administrator')
 
     def test_insert(self) -> None:
         """Ensure that initial data is inserted when there is no existing data."""
         stdout, _stderr = self._call_command('initialize_data')
 
         assert Group.objects.count() == 7
-        assert User.objects.count() == 4
+        assert User.objects.count() == 5
         assert Token.objects.count() == 4
         assert SecurityQuestion.objects.count() == 6
 
@@ -266,7 +272,7 @@ class TestInitializeData(CommandTestMixin):
         stdout, stderr = self._call_command('initialize_data', '--force-delete')
 
         assert Group.objects.count() == 7
-        assert User.objects.count() == 4
+        assert User.objects.count() == 5
         assert Token.objects.count() == 4
         assert SecurityQuestion.objects.count() == 6
 
