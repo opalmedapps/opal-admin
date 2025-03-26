@@ -9,6 +9,8 @@ reference from:
 
 import datetime
 
+from django.utils.crypto import get_random_string
+
 from factory import RelatedFactory, Sequence, SubFactory, lazy_attribute
 from factory.django import DjangoModelFactory
 
@@ -44,7 +46,10 @@ class Patient(DjangoModelFactory):
     last_name = 'Patient Last Name'
     date_of_birth = datetime.date(1999, 1, 1)
     sex = models.Patient.SexType.MALE
-    ramq = 'OTES12345678'
+    ramq = '{s}{n}'.format(
+        s=get_random_string(4, 'ABCDEFGHJKLMNPQRSTUVWXYZ'),
+        n=get_random_string(8, '1234567890'),
+    )
     legacy_id = Sequence(lambda number: number + 1)
 
 
