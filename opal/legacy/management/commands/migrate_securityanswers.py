@@ -1,5 +1,5 @@
 """Command for Security Answer migration."""
-from typing import Any
+from typing import Any, Optional
 
 from django.core.management.base import BaseCommand
 
@@ -27,7 +27,7 @@ class Command(BaseCommand):
         for legacy_answer in legacy_answers:
 
             legacy_patient = legacy_answer.patientsernum
-            user = self._check_users(legacy_patient.patientsernum)
+            user = self._find_user(legacy_patient.patientsernum)
             if user is None:
                 self.stderr.write(
                     'Security answer import failed, sernum: {answersernum}, details: {details}'.format(
@@ -38,7 +38,7 @@ class Command(BaseCommand):
                 continue
 
             legacy_question = legacy_answer.securityquestionsernum
-            question = self._check_and_import_question(legacy_question.securityquestionsernum)
+            question = self._find_question(legacy_question.securityquestionsernum)
             if question is None:
                 self.stderr.write(
                     'Security answer import failed, sernum: {answersernum}, details: {details}'.format(
@@ -79,7 +79,7 @@ class Command(BaseCommand):
                     ),
                 )
 
-    def _check_and_import_question(self, securityquestionsernum: int) -> Any:
+    def _find_question(self, securityquestionsernum: int) -> Optional[SecurityQuestion]:
         """
         Check legacy security question exists or not.
 
@@ -114,7 +114,7 @@ class Command(BaseCommand):
             return None
         return question
 
-    def _check_users(self, patientsernum: int) -> Any:
+    def _find_user(self, patientsernum: int) -> Optional[User]:
         """
         Check legacy user and user exist or not according the legacy patientsernum.
 
@@ -126,7 +126,7 @@ class Command(BaseCommand):
         """
         # Skip answer import if related legacy user not found
         try:
-            legacy_user = LegacyUsers.objects.get(usertypesernum=patientsernum)
+            legacy_user = LegacyUsers.objects.get(usertypesernum=patientsernum, usertype='Patient')
         except LegacyUsers.DoesNotExist:
             self.stderr.write(
                 'Legacy user does not exist, usertypesernum: {usertypesernum}'.format(

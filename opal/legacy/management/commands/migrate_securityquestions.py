@@ -31,4 +31,10 @@ class Command(BaseCommand):
                 SecurityQuestion.objects.create(
                     title_en=legacy_question.questiontext_en,
                     title_fr=legacy_question.questiontext_fr,
+                    is_active=bool(legacy_question.active),
+                )
+                self.stdout.write(
+                    'Security question import succeeded, sernum: {questionsernum}'.format(
+                        questionsernum=legacy_question.securityquestionsernum,
+                    ),
                 )
