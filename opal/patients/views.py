@@ -598,8 +598,12 @@ class ManageSearchUpdateView(ManageRelationshipUpdateMixin):
         # provide previous link with parameters to update on clicking cancel button
         if self.request.META.get('HTTP_REFERER'):
             context['cancel_url'] = self.request.META.get('HTTP_REFERER')
+        # to maintain the value of `cancel_url` when there is a validation error
         else:
-            context['cancel_url'] = default_success_url
+            try:
+                context['cancel_url'] = context['form'].cleaned_data['cancel_url']
+            except Exception:
+                context['cancel_url'] = default_success_url
         return context
 
     def get_success_url(self) -> Any:  # noqa: WPS615
