@@ -145,7 +145,7 @@ urlpatterns = [
         name='patient-demographic-update',
     ),
     path(
-        'patients/relationship-types/',
+        'relationship-types/',
         patient_views.RelationshipTypeView.as_view(),
         name='relationship-types-list',
     ),
