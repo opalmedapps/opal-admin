@@ -515,7 +515,7 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
         ).annotate(
             last_login=models.Max('date_time', filter=models.Q(request='Login')),
             count_logins=models.Count('activity_ser_num', filter=models.Q(request='Login')),
-            # TODO: Verify if this is only counting successful checkins or if failed attempts get lumped together
+            # NOTE: the count includes both successful and failed check-ins
             count_checkins=models.Count('activity_ser_num', filter=models.Q(request='Checkin')),
             count_documents=models.Count('activity_ser_num', filter=models.Q(request='DocumentContent')),
             # educ is tricky... the different educ types get logged different in PAL table

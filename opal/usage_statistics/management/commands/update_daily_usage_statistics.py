@@ -65,7 +65,17 @@ class Command(BaseCommand):
         """
         # Convenience CL arg for testing; DO NOT USE IN PROD!
         if options['force_delete']:
-            self.stdout.write(self.style.WARNING('Deleting existing data'))
+            self.stdout.write(self.style.WARNING('Deleting existing usage statistics data'))
+            confirm = input(
+                'Are you sure you want to do this?\n'
+                + '\n'
+                + "Type 'yes' to continue, or 'no' to cancel: ",
+            )
+
+            if confirm != 'yes':
+                self.stdout.write('Test data insertion cancelled')
+                return
+
             DailyUserAppActivity.objects.all().delete()
             DailyPatientDataReceived.objects.all().delete()
 
