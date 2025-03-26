@@ -13,8 +13,12 @@ from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
 
+import django_stubs_ext
 import environ
-from django_stubs_ext import StrPromise
+
+# Monkeypatching Django, so stubs will work for all generics
+# see: https://github.com/typeddjango/django-stubs/tree/master/django_stubs_ext
+django_stubs_ext.monkeypatch()
 
 # get root of the project
 ROOT_DIR = Path(__file__).parents[1]
@@ -279,7 +283,7 @@ LOCALE_PATHS = [str(ROOT_DIR / 'locale')]
 # https://docs.djangoproject.com/en/dev/ref/settings/#languages
 # Provide a type hint to avoid mypy import cycle errors
 # see: https://github.com/typeddjango/django-stubs/issues/1346
-LANGUAGES: list[tuple[str, StrPromise]] = [
+LANGUAGES: list[tuple[str, django_stubs_ext.StrPromise]] = [
     ('en', _('English')),
     ('fr', _('French')),
 ]
@@ -434,6 +438,13 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 #
 # Set a default template to use
 DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap4-responsive.html'
+# Default CSS classes for tables
+DJANGO_TABLES2_TABLE_ATTRS = {
+    'class': 'table table-bordered table-hover',
+    'thead': {
+        'class': 'table-light',
+    },
+}
 
 # QUESTIONNAIRES/EXPORT REPORTS
 # ------------------------------------------------------------------------------

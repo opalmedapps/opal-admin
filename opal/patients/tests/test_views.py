@@ -33,7 +33,7 @@ from ..views import AccessRequestView, CaregiverAccessView, PendingRelationshipL
 pytestmark = pytest.mark.django_db
 
 CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
-    date_of_birth=datetime.strptime('1984-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
+    date_of_birth=date.fromisoformat('1984-05-09'),
     first_name='Marge',
     last_name='Simpson',
     sex='F',
@@ -354,7 +354,7 @@ def test_form_error_in_template(
         return_value={
             'status': 'success',
             'data': OIEPatientData(
-                date_of_birth=datetime.strptime('1984-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
+                date_of_birth=date.fromisoformat('1984-05-09'),
                 first_name='Marge',
                 last_name='Simpson',
                 sex='F',
@@ -917,7 +917,7 @@ def test_create_new_relationship() -> None:
     response, instance = test_view(request)
 
     patient_record = OIEPatientData(
-        date_of_birth=datetime.strptime('2014-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
+        date_of_birth=date.fromisoformat('2014-05-09'),
         first_name='Lisa',
         last_name='Simpson',
         sex='F',
@@ -1131,10 +1131,7 @@ def test_error_message_searched_patient_deceased() -> None:
     """Test error message shows up once searched patient is deceased."""
     patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(deceased=True)
 
-    error_message = (
-        'Unable to complete action with this patient. '
-        + 'Date of death has been recorded in the patient′s file. Please contact Medical Records.'
-    )
+    error_message = ('Unable to complete action with this patient. Please contact Medical Records.')
     assert AccessRequestView()._update_patient_confirmation_context(
         {},
         patient_data,

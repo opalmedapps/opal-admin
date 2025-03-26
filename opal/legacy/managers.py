@@ -10,21 +10,33 @@ Module also provide mixin classes to make the code reusable.
 See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from django.db import models
 from django.utils import timezone
 
-from opal.patients.models import Relationship
+from opal.patients.models import Relationship, RelationshipStatus
 
 if TYPE_CHECKING:
-    from opal.legacy.models import LegacyAppointment
+    # old version of pyflakes incorrectly detects these as unused
+    # can currently not upgrade due to version requirement from wemake-python-styleguide
+    from opal.legacy.models import (  # noqa: F401
+        LegacyAnnouncement,
+        LegacyAppointment,
+        LegacyDocument,
+        LegacyEducationalMaterial,
+        LegacyNotification,
+        LegacyQuestionnaire,
+        LegacyTxTeamMessage,
+    )
+
+_Model = TypeVar('_Model', bound=models.Model)
 
 
-class UnreadQuerySetMixin(models.Manager):
+class UnreadQuerySetMixin(models.Manager[_Model]):
     """legacy models unread count mixin."""
 
-    def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet:
+    def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet[_Model]:
         """
         Get the queryset of unread model records for a given user.
 
@@ -37,7 +49,7 @@ class UnreadQuerySetMixin(models.Manager):
         """
         return self.filter(patientsernum=patient_sernum).exclude(readby__contains=user_name)
 
-    def get_unread_multiple_patients_queryset(self, user_name: str) -> models.QuerySet:
+    def get_unread_multiple_patients_queryset(self, user_name: str) -> models.QuerySet[_Model]:
         """
         Get the queryset of unread model records for all patient related to the requestion user.
 
@@ -51,14 +63,14 @@ class UnreadQuerySetMixin(models.Manager):
         return self.filter(patientsernum__in=patient_ids).exclude(readby__contains=user_name)
 
 
-class LegacyNotificationManager(UnreadQuerySetMixin, models.Manager):
+class LegacyNotificationManager(UnreadQuerySetMixin['LegacyNotification'], models.Manager['LegacyNotification']):
     """legacy notification manager."""
 
 
 class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
     """legacy appointment manager."""
 
-    def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet:
+    def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet['LegacyAppointment']:
         """
         Get the queryset of uncompleted appointments for a given user.
 
@@ -88,7 +100,14 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
         Returns:
             Appointments schedule for the current day.
         """
-        patient_ids = Relationship.objects.get_patient_id_list_for_caregiver(user_name)
+        relationships = Relationship.objects.get_patient_list_for_caregiver(user_name).filter(
+            status=RelationshipStatus.CONFIRMED,
+        )
+        patient_ids = [
+            legacy_id
+            for legacy_id in relationships.values_list('patient__legacy_id', flat=True)
+            if legacy_id is not None
+        ]
         return self.select_related(
             'aliasexpressionsernum',
             'aliasexpressionsernum__aliassernum',
@@ -102,23 +121,26 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
         )
 
 
-class LegacyDocumentManager(UnreadQuerySetMixin, models.Manager):
+class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manager['LegacyDocument']):
     """legacy document manager."""
 
 
-class LegacyTxTeamMessageManager(UnreadQuerySetMixin, models.Manager):
+class LegacyTxTeamMessageManager(UnreadQuerySetMixin['LegacyTxTeamMessage'], models.Manager['LegacyTxTeamMessage']):
     """legacy txteammessage manager."""
 
 
-class LegacyEducationalMaterialManager(UnreadQuerySetMixin, models.Manager):
+class LegacyEducationalMaterialManager(
+    UnreadQuerySetMixin['LegacyEducationalMaterial'],
+    models.Manager['LegacyEducationalMaterial'],
+):
     """legacy educational material manager."""
 
 
-class LegacyQuestionnaireManager(models.Manager):
+class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
     """legacy questionnaire manager."""
 
 
-class LegacyAnnouncementManager(models.Manager):
+class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
     """legacy announcement manager."""
 
     def get_unread_queryset(self, patient_sernum_list: list[int], user_name: str) -> int:

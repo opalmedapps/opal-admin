@@ -1,4 +1,5 @@
 """This module provides views for hospital-specific settings."""
+import base64
 import io
 from collections import Counter
 from datetime import date
@@ -8,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import QuerySet
 from django.forms import Form
+from django.forms.models import ModelForm
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -51,7 +53,7 @@ class RelationshipTypeListView(PermissionRequiredMixin, SingleTableView):
     template_name = 'patients/relationship_type/list.html'
 
 
-class RelationshipTypeCreateUpdateView(PermissionRequiredMixin, CreateUpdateView):
+class RelationshipTypeCreateUpdateView(PermissionRequiredMixin, CreateUpdateView[RelationshipType]):
     """
     This `CreateView` displays a form for creating an `RelationshipType` object.
 
@@ -65,7 +67,9 @@ class RelationshipTypeCreateUpdateView(PermissionRequiredMixin, CreateUpdateView
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class RelationshipTypeDeleteView(PermissionRequiredMixin, generic.edit.DeleteView):
+class RelationshipTypeDeleteView(
+    PermissionRequiredMixin, generic.edit.DeleteView[RelationshipType, ModelForm[RelationshipType]],
+):
     """
     A view that displays a confirmation page and deletes an existing `RelationshipType` object.
 
@@ -268,7 +272,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         stream = self._generate_qr_code(registration_code)
 
         return render(self.request, 'patients/access_request/qr_code.html', {
-            'svg': stream.getvalue().decode(),
+            'qrcode': base64.b64encode(stream.getvalue()).decode(),
             'header_title': _('QR Code Generation'),
         })
 
@@ -506,10 +510,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         """
         if self._is_searched_patient_deceased(patient_record):
             context.update({
-                'error_message': _(
-                    'Unable to complete action with this patient. '
-                    + 'Date of death has been recorded in the patient′s file. Please contact Medical Records.',
-                ),
+                'error_message': _('Unable to complete action with this patient. Please contact Medical Records.'),
             })
 
         elif self._has_multiple_mrns_with_same_site_code(patient_record):
@@ -534,7 +535,9 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableView):
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
 
 
-class PendingRelationshipUpdateView(PermissionRequiredMixin, UpdateView):
+class PendingRelationshipUpdateView(
+    PermissionRequiredMixin, UpdateView[Relationship, ModelForm[Relationship]],
+):
     """
     This `UpdatesView` displays a form for updating a `Relationship` object.
 
