@@ -203,6 +203,7 @@ def test_device_put_update(api_client: APIClient, admin_user: AbstractUser) -> N
     assert device.modified > last_modified
 
 
+# TODO: unskip this test once QSCCD-250 is taken care of
 @pytest.mark.skip()
 def test_device_put_two_caregivers(api_client: APIClient, admin_user: AbstractUser) -> None:
     """Test updating a device model."""
