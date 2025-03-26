@@ -142,7 +142,7 @@ class UserViewSet(  # noqa: WPS215 (too many base classes)
         clinicalstaff_user.save()
         return Response({'detail': _('User was reactivated successfully.')}, status=HTTPStatus.OK)
 
-    def get_serializer_class(self) -> type[BaseSerializer]:
+    def get_serializer_class(self) -> type[BaseSerializer[User]]:
         """
         Override get_serializer_class to return the corresponding serializer for each action.
 
