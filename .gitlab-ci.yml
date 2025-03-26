@@ -8,7 +8,6 @@ variables:
   MARIADB_DATABASE: test_$DB_NAME
   MARIADB_USER: $DB_USER
   MARIADB_PASSWORD: $DB_PASSWORD
-  SECURE_LOG_LEVEL: "debug"
 
 default:
   image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
@@ -148,7 +147,7 @@ pytest:
     - mariadb:10.6.17-focal
   script:
     # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
-    - apt update && apt-get install -y default-mysql-client
+    - apk add --no-cache mariadb-client
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
     - pytest --version
@@ -197,8 +196,8 @@ django translations:
   extends:
     - .default_needs
   script:
-    # install dependencies for makemessages and git diff
-    - apt update && apt-get install -y gettext git
+    # install dependencies for git diff
+    - apk add --no-cache git
     # Missing translation file updates
     - echo "Checking that translation files have been updated ..."
     - python manage.py makemessages --add-location file -l fr
@@ -322,6 +321,9 @@ include:
   # Dependency Scanning: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/
   # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/Dependency-Scanning.latest.gitlab-ci.yml
   - template: Jobs/Dependency-Scanning.latest.gitlab-ci.yml
+  # Container Scanning: https://docs.gitlab.com/ee/user/application_security/container_scanning/
+  # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/Container-Scanning.latest.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.latest.gitlab-ci.yml
   # SAST Scanning: https://docs.gitlab.com/ee/user/application_security/sast/
   # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/SAST.latest.gitlab-ci.yml
   - template: Jobs/SAST.latest.gitlab-ci.yml
@@ -350,3 +352,9 @@ gemnasium-python-dependency_scanning:
     # remove the first line ("-r ...")
     - tail -n +2 requirements/development.txt >> requirements.txt
     - tail -n +2 requirements/production.txt >> requirements.txt
+
+# Container Scanning
+# https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+container_scanning:
+  variables:
+    CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
