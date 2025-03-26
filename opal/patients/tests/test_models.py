@@ -291,7 +291,7 @@ def test_relationship_clean_start_date_before_date_of_birth() -> None:
     relationship = factories.Relationship()
     relationship.start_date = relationship.patient.date_of_birth - datetime.timedelta(days=1)
 
-    expected_message = "Start date can not be earlier than patient's date of birth"
+    expected_message = "Start date cannot be earlier than patient's date of birth"
     with assertRaisesMessage(ValidationError, expected_message):
         relationship.clean()
 

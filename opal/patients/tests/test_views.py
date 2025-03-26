@@ -917,7 +917,7 @@ def test_create_new_relationship() -> None:
     response, instance = test_view(request)
 
     patient_record = OIEPatientData(
-        date_of_birth=datetime.strptime('2014-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
+        date_of_birth=datetime.strptime('2014-05-09 09:20:30', '%Y-%m-%d %H:%M:%S').date(),
         first_name='Lisa',
         last_name='Simpson',
         sex='F',

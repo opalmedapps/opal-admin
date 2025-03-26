@@ -1,5 +1,5 @@
 """Module providing custom data structures (a.k.a., named tuples) for the OIE Service."""
-from datetime import datetime
+from datetime import date, datetime
 from typing import List, NamedTuple, Optional
 
 
@@ -51,7 +51,7 @@ class OIEPatientData(NamedTuple):
         mrns (OIEMRN): list of MRNs
     """
 
-    date_of_birth: datetime
+    date_of_birth: date
     first_name: str
     last_name: str
     sex: str
