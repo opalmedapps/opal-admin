@@ -93,27 +93,29 @@ class PathologyPDF(FPDF):
         self,
         pathology_data: PathologyData,
     ) -> None:
+        """Initialize a `PathologyPDF` instance for generating pathology reports.
+
+        The initialization consists of 3 steps:
+            - Initialization of the `FPDF` instance
+            - Setting the PDF's metadata (e.g., author, creation date, keywords, etc.)
+            - Generating the PDF by using FPDF's templates
+
+        Args:
+            pathology_data: pathology data required to generate the PDF report
+        """
         self.pathology_data = pathology_data
         self.patient_name = f'{pathology_data.patient_last_name}, {pathology_data.patient_first_name}'.upper()
 
         super().__init__()
-        self.set_auto_page_break(auto=True, margin=50)
-        # Set PDF's metadata
-        self.set_author('Opal Health Informatics Group')
-        self.set_creation_date(datetime.now())
-        self.set_creator('Opal Backend')
-        self.set_keywords(
-            'Pathology Report, Pathologie Chirurgicale Rapport Final, Surgical Pathology Final Report, Opal, Opal Health Informatics Group',
-        )
-        self.set_subject(f'Pathology report for {self.patient_name}')
-        self.set_title('Pathologie Chirurgicale Rapport Final/Surgical Pathology Final Report')
-        self.set_producer('fpdf2 2.7.5')  # TODO: get the version automatically
-
+        self.set_report_metadata()
         self.generate()
 
 
     def header(self) -> None:
-        """Set PDF header."""
+        """Set the pathology PDF's header.
+
+        This is automatically called by FPDF.add_page() and should not be called directly by the user application.
+        """
         sites_and_mrns_list = [
             f'{site_mrn["site_code"]}-{site_mrn["mrn"]}' for site_mrn in self.pathology_data.patient_sites_and_mrns
         ]
@@ -148,7 +150,12 @@ class PathologyPDF(FPDF):
 
 
     def footer(self) -> None:
-        """Set PDF footer."""
+        """Set the pathology PDF's footer.
+
+        This is automatically called by FPDF.add_page() and FPDF.output().
+
+        It should not be called directly by the user application.
+        """
         # Position cursor at 4 cm from bottom:
         self.set_y(y=-40)  # noqa: WPS432
         # Setting font: arial 8
@@ -181,18 +188,16 @@ class PathologyPDF(FPDF):
         )
 
     def add_page(self, *args: Any, **kwargs: Any) -> None:
-        """Add new page to the document."""
+        """Add new page to the pathology report."""
         super().add_page(*args, **kwargs)
         if self.page != 1:
             self.rect(15, 30, 180, 220, 'D')
             self.set_y(40)
 
-    def generate(self) -> Path:
-        """Generate PDF pathology report.
+    def generate(self) -> None:
+        """Generate a PDF pathology report."""
+        self.set_auto_page_break(auto=True, margin=50)
 
-        Returns:
-            path to the generated pathology report
-        """
         self.add_page()
         site_patient_box = FlexTemplate(self, self._get_site_address_patient_info_box())
         site_patient_box.render()
@@ -297,6 +302,26 @@ class PathologyPDF(FPDF):
 
         report_prepared_by_template = FlexTemplate(self, self._get_report_prepared_by_table())
         report_prepared_by_template.render()
+
+    def set_report_metadata(self) -> None:
+        """Set pathology PDF's metadata.
+
+        The following information is set:
+            - Author of the report
+            - Creator of the report (e.g., the name of the application that generates the PDF)
+            - Keywords associated with the report
+            - Subject of the report
+            - Title of the report
+            - Producer of the document (e.g., the name of the software that generates the PDF)
+        """
+        self.set_author('Opal Health Informatics Group')
+        self.set_creator('Opal Backend')
+        self.set_keywords(
+            'Pathology Report, Pathologie Chirurgicale Rapport Final, Surgical Pathology Final Report, Opal, Opal Health Informatics Group',
+        )
+        self.set_subject(f'Pathology report for {self.patient_name}')
+        self.set_title('Pathologie Chirurgicale Rapport Final/Surgical Pathology Final Report')
+        self.set_producer('fpdf2 2.7.5')  # TODO: get the version automatically
 
     # A table/box that is shown at the top of the first page.
     # It contains site's and patient's information
