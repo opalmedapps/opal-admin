@@ -31,10 +31,7 @@ class LegacyPatientFactory(DjangoModelFactory):
     firstname = 'TEST'
     lastname = 'LEGACY'
     telnum = '5149995555'
-    dateofbirth = datetime.strptime(
-        '2018-01-01 11:11:11',
-        '%Y-%m-%d %H:%M:%S',
-    )
+    dateofbirth = timezone.make_aware(datetime(2018, 1, 1))
     sex = 'Male'
     ssn = '123456'
 

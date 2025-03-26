@@ -51,7 +51,7 @@ class Command(BaseCommand):
                     ramq=legacy_patient.ssn,
                 )
                 self.stdout.write(
-                    'Imported patients, legacy_id: {patientsernum}'.format(
+                    'Imported patient, legacy_id: {patientsernum}'.format(
                         patientsernum=legacy_patient.patientsernum,
                     ),
                 )
@@ -79,7 +79,11 @@ class Command(BaseCommand):
         if legacy_patient_identifiers:
             for legacy_patient_identifier in legacy_patient_identifiers:
                 # Check if new backend model HospitalPatient already has a record for the added patient
-                hospital_patient = HospitalPatient.objects.filter(mrn=legacy_patient_identifier.mrn).first()
+                hospital_patient = HospitalPatient.objects.filter(
+                    mrn=legacy_patient_identifier.mrn,
+                    site__code=legacy_patient_identifier.hospitalidentifiertypecode.code,
+                    patient__legacy_id=legacy_patient.patientsernum,
+                ).first()
                 if hospital_patient:
                     # when HospitalPatient record already has been migrated
                     self.stdout.write(
@@ -105,7 +109,7 @@ class Command(BaseCommand):
                     )
         else:
             self.stdout.write(
-                'Patient identifier for patient with legacy_id: {patientsernum} does not exist, skipping'.format(
+                'No hospital patient identifiers for patient with legacy_id: {patientsernum} exist, skipping'.format(
                     patientsernum=legacy_patient.patientsernum,
                 ),
             )
