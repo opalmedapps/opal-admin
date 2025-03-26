@@ -420,7 +420,7 @@ class RetrieveCaregiverUsernameView(RetrieveAPIView[User]):
     """Caregiver `RetrieveAPIView` class for verify the existence of the caregiver for the given username."""
 
     permission_classes = (IsRegistrationListener,)
-    queryset = Caregiver.objects.all().select_related('caregiverprofile')
+    queryset = Caregiver.objects.all()
     serializer_class = drf_serializers.Serializer
     lookup_field = 'username'
     lookup_url_kwarg = 'username'
