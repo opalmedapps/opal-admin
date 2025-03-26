@@ -62,4 +62,4 @@ unidecode==1.3.8  # https://pypi.org/project/Unidecode/
 
 # HL7 Python Parsing Library
 #
-hl7apy==1.3.4  # https://pypi.org/project/hl7apy/
+hl7apy==1.3.5  # https://pypi.org/project/hl7apy/
