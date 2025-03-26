@@ -42,7 +42,7 @@ class Meta:
 
 ???+ note
 
-    a.`permissions = (('new_perm','New Custom Permission'),)`
+    a. `permissions = (('new_perm','New Custom Permission'),)`
             the first argument is called codename, the second argument is called name. 
     
     b. In order to know what is the codename of a permission(s) for a specific model run the following command after running
