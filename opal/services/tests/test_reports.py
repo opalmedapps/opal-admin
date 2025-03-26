@@ -49,7 +49,7 @@ PATHOLOGY_REPORT_DATA = PathologyData(
         {'mrn': '22222443', 'site_code': 'MGH'},
         {'mrn': '1111728', 'site_code': 'RVH'},
     ],
-    test_number='AS-2021-62605',  # TODO: confirm if case_number required
+    test_number='AS-2021-62605',
     test_collected_at=datetime.datetime(2021, 11, 25, 9, 55),
     test_reported_at=datetime.datetime(2021, 11, 28, 11, 52),
     observation_clinical_info=['Clinical Information'],
