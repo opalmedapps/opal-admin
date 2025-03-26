@@ -14,6 +14,7 @@ class CreatePathologyView(generics.CreateAPIView):
     Supports the creation of one or more instances of the nested `observations` and `notes` records.
     """
 
+    queryset = GeneralTest.objects.all()
     serializer_class = PathologySerializer
     permission_classes = [CreateModelPermissions]
     pagination_class = None
