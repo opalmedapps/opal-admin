@@ -11,7 +11,7 @@ class LoginView(DjangoLoginView):
     """
     View that allows a user to log in.
 
-    Extends Django's [LoginView][django.contrib.auth.views.LoginView] to reuse login functionality.
+    Extends Django's [LoginView][django.contrib.auth.views.LoginView] to reuse login functionality. This is a super long line that is too long.
     """
 
     # Reuse the login template of the admin page for now until a proper login template is defined
