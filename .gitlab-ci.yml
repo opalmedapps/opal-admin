@@ -100,7 +100,11 @@ xray:
   before_script:
     - uname -a
   script:
+    - x-ray-scan --help
+    - echo "$CI_PROJECT_DIR"
+    - echo "$OUTPUT_DIR"
     - x-ray-scan -p "$CI_PROJECT_DIR" -o "$OUTPUT_DIR"
+    - ls -la "$OUTPUT_DIR"
   artifacts:
     reports:
       repository_xray: "$OUTPUT_DIR/*/*.json"
