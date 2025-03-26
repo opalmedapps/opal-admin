@@ -592,8 +592,6 @@ def _generate_pdf(
     Returns:
         output of the generated questionnaire report
     """
-    # TODO: Add report path back in the test
-
     pdf = QuestionnairePDF(institution, patient, questionnaires, toc_pages=toc_pages)
 
     return pdf.output()

@@ -16,8 +16,8 @@ from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as QDB_LegacyQuestionnaire
 from opal.legacy_questionnaires.models import LegacyQuestionnairePatient
 from opal.patients.models import Patient, Relationship
+from opal.services.reports import questionnaire
 from opal.services.reports.base import InstitutionData, PatientData
-from opal.services.reports.questionnaire import Question, QuestionnaireData, generate_pdf
 
 from .models import (  # noqa: WPS235
     LegacyAccessLevel,
@@ -461,7 +461,7 @@ def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRe
 
 
 @transaction.atomic
-def get_questionnaire_data(patient: Patient) -> list[QuestionnaireData]:
+def get_questionnaire_data(patient: Patient) -> list[questionnaire.QuestionnaireData]:
     """
     Handle sync check for the questionnaire respondents.
 
@@ -543,7 +543,7 @@ def _parse_query_result(
     return data_list
 
 
-def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[QuestionnaireData]:
+def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[questionnaire.QuestionnaireData]:
     """Process parsed questionnaire data into QuestionnaireData objects.
 
     Args:
@@ -562,7 +562,7 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
             raise DataFetchError(f'Unexpected data format: {data!r}')
         questions = _process_questions(data['questions'])
         questionnaire_data_list.append(
-            QuestionnaireData(
+            questionnaire.QuestionnaireData(
                 questionnaire_id=data['questionnaire_id'],
                 questionnaire_title=data['questionnaire_nickname'],
                 last_updated=datetime.fromisoformat(data['last_updated']),
@@ -573,7 +573,7 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
     return questionnaire_data_list
 
 
-def _process_questions(questions_data: list[dict[str, Any]]) -> list[Question]:
+def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnaire.Question]:
     """Process question data into Question objects.
 
     Args:
@@ -594,7 +594,7 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[Question]:
             raise ValueError(f"Invalid type for 'answers' {type(answers)} for question: {question}")
 
         questions.append(
-            Question(
+            questionnaire.Question(
                 question_text=question['question_text'],
                 question_label=question['question_label'],
                 question_type_id=question['question_type_id'],
@@ -617,7 +617,7 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[Question]:
 
 def generate_questionnaire_report(
     patient: Patient,
-    questionnaire_data_list: list[QuestionnaireData],
+    questionnaire_data_list: list[questionnaire.QuestionnaireData],
 ) -> bytearray:
     """Generate the questionnaire PDF report by calling the PDF generator for Questionnaires.
 
@@ -628,7 +628,7 @@ def generate_questionnaire_report(
     Returns:
         bytearray: the generated questionnaire report
     """
-    return generate_pdf(
+    return questionnaire.generate_pdf(
         institution=InstitutionData(
             institution_logo_path=Path(Institution.objects.get().logo.path),
             document_number=settings.REPORT_DOCUMENT_NUMBER,
