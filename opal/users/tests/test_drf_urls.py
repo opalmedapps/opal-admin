@@ -38,9 +38,9 @@ def test_users_action_set_manager_user() -> None:
     assert reverse(
         'api:users-set-manager-user',
         kwargs={'username': user.username},
-    ) == f'/api/users/{user.username}/set_manager_user/'
+    ) == f'/api/users/{user.username}/set-manager-user/'
 
-    assert resolve(f'/api/users/{user.username}/set_manager_user/').view_name == 'api:users-set-manager-user'
+    assert resolve(f'/api/users/{user.username}/set-manager-user/').view_name == 'api:users-set-manager-user'
 
 
 def test_users_action_unset_manager_user() -> None:
@@ -50,6 +50,6 @@ def test_users_action_unset_manager_user() -> None:
     assert reverse(
         'api:users-unset-manager-user',
         kwargs={'username': user.username},
-    ) == f'/api/users/{user.username}/unset_manager_user/'
+    ) == f'/api/users/{user.username}/unset-manager-user/'
 
-    assert resolve(f'/api/users/{user.username}/unset_manager_user/').view_name == 'api:users-unset-manager-user'
+    assert resolve(f'/api/users/{user.username}/unset-manager-user/').view_name == 'api:users-unset-manager-user'
