@@ -455,7 +455,7 @@ REST_FRAMEWORK = {
     ],
     # require specific model permissions (including view) to access API
     'DEFAULT_PERMISSION_CLASSES': [
-        'opal.core.drf_permissions.FullDjangoModelPermissions',
+        'opal.core.drf_permissions.CustomDjangoModelPermissions',
     ],
     # disabled pagination by default
     # use rest_framework.pagination.PageNumberPagination to enable for specific endpoints
