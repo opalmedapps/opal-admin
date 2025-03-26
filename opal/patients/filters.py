@@ -104,7 +104,7 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             queryset: `Patient` queryset that is being filtered based on the given fields' values
 
         Returns:
-            Filtered `Patient` queryset
+            Filtered `Relationship` queryset
         """
         # Remove 'medical_card_type' field from the form since this field does not perform queryset filtering
         card_type = self.form.cleaned_data.pop('card_type')
