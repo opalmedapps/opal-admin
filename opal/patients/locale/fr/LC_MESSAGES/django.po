@@ -517,8 +517,8 @@ msgstr "Générateur de code QR"
 msgid ""
 "Unable to complete action with this patient. Please contact Medical Records."
 msgstr ""
-"Impossible de terminer l'action avec ce patient. Veuillez contacter les "
-"dossiers médicaux."
+"Impossible de compléter la requête pour ce patient. Veuillez contacter le "
+"département des archives médicales."
 
 #: opal/patients/views.py
 msgid "Please note multiple MRNs need to be merged by medical records."
