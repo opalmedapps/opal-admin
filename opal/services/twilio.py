@@ -22,7 +22,7 @@ class TwilioService:
         self.account_sid = account_sid
         self.auth_token = auth_token
         self.from_ = _from
-        self.client = Client()
+        self.client = Client(account_sid, auth_token)
 
     def send_sms(self, phone_number: str, message: str) -> None:
         """
