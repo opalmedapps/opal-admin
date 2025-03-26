@@ -5,9 +5,9 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from opal.caregivers.managers import CaregiverManager
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Site
+from opal.patients.managers import RelationshipManager
 
 from . import constants
 
@@ -186,7 +186,7 @@ class Relationship(models.Model):
         null=True,
         blank=True,
     )
-    objects: CaregiverManager = CaregiverManager()
+    objects: RelationshipManager = RelationshipManager()
 
     class Meta:
         verbose_name = _('Relationship')

@@ -82,14 +82,18 @@ class TestHomeAppView:
 
 
 class TestChartAppView:
-    """Class wrapper for chart page request tests."""
+    """
+    Class wrapper for chart page request tests.
+
+    PatientSernum 51 is define in the legacy databse by DBV script for testing purpose.
+    """
 
     def test_get_chart_data_request(self, api_client: APIClient, admin_user: User) -> None:
         """Test if the response as the required keys."""
         user = factories.LegacyUserFactory()
         api_client.force_login(user=admin_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
-        response = api_client.get(reverse('api:app-chart'))
+        response = api_client.get(reverse('api:app-chart', kwargs={'patient_sernum': 51}))
         assert 'unread_appointment_count' in response.data
         assert 'unread_document_count' in response.data
         assert 'unread_txteammessage_count' in response.data

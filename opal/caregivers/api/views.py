@@ -1,4 +1,6 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
+from typing import Any
+
 from django.db.models.functions import SHA512
 
 from rest_framework import status
@@ -6,7 +8,6 @@ from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from opal.caregivers.api.serializer import RegistrationEncryptionInfoSerializer
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
@@ -30,16 +31,18 @@ class GetRegistrationEncryptionInfoView(RetrieveAPIView):
     lookup_field = 'code_sha512'
 
 
-class GetCaregiverPatientsList(APIView):
+class GetCaregiverPatientsList(RetrieveAPIView):
     """Class to return a list of patients for a given caregiver."""
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request) -> Response:
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
         Handle GET requests from `caregivers/patients/`.
 
         Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
             request: Http request made by the listener needed to retrive `Appuserid`.
 
         Returns:

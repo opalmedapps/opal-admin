@@ -2,7 +2,7 @@
 from django.db import models
 
 
-class CaregiverManager(models.Manager):
+class RelationshipManager(models.Manager):
     """Manager class for the `Caregiver` model."""
 
     def get_patient_list_for_caregiver(self, user_id: str) -> models.QuerySet:
