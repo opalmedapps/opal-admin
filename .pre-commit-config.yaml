@@ -30,6 +30,14 @@ repos:
     entry: please provide a descriptive name for migrations
     language: fail
     files: .*/migrations/.*_auto_.*\.py$
+  - id: check-form-novalidate
+    name: check form for novalidate attribute
+    description: 'Enforce that HTML forms have the novalidate attribute to disable browser validation and force Django form validation'
+    language: pygrep
+    types: [html]
+    # derived from this answer: https://stackoverflow.com/a/17204198
+    entry: |
+      <form(?=\s|>)(?!(?:[^>=]|=(['"])(?:(?!\1).)*\1)*?\snovalidate)[^>]*>
   - id: flake8
     name: flake8
     description: wemake-python-styleguide++ enforcement
