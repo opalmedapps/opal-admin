@@ -3142,6 +3142,8 @@ def test_fetch_patient_demographic_diagnosis_report_success() -> None:
     django_pat2 = patient_factories.Patient(ramq='SIMM12345679', legacy_id=52)
     legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
     legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_pat2, hospital__code='MGH', mrn=1234566)
+    django_pat3 = patient_factories.Patient(ramq='SIMM12345679', legacy_id=53)
+    legacy_factories.LegacyPatientFactory(patientsernum=django_pat3.legacy_id)
     legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1, description_en='Test Diagnosis1')
     legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1, description_en='Test Diagnosis2')
     legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat2, description_en='Test Diagnosis3')
