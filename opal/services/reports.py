@@ -11,7 +11,7 @@ from requests.exceptions import JSONDecodeError, RequestException
 from rest_framework import status
 
 from opal.legacy.models import LegacyPatient
-from opal.utils.base64_util import Base64Util
+from opal.utils.base64 import Base64Util
 
 
 class QuestionnaireReportRequestData(NamedTuple):

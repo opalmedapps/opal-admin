@@ -13,7 +13,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from ..patients.models import HospitalPatient
-from ..utils.base64_util import Base64Util
+from ..utils.base64 import Base64Util
 
 
 class OIEReportExportData(NamedTuple):

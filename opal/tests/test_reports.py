@@ -11,7 +11,7 @@ from requests.exceptions import RequestException
 
 from ..legacy.factories import LegacyPatientFactory
 from ..services.reports import QuestionnaireReportRequestData, ReportService
-from ..utils.base64_util import Base64Util
+from ..utils.base64 import Base64Util
 
 BASE64_ENCODED_REPORT = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
 ENCODING = 'utf-8'
