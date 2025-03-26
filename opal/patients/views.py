@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import QuerySet
 from django.forms import Form
+from django.forms.models import ModelForm
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -51,7 +52,7 @@ class RelationshipTypeListView(PermissionRequiredMixin, SingleTableView):
     template_name = 'patients/relationship_type/list.html'
 
 
-class RelationshipTypeCreateUpdateView(PermissionRequiredMixin, CreateUpdateView):
+class RelationshipTypeCreateUpdateView(PermissionRequiredMixin, CreateUpdateView[RelationshipType]):
     """
     This `CreateView` displays a form for creating an `RelationshipType` object.
 
@@ -65,7 +66,9 @@ class RelationshipTypeCreateUpdateView(PermissionRequiredMixin, CreateUpdateView
     success_url = reverse_lazy('patients:relationshiptype-list')
 
 
-class RelationshipTypeDeleteView(PermissionRequiredMixin, generic.edit.DeleteView):
+class RelationshipTypeDeleteView(
+    PermissionRequiredMixin, generic.edit.DeleteView[RelationshipType, ModelForm[RelationshipType]],
+):
     """
     A view that displays a confirmation page and deletes an existing `RelationshipType` object.
 
@@ -534,7 +537,9 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableView):
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
 
 
-class PendingRelationshipUpdateView(PermissionRequiredMixin, UpdateView):
+class PendingRelationshipUpdateView(
+    PermissionRequiredMixin, UpdateView[Relationship, ModelForm[Relationship]],
+):
     """
     This `UpdatesView` displays a form for updating a `Relationship` object.
 
