@@ -96,6 +96,9 @@ xray:
   # - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   variables:
     OUTPUT_DIR: reports
+  # replace default before_script section
+  before_script:
+    - uname -a
   script:
     - x-ray-scan -p "$CI_PROJECT_DIR" -o "$OUTPUT_DIR"
   artifacts:
