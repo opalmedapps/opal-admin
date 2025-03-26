@@ -96,29 +96,29 @@ class TestChartAppView:
         """Test if function returns number of new clinical questionnaires."""
         clinical_purpose = questionnaires_factories.LegacyPurposeFactory(id=1)
         research_purpose = questionnaires_factories.LegacyPurposeFactory(id=2)
-        clinical_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=clinical_purpose)
-        research_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purposeid=research_purpose)
+        clinical_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purpose=clinical_purpose)
+        research_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purpose=research_purpose)
         patient_one = questionnaires_factories.LegacyPatientFactory()
         patient_two = questionnaires_factories.LegacyPatientFactory(external_id=52)
 
         # status=0 by default for new questionnaires
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
-            questionnaireid=clinical_questionnaire,
-            patientid=patient_one,
+            questionnaire=clinical_questionnaire,
+            patient=patient_one,
         )
         # status=1 indicates in progress
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
-            questionnaireid=clinical_questionnaire,
-            patientid=patient_one,
+            questionnaire=clinical_questionnaire,
+            patient=patient_one,
             status=1,
         )
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
-            questionnaireid=research_questionnaire,
-            patientid=patient_one,
+            questionnaire=research_questionnaire,
+            patient=patient_one,
         )
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
-            questionnaireid=clinical_questionnaire,
-            patientid=patient_two,
+            questionnaire=clinical_questionnaire,
+            patient=patient_two,
         )
         new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
             patient_sernum=51,
