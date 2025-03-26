@@ -20,8 +20,9 @@ RUN python -m pip install --no-cache-dir --upgrade pip \
 
 FROM python:3.11.8-alpine3.19
 
-RUN apk add --no-cache mariadb-dev \
+RUN apk upgrade --no-cache \
   # mysqlclient runtime dependencies
+  && apk add --no-cache mariadb-dev \
   # Translations dependencies
   && apk add --no-cache gettext
 
@@ -43,10 +44,10 @@ WORKDIR /app
 COPY . /app
 
 # Set up the cron jobs
-COPY ./scripts/cron/crontab /etc/cron.d/
+COPY ./scripts/cron/crontab /tmp/crontab
 
 # Add new cron jobs to the cron tab and compile languages
-RUN crontab /etc/cron.d/crontab \
+RUN crontab /tmp/crontab \
   && cp .env.sample .env \
   && DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages \
   && rm .env
