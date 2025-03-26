@@ -3,10 +3,9 @@ import datetime as dt
 from types import MappingProxyType
 from typing import TypeAlias, Union
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
-
-from django.core.exceptions import ObjectDoesNotExist
 
 from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Site
