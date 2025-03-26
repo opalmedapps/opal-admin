@@ -201,7 +201,6 @@ django translations:
     # Missing translation file updates
     - echo "Checking that translation files have been updated ..."
     - python manage.py makemessages --add-location file -l fr
-    - django-admin compilemessages --ignore .venv
     # due to git LFS the LFS-tracked files show up in the diff, limit the diff to only .po files
     - git diff --ignore-matching-lines=POT-Creation-Date --exit-code *.po
 

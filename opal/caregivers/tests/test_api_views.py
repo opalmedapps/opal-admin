@@ -1693,9 +1693,9 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
         assert len(mail.outbox) == 1
         assert mail.outbox[0].from_email == settings.EMAIL_FROM_REGISTRATION
         assert mail.outbox[0].to == ['opal@muhc.mcgill.ca']
+        assert mail.outbox[0].subject == 'Merci de vous être inscrit(e) à Opal!'
         body = mail.outbox[0].body
         assert "Merci de vous être inscrit(e) à l'application Opal." in body
-        assert mail.outbox[0].subject == 'Merci de vous être inscrit(e) à Opal!'
 
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_confirmation_email_existing_caregiver_en(
