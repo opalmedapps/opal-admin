@@ -762,7 +762,7 @@ def patient_mock(mocker: MockerFixture) -> Any:
 
 @pytest.fixture
 def mock_institution(mocker: MockerFixture) -> Any:
-    """Fixture to mock Institution.objects.get."""
+    """Fixture to mock the Instituion."""
     institution_mock = mocker.MagicMock()
     institution_mock.logo.path = Path('opal/tests/fixtures/test_logo.png')  # Set mock path
     mocker.patch('opal.hospital_settings.models.Institution.objects.get', return_value=institution_mock)
@@ -799,7 +799,7 @@ def questionnaire_data_mock(mocker: MockerFixture) -> Any:
 
 @pytest.fixture
 def mock_generate_pdf(mocker: MockerFixture) -> Any:
-    """Fixture to mock generate_pdf."""
+    """Fixture to mock generating a pdf."""
     return mocker.patch('opal.legacy.utils.generate_pdf', autospec=True)
 
 # Test for generating the report

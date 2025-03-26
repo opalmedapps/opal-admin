@@ -507,14 +507,14 @@ def fetch_questionnaires_from_db(external_patient_id: int) -> list[Any]:
 
 def parse_query_result(
     query_result: list[Any],
-) -> list[dict[Any, Any]]:  # noqa: WPS231
+) -> list[dict[Any, Any]]:
     """Parse the raw query result into a structured list of disctionries.
 
     This function processes each row in the query result, expecting JSON data in the first column
     (`row[0]`). The JSON is deserialized, and the resulting data is added to a list.
 
     Args:
-        query_result (list[tuple[Any]]): raw query results, each tuple represents a database row
+        query_result (list[Any]): raw query results, each tuple represents a database row
 
     Raises:
         ValueError: if the JSON data cannot be deserialized
@@ -578,7 +578,7 @@ def process_questions(questions_data: list[Any]) -> list[Question]:
         CommandError: if the question format is wrong
 
     Returns:
-        list[Question]: questions list associated with the questionnaire
+        list[Question]: list of questions associated with the questionnaire
     """
     questions = []
 
