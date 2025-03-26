@@ -14,7 +14,7 @@ from pytest_mock import MockerFixture
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from opal.hospital_settings.factories import Institution
+from opal.hospital_settings.factories import Institution, Site
 from opal.legacy import models as legacy_models
 from opal.legacy.factories import LegacyAliasExpressionFactory, LegacyPatientFactory, LegacySourceDatabaseFactory
 from opal.patients import models as patient_models
@@ -98,6 +98,7 @@ class TestCreatePathologyView:
         """Ensure the endpoint raises exception in case of unsuccessful insertion to the OpalDB.Documents table."""
         settings.PATHOLOGY_REPORTS_PATH = tmp_path
         Institution()
+        Site(acronym=self._get_valid_input_data().get('receiving_facility'))
 
         patient = Patient(
             ramq='TEST01161972',
@@ -143,6 +144,7 @@ class TestCreatePathologyView:
         """Ensure the endpoint can generate pathology report and save pathology records with no errors."""
         settings.PATHOLOGY_REPORTS_PATH = tmp_path
         Institution()
+        Site(acronym=self._get_valid_input_data().get('receiving_facility'))
 
         patient = Patient(
             ramq='TEST01161972',
@@ -207,7 +209,7 @@ class TestCreatePathologyView:
                 'note_text': 'test',
             }],
             'sending_facility': '',
-            'receiving_facility': '',
+            'receiving_facility': 'RVH',
             'collected_at': '1985-10-01 12:30:30',
             'received_at': '1986-10-01 10:30:30',
             'message_type': '',

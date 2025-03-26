@@ -212,7 +212,12 @@ class _NestedPatientSerializer(PatientSerializer):
 
     class Meta(PatientSerializer.Meta):
         extra_kwargs = {
-            'legacy_id': dict(PatientSerializer.Meta.extra_kwargs['legacy_id'], validators=[]),
+            # enforce proper value for legacy_id
+            'legacy_id': {
+                'allow_null': False,
+                'required': True,
+                'validators': [],
+            },
         }
 
 
@@ -255,19 +260,19 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):
         many=True,
     )
 
-    institution_code = serializers.SerializerMethodField()
+    institution = serializers.SerializerMethodField()
 
-    def get_institution_code(self, obj: Patient) -> str:  # noqa: WPS615
+    def get_institution(self, obj: Patient) -> dict[str, str]:  # noqa: WPS615
         """
-        Get a single institution code.
+        Get a single institution acronym.
 
         Args:
             obj: Object of Patient.
 
         Returns:
-            code of the singleton institution
+            acronym of the singleton institution
         """
-        return Institution.objects.get().code
+        return Institution.objects.values('acronym_en', 'acronym_fr').get()
 
     class Meta:
         model = Patient
@@ -275,6 +280,6 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):
             'first_name',
             'last_name',
             'data_access',
-            'institution_code',
+            'institution',
             'caregivers',
         ]

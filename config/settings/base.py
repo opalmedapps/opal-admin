@@ -472,8 +472,6 @@ REST_FRAMEWORK = {
 # A list of origins that are authorized to make cross-site HTTP requests.
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
 CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS')
-# See: https://github.com/adamchainz/django-cors-headers#cors_urls_regex-str--patternstr
-CORS_URLS_REGEX = '^/api/.*$'
 
 # django-easy-audit
 # ------------------------------------------------------------------------------

@@ -22,7 +22,7 @@ FPDFCellDictType = TypedDict(
     {
         'w': Optional[float],
         'h': Optional[float],
-        'txt': str,
+        'text': str,
         'border': bool | str | Literal[0, 1],
         'align': str | Align,
     },
@@ -33,7 +33,7 @@ FPDFMultiCellDictType = TypedDict(
     {
         'w': float,
         'h': Optional[float],
-        'txt': str,
+        'text': str,
         'align': str | Align,
     },
 )
@@ -195,21 +195,21 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 h=None,
                 align='L',
                 border=0,
-                txt='Pathologie Chirurgicale Raport (suite)',
+                text='Pathologie Chirurgicale Raport (suite)',
             )
             header_text_en = FPDFCellDictType(
                 w=0,
                 h=None,
                 align='L',
                 border=0,
-                txt='Surgical Pathology Final Report (continuation)',
+                text='Surgical Pathology Final Report (continuation)',
             )
             header_patient_info = FPDFCellDictType(
                 w=0,
                 h=None,
                 align='L',
                 border=0,
-                txt=f'Patient : {self.patient_name} [{self.patient_sites_and_mrns_str}]',
+                text=f'Patient : {self.patient_name} [{self.patient_sites_and_mrns_str}]',
             )
             self.set_font(family=PATHOLOGY_REPORT_FONT, style='B', size=6)
             self.cell(**header_text_fr)
@@ -239,11 +239,11 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             + 'clinical use.'
         )
         footer_cursor_abscissa_position_in_mm: int = -40
-        footer_block = FPDFMultiCellDictType(w=0, h=None, align='L', txt=footer_text)
+        footer_block = FPDFMultiCellDictType(w=0, h=None, align='L', text=footer_text)
         footer_page = FPDFCellDictType(
             w=0,
             h=10,
-            txt=f'Page {self.page_no()}/{{nb}}',
+            text=f'Page {self.page_no()}/{{nb}}',
             border='B',
             align='R',
         )
@@ -338,8 +338,8 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             style='B',
             size=12,
         )
-        title_fr = FPDFCellDictType(w=0, h=10, align='C', border=0, txt='PATHOLOGIE CHIRURGICALE RAPORT FINAL')
-        title_en = FPDFCellDictType(w=0, h=10, align='C', border=0, txt='SURGICAL PATHOLOGY FINAL REPORT')
+        title_fr = FPDFCellDictType(w=0, h=10, align='C', border=0, text='PATHOLOGIE CHIRURGICALE RAPORT FINAL')
+        title_en = FPDFCellDictType(w=0, h=10, align='C', border=0, text='SURGICAL PATHOLOGY FINAL REPORT')
         space_between_titles: int = 6  # the height between titles
         title_indentation: int = 12    # to make an indentation from previous section/block
 
@@ -419,12 +419,12 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             size=10,
         )
         new_abscissa_position: int = 20
-        section_title_block = FPDFCellDictType(w=0, h=10, border=0, align='L', txt=section_title)
+        section_title_block = FPDFCellDictType(w=0, h=10, border=0, align='L', text=section_title)
         section_content_block = FPDFMultiCellDictType(
             w=155,
             h=None,
             align='J',
-            txt='\n\n\n\n'.join(section_content),
+            text='\n\n\n\n'.join(section_content),
         )
 
         self.set_font(**section_title_font)
@@ -464,6 +464,15 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         mrns_and_sites_multiline = '\n'.join(
             [f'{site_mrn["site_code"]}# : {site_mrn["mrn"]}' for site_mrn in sites_and_mrns],
         )
+        site_city = (
+            f'{self.pathology_data.site_city} '
+            + f'({self.pathology_data.site_province}) '
+            + f'{self.pathology_data.site_postal_code}'
+        ) if str(self.pathology_data.site_city) else ''
+        site_phone = (
+            f'Tél. : {self.pathology_data.site_phone}'
+        ) if str(self.pathology_data.site_phone) else ''
+
         return [
             {
                 'name': 'site_logo',
@@ -482,7 +491,6 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'priority': 0,
                 'multiline': False,
             },
-            # TODO: update hardcoded "Royal Victoria Hospital"
             {
                 'name': 'site_name',
                 'type': 'T',
@@ -496,7 +504,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': 'Royal Victoria Hospital',
+                'text': self.pathology_data.site_name,
                 'priority': 0,
                 'multiline': False,
             },
@@ -513,7 +521,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': '1001, boulevard Décarie',
+                'text': self.pathology_data.site_building_address,
                 'priority': 0,
                 'multiline': False,
             },
@@ -530,7 +538,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': 'Montréal (Québec) H4A 3J1',
+                'text': site_city,
                 'priority': 0,
                 'multiline': False,
             },
@@ -547,7 +555,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': 'Tél. : 514 934 4400',
+                'text': site_phone,
                 'priority': 0,
                 'multiline': False,
             },
@@ -1074,7 +1082,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'type': 'T',
                 'x1': 15,
                 'y1': y_position + 30,
-                'x2': 160,
+                'x2': 155,
                 'y2': y_position + 38,
                 'font': PATHOLOGY_REPORT_FONT,
                 'size': 10,
@@ -1089,7 +1097,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'electronically_signed_at_placeholder',
                 'type': 'T',
-                'x1': 161,
+                'x1': 156,
                 'y1': y_position + 30,
                 'x2': 195,
                 'y2': y_position + 38,

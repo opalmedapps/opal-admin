@@ -9,6 +9,7 @@ from dateutil.relativedelta import relativedelta
 from pytest_django.asserts import assertRaisesMessage
 
 from opal.caregivers.models import CaregiverProfile
+from opal.hospital_settings import factories as hospital_settings_factories
 from opal.users import factories as user_factories
 
 from .. import constants, factories
@@ -135,10 +136,14 @@ def test_patient_str() -> None:
     assert str(patient) == 'Last Name, First Name'
 
 
-def test_patient_age_calculation() -> None:
-    """Ensure the `calculate_age` method calculate correctly for the `Patient` model."""
-    date_of_birth = datetime(2004, 1, 1, 9, 20, 30)
-    assert Patient.calculate_age(date_of_birth=date_of_birth) == 19
+@pytest.mark.parametrize(('date_of_birth', 'reference_date', 'age'), [
+    (date(2004, 1, 1), date(2023, 10, 1), 19),
+    (date(2004, 12, 1), date(2023, 1, 1), 18),
+    (date.today() - relativedelta(years=23), None, 23),
+])
+def test_patient_age_calculation(date_of_birth: date, reference_date: date | None, age: int) -> None:
+    """Ensure the `calculate_age` method calculates the age correctly."""
+    assert Patient.calculate_age(date_of_birth, reference_date) == age
 
 
 def test_patient_factory() -> None:
@@ -156,7 +161,7 @@ def test_patient_factory_multiple() -> None:
 
 
 def test_patient_uuid_unique() -> None:
-    """Ensure that the field uuid of carigaver is unique."""
+    """Ensure that the field uuid of patient is unique."""
     patient = factories.Patient()
     patients2 = factories.Patient(ramq='SIMM87531908')
     patient.uuid = patients2.uuid
@@ -164,6 +169,35 @@ def test_patient_uuid_unique() -> None:
     message = 'Patient with this UUID already exists.'
     with assertRaisesMessage(ValidationError, message):
         patient.full_clean()
+
+
+def test_patient_age() -> None:
+    """Ensure that the field age of the patient is calculated correctly."""
+    date_of_birth = date.today() - relativedelta(years=42)
+    patient = factories.Patient(date_of_birth=date_of_birth)
+
+    assert patient.age == 42
+
+
+@pytest.mark.parametrize('adulthood_age', [17, 18, 19])
+def test_patient_is_adult(adulthood_age: int) -> None:
+    """Ensure that a patient is considered an adult."""
+    hospital_settings_factories.Institution(adulthood_age=adulthood_age)
+    date_of_birth = date.today() - relativedelta(years=adulthood_age)
+    patient = factories.Patient(date_of_birth=date_of_birth)
+
+    assert patient.is_adult is True
+
+
+@pytest.mark.parametrize('adulthood_age', [17, 18, 19])
+def test_patient_is_adult_pediatric(adulthood_age: int) -> None:
+    """Ensure that a patient is considered an adult."""
+    hospital_settings_factories.Institution(adulthood_age=adulthood_age)
+    date_of_birth = date.today() - relativedelta(years=adulthood_age)
+    date_of_birth += relativedelta(days=1)
+    patient = factories.Patient(date_of_birth=date_of_birth)
+
+    assert patient.is_adult is False
 
 
 def test_patient_invalid_sex() -> None:
@@ -233,6 +267,22 @@ def test_patient_access_level_default() -> None:
     patient = factories.Patient()
 
     assert patient.data_access == Patient.DataAccessType.ALL
+
+
+def test_patient_non_interpretable_delay_field_max_value() -> None:
+    """Make sure that non interpretable lab result delay is less than or equal to 99."""
+    patient = Patient(non_interpretable_lab_result_delay=100)
+
+    with assertRaisesMessage(ValidationError, 'Ensure this value is less than or equal to 99.'):
+        patient.full_clean()
+
+
+def test_patient_interpretable_delay_field_max_value() -> None:
+    """Make sure that interpretable lab result delay is less than or equal to 99."""
+    patient = Patient(interpretable_lab_result_delay=100)
+
+    with assertRaisesMessage(ValidationError, 'Ensure this value is less than or equal to 99.'):
+        patient.full_clean()
 
 
 def test_relationship_str() -> None:

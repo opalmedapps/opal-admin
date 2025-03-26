@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from opal.caregivers import models as caregiver_models
 from opal.core.utils import generate_random_registration_code, generate_random_uuid
-from opal.hospital_settings.models import Site
+from opal.hospital_settings.models import Institution, Site
 from opal.legacy import utils as legacy_utils
 from opal.legacy.models import LegacyUserType
 from opal.services.hospital.hospital import OIEService
@@ -215,7 +215,7 @@ def get_patient_by_ramq_or_mrn(ramq: Optional[str], mrn: str, site: str) -> Opti
     Args:
         ramq: patient's RAMQ
         mrn: patient's MRN
-        site: patient's site code
+        site: patient's site acronym
 
     Returns:
         `Patient` object
@@ -224,7 +224,7 @@ def get_patient_by_ramq_or_mrn(ramq: Optional[str], mrn: str, site: str) -> Opti
         return Patient.objects.filter(ramq=ramq).first()
     return Patient.objects.filter(
         hospital_patients__mrn=mrn,
-        hospital_patients__site__code=site,
+        hospital_patients__site__acronym=site,
     ).first()
 
 
@@ -397,7 +397,7 @@ def initialize_new_opal_patient(  # noqa: WPS210
         patient_uuid: The new patient's Patient UUID.
         self_caregiver: the caregiver profile of the patient if they are their own caregiver, otherwise None.
     """
-    active_mrn_list = [(site.code, mrn) for site, mrn, is_active in mrn_list if is_active]
+    active_mrn_list = [(site.acronym, mrn) for site, mrn, is_active in mrn_list if is_active]
 
     # Initialize the patient's data in the legacy database
     legacy_patient = legacy_utils.initialize_new_patient(patient, mrn_list, self_caregiver)
@@ -464,7 +464,7 @@ def create_access_request(  # noqa: WPS210, WPS231
     if isinstance(patient, OIEPatientData):
         is_new_patient = True
         mrns = [
-            (Site.objects.get(code=mrn_data.site), mrn_data.mrn, mrn_data.active)
+            (Site.objects.get(acronym=mrn_data.site), mrn_data.mrn, mrn_data.active)
             for mrn_data in patient.mrns
         ]
 
@@ -476,6 +476,13 @@ def create_access_request(  # noqa: WPS210, WPS231
             ramq=patient.ramq,
             mrns=mrns,
         )
+
+        # set the two fields according to the institution’s field values if the patient is a pediatric patient
+        institution = Institution.objects.get()
+        if patient.age < institution.adulthood_age:
+            patient.non_interpretable_lab_result_delay = institution.non_interpretable_lab_result_delay
+            patient.interpretable_lab_result_delay = institution.interpretable_lab_result_delay
+            patient.save()
 
     # TODO: check whether we want to default start_date to patient's date of birth when calling create_relationship
 

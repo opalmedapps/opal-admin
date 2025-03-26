@@ -5,9 +5,9 @@ from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, 
 from django.db import transaction
 from django.db.models.query import QuerySet
 
-from rest_framework import serializers, status
+from rest_framework import mixins, serializers, status
 from rest_framework.exceptions import NotFound, PermissionDenied
-from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView, get_object_or_404
+from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -29,6 +29,7 @@ from ..api.serializers import (
     HospitalPatientSerializer,
     PatientDemographicSerializer,
     PatientSerializer,
+    PatientUpdateSerializer,
 )
 from ..models import Patient, Relationship
 
@@ -235,35 +236,49 @@ class PatientCaregiverDevicesView(RetrieveAPIView[Patient]):
     lookup_field = 'legacy_id'
 
 
-class PatientUpdateView(UpdateAPIView[Patient]):
-    """Class handling PUT requests for patient access level update."""
+class PatientView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, GenericAPIView[Patient]):
+    """View supporting patient retrieval and (limited) update based on their legacy ID."""
 
+    # clinical staff in OpalAdmin can update a patient (requires `change_patient`)
+    # opal-labs/legacy backend retrieves patient information (requires (`view_patient`)
     permission_classes = (FullDjangoModelPermissions,)
     queryset = Patient.objects.all()
-    serializer_class = PatientSerializer
     lookup_url_kwarg = 'legacy_id'
     lookup_field = 'legacy_id'
 
-    def get_serializer(self, *args: Any, **kwargs: Any) -> serializers.BaseSerializer[Patient]:
-        """Return the serializer instance that should be used for validating.
-
-        And deserializing input, and for serializing output.
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Handle a GET request to retrieve a patient instance.
 
         Args:
-            args: varied amount of non-keyword arguments
-            kwargs: varied amount of keyword arguments
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
 
         Returns:
-            BaseSerializer
+            the HTTP response
         """
-        serializer_class = self.get_serializer_class()
-        kwargs.setdefault('context', self.get_serializer_context())
-        kwargs['fields'] = ['data_access']
-        return serializer_class(*args, **kwargs)
+        self.serializer_class = PatientSerializer
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Handle a PUT request to update a patient instance.
+
+        Args:
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the HTTP response
+        """
+        self.serializer_class = PatientUpdateSerializer
+        return self.update(request, *args, **kwargs)
 
 
 class PatientExistsView(APIView):
-    """Class to return the Patient uuid & legacy_id given an input list of mrns and site codes.
+    """Class to return the Patient uuid & legacy_id given an input list of mrns and site acronyms.
 
     `get_patient_by_site_mrn_list` constructs a bitwise OR query comprised of each mrn+site pair for an efficient query.
 
@@ -277,9 +292,9 @@ class PatientExistsView(APIView):
 
     ```
     WHERE
-    (site__location.code = 'RVH' AND hospital_patient.mrn = '9999996')
+    (site__location.acronym = 'RVH' AND hospital_patient.mrn = '9999996')
     OR
-    (site__location.code = 'LAC' AND hospital_patient.mrn = '0765324')
+    (site__location.acronym = 'LAC' AND hospital_patient.mrn = '0765324')
     AND hospital_patient.is_active = True;
     ```
     """

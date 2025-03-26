@@ -668,7 +668,7 @@ def test_accessrequestsearchform_mrn_success_oie(mocker: MockerFixture) -> None:
         },
     )
 
-    site = factories.Site(code='MGH')
+    site = factories.Site(acronym='MGH')
 
     form_data = {
         'card_type': constants.MedicalCard.MRN.name,

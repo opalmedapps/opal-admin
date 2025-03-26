@@ -17,7 +17,7 @@ def test_mrn_type_for_questionnaire_report() -> None:
     """Ensure `mrn` for the questionnaire report request is a `serializers.CharField` type."""
     hospital_patient = HospitalPatient()
     serializer = QuestionnaireReportRequestSerializer(
-        data={'mrn': '9999996', 'site': hospital_patient.site.code},
+        data={'mrn': '9999996', 'site': hospital_patient.site.acronym},
     )
 
     assert isinstance(serializer.fields['mrn'], serializers.CharField)
@@ -28,7 +28,7 @@ def test_site_type_for_questionnaire_report() -> None:
     """Ensure `site_name` for the questionnaire report request is a `serializers.CharField` type."""
     hospital_patient = HospitalPatient()
     serializer = QuestionnaireReportRequestSerializer(
-        data={'mrn': '9999996', 'site': hospital_patient.site.code},
+        data={'mrn': '9999996', 'site': hospital_patient.site.acronym},
     )
 
     assert isinstance(serializer.fields['site'], serializers.CharField)

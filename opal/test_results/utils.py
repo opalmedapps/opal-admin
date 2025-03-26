@@ -1,14 +1,17 @@
 """Utility functions used by the test results app."""
-
+import logging
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from django.db import models
 
-from opal.hospital_settings.models import Institution
+from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import Patient
 from opal.services.reports import PathologyData, ReportService
+
+LOGGER = logging.getLogger(__name__)
 
 
 def generate_pathology_report(
@@ -33,22 +36,25 @@ def generate_pathology_report(
     # Report service for generating pathology reports
     report_service = ReportService()
 
+    # Find Site record filtering by receiving_facility field (a.k.a. site code)
+    site = _get_site_instance(pathology_data['receiving_facility'])
+
     return report_service.generate_pathology_report(
         pathology_data=PathologyData(
             site_logo_path=Path(Institution.objects.get().logo.path),
-            site_name='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
-            site_building_address='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
-            site_city='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
-            site_province='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
-            site_postal_code='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
-            site_phone='',  # TODO: use General_Test.receiving_facility; also see QSCCD-1438
+            site_name=site.name,
+            site_building_address=site.street_name,
+            site_city=site.city,
+            site_province=site.province_code,
+            site_postal_code=site.postal_code,
+            site_phone=site.contact_telephone,
             patient_first_name=patient.first_name,
             patient_last_name=patient.last_name,
             patient_date_of_birth=patient.date_of_birth,
             patient_ramq=patient.ramq if patient.ramq else '',
             patient_sites_and_mrns=list(
                 patient.hospital_patients.all().annotate(
-                    site_code=models.F('site__code'),
+                    site_code=models.F('site__acronym'),
                 ).values('mrn', 'site_code'),
             ),
             test_number=pathology_data['case_number'] if 'case_number' in pathology_data else '',
@@ -132,6 +138,38 @@ def _parse_notes(notes: list[dict[str, Any]]) -> dict[str, Any]:
     return parsed_notes
 
 
+def _get_site_instance(receiving_facility: str) -> Site:
+    """Fetch Site record by given receiving_facility code.
+
+    If Site cannot be found, log the incident and return a Site with empty fields.
+
+    Args:
+        receiving_facility: the receiving facility code
+
+    Returns:
+        A Site instance
+    """
+    try:
+        return Site.objects.get(acronym=receiving_facility)
+    except Site.DoesNotExist:
+        LOGGER.error(
+            (
+                'An error occurred during pathology report generation.'
+                + 'Given receiving_facility code does not exist: {0}.'
+                + 'Proceeded generation with an empty Site.'
+            ).format(receiving_facility),
+        )
+
+        return Site(
+            name='',
+            street_name='',
+            city='',
+            province_code='',
+            postal_code='',
+            contact_telephone='',
+        )
+
+
 def _find_doctor_name(note_text: str) -> str:
     """Find doctor's name in a pathology note.
 
@@ -141,8 +179,12 @@ def _find_doctor_name(note_text: str) -> str:
     Returns:
         doctor's name found in the pathology note
     """
-    # TODO: implement regex
-    return ''
+    # Regular expression pattern
+    pattern = r'Electronically signed on [\d\-A-Z]+ \d{1,2}:\d{2} [apm]{2}\\.br\\By (.+?)(?:,,|$)'
+    match = re.search(pattern, note_text)
+
+    # Extract and return doctor's full name
+    return match.group(1).strip() if match else ''
 
 
 def _find_note_date(note_text: str) -> datetime:
@@ -154,5 +196,11 @@ def _find_note_date(note_text: str) -> datetime:
     Returns:
         date and time of note creation
     """
-    # TODO: implement regex
+    pattern = r'Electronically signed on ([\d\-A-Z]+ \d{1,2}:\d{2} [apm]{2})\\.br\\By (.+?)(?:,,|$)'
+    match = re.search(pattern, note_text)
+
+    # Extract date and time of note text
+    if match:
+        note_date = match.group(1).strip()
+        return datetime.strptime(note_date, '%d-%b-%Y %I:%M %p')
     return datetime(1, 1, 1)

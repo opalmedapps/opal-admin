@@ -35,8 +35,8 @@ def test_patienttable_render_date_of_birth_str() -> None:
 def test_patienttable_render_mrns_patient() -> None:
     """Ensure that MRNs are rendered in the form `SITE: MRN` in `PatientTable` for a `Patient`."""
     patient = factories.Patient()
-    site = factories.Site(name='TEST_SITE', code='TSITE')
-    site2 = factories.Site(name='Test2', code='TST2')
+    site = factories.Site(name='TEST_SITE', acronym='TSITE')
+    site2 = factories.Site(name='Test2', acronym='TST2')
     factories.HospitalPatient(patient=patient, site=site, mrn='999999')
     factories.HospitalPatient(patient=patient, site=site2, mrn='1234567')
 

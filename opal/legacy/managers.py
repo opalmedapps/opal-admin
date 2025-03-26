@@ -47,31 +47,34 @@ logger = logging.getLogger(__name__)
 class UnreadQuerySetMixin(models.Manager[_Model]):
     """LegacyModels unread count mixin."""
 
-    def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet[_Model]:
+    def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet[_Model]:
         """
         Get the queryset of unread model records for a given user.
 
         Args:
             patient_sernum: User sernum used to retrieve unread model records queryset.
-            user_name: Firebase username making the request.
+            username: Firebase username making the request.
 
         Returns:
             Queryset of unread model records.
         """
-        return self.filter(patientsernum=patient_sernum).exclude(readby__contains=user_name)
+        return self.filter(patientsernum=patient_sernum).exclude(readby__contains=username)
 
-    def get_unread_multiple_patients_queryset(self, user_name: str) -> models.QuerySet[_Model]:
+    def get_unread_multiple_patients_queryset(self, username: str) -> models.QuerySet[_Model]:
         """
-        Get the queryset of unread model records for all patient related to the requestion user.
+        Get the queryset of unread model records for all patients related to the requested user.
 
         Args:
-            user_name: Firebase username making the request.
+            username: Firebase username making the request.
 
         Returns:
             Queryset of unread model records.
         """
-        patient_ids = Relationship.objects.get_patient_id_list_for_caregiver(user_name)
-        return self.filter(patientsernum__in=patient_ids).exclude(readby__contains=user_name)
+        patient_ids = Relationship.objects.get_list_of_patients_ids_for_caregiver(
+            username=username,
+            status=RelationshipStatus.CONFIRMED,
+        )
+        return self.filter(patientsernum__in=patient_ids).exclude(readby__contains=username)
 
 
 class LegacyNotificationManager(UnreadQuerySetMixin['LegacyNotification'], models.Manager['LegacyNotification']):
@@ -81,13 +84,13 @@ class LegacyNotificationManager(UnreadQuerySetMixin['LegacyNotification'], model
 class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
     """LegacyAppointment manager."""
 
-    def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet['LegacyAppointment']:
+    def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet['LegacyAppointment']:
         """
         Get the queryset of uncompleted appointments for a given user.
 
         Args:
             patient_sernum: User sernum used to retrieve uncompleted appointments queryset.
-            user_name: Firebase username making the request.
+            username: Firebase username making the request.
 
         Returns:
             Queryset of uncompleted appointments.
@@ -96,22 +99,22 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             patientsernum=patient_sernum,
             state='Active',
         ).exclude(
-            readby__contains=user_name,
+            readby__contains=username,
         )
 
-    def get_daily_appointments(self, user_name: str) -> models.QuerySet['LegacyAppointment']:
+    def get_daily_appointments(self, username: str) -> models.QuerySet['LegacyAppointment']:
         """
         Get all appointments for the current day for caregiver related patient(s).
 
         Used by the home page of the app for checkin.
 
         Args:
-            user_name: Firebase username making the request.
+            username: Firebase username making the request.
 
         Returns:
             Appointments schedule for the current day.
         """
-        relationships = Relationship.objects.get_patient_list_for_caregiver(user_name).filter(
+        relationships = Relationship.objects.get_patient_list_for_caregiver(username).filter(
             status=RelationshipStatus.CONFIRMED,
         )
         patient_ids = [
@@ -131,19 +134,22 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             status='Deleted',
         )
 
-    def get_closest_appointment(self, user_name: str) -> Optional['LegacyAppointment']:
+    def get_closest_appointment(self, username: str) -> Optional['LegacyAppointment']:
         """
         Get the closest next appointment in time for any of the patients in the user's care.
 
         Used by the "Home" page of the app for the "Upcoming Appointment" widget.
 
         Args:
-            user_name: Firebase username making the request
+            username: Firebase username making the request
 
         Returns:
             Closest appointment for the patient in care (including SELF) and their legacy_id
         """
-        patient_ids = Relationship.objects.get_patient_id_list_for_caregiver(user_name, 'confirmed')
+        patient_ids = Relationship.objects.get_list_of_patients_ids_for_caregiver(
+            username=username,
+            status=RelationshipStatus.CONFIRMED,
+        )
         return self.filter(
             scheduledstarttime__gte=timezone.localtime(timezone.now()),
             patientsernum__in=patient_ids,
@@ -291,19 +297,19 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
 class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
     """LegacyAnnouncement manager."""
 
-    def get_unread_queryset(self, patient_sernum_list: list[int], user_name: str) -> int:
+    def get_unread_queryset(self, patient_sernum_list: list[int], username: str) -> int:
         """
         Get the count of unread announcement(s) for a given user and their relationship(s).
 
         Args:
-            patient_sernum_list: List of legacy patient sernum to fetch the annoucements for.
-            user_name: Username making the request.
+            patient_sernum_list: List of legacy patient sernum to fetch the announcements for.
+            username: Username making the request.
 
         Returns:
-            Count of unread annoucement(s) records.
+            Count of unread announcement(s) records.
         """
         return self.exclude(
-            readby__contains=user_name,
+            readby__contains=username,
         ).filter(
             patientsernum__in=patient_sernum_list,
         ).count()

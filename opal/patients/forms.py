@@ -251,7 +251,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
             ).first()
 
             if not self.patient:
-                response = self.oie_service.find_patient_by_mrn(medical_number, site.code)
+                response = self.oie_service.find_patient_by_mrn(medical_number, site.acronym)
 
         if response:
             self._handle_response(response)
@@ -765,8 +765,8 @@ class AccessRequestSendSMSForm(forms.Form):
             url = f'{settings.OPAL_USER_REGISTRATION_URL}/#!/form/search?code={registration_code}'
             with override(language):
                 message = gettext(
-                    'Your Opal registration code is: {code}.'
-                    + 'Please go to: {url}. Your code will be expire in {period} hours.',
+                    'Your Opal registration code is: {code}. '
+                    + 'Please go to: {url}. Your code will expire in {period} hours.',
                 ).format(
                     code=registration_code,
                     url=url,

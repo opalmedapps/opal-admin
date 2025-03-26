@@ -130,8 +130,8 @@ urlpatterns = [
     ),
     path(
         'patients/legacy/<int:legacy_id>/',
-        patient_views.PatientUpdateView.as_view(),
-        name='patient-update',
+        patient_views.PatientView.as_view(),
+        name='patients-legacy',
     ),
     path(
         'patients/demographic/',
@@ -161,12 +161,12 @@ urlpatterns = [
         name='databank-consent-create',
     ),
     path(
-        'patients/health-data/unviewed/',
+        'patients/health-data/quantity-samples/unviewed/',
         data_views.UnviewedQuantitySampleView.as_view(),
         name='unviewed-health-data-patient-list',
     ),
     path(
-        'patients/<uuid:uuid>/health-data/viewed/',
+        'patients/<uuid:uuid>/health-data/quantity-samples/viewed/',
         data_views.MarkQuantitySampleAsViewedView.as_view(),
         name='patient-viewed-health-data-update',
     ),

@@ -21,6 +21,7 @@ class PatientSerializer(DynamicFieldsSerializer[Patient]):
     class Meta:
         model = Patient
         fields = [
+            'uuid',
             'legacy_id',
             'first_name',
             'last_name',
@@ -29,14 +30,21 @@ class PatientSerializer(DynamicFieldsSerializer[Patient]):
             'data_access',
             'sex',
             'ramq',
-            'uuid',
+            'is_adult',
+            'non_interpretable_lab_result_delay',
+            'interpretable_lab_result_delay',
         ]
-        # enforce proper value for legacy_id
+
+
+class PatientUpdateSerializer(serializers.ModelSerializer[Patient]):
+    """Patient serializer to update a patient instance."""
+
+    class Meta:
+        model = Patient
+        fields = [
+            'data_access',
+        ]
         extra_kwargs: dict[str, dict[str, Any]] = {
-            'legacy_id': {
-                'allow_null': False,
-                'required': True,
-            },
             'data_access': {
                 'required': True,
             },
@@ -54,10 +62,10 @@ class HospitalPatientSerializer(DynamicFieldsSerializer[HospitalPatient]):
     Serializer for converting and validating `HospitalPatient` objects/data.
 
     The serializer inherits from `core.api.serializers.DynamicFieldsSerializer`,
-    and also provides `HospitalPatient` info and the site code according to the 'fields' arguments.
+    and also provides `HospitalPatient` info and the site acronym according to the 'fields' arguments.
     """
 
-    site_code = serializers.CharField(source='site.code')
+    site_code = serializers.CharField(source='site.acronym')
 
     class Meta:
         model = HospitalPatient
@@ -69,17 +77,17 @@ class HospitalPatientSerializer(DynamicFieldsSerializer[HospitalPatient]):
         """Check that `site_code` exists in the database (e.g., RVH).
 
         Args:
-            value: site code to be validated
+            value: site acronym to be validated
 
         Returns:
-            validated site code value
+            validated site acronym value
 
         Raises:
-            ValidationError: if provided site code does not exist in the database
+            ValidationError: if provided site acronym does not exist in the database
         """
-        if not Site.objects.filter(code=value).exists():
+        if not Site.objects.filter(acronym=value).exists():
             raise serializers.ValidationError(
-                '{0}{1}{2}'.format('Provided "', value, '" site code does not exist.'),
+                '{0}{1}{2}'.format('Provided "', value, '" site acronym does not exist.'),
             )
         return value
 
@@ -114,6 +122,8 @@ class CaregiverPatientSerializer(serializers.ModelSerializer[Relationship]):
         many=False,
     )
     data_access = serializers.CharField(source='patient.data_access')
+    non_interpretable_lab_result_delay = serializers.IntegerField(source='patient.non_interpretable_lab_result_delay')
+    interpretable_lab_result_delay = serializers.IntegerField(source='patient.interpretable_lab_result_delay')
 
     class Meta:
         model = Relationship
@@ -125,6 +135,8 @@ class CaregiverPatientSerializer(serializers.ModelSerializer[Relationship]):
             'status',
             'relationship_type',
             'data_access',
+            'non_interpretable_lab_result_delay',
+            'interpretable_lab_result_delay',
         ]
 
 
@@ -185,7 +197,7 @@ class PatientDemographicSerializer(DynamicFieldsSerializer[Patient]):
             # https://docs.djangoproject.com/en/dev/ref/models/querysets/#django.db.models.query.QuerySet.update_or_create
             HospitalPatient.objects.update_or_create(
                 mrn=hospital_patient['mrn'],
-                site=Site.objects.filter(code=hospital_patient['site']['code']).first(),
+                site=Site.objects.filter(acronym=hospital_patient['site']['acronym']).first(),
                 patient=instance,
                 defaults={
                     'is_active': hospital_patient['is_active'],

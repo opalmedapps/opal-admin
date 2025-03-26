@@ -63,7 +63,7 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
     relationship2 = Relationship(
         patient=patient,
         caregiver=caregiver2,
-        status='CON',
+        status=patient_models.RelationshipStatus.CONFIRMED,
         type=patient_models.RelationshipType.objects.self_type(),
     )
     api_client.credentials(HTTP_APPUSERID=caregiver2.user.username)
@@ -220,7 +220,7 @@ class TestRetrieveRegistrationDetailsView:
             'hospital_patients': [
                 {
                     'mrn': hospital_patient.mrn,
-                    'site_code': site.code,
+                    'site_code': site.acronym,
                 },
             ],
             'relationship_type': {
@@ -587,10 +587,10 @@ class TestPatientDemographicView:
             raw=json.dumps(response.json()),
             expected_data=[
                 {
-                    'site_code': ['Provided "RVH" site code does not exist.'],
+                    'site_code': ['Provided "RVH" site acronym does not exist.'],
                 },
                 {
-                    'site_code': ['Provided "MGH" site code does not exist.'],
+                    'site_code': ['Provided "MGH" site acronym does not exist.'],
                 },
             ],
         )
@@ -607,10 +607,10 @@ class TestPatientDemographicView:
             raw=json.dumps(response.json()),
             expected_data=[
                 {
-                    'site_code': ['Provided "RVH" site code does not exist.'],
+                    'site_code': ['Provided "RVH" site acronym does not exist.'],
                 },
                 {
-                    'site_code': ['Provided "MGH" site code does not exist.'],
+                    'site_code': ['Provided "MGH" site acronym does not exist.'],
                 },
             ],
         )
@@ -621,8 +621,8 @@ class TestPatientDemographicView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint raises a NotFound exception if provided MRN/site pairs do not exist."""
-        Site(code='RVH')
-        Site(code='MGH')
+        Site(acronym='RVH')
+        Site(acronym='MGH')
 
         api_client.force_login(interface_engine_user)
 
@@ -670,12 +670,12 @@ class TestPatientDemographicView:
         HospitalPatient(
             patient=patient_one,
             mrn='9999996',
-            site=Site(code='RVH'),
+            site=Site(acronym='RVH'),
         )
         HospitalPatient(
             patient=patient_two,
             mrn='9999997',
-            site=Site(code='MGH'),
+            site=Site(acronym='MGH'),
         )
 
         api_client.force_login(interface_engine_user)
@@ -728,12 +728,12 @@ class TestPatientDemographicView:
         HospitalPatient(
             patient=patient,
             mrn='9999996',
-            site=Site(code='RVH'),
+            site=Site(acronym='RVH'),
         )
         HospitalPatient(
             patient=patient,
             mrn='9999997',
-            site=Site(code='MGH'),
+            site=Site(acronym='MGH'),
         )
 
         api_client.force_login(interface_engine_user)
@@ -769,8 +769,8 @@ class TestPatientDemographicView:
         interface_engine_user: User,
     ) -> None:
         """Ensure the endpoint can update patient info when the patient does not have a self relationship (no user)."""
-        rvh_site = Site(code='RVH')
-        mgh_site = Site(code='MGH')
+        rvh_site = Site(acronym='RVH')
+        mgh_site = Site(acronym='MGH')
         patient = Patient(ramq='TEST01161972')
 
         HospitalPatient(
@@ -833,12 +833,12 @@ class TestPatientDemographicView:
         HospitalPatient(
             patient=patient,
             mrn='9999996',
-            site=Site(code='RVH'),
+            site=Site(acronym='RVH'),
         )
         HospitalPatient(
             patient=patient,
             mrn='9999997',
-            site=Site(code='MGH'),
+            site=Site(acronym='MGH'),
         )
 
         api_client.force_login(interface_engine_user)
@@ -940,7 +940,10 @@ class TestPatientCaregiverDevicesView:
         assert response.json() == {
             'first_name': patient.first_name,
             'last_name': patient.last_name,
-            'institution_code': institution.code,
+            'institution': {
+                'acronym_en': institution.acronym_en,
+                'acronym_fr': institution.acronym_fr,
+            },
             'data_access': 'ALL',
             'caregivers': [
                 {
@@ -967,8 +970,8 @@ class TestPatientCaregiverDevicesView:
         }
 
 
-class TestPatientUpdateView:
-    """Class wrapper for patient update endpoint tests."""
+class TestPatientView:
+    """Class wrapper for patient view tests."""
 
     def test_unauthenticated_unauthorized(
         self,
@@ -977,7 +980,7 @@ class TestPatientUpdateView:
         user_with_permission: Callable[[str], User],
     ) -> None:
         """Test that unauthenticated and unauthorized users cannot access the API."""
-        url = reverse('api:patient-update', kwargs={'legacy_id': 42})
+        url = reverse('api:patients-legacy', kwargs={'legacy_id': 42})
 
         response = api_client.get(url)
 
@@ -993,14 +996,33 @@ class TestPatientUpdateView:
 
         assert response.status_code == HTTPStatus.OK
 
-    def test_get_patient_update_superuser(self, api_client: APIClient, admin_user: User) -> None:
+    def test_not_found(self, admin_api_client: APIClient) -> None:
+        """Test that a 404 is returned if the patient does not exist."""
+        response = admin_api_client.get(reverse('api:patients-legacy', kwargs={'legacy_id': 42}))
+
+        assert response.status_code == HTTPStatus.NOT_FOUND
+
+    def test_retrieve(self, admin_api_client: APIClient) -> None:
+        """Test that patient data is returned."""
+        legacy_id = 42
+        patient = Patient(legacy_id=legacy_id)
+
+        response = admin_api_client.get(reverse('api:patients-legacy', kwargs={'legacy_id': legacy_id}))
+
+        assert response.status_code == HTTPStatus.OK
+        data = response.json()
+        assert data['legacy_id'] == legacy_id
+        assert data['first_name'] == patient.first_name
+        assert data['date_of_birth'] == patient.date_of_birth.isoformat()
+
+    def test_update_superuser(self, api_client: APIClient, admin_user: User) -> None:
         """Test patient updates data access success with superuser."""
         api_client.force_login(user=admin_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
-                'api:patient-update',
+                'api:patients-legacy',
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': 'ALL'},
@@ -1012,14 +1034,14 @@ class TestPatientUpdateView:
         assert patient.data_access == 'ALL'
 
     @pytest.mark.parametrize('permission_name', ['change_patient'])
-    def test_get_patient_update_with_permission(self, api_client: APIClient, permission_user: User) -> None:
+    def test_update_with_permission(self, api_client: APIClient, permission_user: User) -> None:
         """Test patient updates data access success with permission."""
         api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
-                'api:patient-update',
+                'api:patients-legacy',
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': 'ALL'},
@@ -1031,14 +1053,36 @@ class TestPatientUpdateView:
         assert patient.data_access == 'ALL'
 
     @pytest.mark.parametrize('permission_name', ['change_patient'])
-    def test_get_patient_update_with_empty_data_access(self, api_client: APIClient, permission_user: User) -> None:
+    def test_update_other_data(self, api_client: APIClient, permission_user: User) -> None:
+        """Test patient updates only updates data access even if extra data is supplied."""
+        api_client.force_login(user=permission_user)
+        legacy_id = 1
+        patient = Patient(legacy_id=legacy_id, data_access='NTK')
+        response = api_client.put(
+            reverse(
+                'api:patients-legacy',
+                kwargs={'legacy_id': 1},
+            ),
+            data={'data_access': 'ALL', 'ramq': 'SIMM86101799', 'first_name': 'Marge'},
+            format='json',
+        )
+
+        patient.refresh_from_db()
+
+        assert response.status_code == HTTPStatus.OK
+        assert patient.data_access == 'ALL'
+        assert patient.ramq == ''
+        assert patient.first_name == 'Marge'
+
+    @pytest.mark.parametrize('permission_name', ['change_patient'])
+    def test_update_with_empty_data_access(self, api_client: APIClient, permission_user: User) -> None:
         """Test patient updates data access success with permission."""
         api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
-                'api:patient-update',
+                'api:patients-legacy',
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': ''},
@@ -1052,21 +1096,22 @@ class TestPatientUpdateView:
         )
 
     @pytest.mark.parametrize('permission_name', ['change_patient'])
-    def test_get_patient_update_without_data_access(self, api_client: APIClient, permission_user: User) -> None:
+    def test_update_without_data_access(self, api_client: APIClient, permission_user: User) -> None:
         """Test patient updates data access success with permission."""
         api_client.force_login(user=permission_user)
         legacy_id = 1
         patient = Patient(legacy_id=legacy_id, data_access='NTK')
         response = api_client.put(
             reverse(
-                'api:patient-update',
+                'api:patients-legacy',
                 kwargs={'legacy_id': 1},
             ),
-            data={'': 'ALL'},
+            data={},
             format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
+        patient.refresh_from_db()
         assert patient.data_access == 'NTK'
         assert str(response.data['data_access']) == '{0}'.format(
             "[ErrorDetail(string='This field is required.', code='required')]",
@@ -1131,7 +1176,7 @@ class TestPatientExistsView:
             data=self.input_data_cases['invalid_site'],
             format='json',
         )
-        assert 'Provided "XXX" site code does not exist.' in response.data[0]['site_code']
+        assert 'Provided "XXX" site acronym does not exist.' in response.data[0]['site_code']
         assert response.status_code == HTTPStatus.BAD_REQUEST
 
     def test_patient_exists_patient_not_found(self, api_client: APIClient, admin_user: User) -> None:
@@ -1193,8 +1238,8 @@ class TestPatientExistsView:
 
     def _create_patient_identifiers(self) -> None:
         """Set up patients with required identifiers."""
-        site = Site(code='RVH')
-        Site(code='LAC')
+        site = Site(acronym='RVH')
+        Site(acronym='LAC')
         HospitalPatient(
             patient=Patient(),
             mrn='9999996',

@@ -1,9 +1,22 @@
 from datetime import datetime
 from typing import Any
 
+import pytest
+from _pytest.logging import LogCaptureFixture  # noqa: WPS436
 from pytest_mock.plugin import MockerFixture
 
-from ..utils import _find_doctor_name, _find_note_date, _parse_notes, _parse_observations  # noqa: WPS450
+from opal.hospital_settings import factories as hospital_settings_factories
+from opal.hospital_settings.models import Site
+
+from ..utils import (  # noqa: WPS450
+    _find_doctor_name,
+    _find_note_date,
+    _get_site_instance,
+    _parse_notes,
+    _parse_observations,
+)
+
+pytestmark = pytest.mark.django_db
 
 
 def _create_empty_parsed_observations() -> dict[str, list[str]]:
@@ -32,16 +45,46 @@ def _create_empty_parsed_notes() -> dict[str, Any]:
     }
 
 
-def test_find_doctor_name_success() -> None:
+# tuple with note text and corresponding doctor names
+test_note_text_data: list[tuple[str, str]] = [
+    (r'Electronically signed on 18-OCT-2023 02:29 pm\.br\By ', 'Gertruda Evaristo, MD, MSc, FRCPC'),
+    (r'Electronically signed on 18-OCT-2023 02:29 pm\.br\By ', 'Timothy John Berners-Lee, MD'),
+    (r'Electronically signed on 18-OCT-2023 02:29 pm\.br\By ', 'Leonardo di ser Piero da Vinci'),
+    (r'Electronically signed on 18-OCT-2023 02:29 pm\.br\By ', 'Guillaume Levasseur de Beauplan, MD, FRCPC'),
+]
+
+
+@pytest.mark.parametrize(('text', 'name'), test_note_text_data)
+def test_find_doctor_name_success(text: str, name: str) -> None:
     """Ensure find_doctor() successfully finds doctor name in a string."""
-    # TODO: update the unit test once find_doctor() is finalized
-    assert _find_doctor_name('Lorem ipsum dolor sit amet...') == ''
+    note_text = text + name
+    assert _find_doctor_name(note_text) == name
+
+
+def test_find_doctor_name_fail() -> None:
+    """Ensure find_doctor() does not find doctor name and return a empty string."""
+    note_text = 'AH /AH /AH'
+    assert _find_doctor_name(note_text) == ''
 
 
 def test_find_note_date_success() -> None:
     """Ensure find_note_date() successfully finds date and time of doctor's comment/note."""
-    # TODO: update the unit test once _find_note_date() is finalized
-    assert _find_note_date('Lorem ipsum dolor sit amet...') == datetime(1, 1, 1)
+    note_text_before_midday = r'Electronically signed on 23-NOV-2023 09:21 am\.br\By doctor_fname doctor_lname, MD'
+    note_text_after_midday = r'Electronically signed on 23-NOV-2023 09:21 pm\.br\By doctor_fname doctor_lname, MD'
+
+    assert _find_note_date(note_text_before_midday) == datetime(2023, 11, 23, 9, 21, 0)
+    assert _find_note_date(note_text_after_midday) == datetime(2023, 11, 23, 21, 21, 0)
+
+
+def test_find_note_date_fail() -> None:
+    """Ensure find_note_date() does not find date and time of doctor's comment/note."""
+    note_text_miss_date = r'Electronically signed on 09:21 am\.br\By doctor_fname doctor_lname, MD'
+    note_text_miss_time = r'Electronically signed on 23-NOV-2023 am\.br\By doctor_fname doctor_lname, MD'
+    note_text_miss_am = r'Electronically signed on 23-NOV-2023 09:21 \.br\By doctor_fname doctor_lname, MD'
+
+    assert _find_note_date(note_text_miss_date) == datetime(1, 1, 1)
+    assert _find_note_date(note_text_miss_time) == datetime(1, 1, 1)
+    assert _find_note_date(note_text_miss_am) == datetime(1, 1, 1)
 
 
 def test_parse_notes_with_empty_array() -> None:
@@ -182,3 +225,31 @@ def test_parse_observations_success() -> None:
         'SPGROS': ['value_3'],
         'SPDX': ['value_4'],
     }
+
+
+def test_get_site_instance_success() -> None:
+    """Ensure that _get_site_instance() successfully return Site instance."""
+    hospital_settings_factories.Site(acronym='RVH')
+    site = _get_site_instance(receiving_facility='RVH')
+
+    assert Site.objects.filter(pk=site.pk).exists()
+
+
+def test_get_site_instance_failed(caplog: LogCaptureFixture) -> None:
+    """Ensure that _get_site_instance() returns an empty Site for non-existent receiving facility."""
+    hospital_settings_factories.Site(acronym='RVH')
+    receiving_facility = ''
+    error = (
+        'An error occurred during pathology report generation.'
+        + 'Given receiving_facility code does not exist: {0}.'
+        + 'Proceeded generation with an empty Site.'
+    ).format(receiving_facility)
+    site = _get_site_instance(receiving_facility=receiving_facility)
+    assert caplog.records[0].message == error
+    assert caplog.records[0].levelname == 'ERROR'
+    assert site.name == ''
+    assert site.street_name == ''
+    assert site.city == ''
+    assert site.province_code == ''
+    assert site.postal_code == ''
+    assert site.contact_telephone == ''

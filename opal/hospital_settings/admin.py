@@ -13,7 +13,7 @@ from .models import Institution, Site
 class InstitutionAdmin(TranslationAdmin, admin.ModelAdmin[Institution]):
     """This class provides admin options for `Institution`."""
 
-    list_display = ['__str__', 'code']
+    list_display = ['__str__', 'acronym']
 
     def has_add_permission(self, request: HttpRequest) -> bool:
         """
@@ -37,4 +37,4 @@ class InstitutionAdmin(TranslationAdmin, admin.ModelAdmin[Institution]):
 class SiteAdmin(TranslationAdmin):
     """This class provides admin options for `Site`."""
 
-    list_display = ['__str__', 'code', 'institution']
+    list_display = ['__str__', 'acronym', 'institution']
