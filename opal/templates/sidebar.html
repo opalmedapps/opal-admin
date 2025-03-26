@@ -47,6 +47,9 @@
         {% #menu_item url_name="patients:access-request" request=request %}
           {% translate "New Access Request" %}
         {% /menu_item %}
+        {% #menu_item url_name="patients:access-request-old" request=request %}
+          {% translate "Opal Registration (old)" %}
+        {% /menu_item %}
       {% endif %}
       {% if perms.patients.can_manage_relationships %}
         {% #menu_item url_name="patients:relationships-pending-list" request=request %}

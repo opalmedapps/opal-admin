@@ -58,4 +58,9 @@ urlpatterns = [
         views.NewAccessRequestView.as_view(),
         name='access-request',
     ),
+    path(
+        'access-request-old/',
+        views.AccessRequestView.as_view(views.AccessRequestView.form_list),
+        name='access-request-old',
+    ),
 ]
