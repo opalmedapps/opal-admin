@@ -13,7 +13,7 @@ def generate_restricted_roletypes(apps: Apps, schema_editor: BaseDatabaseSchemaE
     self_type = RelationshipType.objects.filter(role_type=RoleType.SELF).first()
 
     if not self_type:
-        self_type = RelationshipType.objects.filter(name__iendswith='Self').first()
+        self_type = RelationshipType.objects.filter(name='self').first()
 
         if self_type:
             self_type.role_type = RoleType.SELF
@@ -34,7 +34,7 @@ def generate_restricted_roletypes(apps: Apps, schema_editor: BaseDatabaseSchemaE
     parent_type = RelationshipType.objects.filter(role_type=RoleType.PARENTGUARDIAN).first()
 
     if not parent_type:
-        parent_type = RelationshipType.objects.filter(name__iendswith='guardian').first()
+        parent_type = RelationshipType.objects.filter(name='guardian').first()
 
         if parent_type:
             parent_type.role_type = RoleType.PARENTGUARDIAN
