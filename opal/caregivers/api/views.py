@@ -8,7 +8,6 @@ from django.db.models.functions import SHA512
 from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
 from django.utils import timezone
-from django.utils.translation import get_language_from_request
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers as drf_serializers
@@ -176,8 +175,7 @@ class ApiEmailVerificationView(APIView):
                     'sent_at': timezone.now(),
                 },
             )
-        language = get_language_from_request(request)  # type: ignore[arg-type]
-        self._send_email(email_verification, caregiver.user, language)
+        self._send_email(email_verification, caregiver.user, request.LANGUAGE_CODE)
         return Response()
 
     def _send_email(
