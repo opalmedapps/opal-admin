@@ -26,6 +26,15 @@ class AppHomeView(APIView):
             Http response with the data needed to display the home view.
         """
         user_name = request.headers['Appuserid']
+
+        closest_appointment = models.LegacyAppointment.objects.get_closest_appointment(user_name)
+        if closest_appointment:
+            date_time = str(closest_appointment.scheduledstarttime.replace(microsecond=0))
+            patient_owner_legacy_id = closest_appointment.patientsernum.patientsernum
+        else:
+            date_time = None
+            patient_owner_legacy_id = None
+
         return Response({
             'unread_notification_count': models.LegacyNotification.objects.get_unread_multiple_patients_queryset(
                 user_name,
@@ -34,4 +43,8 @@ class AppHomeView(APIView):
                 models.LegacyAppointment.objects.get_daily_appointments(user_name),
                 many=True,
             ).data,
+            'closest_appointment': {
+                'date_time': date_time,
+                'patient_owner_legacy_id': patient_owner_legacy_id,
+            },
         })
