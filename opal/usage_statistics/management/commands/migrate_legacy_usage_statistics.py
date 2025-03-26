@@ -81,7 +81,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             f'Number of imported legacy activity log is: {legacy_activity_log_count}'
-            + '(out of {len(legacy_activity_logs)})',
+            + f'(out of {len(self.legacy_activity_logs)})',
         )
         legacy_data_received_log_count = 0
         for data_received_log in self.legacy_data_received_logs:
@@ -101,7 +101,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             f'Number of imported legacy data received log is: {legacy_data_received_log_count}'
-            + '(out of {len(legacy_data_received_logs)})',
+            + f'(out of {len(self.legacy_data_received_logs)})',
         )
 
     def _migrate_legacy_patient_activity_log(
@@ -113,12 +113,15 @@ class Command(BaseCommand):
 
         Return 'None'.
 
+        Raises:
+            ValueError: If the legacy patient is missing in system
+
         Args:
             activity_log: legacy patient activity log
         """
         patient = Patient.objects.filter(legacy_id=activity_log[0]).first()
         relationship = Relationship.objects.filter(patient=patient, type=1).first()
-        if relationship:
+        if patient and relationship:
             app_activity = DailyUserAppActivity(
                 action_by_user=relationship.caregiver.user,
                 last_login=timezone.make_aware(activity_log[1]),
@@ -133,9 +136,9 @@ class Command(BaseCommand):
                 date_added=activity_log[-1],
             )
             app_activity.full_clean()
-            app_activity.save()
 
             patient_activity = DailyUserPatientActivity(
+                action_by_user=relationship.caregiver.user,
                 user_relationship_to_patient=relationship,
                 patient=patient,
                 count_checkins=activity_log[3],
@@ -145,7 +148,11 @@ class Command(BaseCommand):
                 count_labs=activity_log[8],
             )
             patient_activity.full_clean()
+
+            app_activity.save()
             patient_activity.save()
+        else:
+            raise ValueError(f'Patient (legacy ID: {activity_log[0]} not not exist in system.')
 
     def _migrate_legacy_patient_data_received_log(
         self,
@@ -156,24 +163,30 @@ class Command(BaseCommand):
 
         Return 'None'.
 
+        Raises:
+            ValueError: If the legacy patient is missing in system
+
         Args:
             data_received_log: legacy patient data received log
         """
         patient = Patient.objects.filter(legacy_id=data_received_log[0]).first()
-        migrate_record = DailyPatientDataReceived(
-            patient=patient,
-            next_appointment=timezone.make_aware(data_received_log[1]),
-            last_appointment_received=timezone.make_aware(data_received_log[2]),
-            appointments_received=0,
-            last_document_received=timezone.make_aware(data_received_log[3]),
-            documents_received=0,
-            last_educational_material_received=None,
-            educational_materials_received=0,
-            last_questionnaire_received=None,
-            questionnaires_received=0,
-            last_lab_received=timezone.make_aware(data_received_log[4]),
-            labs_received=data_received_log[5],
-            date_added=data_received_log[6],
-        )
-        migrate_record.full_clean()
-        migrate_record.save()
+        if patient:
+            migrate_record = DailyPatientDataReceived(
+                patient=patient,
+                next_appointment=timezone.make_aware(data_received_log[1]),
+                last_appointment_received=timezone.make_aware(data_received_log[2]),
+                appointments_received=0,
+                last_document_received=timezone.make_aware(data_received_log[3]),
+                documents_received=0,
+                last_educational_material_received=None,
+                educational_materials_received=0,
+                last_questionnaire_received=None,
+                questionnaires_received=0,
+                last_lab_received=timezone.make_aware(data_received_log[4]),
+                labs_received=data_received_log[5],
+                date_added=data_received_log[6],
+            )
+            migrate_record.full_clean()
+            migrate_record.save()
+        else:
+            raise ValueError(f'Patient (legacy ID: {data_received_log[0]} not not exist in system.')
