@@ -1,10 +1,10 @@
 """Command for Users migration."""
 from enum import Enum
-from typing import Any, cast
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import Group
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 
 from opal.legacy.models import LegacyModule, LegacyOARole, LegacyOARoleModule, LegacyOAUser
@@ -35,8 +35,8 @@ class Command(BaseCommand):
             args: non-keyword input arguments.
             kwargs:  variable keyword input arguments.
         """
-        patient_module: LegacyModule = cast(LegacyModule, self._get_legacy_object(LegacyModule, 'Patient'))
-        admin_role: LegacyOARole = cast(LegacyOARole, self._get_legacy_object(LegacyOARole, 'Administration'))
+        patient_module = LegacyModule.objects.get(name_en='Patient')
+        admin_role = LegacyOARole.objects.get(name_en='System Administrator')
 
         admin_group = Group.objects.get(name=settings.ADMIN_GROUP_NAME)
         registrant_group = Group.objects.get(name=settings.REGISTRANTS_GROUP_NAME)
@@ -113,23 +113,3 @@ class Command(BaseCommand):
 
         clinical_staff_user.save()
         return True
-
-    def _get_legacy_object(
-        self,
-        legacymodel: type[LegacyModule] | type[LegacyOARole],
-        name: str,
-    ) -> LegacyModule | LegacyOARole | None:
-        """
-        Get the legacy object from the specified model name or return None.
-
-        Args:
-            legacymodel: legacy model
-            name: the english name used in queryset
-
-        Returns:
-            The object resulted from the query or None
-        """
-        try:
-            return legacymodel.objects.get(name_en=name)
-        except ObjectDoesNotExist:
-            return None
