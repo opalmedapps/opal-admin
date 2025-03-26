@@ -45,6 +45,8 @@ class ChartService():
     def generate_error_bar_chart(
         self,
         chart_data: ChartData,
+        label_error_min: str = 'min',
+        label_error_max: str = 'max',
     ) -> Optional[str]:
         """Generate a plotly error bar chart.
 
@@ -52,6 +54,8 @@ class ChartService():
 
         Args:
             chart_data: chart data needed to generate error bar chart
+            label_error_min: label for the hover legend minimum error bar
+            label_error_max: label for the hover legend maximum error bar
 
         Returns:
             HTML string representation of the plot
@@ -87,8 +91,8 @@ class ChartService():
                 'error_max': False,
                 'error_diff': False,
                 'x': False,
-                'min': chart_data.data['error_min'],
-                'max': chart_data.data['error_max'],
+                label_error_max: chart_data.data['error_max'],
+                label_error_min: chart_data.data['error_min'],
                 'legend': True,
             },
         )
