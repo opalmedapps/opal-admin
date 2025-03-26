@@ -165,7 +165,7 @@ class FormActions(CrispyFormActions):
         )
 
 
-class CustomLayout(Layout):
+class EnterSuppressedLayout(Layout):
     """Default layout to suppress submission on pressing enter-key."""
 
     def __init__(self, *fields: Any) -> None:
