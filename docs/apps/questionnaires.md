@@ -19,29 +19,31 @@ Due to the sensitivity of this data, the `Export Reports` page is only viewable 
 **Note that any researcher requesting ePRO data must have already received Research Ethics Board approval.**
 
 First create a basic OpalAdmin account for the authorized researcher if they do not already have one:
+
 1. Login as superuser to the admin portal.
 2. Select `Users` > *Add User +*
 3. Provide a Username and secure password according to the instructions and hit *SAVE*.
 
 To grant the `export_report` permission:
+
 1. Return to the `Users` menu
 2. Search for the username of the user you just created and click the username.
 3. Scroll down to the `User Permissions` section, and filter to "questionnaires"
 4. Hit the right arrow with the permission selected to grant this user the export reports permission.
 5. Scroll down and hit *SAVE*.
-6. Alternatively, you could add this user to an existing group which already contains the export reports permission. 
+6. Alternatively, you could add this user to an existing group which already contains the export reports permission.
 
 ### Launching the reporting tool & exporting reports
 
-*[2022-09-28] Note that currently, the reporting tool must be running in a separate django instance and connected to a production-level QuestionnaireDB. This is expected to change in a future version where the reporting tool will be fully integrated with OpalAdmin.*
+*[2022-09-28] Note that currently, the reporting tool must be running in a separate django instance and connected to a production QuestionnaireDB (due to filtering out of test patient responses which are not pertinent to research).*
 *Additionally, there must already be an account created for the researcher in the reporting tool app itself, either using django's `createsuperuser` functionality, or through it's own admin portal.*
 
 1. Login to OpalAdmin as a user with `export_report` permissions.
-2. Select `Export Reports` > `ePRO Data Extractions` this will automatically launch a new window connecting to the 
-3. Login to the reporting tool with the dedicated researcher account existing in the reporting tool's database. 
+2. Select `Export Reports` > `ePRO Data Extractions` this will automatically launch a new window connecting to the
+3. Login to the reporting tool with the dedicated researcher account existing in the reporting tool's database.
 4. Click `View all questionnaires` to display the list of available ePRO questionnaires with non-test answers.
 5. Select desired questionnaire, optionally tick "Follow in my dashboard" for easier future access
-6. Filter results by any combination of data range, patient ids, and questions. 
+6. Filter results by any combination of data range, patient ids, and questions.
 7. Click `View Report`
 8. View results and optionally export as CSV or Excel
 
