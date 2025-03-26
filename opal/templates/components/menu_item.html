@@ -1,9 +1,12 @@
+{% load extra_filters %}
+
 {% var view_name=request.resolver_match.view_name %}
+{% var url_group=url_name|rsubstring:'-' %}
 
 <li>
   <a
     href="{% url url_name %}"
-    class="link-dark d-inline-flex text-decoration-none rounded{% if url_name == view_name %} active{% endif %}">
+    class="link-dark d-inline-flex text-decoration-none rounded{% if view_name|startswith:url_group %} active{% endif %}">
     {{ children }}
   </a>
 </li>
