@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 
 from opal.caregivers.models import SecurityQuestion
 from opal.core import constants
-from opal.users.models import User
+from opal.users.models import ClinicalStaff
 
 from .insert_test_data import InstitutionOption, create_institution, create_sites
 
@@ -72,7 +72,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('Deleting existing data'))
 
             # keep system users
-            User.objects.exclude(
+            ClinicalStaff.objects.exclude(
                 username__in=[
                     constants.USERNAME_LISTENER,
                     constants.USERNAME_LISTENER_REGISTRATION,
@@ -120,16 +120,18 @@ class Command(BaseCommand):
 
         # users
         # TODO: should non-human users have a different user type (right now it would be clinician/clinical staff)?
-        listener, _ = User.objects.get_or_create(username=constants.USERNAME_LISTENER)
+        listener, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_LISTENER)
         listener.set_unusable_password()
         listener.save()
-        listener_registration, _ = User.objects.get_or_create(username=constants.USERNAME_LISTENER_REGISTRATION)
+        listener_registration, _ = ClinicalStaff.objects.get_or_create(
+            username=constants.USERNAME_LISTENER_REGISTRATION,
+        )
         listener_registration.set_unusable_password()
         listener_registration.save()
-        interface_engine, _ = User.objects.get_or_create(username=constants.USERNAME_INTERFACE_ENGINE)
+        interface_engine, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_INTERFACE_ENGINE)
         interface_engine.set_unusable_password()
         interface_engine.save()
-        legacy_backend, _ = User.objects.get_or_create(username=constants.USERNAME_BACKEND_LEGACY)
+        legacy_backend, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_BACKEND_LEGACY)
         legacy_backend.set_unusable_password()
         legacy_backend.save()
 
