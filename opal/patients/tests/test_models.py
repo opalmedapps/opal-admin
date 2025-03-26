@@ -396,6 +396,27 @@ def test_relationship_no_patient_multiple_self() -> None:
         relationship2.full_clean()
 
 
+def test_relationship_can_update_existing_self() -> None:
+    """Ensure that an existing self-relationship can be updated."""
+    self_type = RelationshipType.objects.self_type()
+
+    relationship = factories.Relationship(type=self_type)
+
+    relationship.end_date = None  # type: ignore[assignment]
+    relationship.full_clean()
+
+
+def test_relationship_clean_unsaved_instance() -> None:
+    """Ensure that an unsaved relationship instance can be cleaned."""
+    self_type = RelationshipType.objects.self_type()
+
+    patient = factories.Patient()
+    caregiver = factories.CaregiverProfile()
+    relationship = factories.Relationship.build(patient=patient, caregiver=caregiver, type=self_type)
+
+    relationship.full_clean()
+
+
 def test_relationship_no_caregiver_multiple_self() -> None:
     """Ensure that a caregiver can only have one self-relationship."""
     self_type = RelationshipType.objects.self_type()
