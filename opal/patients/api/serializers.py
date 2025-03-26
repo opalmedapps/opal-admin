@@ -193,17 +193,16 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
             type__role_type=RoleType.SELF,
         ).first()
 
-        if relationship:
-            user = relationship.caregiver.user
-            user.first_name = validated_data.get(
-                'first_name',
-                relationship.caregiver.user.first_name,
-            )
-            user.last_name = validated_data.get(
-                'last_name',
-                relationship.caregiver.user.last_name,
-            )
-            user.save()
+        user = relationship.caregiver.user
+        user.first_name = validated_data.get(
+            'first_name',
+            relationship.caregiver.user.first_name,
+        )
+        user.last_name = validated_data.get(
+            'last_name',
+            relationship.caregiver.user.last_name,
+        )
+        user.save()
 
         return instance
 
