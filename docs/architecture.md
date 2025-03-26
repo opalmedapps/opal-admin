@@ -30,11 +30,11 @@ Please see the development dependencies in `requirements/development.txt` for th
 
 ### Documentation
 
-Documentation is written in Markdown and generated via [mkdocs](https://www.mkdocs.org/) with the wonderful [mkdocs-material](https://squidfunk.github.io/mkdocs-material/) theme. This theme has a lot of extra features for technical documentation.
+Documentation is written in Markdown and generated via [mkdocs](https://www.mkdocs.org/) with the wonderful [mkdocs-material](https://squidfunk.github.io/mkdocs-material/) theme. This theme has a lot of extra features for technical documentation. Please refer to the [README](../#documentation) on how to setup the documentation.
 
 Docstrings in the code are extracted using [mkdocstring](https://mkdocstrings.github.io/) and contained in the same documentation site.
 
-Please see the development dependencies in `requirements/docs.txt` for the full list.
+Please see the development dependencies in `requirements/docs.txt` for the full list of plugins.
 
 ### Production
 

@@ -33,14 +33,28 @@ opal/hospital_settings/
 └── views.py
 ```
 
+!!! note
+    The app-specific static and template files are used alongside the ones from the root project folder (`opal/`).
+
 For more details please refer to *Two Scoops of Django* Section 4.4.
 
 ## Creating a new app
 
+Execute the following commands to create a new app (here based on an example `foo` app). You can also find more details in the [official Django tutorial](https://docs.djangoproject.com/en/4.0/intro/tutorial01/#creating-the-polls-app).
+
+```sh
+mkdir opal/foo/
+python manage.py startapp foo "opal/foo/"
+```
+
 For new apps ensure to do the following things:
 
 * define the proper name and verbose_name in `apps.py`
+    * the name should be prefixed with `opal.` (for our example it would be `opal.foo`)
+    * if the plural of the `verbose_name` is not that name suffixed with `s`, define `verbose_name_plural` as well
 * add the app name to the urls module in `urls.py` (e.g., `app_name = 'hospital_settings'`) to ensure that it can be included in the root URL configuration and has a proper namespace
+* add the app to the `LOCAL_APPS` list in `opal/settings.py`
+* delete the `tests.py` file and create a `tests` directory with an empty `__init__.py` file
 * create a `locale` sub-directory where translation files should be generated to
 
 ## API
