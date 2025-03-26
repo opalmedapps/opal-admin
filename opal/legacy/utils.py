@@ -232,10 +232,11 @@ def create_user(user_type: LegacyUserType, user_type_id: int, username: str) -> 
     Returns:
         the created user instance
     """
-    user = LegacyUsers(
+    user = LegacyUsers(  # noqa: S106
         usertype=user_type,
         usertypesernum=user_type_id,
         username=username,
+        password='',
     )
 
     user.full_clean()
