@@ -7,7 +7,6 @@ This project has the following requirements to be available on your system:
 * Python 3.9 or higher
 
 ## Requirements
-
 After cloning this repo, follow the below steps to get started.
 
 ### Configuration
