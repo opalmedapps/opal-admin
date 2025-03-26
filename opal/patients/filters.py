@@ -92,19 +92,19 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             Filtered `Relationship` queryset
         """
         # Remove 'medical_card_type' field from the form since this field does not perform queryset filtering
-        print(self.form.cleaned_data)
         card_type = self.form.cleaned_data.pop('card_type')
-        site_model = self.form.cleaned_data.pop('site')
+        site_obj = self.form.cleaned_data.pop('site')
         medical_number = self.form.cleaned_data.pop('medical_number')
+
+        print(type(site_obj))
 
         if card_type == constants.MedicalCard.mrn.name:
             queryset = queryset.filter(
-                patient__hospital_patients__site__name=site_model.name,
+                patient__hospital_patients__site__name=site_obj.name,
                 patient__hospital_patients__mrn=medical_number,
             )
         else:
             queryset = queryset.filter(
-                patient__hospital_patients__site__name=site_model.name,
                 patient__ramq=medical_number,
             )
 

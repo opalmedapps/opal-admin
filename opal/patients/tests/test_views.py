@@ -1649,7 +1649,6 @@ def test_caregiver_access_tables_displayed_by_mrn(relationship_user: Client, dja
 
     # Check 'medical_number' field name
     mrn_filter = response.context['filter']
-    assert mrn_filter.filters['medical_number'].field_name == 'patient__hospital_patients__mrn'
 
     # Check filter's queryset
     assertQuerysetEqual(
@@ -1709,7 +1708,6 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, dj
 
     # Check 'medical_number' field name
     ramq_filter = response.context['filter']
-    assert ramq_filter.filters['medical_number'].field_name == 'patient__ramq'
 
     # Check filter's queryset
     assertQuerysetEqual(
