@@ -79,5 +79,5 @@ def search_valid_relationship_types(date_of_birth: date) -> List[Dict[str, Any]]
         list(queryset): list of ids of filtered relationship types
     """
     age = Patient.calculate_age(date_of_birth=date_of_birth)
-    queryset = RelationshipType.objects.filter_by_patient_age(patient_age=age).values('id')
+    queryset = RelationshipType.objects.filter_by_patient_age(patient_age=age).values_list('id', flat=True)
     return list(queryset)
