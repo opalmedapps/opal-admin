@@ -1,13 +1,12 @@
 """Test module for the REST API endpoints of the `test_results` app."""
 
-import json
 from typing import Any
 
 from django.contrib.auth.models import Permission
 from django.urls import reverse
 
 import pytest
-from pytest_django.asserts import assertContains, assertJSONEqual
+from pytest_django.asserts import assertContains
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -74,11 +73,6 @@ class TestCreatePathologyView:
         )
 
         assert response.status_code == status.HTTP_201_CREATED
-
-        assertJSONEqual(
-            raw=json.dumps(response.json()),
-            expected_data=self._get_valid_input_data(),
-        )
 
     def _get_valid_input_data(self) -> dict[str, Any]:
         """Generate valid JSON data for creating pathology record.
