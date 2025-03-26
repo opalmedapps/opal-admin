@@ -82,26 +82,30 @@ def qr_code(text: str) -> bytes:
     return stream.getvalue()
 
 
-def dict_to_csv_bytesio(input_dict: dict[str | int, Any]) -> io.BytesIO:
-    """Convert a flat dictionary to a CSV file.
+def dict_to_csv_bytesio(input_dict: list[dict[str, Any]]) -> io.BytesIO:
+    """Convert a list of dictionaries to a CSV file.
 
     The CSV file is returned in a BytesIO object format.
 
     Args:
-        input_dict: flat dictionary with string keys and values of any type
+        input_dict: list of dictionaries with string keys and values of any type
 
     Returns:
         `BytesIO` object containing the CSV data
     """
+    # Collect all possible headers from the list of dictionaries
+    headers = input_dict[0].keys() if input_dict else []
+
     output = io.BytesIO()
     # Wrap the BytesIO object with TextIOWrapper to write text data
     text_output = io.TextIOWrapper(output, encoding='utf-8', newline='')
-    writer = csv.writer(text_output)
+    writer = csv.DictWriter(text_output, fieldnames=headers)
 
-    # Write the header row (keys of the dictionary)
-    writer.writerow(input_dict.keys())
-    # Write the data row (values of the dictionary)
-    writer.writerow(input_dict.values())
+    # Write the header row
+    writer.writeheader()
+
+    # Write each dictionary as a row in the CSV
+    writer.writerows(input_dict)
 
     # Flush the write buffers of the stream if applicable
     text_output.flush()
