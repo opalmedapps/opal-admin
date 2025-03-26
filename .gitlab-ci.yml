@@ -12,7 +12,7 @@ services:
 # only cache local items.
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  MARIADB_ROOT_PASSWORD: $ROOT_PASSWORD
+  MARIADB_RANDOM_ROOT_PASSWORD: "yes"
   # ensure that user has permissions for test DB to be used by pytest
   MARIADB_DATABASE: test_$DB_NAME
   MARIADB_USER: $DB_USER
