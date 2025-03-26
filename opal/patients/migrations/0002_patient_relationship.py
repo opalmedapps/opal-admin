@@ -7,7 +7,7 @@ import django.db.models.expressions
 
 
 class Migration(migrations.Migration):
-    """Adds the patient and relationship models. """
+    """Adds the patient and relationship models."""
 
     dependencies = [
         ('caregivers', '0001_caregiverprofile'),
