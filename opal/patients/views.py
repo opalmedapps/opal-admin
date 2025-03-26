@@ -108,8 +108,29 @@ class AccessRequestView(SessionWizardView):
             context.update({'header_title': _('Hospital Information')})
         elif self.steps.current == 'search':
             context.update({'header_title': _('Patient Details')})
+            site_selection = self.get_cleaned_data_for_step(self.steps.prev)
+            self.request.session['site_selection'] = str(site_selection['sites'])
 
         return context
+
+    def get_form_initial(self, step: str) -> Any:
+        """
+        Return a dictionary which will be passed to the form for `step` as `initial`.
+
+        If no initial data was provided while initializing the form wizard, an empty dictionary will be returned.
+
+        Args:
+            step: a form step
+
+        Returns:
+            a dictionary or an empty dictionary for a step
+        """
+        initial = self.initial_dict.get(step, {})
+        if step == 'site' and 'site_selection' in self.request.session:
+            initial.update({
+                'sites': Site.objects.get(name=self.request.session['site_selection']),
+            })
+        return initial
 
     def done(self, form_list: Tuple, **kwargs: Any) -> HttpResponse:
         """
