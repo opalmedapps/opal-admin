@@ -48,11 +48,11 @@ class Command(BaseCommand):  # noqa: WPS214
             parser: the command parser to add arguments to
         """
         parser.add_argument(
-            '--oie-timeout',
+            '--request-timeout',
             type=int,
             required=False,
             default=120,  # noqa: WPS432
-            help='Specify maximum wait time per-api call to the OIE [seconds]. Default 120.',
+            help='Specify maximum wait time per API call to the databank [seconds]. Default 120.',
         )
 
     def handle(self, *args: Any, **options: Any) -> None:  # noqa: WPS231
@@ -73,9 +73,9 @@ class Command(BaseCommand):  # noqa: WPS214
             DataModuleType.QUESTIONNAIRES: DatabankConsent.objects.filter(has_questionnaires=True),
         }
 
-        oie_timeout: int = options.get('oie_timeout', 120)  # noqa: WPS432
+        request_timeout: int = options.get('request_timeout', 120)  # noqa: WPS432
         self.stdout.write(
-            f'Sending databank data with {oie_timeout} seconds timeout for OIE response.',
+            f'Sending databank data with {request_timeout} seconds timeout for source system response.',
         )
         for module, queryset in consenting_patients_querysets.items():
             patients_list = list(queryset.iterator())
@@ -98,9 +98,9 @@ class Command(BaseCommand):  # noqa: WPS214
                         )
                         combined_module_data.append(nested_databank_data)
                 if combined_module_data:
-                    aggregate_response = self._send_to_oie_and_handle_response(
+                    aggregate_response = self._request_and_handle_response(
                         {'patientList': combined_module_data},
-                        oie_timeout,
+                        request_timeout,
                     )
                     if aggregate_response:
                         self._parse_aggregate_databank_response(aggregate_response, combined_module_data)
@@ -236,19 +236,20 @@ class Command(BaseCommand):  # noqa: WPS214
             ]
         return {'GUID': guid, nesting_key: data}
 
-    def _send_to_oie_and_handle_response(
+    def _request_and_handle_response(
         self,
         data: dict[str, CombinedModuleData],
-        oie_timeout: int,
+        request_timeout: int,
     ) -> Any:
-        """Send databank dataset to the OIE and handle immediate OIE response.
+        """Send databank dataset to the source system and handle immediate response from source system.
 
-        This function should handle status and errors between Django and OIE only.
-        The `_parse_aggregate_databank_response` function handles the status and errors between OIE and Databank.
+        This function should handle status and errors between Django and source system only.
+        The `_parse_aggregate_databank_response` function handles the status
+        and errors between source system and Databank.
 
         Args:
             data: Databank dictionary of one of the five module types.
-            oie_timeout: Maximum seconds to wait for response per api call to the OIE
+            request_timeout: Maximum seconds to wait for response per api call to the source system
 
         Returns:
             Any: json object containing response for each individual patient message, or empty if send failed
@@ -256,26 +257,26 @@ class Command(BaseCommand):  # noqa: WPS214
         response = None
         try:
             response = requests.post(
-                url=f'{settings.OIE_HOST}/databank/post',
-                auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
+                url=f'{settings.SOURCE_SYSTEM_HOST}/databank/post',
+                auth=HTTPBasicAuth(settings.SOURCE_SYSTEM_USER, settings.SOURCE_SYSTEM_PASSWORD),
                 data=json.dumps(data, default=str),
                 headers={'Content-Type': 'application/json'},
-                timeout=oie_timeout,
+                timeout=request_timeout,
             )
         except requests.exceptions.RequestException as exc:
-            # Connection details for OIE might be misconfigured
+            # Connection details for source system might be misconfigured
             self.stderr.write(
-                f'OIE connection Error: {exc}',
+                f'Source system connection Error: {exc}',
             )
             return None
 
         if response and response.status_code == HTTPStatus.OK:
-            # Data sent to OIE successfully, parse aggregate response from databank and update models
+            # Data sent to source system successfully, parse aggregate response from databank and update models
             return response.json()
         else:
-            # Specific error occured between Django, Nginx, and/or OIE communications
+            # Specific error occured between Django, Nginx, and/or source system communications
             self.stderr.write(
-                f'{response.status_code} oie response error: '
+                f'{response.status_code} source system response error: '
                 + response.content.decode(),
             )
 
@@ -288,7 +289,7 @@ class Command(BaseCommand):  # noqa: WPS214
 
         Args:
             aggregate_response: JSON object with a response code & message for each patient data
-            original_data_sent: list of data originally sent to OIE
+            original_data_sent: list of data originally sent to source system
         """
         for identifier, response_object in aggregate_response.items():
             status_code, message = response_object
