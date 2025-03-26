@@ -154,7 +154,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.patient_sites_and_mrns_str = ', '.join(
             sites_and_mrns_list,
         )
-        auto_page_break_bottom_margin: int = 50
+        auto_page_break_bottom_margin = 50
 
         self._set_report_metadata()
         self.set_auto_page_break(auto=True, margin=auto_page_break_bottom_margin)
