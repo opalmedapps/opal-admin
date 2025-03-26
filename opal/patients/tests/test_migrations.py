@@ -2,9 +2,12 @@ from typing import Type
 
 from django.db.models import Model
 
+import pytest
 from django_test_migrations.migrator import Migrator
 
 from .. import models
+
+pytestmark = pytest.mark.slow()
 
 
 def test_migration_relationshiptype_prepopulate_no_existing_types(migrator: Migrator) -> None:
