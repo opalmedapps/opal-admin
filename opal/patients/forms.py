@@ -17,7 +17,7 @@ from dynamic_forms import DynamicField, DynamicFormMixin
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core import validators
-from opal.core.forms.layouts import CancelButton, FormActions, InlineSubmit
+from opal.core.forms.layouts import CancelButton, CustomLayout, FormActions, InlineSubmit
 from opal.core.forms.widgets import AvailableRadioSelect
 from opal.services.hospital.hospital import OIEService
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
@@ -761,7 +761,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
 
         self.helper = FormHelper(self)
         self.helper.attrs = {'novalidate': ''}
-        self.helper.layout = Layout(
+        self.helper.layout = CustomLayout(
             Row(
                 CrispyField('first_name', wrapper_class='col-md-6'),
                 CrispyField('last_name', wrapper_class='col-md-6'),
