@@ -37,8 +37,6 @@ class OpenScienceIdentity():  # noqa: WPS230
         Args:
             attributes: dictionary of input arguments to algorithm
         """
-        if attributes is None:
-            attributes = {}
         self.gender = attributes.get('gender', '')
         self.first_name = attributes.get('first_name', '')
         self.middle_name = attributes.get('middle_name', '')

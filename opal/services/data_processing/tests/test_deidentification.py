@@ -59,9 +59,9 @@ class TestOpenScienceIdentity:
         with pytest.raises(ValueError, match='Invalid identity components'):
             OpenScienceIdentity(empty_attributes).to_signature()
 
-    def test_none_attributes(self) -> None:
-        """Test the handling of None attributes."""
-        none_attributes = {
+    def test_none_attribute_components(self) -> None:
+        """Test the handling of None attribute components."""
+        none_attributes_components = {
             'gender': None,
             'first_name': None,
             'middle_name': None,
@@ -70,4 +70,4 @@ class TestOpenScienceIdentity:
             'city_of_birth': None,
         }
         with pytest.raises(ValueError, match='Invalid identity components'):
-            OpenScienceIdentity(none_attributes).to_signature()
+            OpenScienceIdentity(none_attributes_components).to_signature()
