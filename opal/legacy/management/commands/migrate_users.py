@@ -14,9 +14,9 @@ class Access(Enum):
     """An enumeration of supported access rights."""
 
     # Legacy has 0-7 access privileges
-    READ = 1  # noqa: WPS115
-    WRITE = 3  # noqa: WPS115
-    DELETE = 7  # noqa: WPS115
+    READ = 1
+    WRITE = 3
+    DELETE = 7
 
 
 class Command(BaseCommand):
@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
     help = 'migrate OAUsers from legacy DB to the new backend'  # noqa: A003
 
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210, WPS231
+    def handle(self, *args: Any, **kwargs: Any) -> None:
         """
         Handle migrate OAUsers legacy DB to the new backend printout number of users imported.
 
@@ -75,7 +75,7 @@ class Command(BaseCommand):
                 if self._save_clinical_staff_user(clinical_staff_user):
                     # access codes 0-7
                     if role_module:
-                        registrant_group.user_set.add(clinical_staff_user)  # noqa: WPS220
+                        registrant_group.user_set.add(clinical_staff_user)
                         staff_users_counter += 1
 
                     all_users_counter += 1
