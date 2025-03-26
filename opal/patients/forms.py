@@ -339,9 +339,6 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
     relationship_type = forms.ModelChoiceField(
         queryset=RelationshipType.objects.all().reverse(),
-        # TODO: provide a custom template that can show a tooltip
-        # when hovering over the relationship type with the details of the relationship type
-        # can be done as a completely separate MR at the end
         widget=AvailableRadioSelect(attrs={'up-validate': ''}),
         label=_('Relationship to the patient'),
     )
@@ -475,6 +472,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         available_choices = relationship_types.values_list('id', flat=True)
         self.fields['relationship_type'].widget.available_choices = list(available_choices)
+        self.fields['relationship_type'].widget.option_descriptions = self._get_option_description()
 
     def is_patient_requestor(self) -> bool:
         """
@@ -602,6 +600,22 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             return relationship_type.form_required
 
         return True
+
+    def _get_option_description(self) -> dict[int, str]:
+        """
+        Get the description and patient age info from relationship type queryset.
+
+        Returns:
+            a dict of relationship type description and patient age
+        """
+        option_descriptions = {}
+        for value in RelationshipType.objects.all().values():
+            option_descriptions[value['id']] = '{description}, Age: {start_age}-{end_age}'.format(
+                description=value['description'],
+                start_age=value['start_age'],
+                end_age=value['end_age'] if value['end_age'] else 'and older',
+            )
+        return option_descriptions
 
 
 # TODO: move this to the core app

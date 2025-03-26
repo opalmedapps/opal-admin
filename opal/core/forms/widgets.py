@@ -18,13 +18,14 @@ class AvailableRadioSelect(forms.widgets.RadioSelect):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
-        Initialize the '_available_choices'.
+        Initialize the '_available_choices' and '_option_descriptions'.
 
         Args:
             args: additional arguments
             kwargs: additional keyword arguments
         """
         self._available_choices: list[int] = []
+        self._option_descriptions: dict[int, str] = {}
         super().__init__(*args, **kwargs)
 
     @property
@@ -46,6 +47,26 @@ class AvailableRadioSelect(forms.widgets.RadioSelect):
             other: the choices that shall be available
         """
         self._available_choices = other
+
+    @property
+    def option_descriptions(self) -> dict[int, str]:
+        """
+        Return the option descriptions.
+
+        Returns:
+            the option descriptions
+        """
+        return self._option_descriptions
+
+    @option_descriptions.setter
+    def option_descriptions(self, descriptions: dict[int, str]) -> None:
+        """
+        Set the option descriptions.
+
+        Args:
+            descriptions: a dict [relationship_type.pk, relationship_type.description]
+        """
+        self._option_descriptions = descriptions
 
     def create_option(  # noqa: WPS211
         self,
@@ -79,4 +100,5 @@ class AvailableRadioSelect(forms.widgets.RadioSelect):
         )
         if value not in self.available_choices:
             option_dict['attrs']['disabled'] = 'disabled'
+        option_dict['attrs']['data-title'] = self._option_descriptions[value]
         return option_dict
