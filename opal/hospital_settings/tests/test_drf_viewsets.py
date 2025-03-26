@@ -46,7 +46,7 @@ def test_api_institutions_detail_allowed_methods(api_client: APIClient, admin_us
     assert response.headers['Allow'] == HTTP_METHODS_READ_ONLY
 
 
-def test_api_institution_retrieve(api_client: APIClient, admin_user: User) -> None:
+def test_api_institutions_retrieve(api_client: APIClient, admin_user: User) -> None:
     """Ensure that an institution can be retrieved."""
     api_client.force_login(user=admin_user)
     institution = factories.Institution()

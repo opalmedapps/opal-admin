@@ -15,8 +15,10 @@ When inspecting an existing database table using `inspectdb`, make sure of the f
 * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 * Don't rename db_table or db_column values
 """
+import datetime as dt
 
 from django.db import models
+from django.utils import timezone
 
 from . import managers
 
@@ -34,29 +36,79 @@ class LegacyUsers(models.Model):
         db_table = 'Users'
 
 
+class LegacySexType(models.TextChoices):
+    """The possible sex values for a patient."""
+
+    MALE = 'Male'
+    FEMALE = 'Female'
+    OTHER = 'Other'
+    UNKNOWN = 'Unknown'
+
+
+class LegacyLanguage(models.TextChoices):
+    """The possible language values."""
+
+    ENGLISH = 'EN'
+    FRENCH = 'FR'
+
+
+class LegacyAccessLevel(models.TextChoices):
+    """The possible access level values."""
+
+    NEED_TO_KNOW = '1'
+    ALL = '3'
+
+
 class LegacyPatient(models.Model):
     """Patient model from the legacy database."""
 
     patientsernum = models.AutoField(db_column='PatientSerNum', primary_key=True)
-    firstname = models.CharField(db_column='FirstName', max_length=50)
-    lastname = models.CharField(db_column='LastName', max_length=50)
-    email = models.CharField(db_column='Email', max_length=50)
-    registrationdate = models.DateTimeField(db_column='RegistrationDate')
-    language = models.CharField(db_column='Language', max_length=2)
-    telnum = models.BigIntegerField(db_column='TelNum', blank=True, null=True)
-    dateofbirth = models.DateTimeField(db_column='DateOfBirth')
+    first_name = models.CharField(db_column='FirstName', max_length=50)
+    last_name = models.CharField(db_column='LastName', max_length=50)
+    email = models.CharField(db_column='Email', max_length=50, blank=True)
+    registration_date = models.DateTimeField(db_column='RegistrationDate', auto_now_add=True)
+    language = models.CharField(
+        db_column='Language',
+        max_length=2,
+        choices=LegacyLanguage.choices,
+    )
+    tel_num = models.BigIntegerField(db_column='TelNum', blank=True, null=True)
+    date_of_birth = models.DateTimeField(db_column='DateOfBirth')
     death_date = models.DateTimeField(db_column='DeathDate', blank=True, null=True)
-    ssn = models.CharField(db_column='SSN', max_length=16)
-    accesslevel = models.CharField(db_column='AccessLevel', max_length=1, default='1')
-    sex = models.CharField(db_column='Sex', max_length=25)
+    ramq = models.CharField(db_column='SSN', max_length=16, blank=True)
+    access_level = models.CharField(
+        db_column='AccessLevel',
+        max_length=1,
+        default=LegacyAccessLevel.NEED_TO_KNOW,
+        choices=LegacyAccessLevel.choices,
+    )
+    sex = models.CharField(db_column='Sex', max_length=25, choices=LegacySexType.choices)
+    age = models.IntegerField(db_column='Age', blank=True, null=True)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
-    patient_aria_ser = models.IntegerField(db_column='PatientAriaSer')
+    patient_aria_ser = models.IntegerField(db_column='PatientAriaSer', default=0)
 
     objects: managers.LegacyPatientManager = managers.LegacyPatientManager()
 
     class Meta:
         managed = False
         db_table = 'Patient'
+
+
+class LegacyPatientControl(models.Model):
+    """Patient control from the legacy database."""
+
+    patient = models.OneToOneField('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum', primary_key=True)
+    patientupdate = models.IntegerField(db_column='PatientUpdate', default=1)
+    lasttransferred = models.DateTimeField(
+        db_column='LastTransferred',
+        default=timezone.make_aware(dt.datetime(2000, 1, 1)),
+    )
+    lastupdated = models.DateTimeField(db_column='LastUpdated', auto_now_add=True)
+    transferflag = models.SmallIntegerField(db_column='TransferFlag', default=0)
+
+    class Meta:
+        managed = False
+        db_table = 'PatientControl'
 
 
 class LegacyNotification(models.Model):
@@ -354,20 +406,20 @@ class LegacyPatientHospitalIdentifier(models.Model):
     """Patient_Hospital_Identifier model from the legacy database OpalDB."""
 
     patienthospitalidentifierid = models.AutoField(db_column='Patient_Hospital_Identifier_Id', primary_key=True)
-    patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
-    hospitalidentifiertypecode = models.ForeignKey(
+    patient = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    hospital = models.ForeignKey(
         'LegacyHospitalIdentifierType',
         models.DO_NOTHING,
         db_column='Hospital_Identifier_Type_Code',
         to_field='code',
     )
     mrn = models.CharField(db_column='MRN', max_length=20)
-    isactive = models.BooleanField(db_column='is_Active')
+    is_active = models.BooleanField(db_column='is_Active')
 
     class Meta:
         managed = False
         db_table = 'Patient_Hospital_Identifier'
-        unique_together = (('patientsernum', 'hospitalidentifiertypecode', 'mrn'),)
+        unique_together = (('patient', 'hospital', 'mrn'),)
 
 
 class LegacyHospitalMap(models.Model):
