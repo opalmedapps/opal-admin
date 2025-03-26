@@ -56,6 +56,18 @@ class AppChartView(APIView):
             ).count(),
             'unread_questionnaire_count': LegacyQuestionnaire.objects.new_questionnaires(
                 legacy_id,
+                user_name,
+                1,
+            ).count(),
+            'unread_research_questionnaire_count': LegacyQuestionnaire.objects.new_questionnaires(
+                legacy_id,
+                user_name,
+                2,
+            ).count(),
+            'unread_consent_questionnaire_count': LegacyQuestionnaire.objects.new_questionnaires(
+                legacy_id,
+                user_name,
+                4,
             ).count(),
         }
 
