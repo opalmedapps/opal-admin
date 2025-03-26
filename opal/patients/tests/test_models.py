@@ -492,9 +492,14 @@ def test_relationshiptype_par_role_delete_error() -> None:
 
 def test_relationshiptype_duplicate_self_role() -> None:
     """Ensure validation error when creating a second self role type."""
+    print(RelationshipType.objects.all())
+    assert RelationshipType.objects.count() == 2
     roletype_self = factories.RelationshipType()
     roletype_self.role_type = RoleType.SELF
+    roletype_self.full_clean()
     roletype_self.save()
+
+    assert False
 
     roletype_self_copy = factories.RelationshipType()
     roletype_self_copy.role_type = RoleType.SELF
