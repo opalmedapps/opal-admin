@@ -140,7 +140,6 @@ def parse_rxe_segment(segment: Segment) -> dict[str, Any]:
         'dispense_amount': segment.rxe_10.rxe_10_1.to_er7(),
         'dispense_units': segment.rxe_11.rxe_11_1.to_er7(),
         'refills': segment.rxe_12.rxe_12_1.to_er7(),
-        'refills_remaining': segment.rxe_16.rxe_16_1.to_er7(),
         'prescription_number': segment.rxe_15.rxe_15_1.to_er7(),
         'refills_dispensed': segment.rxe_17.rxe_17_1.to_er7(),
         'give_per_time': segment.rxe_22.rxe_22_1.to_er7(),

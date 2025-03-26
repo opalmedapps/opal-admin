@@ -163,7 +163,6 @@ class CreatePrescriptionView(HL7CreateView):
                 'dispense_amount': pharmacy_encoded_data['dispense_amount'],
                 'dispense_units': pharmacy_encoded_data['dispense_units'],
                 'refills': pharmacy_encoded_data['refills'],
-                'refills_remaining': pharmacy_encoded_data['refills_remaining'],
                 'formulary_status': note_data['note_comment_text'],
                 'pharmacy_route': {
                     'route': {

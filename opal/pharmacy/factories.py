@@ -70,7 +70,6 @@ class PharmacyEncodedOrderFactory(DjangoModelFactory):
     dispense_amount = factory.Faker('pydecimal', left_digits=1, right_digits=0, min_value=0)
     dispense_units = 'mg'
     refills = factory.Faker('pyint')
-    refills_remaining = factory.Faker('pyint')
     formulary_status = 'STD'  # standard
 
     class Meta:

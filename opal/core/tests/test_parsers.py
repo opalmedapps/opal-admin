@@ -130,7 +130,6 @@ class TestHL7Parser:  # noqa: WPS338
             'dispense_amount': '50',
             'dispense_units': 'MG',
             'refills': '0.00',
-            'refills_remaining': '0.000',
             'prescription_number': '21',
             'refills_dispensed': '0',
             'give_per_time': 'H0',

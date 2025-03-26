@@ -176,7 +176,6 @@ class PharmacyEncodedOrderSerializer(serializers.ModelSerializer[PharmacyEncoded
             'dispense_amount',
             'dispense_units',
             'refills',
-            'refills_remaining',
             'formulary_status',
             'pharmacy_route',
             'pharmacy_components',

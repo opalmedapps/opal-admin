@@ -64,7 +64,6 @@ class PharmacyEncodedOrderAdmin(admin.ModelAdmin[PharmacyEncodedOrder]):
         'dispense_amount',
         'dispense_units',
         'refills',
-        'refills_remaining',
         'formulary_status',
     )
     ordering = ('physician_prescription_order', '-service_start')
