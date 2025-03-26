@@ -35,20 +35,20 @@ def test_relationship_mapping_with_multiple_usernames() -> None:
         legacy_id=2,
     )
     patients_factories.Relationship(
-        type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=patients_factories.Patient(legacy_id=51, ramq='TEST01161972'),
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
     homer_patient = patients_factories.Patient(legacy_id=52, ramq='TEST01161973')
     patients_factories.Relationship(
-        type=patients_factories.RelationshipType(role_type=patient_models.RoleType.CAREGIVER),
+        type=patient_models.RelationshipType.objects.guardian_caregiver(),
         patient=homer_patient,
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
     patients_factories.Relationship(
-        type=patients_factories.RelationshipType(role_type=patient_models.RoleType.SELF),
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=homer_patient,
         caregiver=homer_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,

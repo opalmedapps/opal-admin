@@ -55,58 +55,58 @@ def test_fetch_population_summary() -> None:  # noqa: WPS213
     lisa_patient = patient_factories.Patient(legacy_id=54, ramq='TEST01161975')
     # marge
     marge_self_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(name='marge_self_rel', role_type=patient_models.RoleType.SELF),
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=patient_factories.Patient(legacy_id=51, ramq='TEST01161972'),
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
     # homer
     marge_homer_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(name='marge_homer_rel', role_type=patient_models.RoleType.CAREGIVER),
+        type=patient_models.RelationshipType.objects.guardian_caregiver(),
         patient=homer_patient,
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
     homer_first_self_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(name='homer_self_first', role_type=patient_models.RoleType.SELF),
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=homer_patient,
         caregiver=homer_caregiver,
         status=patient_models.RelationshipStatus.PENDING,
     )
     homer_second_self_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(name='homer_self_second', role_type=patient_models.RoleType.SELF),
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=homer_patient,
         caregiver=homer_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
     # bart
     marge_bart_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(name='marge_bart_rel', role_type=patient_models.RoleType.CAREGIVER),
+        type=patient_models.RelationshipType.objects.guardian_caregiver(),
         patient=bart_patient,
         caregiver=marge_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
     bart_self_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(name='bart_self_rel', role_type=patient_models.RoleType.SELF),
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=bart_patient,
         caregiver=bart_caregiver,
         status=patient_models.RelationshipStatus.EXPIRED,
     )
     # lisa
     homer_lisa_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(name='homer_lisa_rel', role_type=patient_models.RoleType.CAREGIVER),
+        type=patient_models.RelationshipType.objects.guardian_caregiver(),
         patient=lisa_patient,
         caregiver=homer_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
     lisa_first_self_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(name='lisa_self_first', role_type=patient_models.RoleType.SELF),
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=lisa_patient,
         caregiver=lisa_caregiver,
         status=patient_models.RelationshipStatus.CONFIRMED,
     )
     lisa_second_self_relationship = patient_factories.Relationship(
-        type=patient_factories.RelationshipType(name='lisa_self_second', role_type=patient_models.RoleType.SELF),
+        type=patient_models.RelationshipType.objects.self_type(),
         patient=lisa_patient,
         caregiver=lisa_caregiver,
         status=patient_models.RelationshipStatus.PENDING,
