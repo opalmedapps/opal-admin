@@ -42,5 +42,5 @@ class TestTwilioService:
                 message,
             )
 
-        assert str(exc.value) == 'Sending SMS failed'
+        assert str(exc.value) == 'HTTP 403 error: Sending SMS failed'
         assert exc.value.__cause__.status == HTTPStatus.FORBIDDEN
