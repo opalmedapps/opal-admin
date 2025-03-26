@@ -162,6 +162,36 @@ class TestCreatePrescriptionView:  # noqa: WPS338
         assert models.PharmacyEncodedOrder.objects.count() == 1
         assert response.status_code == status.HTTP_201_CREATED
 
+    def test_pharmacy_missing_coded_elements_create_success(
+        self,
+        api_client: APIClient,
+        interface_engine_user: User,
+    ) -> None:
+        """Ensure the endpoint can create pharmacy for an input missing optional CE elements with no errors."""
+        patient = patient_factories.Patient(
+            ramq='TEST01161972',
+            uuid=PATIENT_UUID,
+        )
+        patient_factories.HospitalPatient(
+            patient=patient,
+            site=Site.objects.get(acronym='RVH'),
+            mrn='9999996',
+        )
+        api_client.force_login(interface_engine_user)
+
+        response = api_client.post(
+            reverse('api:patient-pharmacy-create', kwargs={'uuid': str(patient.uuid)}),
+            data=self._load_hl7_fixture('marge_missing_CE_pharmacy.hl7v2'),
+            content_type='application/hl7-v2+er7',
+        )
+
+        assert models.CodedElement.objects.count() == 0
+        assert models.PhysicianPrescriptionOrder.objects.count() == 1
+        assert models.PharmacyComponent.objects.count() == 1
+        assert models.PharmacyRoute.objects.count() == 1
+        assert models.PharmacyEncodedOrder.objects.count() == 1
+        assert response.status_code == status.HTTP_201_CREATED
+
     def test_multiple_pharmacy_create_success(
         self,
         api_client: APIClient,
