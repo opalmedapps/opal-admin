@@ -9,10 +9,12 @@ from opal.caregivers import factories as caregiver_factories
 from opal.hospital_settings import factories as hospital_factories
 from opal.legacy import factories, models
 from opal.legacy import utils as legacy_utils
+from opal.legacy_questionnaires import factories as questionnaire_factories
+from opal.legacy_questionnaires import models as questionnaire_models
 from opal.patients import factories as patient_factories
 from opal.patients.models import RelationshipType
 
-pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
 
 def test_get_user_sernum() -> None:
@@ -295,3 +297,141 @@ def test_change_caregiver_user_to_patient() -> None:
     assert legacy_patient.sex == models.LegacySexType.MALE
     assert legacy_patient.ramq == 'SIMB04100199'
     assert legacy_patient.date_of_birth == timezone.make_aware(dt.datetime(1999, 1, 1))
+
+
+def test_databank_consent_form_fixture(
+    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],  # noqa: E501
+) -> None:
+    """Test the fixture from conftest creates a proper consent questionnaire."""
+    info_sheet = databank_consent_questionnaire_data[1]
+    consent_questionnaire = databank_consent_questionnaire_data[0]
+
+    assert info_sheet.educational_material_type_en == 'Factsheet'
+    assert info_sheet.name_en == 'Information and Consent Factsheet - QSCC Databank'
+
+    assert consent_questionnaire.title.content == 'QSCC Databank Information'
+    assert consent_questionnaire.purpose.title.content == 'Consent'
+
+
+def test_fetch_databank_control_records(
+    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],  # noqa: E501
+) -> None:
+    """Test the fetching of key foreign key data used for consent form creation."""
+    # Setup patient records
+    django_patient = patient_factories.Patient(ramq='SIMB04100199')
+    factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
+    legacy_qdb_patient = questionnaire_factories.LegacyPatientFactory(external_id=django_patient.legacy_id)
+    consent_form = databank_consent_questionnaire_data[0]
+    info_sheet = databank_consent_questionnaire_data[1]
+    result = legacy_utils.fetch_databank_control_records(django_patient)
+    if result:
+        fetched_info_sheet, fetched_qdb_patient, fetched_qdb_questionnaire_control, fetched_questionnaire_control = result  # noqa: E501
+
+    assert all([
+        result,
+        fetched_info_sheet,
+        fetched_qdb_patient,
+        fetched_qdb_questionnaire_control,
+        fetched_questionnaire_control,
+    ])
+
+    assert legacy_qdb_patient.external_id == int(fetched_qdb_patient.external_id)
+    # In this case we created the QDB Patient before calling the function, so it should be Test user from the factory
+    assert fetched_qdb_patient.created_by == 'Test User'
+    assert info_sheet.name_en == fetched_info_sheet.name_en
+    assert consent_form.title.content == fetched_qdb_questionnaire_control.title.content
+    assert fetched_questionnaire_control.questionnaire_name_en == 'QSCC Databank Information'
+    assert fetched_questionnaire_control.questionnaire_db_ser_num == fetched_qdb_questionnaire_control.id
+
+
+def test_fetch_databank_control_records_patient_creation(
+    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],  # noqa: E501
+) -> None:
+    """Test that the function will create a QDB_Patient record if one hasnt been created already."""
+    # Setup patient records
+    django_patient = patient_factories.Patient(ramq='SIMB04100199')
+    factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
+    consent_form = databank_consent_questionnaire_data[0]
+    info_sheet = databank_consent_questionnaire_data[1]
+    result = legacy_utils.fetch_databank_control_records(django_patient)
+    if result:
+        fetched_info_sheet, fetched_qdb_patient, fetched_qdb_questionnaire_control, fetched_questionnaire_control = result  # noqa: E501
+
+    assert all([
+        result,
+        fetched_info_sheet,
+        fetched_qdb_patient,
+        fetched_qdb_questionnaire_control,
+        fetched_questionnaire_control,
+    ])
+
+    assert fetched_qdb_patient.external_id == django_patient.legacy_id
+    assert fetched_qdb_patient.created_by == 'DJANGO_AUTO_CREATE_DATABANK_CONSENT'
+
+    assert info_sheet.name_en == fetched_info_sheet.name_en
+    assert consent_form.title.content == fetched_qdb_questionnaire_control.title.content
+    assert fetched_questionnaire_control.questionnaire_name_en == 'QSCC Databank Information'
+    assert fetched_questionnaire_control.questionnaire_db_ser_num == fetched_qdb_questionnaire_control.id
+
+
+def test_fetch_databank_control_records_not_found() -> None:
+    """Test behaviour when one of the required controls isn't found."""
+    # Setup patient records
+    django_patient = patient_factories.Patient(ramq='SIMB04100199')
+    factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
+    result = legacy_utils.fetch_databank_control_records(django_patient)
+    assert not result
+
+
+def test_create_databank_patient_consent_data_records_not_found() -> None:
+    """Test behaviour when control records are not found."""
+    # Setup patient records
+    django_patient = patient_factories.Patient(ramq='SIMB04100199')
+    factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
+    assert not legacy_utils.create_databank_patient_consent_data(django_patient)
+
+
+def test_create_databank_patient_consent_data(
+    databank_consent_questionnaire_data: tuple[questionnaire_models.LegacyQuestionnaire, models.LegacyEducationalMaterialControl],  # noqa: E501
+) -> None:
+    """Test creation of databank consent form and information sheet for patient."""
+    # Setup patient records
+    django_patient = patient_factories.Patient(ramq='SIMB04100199')
+    legacy_patient = factories.LegacyPatientFactory(patientsernum=django_patient.legacy_id)
+
+    consent_form = databank_consent_questionnaire_data[0]
+    info_sheet = databank_consent_questionnaire_data[1]
+    response = legacy_utils.create_databank_patient_consent_data(django_patient)
+
+    qdb_patient = questionnaire_models.LegacyPatient.objects.get(
+        external_id=django_patient.legacy_id,
+    )
+    inserted_answer_questionnaire = questionnaire_models.LegacyAnswerQuestionnaire.objects.get(
+        questionnaire_id=consent_form.id,
+        patient_id=qdb_patient.id,
+    )
+    inserted_sheet = models.LegacyEducationalMaterial.objects.get(
+        educationalmaterialcontrolsernum=info_sheet,
+        patientsernum=django_patient.legacy_id,
+    )
+    inserted_questionnaire = models.LegacyQuestionnaire.objects.get(
+        patientsernum=django_patient.legacy_id,
+        patient_questionnaire_db_ser_num=inserted_answer_questionnaire.id,
+    )
+
+    assert response
+    assert all([qdb_patient, inserted_answer_questionnaire, inserted_sheet, inserted_questionnaire])
+
+    assert qdb_patient.created_by == 'DJANGO_AUTO_CREATE_DATABANK_CONSENT'
+
+    assert inserted_questionnaire.completedflag == 0
+    assert inserted_questionnaire.patientsernum == legacy_patient
+    assert inserted_questionnaire.patient_questionnaire_db_ser_num == inserted_answer_questionnaire.id
+
+    assert inserted_sheet.readstatus == 0
+    assert inserted_sheet.patientsernum == legacy_patient
+    assert inserted_sheet.educationalmaterialcontrolsernum == info_sheet
+
+    assert inserted_answer_questionnaire.status == 0
+    assert inserted_answer_questionnaire.patient_id == qdb_patient.id
+    assert inserted_answer_questionnaire.questionnaire_id == consent_form.id

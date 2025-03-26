@@ -354,16 +354,19 @@ def change_caregiver_user_to_patient(caregiver_legacy_id: int, patient: Patient)
 
 
 @transaction.atomic
-def create_databank_patient_consent_data(django_patient: Patient) -> None:  # noqa: WPS210
+def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # noqa: WPS210
     """Initialize databank consent information for a newly registered patient.
 
     Insertions include consent form and related educational material which describes the databank itself.
 
     Args:
         django_patient: The patient who has just completed registration
+
+    Returns:
+        boolean value indicating success or failure, to help logging in registration endpoint
     """
     # TODO: remove
-    django_patient = Patient.objects.get(legacy_id=51)  # noqa: WPS432
+    # django_patient = Patient.objects.get(legacy_id=51)  # noqa: WPS432
     try:  # noqa: WPS229
         legacy_patient = LegacyPatient.objects.get(patientsernum=django_patient.legacy_id)
 
@@ -371,7 +374,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> None:  # no
         control_records = fetch_databank_control_records(django_patient)
         if not control_records:
             # If a control record can't be found we return without raising to avoid affecting the registration
-            return
+            return False
         info_sheet, qdb_patient, qdb_questionnaire_control, questionnaire_control = control_records
 
         # Create the AnswerQuestionnaire instance
@@ -390,7 +393,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> None:  # no
             patientsernum=legacy_patient,
             patient_questionnaire_db_ser_num=answer_instance.id,
             completedflag=0,
-            date_added=dt.date.today(),
+            date_added=timezone.make_aware(dt.datetime.now()),
         )
 
         # Create the educational material factsheet
@@ -398,12 +401,13 @@ def create_databank_patient_consent_data(django_patient: Patient) -> None:  # no
             educationalmaterialcontrolsernum=info_sheet,
             patientsernum=legacy_patient,
             readstatus=0,
-            date_added=dt.date.today(),
+            date_added=timezone.make_aware(dt.datetime.now()),
         )
     except (NotFound, ValidationError):
         # Rollback and return empty without raising to avoid affecting registration completion
         transaction.set_rollback(True)
-        return
+        return False
+    return True
 
 
 def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRecords:
@@ -431,8 +435,16 @@ def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRe
     ).first()
 
     # If the questionnaireDB patient population event hasnt run yet, create the patient record
-    qdb_patient, _ = QDB_LegacyPatient.objects.get_or_create(external_id=django_patient.legacy_id)
-
+    qdb_patient, _ = QDB_LegacyPatient.objects.get_or_create(
+        external_id=django_patient.legacy_id,
+        defaults={
+            'hospital_id': -1,
+            'creation_date': timezone.make_aware(dt.datetime.now()),
+            'created_by': 'DJANGO_AUTO_CREATE_DATABANK_CONSENT',
+            'updated_by': 'DJANGO_AUTO_CREATE_DATABANK_CONSENT',
+            'deleted_by': '',
+        },
+    )
     # Exit if we fail to locate the consent form or the educational material in the db
     if not (qdb_questionnaire_control and info_sheet and questionnaire_control):
         return None
