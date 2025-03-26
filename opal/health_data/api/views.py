@@ -9,6 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.core.drf_permissions import FullDjangoModelPermissions
 from opal.patients.models import Patient
 
 from ..models import QuantitySample
@@ -80,7 +81,7 @@ class CreateQuantitySampleView(generics.CreateAPIView):
 class UnviewedQuantitySampleView(generics.GenericAPIView):
     """`GenericAPIView` for retrieving a list of patients' unviewed `QuantitySample` records."""
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (FullDjangoModelPermissions,)
     serializer_class = PatientUnviewedQuantitySampleSerializer
     queryset = QuantitySample.objects.none()
 
@@ -108,8 +109,8 @@ class UnviewedQuantitySampleView(generics.GenericAPIView):
         unviewed_counts = QuantitySample.objects.filter(
             patient__uuid__in=[patient['uuid'] for patient in serializer.validated_data],
         ).exclude(
-            viewed_at__isnull=True,
-            viewed_by__exact='',
+            viewed_at=None,
+            viewed_by='',
         ).values(
             'patient__uuid',
         ).annotate(
@@ -128,7 +129,7 @@ class ViewedQuantitySampleView(APIView):
     """`APIView` for setting patient's `QuantitySample` records as viewed."""
 
     # TODO: change to permission_classes = (IsOrms,) once permission is implemented
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = (FullDjangoModelPermissions,)
 
     def patch(self, request: Request, uuid: str) -> Response:
         """Set patient's `QuantitySample` records as viewed.
