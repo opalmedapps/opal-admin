@@ -896,8 +896,8 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
     def test_migrate_users_admins_legacyoauser_pass(self) -> None:
         """Test import pass for multiple `Administrators` Legacy OAUsers."""
         module = legacy_factories.LegacyModuleFactory(name_en='Patient')
-        admingroup = user_factories.GroupFactory(name='System Administrators')  # type: ignore[attr-defined]
-        user_factories.GroupFactory(name='Registrants')  # type: ignore[attr-defined]
+        admingroup = user_factories.GroupFactory(name='System Administrators')
+        user_factories.GroupFactory(name='Registrants')
         role = legacy_factories.LegacyOARoleFactory(name_en='Administration')
 
         legacy_factories.LegacyOAUserFactory(oaroleid=role)
@@ -917,8 +917,8 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         """Test import pass for multiple `Registrants` Legacy OAUsers."""
         module = legacy_factories.LegacyModuleFactory(name_en='Patient')
         # Creating needed groups
-        user_factories.GroupFactory(name='System Administrators')  # type: ignore[attr-defined]
-        registrant_group = user_factories.GroupFactory(name='Registrants')  # type: ignore[attr-defined]
+        user_factories.GroupFactory(name='System Administrators')
+        registrant_group = user_factories.GroupFactory(name='Registrants')
         legacy_factories.LegacyOARoleFactory(name_en='Administration')
         role = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
 
@@ -937,8 +937,8 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         """Test import pass for multiple non-admins and no write access on `Patient` module, from Legacy OAUsers."""
         module = legacy_factories.LegacyModuleFactory(name_en='Patient')
         # Creating needed groups
-        user_factories.GroupFactory(name='System Administrators')  # type: ignore[attr-defined]
-        user_factories.GroupFactory(name='Registrants')  # type: ignore[attr-defined]
+        user_factories.GroupFactory(name='System Administrators')
+        user_factories.GroupFactory(name='Registrants')
         legacy_factories.LegacyOARoleFactory(name_en='Administration')
         role = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
 
@@ -954,8 +954,8 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
     def test_migrate_users_duplicate_legacyoauser_fail(self) -> None:
         """Test import fail for re-entering same OAUser."""
         module = legacy_factories.LegacyModuleFactory(name_en='Patient')
-        user_factories.GroupFactory(name='System Administrators')  # type: ignore[attr-defined]
-        user_factories.GroupFactory(name='Registrants')  # type: ignore[attr-defined]
+        user_factories.GroupFactory(name='System Administrators')
+        user_factories.GroupFactory(name='Registrants')
         role = legacy_factories.LegacyOARoleFactory(name_en='Administration')
 
         user = legacy_factories.LegacyOAUserFactory(oaroleid=role)
@@ -981,8 +981,8 @@ class TestUpdateOrmsPatientsCommand(CommandTestMixin):
         patientmodule = legacy_factories.LegacyModuleFactory(name_en='Patient')
         anymodule = legacy_factories.LegacyModuleFactory(name_en='AnyModule')
         # Creating needed groups
-        user_factories.GroupFactory(name='System Administrators')  # type: ignore[attr-defined]
-        user_factories.GroupFactory(name='Registrants')  # type: ignore[attr-defined]
+        user_factories.GroupFactory(name='System Administrators')
+        user_factories.GroupFactory(name='Registrants')
         adminrole = legacy_factories.LegacyOARoleFactory(name_en='Administration')
         nonadminrole_patient = legacy_factories.LegacyOARoleFactory(name_en='PatientRole')
         nonadminrole_nonpatient = legacy_factories.LegacyOARoleFactory(name_en='AnyRole')
