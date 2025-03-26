@@ -152,7 +152,7 @@ class LegacyTxTeamMessage(models.Model):
     txteammessagesernum = models.AutoField(db_column='TxTeamMessageSerNum', primary_key=True)
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
-    readby = models.JSONField(db_column='ReadBy', default=[])
+    readby = models.JSONField(db_column='ReadBy', default=list)
     objects: managers.LegacyTxTeamMessageManager = managers.LegacyTxTeamMessageManager()
 
     class Meta:
