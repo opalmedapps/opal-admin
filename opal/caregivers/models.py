@@ -39,7 +39,7 @@ class CaregiverProfile(models.Model):
 
 
 class RegistrationCodeStatus(models.TextChoices):
-    """Pre defined status of registration code."""
+    """Valid choice of status of a `RegistrationCode`."""
 
     NEW = 'NEW', _('New')
     REGISTERED = 'REG', _('Registered')
@@ -51,16 +51,18 @@ class RegistrationCode(models.Model):
     """Model Registration Code."""
 
     relationship = models.ForeignKey(
-        to='patients.Relationship',  # Using string model references to avoid circular import
+        # Using string model references to avoid circular import
+        to='patients.Relationship',
         verbose_name=_('Relationship'),
-        related_name='registrationcodes',
+        related_name='registration_codes',
         on_delete=models.CASCADE,
     )
 
     code = models.CharField(
-        verbose_name=_('Registration Code Value'),
+        verbose_name=_('Code'),
         max_length=12,
         validators=[MinLengthValidator(12)],
+        unique=True,
     )
 
     status = models.CharField(
@@ -104,10 +106,9 @@ class RegistrationCode(models.Model):
         Returns:
             the string registration code of the associated relationship
         """
-        return 'code: {code}, status: {status}, {relationship}'.format(
+        return 'Code: {code} (Status: {status})'.format(
             code=self.code,
             status=self.status,
-            relationship=self.relationship,
         )
 
     def clean(self) -> None:
@@ -118,8 +119,9 @@ class RegistrationCode(models.Model):
         """
         length_regis_code = len(self.code)
         length_verif_code = len(self.email_verification_code)
-        if self.code is not None and (length_regis_code > 12 or length_regis_code < 12):
-            raise ValidationError({'Registration Code': _('Code length should be equal to 12.')})
-
-        if self.email_verification_code is not None and (length_verif_code > 6 or length_verif_code < 6):
-            raise ValidationError({'Email Verification Code': _('Code length should be equal to 6.')})
+        errors = {}
+        if self.code is not None and (length_regis_code < 12):
+            errors['Code'] = _('Code length should be equal to 12.')
+        if self.email_verification_code is not None and (length_verif_code < 6):
+            errors['Email Verification Code'] = _('Code length should be equal to 6.')
+        raise ValidationError(errors)
