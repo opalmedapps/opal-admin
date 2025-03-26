@@ -90,3 +90,5 @@ def test_quantitysample_multiple_per_patient() -> None:
 
     factories.QuantitySample(patient=patient)
     factories.QuantitySample(patient=patient)
+
+    assert QuantitySample.objects.count() == 2
