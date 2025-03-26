@@ -55,7 +55,7 @@ class UserViewSet(
         Add the passed user to a predefined managers group.
 
         Args:
-            request: Http request.
+            request: HTTP request.
             username: user's username.
 
         Returns:
@@ -83,7 +83,7 @@ class UserViewSet(
         Remove the passed user from a predefined managers group.
 
         Args:
-            request: Http request.
+            request: HTTP request.
             username: user's username.
 
         Returns:
