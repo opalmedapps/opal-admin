@@ -42,8 +42,8 @@
     {% endif %}
 
     {% #form_actions %}
-    <input type="submit" name="next" class="btn btn-primary" value="{{ next_button_text }}" />
-    {% form_cancel href='/'|add:request.resolver_match.route %}
+      <input type="submit" name="next" class="btn btn-primary" value="{{ next_button_text }}" />
+      {% form_cancel href='/'|add:request.resolver_match.route %}
     {% /form_actions %}
   </form>
 
