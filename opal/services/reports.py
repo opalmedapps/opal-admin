@@ -108,6 +108,7 @@ class PathologyPDF(FPDF):
         + "is being shared with you as it is stored in the hospital's system. For patient information, not for "
         + 'clinical use.'
     )
+    auto_page_break_bottom_margin: int = 50
 
     def __init__(
         self,
@@ -134,8 +135,8 @@ class PathologyPDF(FPDF):
             sites_and_mrns_list,
         )
 
-        self.set_report_metadata()
-        self.generate()
+        self._set_report_metadata()
+        self._generate()
 
     def header(self) -> None:
         """Set the pathology PDF's header.
@@ -196,49 +197,20 @@ class PathologyPDF(FPDF):
             # Set the cursor at the top (e.g., 4 cm from the top).
             self.set_y(self.header_cursor_abscissa_position_in_mm)
 
-    def generate(self) -> None:
+    def _generate(self) -> None:
         """Generate a PDF pathology report."""
-        self.set_auto_page_break(auto=True, margin=50)
+        self.set_auto_page_break(auto=True, margin=self.auto_page_break_bottom_margin)
         self.add_page()
 
-        # TODO: refactor the code below and use the following methods:
-        # TODO: self.draw_page_frame()
-        # TODO: self.draw_pathology_table_title()
-        # TODO: self.draw_pathology_table()
+        self._draw_site_address_and_patient_table()
+        self._draw_pathology_table_title()
+        self._draw_pathology_table_frame()
+        self._draw_report_number_and_date_table()
+
         # TODO: self.draw_clinical_information()
         # TODO: self.draw_specimen()
         # TODO: self.draw_gross_description()
         # TODO: self.draw_diagnosis()
-        # TODO: self.add_new_page_if_needed()
-        # TODO: self.draw_report_prepared_by()
-
-
-        site_patient_box = FlexTemplate(self, self._get_site_address_patient_info_box())
-        site_patient_box.render()
-        # Draw the the frame that is shown at the top of the first page.
-        # TODO: move to the template
-        self.rect(15, 15, 180, self.get_y() - 10, 'D')
-        self.line(135, 15, 135, self.get_y() + 5)
-        self.ln(12)
-
-        # Pathology table title
-        self.set_font(family=self.font, style='B', size=12)
-        self.cell(w=0, h=10, txt='PATHOLOGIE CHIRURGICALE RAPORT FINAL', align='C')
-        self.ln(6)
-        self.cell(w=0, h=10, txt='SURGICAL PATHOLOGY FINAL REPORT', align='C')
-
-        # Pathology table
-        # Draw grey area at the top of the table
-        self.set_fill_color(211, 211, 211)
-        self.rect(15, self.get_y() + 10, 180, 5, 'DF')
-
-        # Draw frame for the first page
-        self.rect(15, self.get_y() + 10, 180, 297 - (self.get_y() + 40 + 15), 'D')
-
-        report_number_and_date_table = FlexTemplate(self, self._get_report_number_and_date_table())
-        report_number_and_date_table.render()
-
-
 
         self.ln(15)
         self.set_x(28.0)
@@ -295,19 +267,12 @@ class PathologyPDF(FPDF):
             txt='\n\n\n\n'.join(self.pathology_data.observation_diagnosis),
         )
 
-
         self.ln(20)
 
+        self._add_new_page_if_needed()
+        self._draw_report_prepared_by()
 
-        # Add new page if the prepared-by-box will not fit the current page
-        if self.will_page_break(40):
-            self.add_page()
-            self.set_y(30)
-
-        report_prepared_by_template = FlexTemplate(self, self._get_report_prepared_by_table())
-        report_prepared_by_template.render()
-
-    def set_report_metadata(self) -> None:
+    def _set_report_metadata(self) -> None:
         """Set pathology PDF's metadata.
 
         The following information is set:
@@ -490,6 +455,55 @@ class PathologyPDF(FPDF):
                 'multiline': True,
             },
         ]
+
+    def _draw_site_address_and_patient_table(self) -> None:
+        """Draw the site address and patient info table that is shown at the top of the first page."""
+        site_patient_box = FlexTemplate(self, self._get_site_address_patient_info_box())
+        site_patient_box.render()
+        # Draw the border/frame around the site address and patient info table.
+        self.rect(15, 15, 180, self.get_y() - 10, 'D')
+        self.line(135, 15, 135, self.get_y() + 5)
+
+    def _draw_pathology_table_title(self) -> None:
+        """Draw pathology table title."""
+        self.ln(12)
+        self.set_font(family=self.font, style='B', size=12)
+        self.cell(w=0, h=10, txt='PATHOLOGIE CHIRURGICALE RAPORT FINAL', align='C')
+        self.ln(6)
+        self.cell(w=0, h=10, txt='SURGICAL PATHOLOGY FINAL REPORT', align='C')
+
+    def _draw_pathology_table_frame(self) -> None:
+        """Draw pathology table."""
+        # Draw grey area at the top of the table.
+        self.set_fill_color(211, 211, 211)
+        self.rect(15, self.get_y() + 10, 180, 5, 'DF')
+
+        # Draw the pathology table frame for the first page.
+        self.rect(
+            15,
+            self.get_y() + 10,
+            180, 297 - (self.get_y() + 40 + 15),
+            'D',
+        )
+
+    def _draw_report_number_and_date_table(self) -> None:
+        """Draw report number and date table."""
+        report_number_and_date_table = FlexTemplate(self, self._get_report_number_and_date_table())
+        report_number_and_date_table.render()
+
+    def _add_new_page_if_needed(self) -> None:
+        """Add new page if the prepared-by-table will not fit the current page."""
+        if self.will_page_break(40):
+            self.add_page()
+            self.set_y(30)
+
+    def _draw_report_prepared_by(self) -> None:
+        """Draw the "report prepared by" table."""
+        report_prepared_by_template = FlexTemplate(
+            self,
+            self._get_report_prepared_by_table(),
+        )
+        report_prepared_by_template.render()
 
     # A report number table that is shown inside the main pathology table
     # It contains report number, specimen collected, and specimen report fields
