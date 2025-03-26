@@ -7,7 +7,7 @@ services:
       - .envs/mariadb.dev
     # expose DB locally to be able to access it through venv
     ports:
-      - 3306:3306
+      - ${DATABASE_PORT}:3306
   app:
     image: opalmedapps/backend:latest
     build: .
