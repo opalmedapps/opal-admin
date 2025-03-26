@@ -443,8 +443,8 @@ class LegacyOAUserFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyOAUser
 
-    username = Faker('name')
-    password = Faker('name')
+    username = Faker('user_name')
+    password = Faker('password')
     oaroleid = SubFactory(LegacyOARoleFactory)
     date_added = timezone.make_aware(datetime(2018, 1, 1))
 
