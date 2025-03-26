@@ -65,7 +65,7 @@ class ReportService():
         Returns:
             str: encoded base64 string of the generated PDF report
         """
-        pload = json.dumps({
+        payload = json.dumps({
             'patient_id': report_data.patient_id,
             'logo_base64': Base64Util().encode_image_to_base64(report_data.logo_path),
             'language': report_data.language,
@@ -77,7 +77,7 @@ class ReportService():
             response = requests.post(
                 url=settings.LEGACY_QUESTIONNAIRES_REPORT_URL,
                 headers=headers,
-                data=pload,
+                data=payload,
             )
         except RequestException:
             return ''
