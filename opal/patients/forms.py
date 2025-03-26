@@ -10,13 +10,21 @@ from crispy_forms.layout import Field, Layout
 from .models import Relationship
 
 
+class DateInput(forms.TimeInput):
+    """Date class to use in `DateField` widgets in the forms."""
+
+    input_type = 'date'
+
+
 class RelationshipPendingAccessForm(forms.ModelForm):
     """Form for updating an `Pending Relationship Access` object."""
 
-    date_of_birth = forms.DateField(widget=forms.DateInput(format='%Y%m%d'))  # noqa: WPS323
+    patient = forms.CharField()
+    caregiver = forms.CharField()
+    date_of_birth = forms.DateField()
     patient_identification_number = forms.CharField()
-    start_date = forms.DateField(widget=forms.DateInput(format='%Y%m%d'))  # noqa: WPS323
-    end_date = forms.DateField(widget=forms.DateInput(format='%Y%m%d'))  # noqa: WPS323
+    start_date = forms.DateField(widget=DateInput)
+    end_date = forms.DateField(widget=DateInput)
 
     class Meta:
         model = Relationship
@@ -40,10 +48,13 @@ class RelationshipPendingAccessForm(forms.ModelForm):
             args: varied amount of non-keyworded arguments
             kwargs: varied amount of keyworded arguments
         """
-        kwargs['initial']['date_of_birth'] = str(kwargs['instance'].patient.date_of_birth)
+        kwargs['initial']['date_of_birth'] = str(kwargs['instance'].patient.date_of_birth)  # noqa: WPS204
         kwargs['initial']['patient_identification_number'] = kwargs['instance'].patient.ramq
-        kwargs['initial']['start_date'] = str(kwargs['instance'].start_date)
-        kwargs['initial']['end_date'] = str(kwargs['instance'].end_date)
+        kwargs['initial']['patient'] = '{first} {last}'.format(
+            first=kwargs['instance'].patient.first_name,
+            last=kwargs['instance'].patient.last_name,
+        )
+        kwargs['initial']['caregiver'] = kwargs['instance'].caregiver
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
 
@@ -56,4 +67,5 @@ class RelationshipPendingAccessForm(forms.ModelForm):
             'end_date',
             'status',
             'reason',
+            'date',
         )
