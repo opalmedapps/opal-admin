@@ -345,6 +345,7 @@ gemnasium-python-dependency_scanning:
     - tail -n +2 requirements/production.txt >> requirements.txt
 
 # Container Scanning
+# https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
 container_scanning:
   variables:
     CS_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
