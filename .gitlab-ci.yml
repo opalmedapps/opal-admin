@@ -96,7 +96,7 @@ mypy:
     - pip install mypy-gitlab-code-quality
     - mypy --version
     # export output and don't fail if there are errors
-    - mypy opal/ --no-error-summary > mypy-out.txt || true
+    - mypy . --no-error-summary > mypy-out.txt || true
     - PYTHONHASHSEED=0 mypy-gitlab-code-quality < mypy-out.txt > codequality.json
     # fail if file is not empty
     # see: https://stackoverflow.com/q/9964823
