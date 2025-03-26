@@ -405,7 +405,8 @@ def initialize_new_opal_patient(  # noqa: WPS210
     patient.save()
     logger.info('Successfully initialized patient in legacy DB; patient_uuid = {0}'.format(patient_uuid))
 
-    # Call the OIE to notify it of the existence of the new patient
+    # Call the OIE to notify it of the existence of the new patient (must be done before calling
+    # OMRS to create the patient in ORMS if necessary)
     oie_response = oie_service.new_opal_patient(active_mrn_list)
 
     if oie_response['status'] == 'success':
