@@ -22,6 +22,10 @@ msgstr ""
 msgid "Please wait 10 seconds before requesting a new verification code."
 msgstr ""
 
+#: opal/caregivers/api/views.py
+msgid "Opal Verification Code"
+msgstr "Code de vérification Opal"
+
 #: opal/caregivers/api/viewsets.py
 msgid "The provided answer is not correct"
 msgstr "La réponse fournie n'est pas correcte"
