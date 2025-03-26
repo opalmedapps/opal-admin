@@ -45,10 +45,11 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
             relationship__patient__legacy_id=patient_sernum,
         ).first()
 
-        if relationship_type and relationship_type.can_answer_questionnaire:
-            respondent_contents.append('Caregiver')
-        if relationship_type and relationship_type.role_type != 'SELF':
-            respondent_contents.append('Patient')
+        if relationship_type:
+            if relationship_type.can_answer_questionnaire:
+                respondent_contents.append('Caregiver')
+            if relationship_type.role_type != 'SELF':
+                respondent_contents.append('Patient')
 
         return self.filter(
             legacyanswerquestionnaire__status=0,                             # 0 = New questionnaires
