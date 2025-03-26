@@ -70,7 +70,7 @@ class SecurityAnswer(models.Model):
         max_length=100,
     )
 
-    profile = models.ForeignKey(
+    user = models.ForeignKey(
         to=CaregiverProfile,
         verbose_name=_('Caregiver Profile'),
         related_name='security_answers',
@@ -92,8 +92,8 @@ class SecurityAnswer(models.Model):
         Returns:
             the caregiver and the question.
         """
-        return '{profile} - {question} - {answer}'.format(
-            profile=self.profile,
+        return '{user} - {question} - {answer}'.format(
+            user=self.user,
             question=self.question,
             answer=self.answer,
         )

@@ -37,6 +37,6 @@ class SecurityAnswer(DjangoModelFactory):
 
     question = 'Apple'
     question_fr = 'Pomme'
-    profile = SubFactory(CaregiverProfile)
+    user = SubFactory(CaregiverProfile)
     answer = 'answer'
     answer_fr = 'réponse'

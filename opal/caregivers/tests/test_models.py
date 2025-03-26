@@ -92,7 +92,7 @@ def test_security_answer_str() -> None:
     caregiver = user_factories.Caregiver(first_name='first_name', last_name='last_name')
     profile = CaregiverProfile()
     profile.user = caregiver
-    answer.profile = profile
+    answer.user = profile
     assert str(answer) == 'first_name last_name - Apple - answer'
 
 
