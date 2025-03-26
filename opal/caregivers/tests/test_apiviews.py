@@ -43,11 +43,13 @@ def test_get_caregiver_patient_list_patient_id(api_client: APIClient, admin_user
     relationship = patient_factory.Relationship(type=relationship_type)
     caregiver = Caregiver.objects.get()
     api_client.credentials(HTTP_APPUSERID=caregiver.username)
+
     response = api_client.get(reverse('api:caregivers-patient-list'))
+
     assert response.status_code == HTTPStatus.OK
     assert len(response.data) == 1
     assert relationship.type_id == response.data[0]['relationship_type']['id']
-    assert relationship.patient_id == response.data[0]['patient_id']
+    assert str(relationship.patient.uuid) == response.data[0]['patient_uuid']
 
 
 def test_get_caregiver_patient_list_fields(api_client: APIClient, admin_user: User) -> None:
@@ -57,10 +59,11 @@ def test_get_caregiver_patient_list_fields(api_client: APIClient, admin_user: Us
     patient_factory.Relationship(type=relationship_type)
     caregiver = Caregiver.objects.get()
     api_client.credentials(HTTP_APPUSERID=caregiver.username)
+
     response = api_client.get(reverse('api:caregivers-patient-list'))
 
     data_fields = [
-        'patient_id',
+        'patient_uuid',
         'patient_legacy_id',
         'first_name', 'last_name',
         'status',
