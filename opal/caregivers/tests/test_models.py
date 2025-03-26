@@ -1,7 +1,5 @@
-import datetime
 
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
 from django.db.models.deletion import ProtectedError
 
 import pytest
@@ -73,7 +71,7 @@ def test_caregiverprofile_legacy_id() -> None:
 def test_security_question_str() -> None:
     """The `str` method returns the name of the security_question."""
     question = factories.SecurityQuestion()
-    assert str(question) == 'question_one question_un'
+    assert str(question) == '1234567'
 
 
 def test_security_question_factory() -> None:
@@ -88,34 +86,6 @@ def test_security_question_active() -> None:
     assert question.is_active
 
 
-def test_security_question_clean_valid_dates() -> None:
-    """Ensure that the date is valid if created_at is earlier than updated_at."""
-    question = factories.SecurityQuestion(created_at='2022-06-06', updated_at='2022-06-07')
-    question.clean()
-
-
-def test_security_question_clean_invalid_dates() -> None:
-    """Ensure that the date is invalid if created_at is later than updated_at."""
-    question = factories.SecurityQuestion()
-    question.created_at = datetime.date(2022, 6, 8)
-    question.updated_at = datetime.date(2022, 6, 6)
-
-    expected_message = 'Creation date should be earlier than last updated date.'
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
-        question.clean()
-
-
-def test_security_question_dates_constraint() -> None:
-    """Ensure that the date cannot be saved if created_at is later than updated_at."""
-    question = factories.SecurityQuestion()
-    question.created_at = datetime.date(2022, 6, 8)
-    question.updated_at = datetime.date(2022, 6, 6)
-
-    constraint_name = 'caregivers_securityquestion_date_valid'
-    with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
-        question.save()
-
-
 def test_security_answer_str() -> None:
     """The `str` method returns the name of the user and the answer of security answer."""
     answer = factories.SecurityAnswer()
@@ -123,38 +93,10 @@ def test_security_answer_str() -> None:
     profile = CaregiverProfile()
     profile.user = caregiver
     answer.profile = profile
-    assert str(answer) == 'first_name last_name - question_one question_un'
+    assert str(answer) == 'first_name last_name - 1234567'
 
 
 def test_security_answer_factory() -> None:
     """Ensure the SecurityAnswer factory is building properly."""
     answer = factories.SecurityAnswer()
     answer.full_clean()
-
-
-def test_security_answer_clean_valid_dates() -> None:
-    """Ensure that the date is valid if created_at is earlier than updated_at."""
-    answer = factories.SecurityAnswer(created_at='2022-06-06', updated_at='2022-06-07')
-    answer.clean()
-
-
-def test_security_answer_clean_invalid_dates() -> None:
-    """Ensure that the date is invalid if created_at is later than updated_at."""
-    answer = factories.SecurityAnswer()
-    answer.created_at = datetime.date(2022, 6, 8)
-    answer.updated_at = datetime.date(2022, 6, 6)
-
-    expected_message = 'Creation date should be earlier than last updated date.'
-    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
-        answer.clean()
-
-
-def test_security_answer_invalid_dates_constraint() -> None:
-    """Ensure that the date cannot be saved if created_at is later than updated_at."""
-    answer = factories.SecurityAnswer()
-    answer.created_at = datetime.date(2022, 6, 8)
-    answer.updated_at = datetime.date(2022, 6, 6)
-
-    constraint_name = 'caregivers_securityanswer_date_valid'
-    with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
-        answer.save()

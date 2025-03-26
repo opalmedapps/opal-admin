@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-17 02:32-0400\n"
+"POT-Creation-Date: 2022-07-07 16:15-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,28 +31,20 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/caregivers/models.py
+#, fuzzy
+#| msgid "Caregivers"
 msgid "Caregiver Profile"
-msgstr "Profil de proche aidant"
+msgstr "Proches aidants"
 
 #: opal/caregivers/models.py
+#, fuzzy
+#| msgid "Caregivers"
 msgid "Caregiver Profiles"
-msgstr "Profils des proches aidants"
+msgstr "Proches aidants"
 
 #: opal/caregivers/models.py
-msgid "Question Text EN"
-msgstr "Texte des questions EN"
-
-#: opal/caregivers/models.py
-msgid "Question Text FR"
-msgstr "Texte des questions FR"
-
-#: opal/caregivers/models.py
-msgid "Creation Date"
-msgstr "Date de création"
-
-#: opal/caregivers/models.py
-msgid "Last Updated"
-msgstr "Dernière mise à jour"
+msgid "Title"
+msgstr "Titre"
 
 #: opal/caregivers/models.py
 msgid "Active"
@@ -67,8 +59,12 @@ msgid "Security Questions"
 msgstr "Questions de sécurité"
 
 #: opal/caregivers/models.py
-msgid "Creation date should be earlier than last updated date."
-msgstr "La date de création doit être antérieure à la date de la dernière mise à jour"
+msgid "Question"
+msgstr "Question"
+
+#: opal/caregivers/models.py
+msgid "Answer"
+msgstr "Réponse"
 
 #: opal/caregivers/models.py
 msgid "Security Answer"

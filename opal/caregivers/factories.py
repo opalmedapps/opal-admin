@@ -1,7 +1,5 @@
 """Module providing model factories for caregiver app models."""
 
-import datetime
-
 from factory import Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
@@ -26,10 +24,7 @@ class SecurityQuestion(DjangoModelFactory):
     class Meta:
         model = models.SecurityQuestion
 
-    question_en = 'question_one'
-    question_fr = 'question_un'
-    created_at = datetime.date(2022, 6, 6)
-    updated_at = datetime.date(2022, 6, 6)
+    title = '1234567'
     is_active = True
 
 
@@ -39,8 +34,6 @@ class SecurityAnswer(DjangoModelFactory):
     class Meta:
         model = models.SecurityAnswer
 
-    question = SubFactory(SecurityQuestion)
+    question = '1234567'
     profile = SubFactory(CaregiverProfile)
     answer = 'abcdefg'
-    created_at = datetime.date(2022, 6, 6)
-    updated_at = datetime.date(2022, 6, 6)
