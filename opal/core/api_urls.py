@@ -33,5 +33,6 @@ urlpatterns = [
     path('languages/', core_views.LanguagesView.as_view(), name='languages'),
     path('registration/by-hash/<str:hash>/', GetRegistrationEncryptionInfoView.as_view(), name='registration-by-hash'),
     path('app/chart/', legacy_views.AppChartView.as_view(), name='app-chart'),
+    path('app/general/', legacy_views.AppGeneralView.as_view(), name='app-general'),
     path('', include(router.urls)),
 ]

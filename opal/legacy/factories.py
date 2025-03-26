@@ -111,3 +111,13 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
 
     patientsernum = SubFactory(LegacyPatientFactory)
     completedflag = 0
+
+
+class LegacyAnnouncementFactory(DjangoModelFactory):
+    """Announcement factory from the legacy database."""
+
+    class Meta:
+        model = models.LegacyAnnouncement
+
+    patientsernum = SubFactory(LegacyPatientFactory)
+    readstatus = 0

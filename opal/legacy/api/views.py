@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from opal.legacy.utils import get_patient_sernum
 
 from .. import models
-from .serializers import LegacyAppointmentSerializer, UnreadCountSerializer
+from .serializers import AnnouncementUnreadCountSerializer, LegacyAppointmentSerializer, UnreadCountSerializer
 
 
 class AppHomeView(APIView):
@@ -71,3 +71,30 @@ class AppChartView(APIView):
         }
 
         return Response(UnreadCountSerializer(unread_count).data)
+
+
+class AppGeneralView(APIView):
+    """Class to return general page required data."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: HttpRequest) -> HttpResponse:
+        """
+        Handle GET requests from `api/app/general`.
+
+        The function provides the number of unread values for the user
+        and will provide them for the selected patient instead until the profile selector is finished.
+
+        Args:
+            request: Http request made by the listener.
+
+        Returns:
+            Http response with the data needed to display the general view.
+        """
+        patient_sernum = get_patient_sernum(request.headers['Appuserid'])
+        unread_count = {
+            'unread_announcement_count': models.LegacyAnnouncement.objects.get_unread_queryset(
+                patient_sernum,
+            ).count(),
+        }
+        return Response(AnnouncementUnreadCountSerializer(unread_count).data)
