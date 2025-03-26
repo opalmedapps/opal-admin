@@ -1,7 +1,8 @@
 """Module providing algorithms and functions related to the de-identification of patient data."""
 import hashlib
 import logging
-import re
+from dataclasses import dataclass
+from datetime import date
 from typing import Final
 
 from unidecode import unidecode
@@ -11,7 +12,19 @@ from opal.patients.models import SexType
 LOGGER = logging.getLogger(__name__)
 
 
-class OpenScienceIdentity():  # noqa: WPS230
+@dataclass
+class PatientData:
+    """Dataclass instance for patient identifiers."""
+
+    first_name: str
+    middle_name: str
+    last_name: str
+    gender: str
+    date_of_birth: str
+    city_of_birth: str
+
+
+class OpenScienceIdentity():
     """This algorithm is used to de-identify patient data using an open source algorithm developed at the McGill Neuro.
 
     A unique signature is generated for a patient by taking several personal identifiers
@@ -22,27 +35,20 @@ class OpenScienceIdentity():  # noqa: WPS230
     OSI Git: https://github.com/aces/open_science_identity/tree/master
     """
 
-    pbkdf2_iterations: Final[int] = 10000
-    pbkdf2_hash_function: Final[str] = 'sha256'
-    pbkdf2_key_length: Final[int] = 32
-    gender_values = [value.lower() for value in SexType.labels]
-    identity_attributes = ['first_name', 'last_name', 'gender', 'date_of_birth', 'city_of_birth']
+    _pbkdf2_iterations: Final[int] = 10000
+    _pbkdf2_hash_function: Final[str] = 'sha256'
+    _pbkdf2_key_length: Final[int] = 32
+    _gender_values = [value.lower() for value in SexType.labels]
+    # Identity attributes are the minimum required attributes for GUID generation
+    _identity_attributes = ['first_name', 'last_name', 'gender', 'date_of_birth', 'city_of_birth']
 
-    # Validate dates of YYYY-MM-DD format for 1900s and 2000s birthdates
-    dob_regex = r'^(19|20)\d\d-(0[1-9]|1[012])-(0[1-9]|[12]\d|3[01])$'
-
-    def __init__(self, attributes: dict) -> None:
+    def __init__(self, patient_data: PatientData) -> None:
         """Initialize hash password attributes and convenience class data structures.
 
         Args:
-            attributes: dictionary of input arguments to algorithm
+            patient_data: dictionary of input arguments to algorithm
         """
-        self.gender = attributes.get('gender', '')
-        self.first_name = attributes.get('first_name', '')
-        self.middle_name = attributes.get('middle_name', '')
-        self.last_name = attributes.get('last_name', '')
-        self.date_of_birth = attributes.get('date_of_birth', '')
-        self.city_of_birth = attributes.get('city_of_birth', '')
+        self.patient_data = patient_data
         self._cache: dict[str, str] = {}  # Keep a dictionary of cleaned attributes for efficiency
         self.invalid_attributes: list = []  # Easier debugging by tracking invalid inputs
 
@@ -57,11 +63,11 @@ class OpenScienceIdentity():  # noqa: WPS230
         LOGGER.info('All attributes successfully cleaned & validated')
         salt = sig_key[::-1]
         return hashlib.pbkdf2_hmac(
-            self.pbkdf2_hash_function,
+            self._pbkdf2_hash_function,
             sig_key.encode(),
             salt.encode(),
-            self.pbkdf2_iterations,
-            self.pbkdf2_key_length,
+            self._pbkdf2_iterations,
+            self._pbkdf2_key_length,
         ).hex()
 
     def _clean_attribute(self, attr_name: str) -> str:
@@ -74,7 +80,7 @@ class OpenScienceIdentity():  # noqa: WPS230
             Cleaned string.
         """
         if attr_name not in self._cache:
-            attr_value = getattr(self, attr_name, '')
+            attr_value = getattr(self.patient_data, attr_name, '')
             # Cache the result to avoid needing to re-clean data during algorithm execution
             self._cache[attr_name] = self._plain_alpha(attr_value)
         return self._cache[attr_name]
@@ -106,13 +112,20 @@ class OpenScienceIdentity():  # noqa: WPS230
         Returns:
             boolean whether all identity attributes are valid.
         """
-        for attr in self.identity_attributes:
+        for attr in self._identity_attributes:
             cleaned_value = self._clean_attribute(attr)
-            if not cleaned_value or (attr == 'gender' and cleaned_value not in self.gender_values):
+            if not cleaned_value or (attr == 'gender' and cleaned_value not in self._gender_values):
                 self.invalid_attributes.append(attr)
 
-        if self.date_of_birth and not re.match(self.dob_regex, self.date_of_birth):
-            self.invalid_attributes.append('date_of_birth')
+        # Validate date_of_birth using date.fromisoformat()
+        if self.patient_data.date_of_birth:
+            try:
+                date.fromisoformat(self.patient_data.date_of_birth)
+            except ValueError:
+                self.invalid_attributes.append('date_of_birth')
+
+        if self.invalid_attributes:
+            raise ValueError(f"Invalid identity components {', '.join(self.invalid_attributes)}")
 
         return not self.invalid_attributes
 

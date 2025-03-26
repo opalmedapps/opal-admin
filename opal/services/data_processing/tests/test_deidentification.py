@@ -1,23 +1,24 @@
 import csv
-import os
 from pathlib import Path
 
 import pytest
 
-from opal.services.data_processing.deidentification import OpenScienceIdentity
+from opal.services.data_processing.deidentification import OpenScienceIdentity, PatientData
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
 
-# Define the path to the CSV file
-csv_file_path = os.path.join(
-    Path(__file__).resolve(strict=True).parents[3] / 'tests' / 'csv',
-    'attributes_expected_signatures.csv',
-)
+FIXTURES_DIR = Path(__file__).resolve().parent.joinpath('fixtures')
+
+# # Define the path to the CSV file
+# csv_file_path = os.path.join(
+#     Path(__file__).resolve(strict=True).parents[3] / 'tests' / 'fixtures',
+#     'attributes_expected_signatures.csv',
+# )
 
 # Reading the CSV file and creating a list of test cases
 test_cases = []
-with open(csv_file_path, 'r') as csv_file:
+with FIXTURES_DIR.joinpath('attributes_expected_signatures.csv').open() as csv_file:
     reader = csv.reader(csv_file)
     for row in reader:
         attributes = {
@@ -38,7 +39,7 @@ class TestOpenScienceIdentity:
     @pytest.mark.parametrize(('attributes', 'expected_signature'), test_cases)
     def test_signature_generation(self, attributes: dict[str, str], expected_signature: str) -> None:  # noqa: WPS442
         """Test the successful generation of signatures/guids for patients."""
-        identity = OpenScienceIdentity(attributes)
+        identity = OpenScienceIdentity(PatientData(**attributes))
         if expected_signature == 'invalid':
             with pytest.raises(ValueError, match='Invalid identity components'):
                 identity.to_signature()
@@ -57,7 +58,7 @@ class TestOpenScienceIdentity:
             'city_of_birth': '',
         }
         with pytest.raises(ValueError, match='Invalid identity components'):
-            OpenScienceIdentity(empty_attributes).to_signature()
+            OpenScienceIdentity(PatientData(**empty_attributes)).to_signature()
 
     def test_none_attribute_components(self) -> None:
         """Test the handling of None attribute components."""
@@ -70,4 +71,4 @@ class TestOpenScienceIdentity:
             'city_of_birth': None,
         }
         with pytest.raises(ValueError, match='Invalid identity components'):
-            OpenScienceIdentity(none_attributes_components).to_signature()
+            OpenScienceIdentity(PatientData(**none_attributes_components)).to_signature()
