@@ -354,3 +354,10 @@ def test_patients_unviewed_health_data(settings: SettingsWrapper) -> None:
 
     assert reverse('api:unviewed-health-data-patient-list') == url_path
     assert resolve(url_path).view_name == 'api:unviewed-health-data-patient-list'
+
+
+def test_retrieve_relationship_type_list(settings: SettingsWrapper) -> None:
+    """Ensure `patients/relationship-types/` is defined."""
+    url_path = '/{api_root}/patients/relationship-types/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:relationship-types-list') == url_path
+    assert resolve(url_path).view_name == 'api:relationship-types-list'

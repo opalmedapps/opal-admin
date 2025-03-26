@@ -17,7 +17,7 @@ from rest_framework.test import APIClient
 from opal.caregivers.factories import CaregiverProfile, Device, RegistrationCode
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
-from opal.patients.factories import HospitalPatient, Patient, Relationship
+from opal.patients.factories import HospitalPatient, Patient, Relationship, RelationshipType
 from opal.users import factories as caregiver_factories
 from opal.users.models import User
 
@@ -1020,3 +1020,24 @@ class TestPatientExistsView:
             mrn='9999993',
             site=site,
         )
+
+
+def test_relationship_types_list(api_client: APIClient, user: User) -> None:
+    """Test the return of the relationship types list."""
+    api_client.force_login(user=user)
+
+    relationship_type1 = RelationshipType(name='Name 1', description='Description 1')
+    relationship_type2 = RelationshipType(name='Name 2', description='Description 2')
+
+    response = api_client.get(reverse('api:relationship-types-list'))
+
+    assert response.status_code == HTTPStatus.OK
+
+    assert response.json()[0] == {
+        'name': relationship_type1.name,
+        'description': relationship_type1.description,
+    }
+    assert response.json()[1] == {
+        'name': relationship_type2.name,
+        'description': relationship_type2.description,
+    }
