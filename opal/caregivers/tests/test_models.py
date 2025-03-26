@@ -15,6 +15,18 @@ from ..models import CaregiverProfile
 pytestmark = pytest.mark.django_db
 
 
+def test_caregiverprofile_factory() -> None:
+    """The Caregiver Profile factory is building a valid model."""
+    profile = factories.CaregiverProfile()
+    profile.full_clean()
+
+
+def test_caregiverprofile_factory_multiple() -> None:
+    """The Caregiver Profile factory can build multiple default model instances."""
+    factories.CaregiverProfile()
+    factories.CaregiverProfile()
+
+
 def test_caregiverprofile_str() -> None:
     """The `str` method returns the name of the associated user."""
     caregiver = user_factories.Caregiver(first_name='John', last_name='Wayne')
@@ -82,6 +94,12 @@ def test_security_question_factory() -> None:
     question.full_clean()
 
 
+def test_security_question_factory_multiple() -> None:
+    """Ensure the SecurityQuestion factory can build multiple default model instances."""
+    factories.SecurityQuestion()
+    factories.SecurityQuestion()
+
+
 def test_security_question_active() -> None:
     """Security Question is active as default."""
     question = factories.SecurityQuestion()
@@ -104,6 +122,12 @@ def test_security_answer_factory() -> None:
     answer.full_clean()
 
 
+def test_security_answer_factory_multiple() -> None:
+    """Ensure the SecurityAnswer factory can build multiple default model instances."""
+    factories.SecurityAnswer()
+    factories.SecurityAnswer()
+
+
 def test_registrationcode_str() -> None:  # pylint: disable-msg=too-many-locals
     """The `str` method returns the registration code and status."""
     registration_code = factories.RegistrationCode()
@@ -114,6 +138,12 @@ def test_registrationcode_factory() -> None:
     """Ensure the Regtistrationcode factory is building properly."""
     registration_code = factories.RegistrationCode()
     registration_code.full_clean()
+
+
+def test_registrationcode_factory_multiple() -> None:
+    """Ensure the Regtistrationcode factory can build multiple default model instances."""
+    factories.RegistrationCode()
+    factories.RegistrationCode(code='test')
 
 
 def test_registrationcode_code_unique() -> None:

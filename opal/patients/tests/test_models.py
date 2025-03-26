@@ -97,6 +97,12 @@ def test_patient_factory() -> None:
     patient.full_clean()
 
 
+def test_patient_factory_multiple() -> None:
+    """Ensure the Patient factory can build multiple default model instances."""
+    factories.Patient()
+    factories.Patient()
+
+
 def test_relationship_str() -> None:
     """Ensure the `__str__` method is defined for the `Relationship` model."""
     patient = factories.Patient(first_name='Kobe', last_name='Briant')
@@ -119,6 +125,12 @@ def test_relationship_factory() -> None:
     """Ensure the Relationship factory is building properly."""
     relationship = factories.Relationship()
     relationship.full_clean()
+
+
+def test_relationship_factory_multiple() -> None:
+    """Ensure the Relationship factory can build multiple default model instances."""
+    factories.Relationship()
+    factories.Relationship()
 
 
 def test_relationship_default_status() -> None:
@@ -178,6 +190,12 @@ def test_hospitalpatient_factory() -> None:
     """Ensure the Patient factory is building properly."""
     hospital_patient = factories.HospitalPatient()
     hospital_patient.full_clean()
+
+
+def test_hospitalpatient_factory_multiple() -> None:
+    """Ensure the Patient factory can build multiple default model instances."""
+    factories.HospitalPatient()
+    factories.HospitalPatient()
 
 
 def test_hospitalpatient_str() -> None:

@@ -17,6 +17,12 @@ def test_institution_factory() -> None:
     institution.full_clean()
 
 
+def test_institution_factory_multiple() -> None:
+    """The Institution factory can build multiple default model instances."""
+    factories.Institution()
+    factories.Institution()
+
+
 def test_institution_code_unique() -> None:
     """The institution name needs to be unique."""
     factories.Institution(code='MUHC')
@@ -47,6 +53,12 @@ def test_site_factory() -> None:
     """The factory creates a valid `Site` instance."""
     site = factories.Site()
     site.full_clean()
+
+
+def test_site_factory_multiple() -> None:
+    """The Site factory can build multiple default model instances."""
+    factories.Site()
+    factories.Site()
 
 
 def test_site_code_unique() -> None:
