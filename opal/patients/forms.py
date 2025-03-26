@@ -1,7 +1,7 @@
 """This module provides forms for Patients."""
 import json
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Dict, List, Optional, Set, Union
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -248,12 +248,79 @@ class ConfirmPatientForm(forms.Form):
         )
 
 
+class AvailableRadioSelect(forms.RadioSelect):
+    """Subclass of Django's select widget that allows disabling options."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the '_available_choices'.
+
+        Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
+        """
+        self._available_choices: List[int] = []
+        super().__init__(*args, **kwargs)
+
+    @property
+    def available_choices(self) -> List:
+        """
+        Get _available_choices.
+
+        Returns:
+            the list for _available_choices.
+        """
+        return self._available_choices
+
+    @available_choices.setter
+    def available_choices(self, other: List) -> None:
+        """
+        Set _available_choices.
+
+        Args:
+            other: the new value _available_choices
+        """
+        self._available_choices = other
+
+    def create_option(  # noqa: WPS211
+        self,
+        name: str,
+        value: Any,
+        label: Union[int, str],
+        selected: Union[Set[str], bool],
+        index: int,
+        subindex: Optional[int] = None,
+        attrs: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Initialize the '_available_choices'.
+
+        Args:
+            name: option name
+            value: option value
+            label: option label
+            selected: selected option
+            index: option index
+            subindex: option subindex
+            attrs: option attributes
+
+        Returns:
+            the dict for _available_choices.
+        """
+        option_dict = super().create_option(
+            name, value, label, selected, index, subindex=subindex, attrs=attrs,
+        )
+        if value not in self.available_choices:
+            option_dict['attrs']['disabled'] = 'disabled'
+        return option_dict
+
+
 class RequestorDetailsForm(forms.Form):
     """This `RequestorDetailsForm` provides an radio button to choose relationship to the patient."""
 
     types = forms.ModelChoiceField(
         queryset=RelationshipType.objects.all(),
-        widget=forms.RadioSelect(),
+        widget=AvailableRadioSelect,
         label=_('Caregiver relationship type'),
     )
 
@@ -279,7 +346,10 @@ class RequestorDetailsForm(forms.Form):
         )
         if date_of_birth is not None:
             self.age = calculate_age(datetime.strptime(date_of_birth, '%Y-%m-%d %H:%M:%S'))
-            self.fields['types'].queryset = RelationshipType.objects.filter_by_patient_age(patient_age=self.age)
+            available_choices = RelationshipType.objects.filter_by_patient_age(
+                patient_age=self.age,
+            ).values_list('id', flat=True)
+            self.fields['types'].widget.available_choices = available_choices
 
 
 def calculate_age(birthdate: date) -> int:
