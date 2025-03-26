@@ -204,7 +204,7 @@ def fetch_received_labs_summary(
         start_date=start_date,
         end_date=end_date,
         filters={
-            'labs_received__gt': 0,
+            'labs_received__gt': models.Value(0),
         },
         annotated_summary_fields={
             'total_received_labs': models.Sum('labs_received'),
@@ -235,7 +235,7 @@ def fetch_received_appointments_summary(
     return _fetch_received_medical_records_summary(
         start_date=start_date,
         end_date=end_date,
-        filters={'appointments_received__gt': 0},
+        filters={'appointments_received__gt': models.Value(0)},
         annotated_summary_fields={
             'total_received_appointments': models.Sum('appointments_received'),
             'total_unique_patients': models.Count('patient', distinct=True),
@@ -269,7 +269,7 @@ def fetch_received_educational_materials_summary(
     return _fetch_received_medical_records_summary(
         start_date=start_date,
         end_date=end_date,
-        filters={'educational_materials_received__gt': 0},
+        filters={'educational_materials_received__gt': models.Value(0)},
         annotated_summary_fields={
             'total_received_edu_materials': models.Sum('educational_materials_received'),
             'total_unique_patients': models.Count('patient', distinct=True),
@@ -300,7 +300,7 @@ def fetch_received_documents_summary(
     return _fetch_received_medical_records_summary(
         start_date=start_date,
         end_date=end_date,
-        filters={'documents_received__gt': 0},
+        filters={'documents_received__gt': models.Value(0)},
         annotated_summary_fields={
             'total_received_documents': models.Sum('documents_received'),
             'total_unique_patients': models.Count('patient', distinct=True),
@@ -331,7 +331,7 @@ def fetch_received_questionnaires_summary(
     return _fetch_received_medical_records_summary(
         start_date=start_date,
         end_date=end_date,
-        filters={'questionnaires_received__gt': 0},
+        filters={'questionnaires_received__gt': models.Value(0)},
         annotated_summary_fields={
             'total_received_questionnaires': models.Sum('questionnaires_received'),
             'total_unique_patients': models.Count('patient', distinct=True),
@@ -345,7 +345,7 @@ def fetch_received_questionnaires_summary(
 def _fetch_received_medical_records_summary(
     start_date: dt.date,
     end_date: dt.date,
-    filters: dict[str, Any],
+    filters: dict[str, models.Expression],
     annotated_summary_fields: dict[str, Any],
     group_by: GroupByComponent = GroupByComponent.DATE,
 ) -> list[dict[str, Any]]:
