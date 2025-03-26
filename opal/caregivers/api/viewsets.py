@@ -25,7 +25,7 @@ class SecurityQuestionViewSet(ListModelMixin, viewsets.GenericViewSet):
     It allows to filter by SecurityQuestion 'title'.
     """
 
-    queryset = SecurityQuestion.objects.filter(is_active=True)
+    queryset = SecurityQuestion.objects.filter(is_active=True).order_by('pk')
     serializer_class = serializers.SecurityQuestionSerializer
     filterset_fields = ['title']
     permission_classes = [IsAuthenticated]
@@ -53,7 +53,7 @@ class SecurityAnswerViewSet(  # noqa: WPS215
             The queryset of SecurityAnswer
         """
         uuid = self.kwargs['uuid']
-        return SecurityAnswer.objects.filter(user__uuid=uuid)
+        return SecurityAnswer.objects.filter(user__uuid=uuid).order_by('pk')
 
     def get_serializer_class(self) -> Type[drf_serializers.BaseSerializer]:
         """
