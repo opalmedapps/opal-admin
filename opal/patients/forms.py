@@ -2,6 +2,7 @@
 from typing import Any
 
 from django import forms
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.helper import FormHelper
@@ -55,7 +56,6 @@ class SearchForm(forms.Form):
     medical_number = forms.CharField(
         widget=forms.TextInput(),
         label=_('Please Input The Card Number'),
-        validators=[validators.validate_ramq],
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -63,7 +63,7 @@ class SearchForm(forms.Form):
         Initialize the layout for card type select box and card number input box.
 
         Args:
-            args: additional arguments
+            args: additional argumentssle
             kwargs: additional keyword arguments
         """
         super().__init__(*args, **kwargs)
@@ -78,3 +78,19 @@ class SearchForm(forms.Form):
                 Submit('wizard_goto_step', _('Generate QR Code')),
             ),
         )
+
+    def clean(self) -> None:
+        """Validate medical number fields."""
+        super().clean()
+        medical_card_field = self.cleaned_data.get('medical_card')
+        medical_number_field = self.cleaned_data.get('medical_number')
+
+        # Medicare Card Number (RAMQ)
+        if medical_card_field == 'ramq':
+            try:
+                validators.validate_ramq(medical_number_field)
+            except ValidationError as error_msg:
+                self.add_error('medical_number', error_msg)
+        # Medical Record Number (MRN)
+        else:
+            pass  # noqa: WPS420
