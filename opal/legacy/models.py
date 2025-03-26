@@ -703,7 +703,7 @@ class LegacyModule(models.Model):
 
 
 class LegacyOARoleModule(models.Model):
-    """oaRole from the legacy database OpalDB."""
+    """oaRoleModule from the legacy database OpalDB."""
 
     rolemoduleid = models.BigAutoField(db_column='ID', primary_key=True)
     moduleid = models.ForeignKey('LegacyModule', models.DO_NOTHING, db_column='moduleId')
