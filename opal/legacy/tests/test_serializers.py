@@ -59,6 +59,8 @@ def test_valid_serializer() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_questionnaire_count': 11,
+        'unread_consent_questionnaire_count': 11,
     }
     unread_serializer = UnreadCountSerializer(data=unread_count)
     assert unread_serializer.is_valid()
@@ -68,6 +70,8 @@ def test_valid_serializer() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_questionnaire_count': 11,
+        'unread_consent_questionnaire_count': 11,
     }
     assert unread_serializer.data == {
         'unread_appointment_count': 5,
@@ -75,6 +79,8 @@ def test_valid_serializer() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_questionnaire_count': 11,
+        'unread_consent_questionnaire_count': 11,
     }
 
 
@@ -85,6 +91,8 @@ def test_invalid_serializer() -> None:
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
+        'unread_research_questionnaire_count': 11,
+        'unread_consent_questionnaire_count': 11,
     }
     unread_serializer = UnreadCountSerializer(data=unread_count)
     assert not unread_serializer.is_valid()
@@ -93,6 +101,8 @@ def test_invalid_serializer() -> None:
         'unread_document_count': 655,
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
+        'unread_research_questionnaire_count': 11,
+        'unread_consent_questionnaire_count': 11,
     }
     assert unread_serializer.errors == {'unread_questionnaire_count': ['This field is required.']}
 
@@ -105,6 +115,8 @@ def test_invalid_field_value_type() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 'ffff',
+        'unread_research_questionnaire_count': 11,
+        'unread_consent_questionnaire_count': 11,
     }
     unread_serializer = UnreadCountSerializer(data=unread_count)
     assert not unread_serializer.is_valid()
@@ -133,6 +145,8 @@ def test_data_access_before_save_raises_error() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_questionnaire_count': 11,
+        'unread_consent_questionnaire_count': 11,
     }
     unread_serializer = UnreadCountSerializer(data=unread_count)
     assert unread_serializer.is_valid()
@@ -142,6 +156,8 @@ def test_data_access_before_save_raises_error() -> None:
         'unread_txteammessage_count': 1964,
         'unread_educationalmaterial_count': 2020,
         'unread_questionnaire_count': 223,
+        'unread_research_questionnaire_count': 11,
+        'unread_consent_questionnaire_count': 11,
     }
     with pytest.raises(AssertionError):
         unread_serializer.save()
