@@ -46,6 +46,8 @@ class Base64Util:
             return False
 
         try:
-            return base64.b64encode(base64.b64decode(string)) == bytes(string, 'ascii')
+            return (
+                base64.b64encode(base64.b64decode(string, validate=True)) == bytes(string, 'ascii')
+            )
         except (ValueError, TypeError):
             return False
