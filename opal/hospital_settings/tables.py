@@ -27,12 +27,6 @@ class InstitutionTable(tables.Table):
         model = Institution
         fields = ['code', 'name', 'actions']
         empty_text = _('No institutions defined.')
-        attrs = {
-            'class': 'table table-bordered table-hover',
-            'thead': {
-                'class': 'thead-light',
-            },
-        }
 
 
 class SiteTable(tables.Table):
@@ -56,9 +50,3 @@ class SiteTable(tables.Table):
         model = Site
         fields = ['code', 'name', 'actions']
         empty_text = _('No sites defined.')
-        attrs = {
-            'class': 'table table-bordered table-hover',
-            'thead': {
-                'class': 'thead-light',
-            },
-        }
