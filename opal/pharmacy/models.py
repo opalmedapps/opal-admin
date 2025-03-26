@@ -16,7 +16,8 @@ class AbstractQuantityTiming(models.Model):
 
     quantity = models.DecimalField(max_digits=8, decimal_places=3)
     unit = models.CharField(max_length=20, blank=True)
-    interval = models.CharField(max_length=100)
+    interval_pattern = models.CharField(max_length=100)
+    interval_duration = models.CharField(max_length=100, blank=True)
     duration = models.CharField(max_length=50, default='INDEF')
     service_start = models.DateTimeField(blank=True)
     service_end = models.DateTimeField(blank=True)
@@ -80,7 +81,7 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
     physician_prescription_order = models.OneToOneField(
         'PhysicianPrescriptionOrder',
         on_delete=models.CASCADE,
-        related_name='pharmacy_encoded_order_physician_prescription_order',
+        related_name='pharmacy_encoded_order',
     )
     give_code = models.ForeignKey(
         'CodedElement',
@@ -91,13 +92,7 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
     )
     give_amount_maximum = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=3)
     give_amount_minimum = models.DecimalField(max_digits=8, decimal_places=3)
-    give_units = models.ForeignKey(
-        'CodedElement',
-        related_name='pharmacy_encoded_order_give_units',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-    )
+    give_units = models.CharField(max_length=25, blank=True)
     give_dosage_form = models.ForeignKey(
         'CodedElement',
         related_name='pharmacy_encoded_order_give_dosage_forms',
@@ -105,24 +100,11 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
         blank=True,
         on_delete=models.SET_NULL,
     )
-    provider_administration_instruction = models.ForeignKey(
-        'CodedElement',
-        related_name='pharmacy_encoded_order_provider_administration_instruction',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-    )
+    provider_administration_instruction = models.CharField(max_length=250, blank=True)
     dispense_amount = models.DecimalField(max_digits=8, decimal_places=3)
-    dispense_units = models.ForeignKey(
-        'CodedElement',
-        related_name='pharmacy_encoded_order_dispense_units',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-    )
+    dispense_units = models.CharField(max_length=25, blank=True)
     refills = models.IntegerField(default=0)
     refills_remaining = models.IntegerField(default=0)
-    last_refilled = models.DateTimeField(blank=True)
     formulary_status = models.CharField(max_length=4, choices=FormularyStatus.choices)
 
     class Meta:
@@ -154,7 +136,7 @@ class CodedElement(models.Model):
     class Meta:
         verbose_name = _('Coded Element')
         verbose_name_plural = _('Coded Elements')
-        unique_together = (('identifier', 'coding_system'),)
+        unique_together = (('identifier', 'text', 'coding_system'),)
 
     def __str__(self) -> str:
         """Instance of the unique identifiers for a coded element.
@@ -171,7 +153,11 @@ class PharmacyRoute(models.Model):
     Pharmacy Route specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXR
     """
 
-    pharmacy_encoded_order = models.ForeignKey('PharmacyEncodedOrder', on_delete=models.CASCADE)
+    pharmacy_encoded_order = models.ForeignKey(
+        'PharmacyEncodedOrder',
+        on_delete=models.CASCADE,
+        related_name='pharmacy_route',
+    )
     route = models.ForeignKey(
         'CodedElement',
         related_name='pharmacy_route_route',
@@ -179,20 +165,8 @@ class PharmacyRoute(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
     )
-    site = models.ForeignKey(
-        'CodedElement',
-        null=True,
-        blank=True,
-        related_name='pharmacy_route_site',
-        on_delete=models.SET_NULL,
-    )
-    administration_device = models.ForeignKey(
-        'CodedElement',
-        related_name='pharmacy_route_administration_device',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-    )
+    site = models.CharField(max_length=50, blank=True)
+    administration_device = models.CharField(max_length=50, blank=True)
     administration_method = models.ForeignKey(
         'CodedElement',
         related_name='pharmacy_route_administration_method',
@@ -228,7 +202,11 @@ class PharmacyComponent(models.Model):
     Pharmacy Component specifications: https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXC
     """
 
-    pharmacy_encoded_order = models.ForeignKey('PharmacyEncodedOrder', on_delete=models.CASCADE)
+    pharmacy_encoded_order = models.ForeignKey(
+        'PharmacyEncodedOrder',
+        on_delete=models.CASCADE,
+        related_name='pharmacy_components',
+    )
     component_type = models.CharField(max_length=1, choices=ComponentType.choices)
     component_code = models.ForeignKey(
         'CodedElement',
@@ -238,13 +216,7 @@ class PharmacyComponent(models.Model):
         on_delete=models.SET_NULL,
     )
     component_amount = models.DecimalField(max_digits=8, decimal_places=3)
-    component_units = models.ForeignKey(
-        'CodedElement',
-        related_name='pharmacy_component_component_units',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-    )
+    component_units = models.CharField(max_length=10, blank=True)
 
     class Meta:
         verbose_name = _('Pharmacy Component')

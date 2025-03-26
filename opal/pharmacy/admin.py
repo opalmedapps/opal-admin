@@ -28,7 +28,8 @@ class PhysicianPrescriptionOrderAdmin(admin.ModelAdmin[PhysicianPrescriptionOrde
         'filler_order_number',
         'quantity',
         'unit',
-        'interval',
+        'interval_pattern',
+        'interval_duration',
         'duration',
         'service_start',
         'service_end',
@@ -49,7 +50,8 @@ class PharmacyEncodedOrderAdmin(admin.ModelAdmin[PharmacyEncodedOrder]):
         'give_code',
         'quantity',
         'unit',
-        'interval',
+        'interval_pattern',
+        'interval_duration',
         'duration',
         'service_start',
         'service_end',
@@ -63,7 +65,7 @@ class PharmacyEncodedOrderAdmin(admin.ModelAdmin[PharmacyEncodedOrder]):
         'dispense_units',
         'refills',
         'refills_remaining',
-        'last_refilled',
+        'formulary_status',
     )
     ordering = ('physician_prescription_order', '-service_start')
 
