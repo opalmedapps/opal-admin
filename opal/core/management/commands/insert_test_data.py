@@ -145,16 +145,14 @@ MRN_DATA = MappingProxyType({
     InstitutionOption.muhc: {
         'Marge Simpson': [('RVH', '9999996')],
         'Homer Simpson': [
-            ('RVH', '9999997'),
+            ('RVH', '9999917'),
             ('MGH', '9999996'),
         ],
         'Bart Simpson': [('MCH', '9999996')],
         'Lisa Simpson': [('MCH', '9999993')],
-        'Mona Simpson': [('RVH', '9999993')],
+        'Mona Simpson': [('RVH', '9999913')],
         'Fred Flintstone': [('RVH', '9999998')],
         'Pebbles Flintstone': [('MCH', '9999999')],
-        'Jake Rvhmuseone': [('MGH', '9999998')],
-        'Glen Testprod': [('MCH', '5407383')],
     },
     InstitutionOption.chusj: {
         'Bart Simpson': [('CHUSJ', '9999996')],
@@ -331,26 +329,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             mrns=mrn_data['Pebbles Flintstone'],
         )
 
-        jake = _create_patient(
-            first_name='Jake',
-            last_name='Rvhmuseone',
-            date_of_birth=_create_date(20, 2, 1),
-            sex=Patient.SexType.FEMALE,
-            ramq='FLIK11332299',
-            legacy_id=58,
-            mrns=mrn_data['Jake Rvhmuseone'],
-        )
-
-        glen = _create_patient(
-            first_name='Glen',
-            last_name='Testprod',
-            date_of_birth=_create_date(21, 3, 1),
-            sex=Patient.SexType.MALE,
-            ramq='FLIT55662299',
-            legacy_id=59,
-            mrns=mrn_data['Glen Testprod'],
-        )
-
     bart = _create_patient(
         first_name='Bart',
         last_name='Simpson',
@@ -425,26 +403,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             phone_number='+15144758941',
             legacy_id=4,
             is_active=False,
-        )
-
-        user_jake = _create_caregiver(
-            first_name='Jake',
-            last_name='Rvhmuseone',
-            username='ZYHAjhNy6hhr4tOW8nFaVEeabcde',
-            email='jake@opalmedapps.ca',
-            language='en',
-            phone_number='+15144751234',
-            legacy_id=6,
-        )
-
-        user_glen = _create_caregiver(
-            first_name='Glen',
-            last_name='Testprod',
-            username='ZYHAjhNy6hhr4tOW8nFaVEeFhjki',
-            email='glen@opalmedapps.ca',
-            language='en',
-            phone_number='+15144756789',
-            legacy_id=7,
         )
 
     # get relationship types
@@ -542,26 +500,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
             request_date=_relative_date(today, -1),
             start_date=_relative_date(today, -3),
             end_date=_relative_date(pebbles.date_of_birth, 14),
-        )
-
-        # Jake --> Jake: Self
-        _create_relationship(
-            patient=jake,
-            caregiver=user_jake,
-            relationship_type=type_self,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -4),
-            start_date=_relative_date(today, -6),
-        )
-
-        # Glen --> Glen: Self
-        _create_relationship(
-            patient=glen,
-            caregiver=user_glen,
-            relationship_type=type_self,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -4),
-            start_date=_relative_date(today, -6),
         )
 
     # Marge --> Bart: Guardian-Caregiver
