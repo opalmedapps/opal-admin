@@ -19,7 +19,7 @@
 
 <!--
     Reference the corresponding (Jira) issue here.
-    If you're closing an existing issue with this merge request, use the keyword Closes <issue>.
+    If this merge request addresses the corresponding ticket, you can use "Closes <issue>" to convey this.
     If it relates to an issue but does not close it, use "See <issue>" instead.
 -->
 Closes <ticket>
