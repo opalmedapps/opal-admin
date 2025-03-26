@@ -31,9 +31,9 @@ def test_relationshiptype_delete() -> None:
 
 def test_access_request() -> None:
     """A URL for the access request view."""
-    url = '/patients/access-request-new/'
-    assert reverse('patients:access-request-new') == url
-    assert resolve(url).view_name == 'patients:access-request-new'
+    url = '/patients/access-request/'
+    assert reverse('patients:access-request') == url
+    assert resolve(url).view_name == 'patients:access-request'
 
 
 def test_relationships_pending_list() -> None:

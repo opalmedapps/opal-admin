@@ -16,8 +16,11 @@
     Currently, the sidebar menu should not contain any items/menus, except "Go back" button.
     This is done so as not to confuse OpalAdmin operators with the old/new UI design.
     The new Django pages (e.g., registration) are accessible through the legacy OpalAdmin.
-    Uncomment the line below if you need the menus during the development. {% endcomment %}
+    Uncomment the line below if you need the menus during the development.
+  {% endcomment %}
   {% comment %} {% include "sidebar_menu.html" %} {% endcomment %}
+  {# while the sidebar menu is disabled, ensure the profile is at the page bottom #}
+  <div class="mb-auto"></div>
 
   <div class="dropdown pt-3 border-top">
     <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
