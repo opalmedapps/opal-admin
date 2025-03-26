@@ -98,7 +98,7 @@ def test_registrationcode_code_length_gt_max() -> None:
         registration_code.clean_fields()
 
 
-def test_registrationcode_email_code_length_gt() -> None:
+def test_registrationcode_email_code_too_long() -> None:
     """Ensure the length of email verification code is not greater than 6."""
     registration_code = factories.RegistrationCode()
     registration_code.email_verification_code = '1234567'
