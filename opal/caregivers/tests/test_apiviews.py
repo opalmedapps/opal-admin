@@ -223,12 +223,12 @@ class TestApiEmailVerification:
     ) -> None:
         """Test that the registered confirmation email is sent when verifying an email address."""
         api_client.force_login(user=admin_user)
-        caregiver = Caregiver(email=admin_user.email)
+        email = 'test@muhc.mcgill.ca'
+        caregiver = Caregiver(email=email)
         caregiver.save()
         caregiver_profile = caregiver_factory.CaregiverProfile(user=caregiver)
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
-        email = admin_user.email
 
         response = api_client.post(
             reverse(
