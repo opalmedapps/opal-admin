@@ -32,7 +32,7 @@ before_script:
   # reuse the same database as for the other tests to make it easier
   - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
   - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
-  # - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=$DB_NAME/" .env
+  - sed -i "s/^LEGACY_DATABASE_NAME=.*/LEGACY_DATABASE_NAME=OpalDB/" .env
   - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
   - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
   # generate secret key
@@ -97,6 +97,7 @@ test:
     # create second DB for legacy DB
     - apt update && apt-get install -y default-mysql-client
     - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;"
+    - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hmariadb -e "select * from information_schema.user_privileges;"
     - pytest --version
     - coverage run -m pytest --junitxml=report.xml
   artifacts:
