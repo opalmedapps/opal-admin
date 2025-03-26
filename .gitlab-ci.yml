@@ -1,4 +1,4 @@
-image: python:3.9.10-slim-bullseye
+image: python:3.9.12-slim-bullseye
 
 services:
   - mariadb:10.7.1-focal
