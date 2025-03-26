@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-12 23:24+0300\n"
+"POT-Creation-Date: 2023-06-14 14:34-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -74,6 +74,10 @@ msgstr "Afficher les demandes en attente"
 msgid "Not required"
 msgstr "Non requis"
 
+#: opal/patients/forms.py opal/patients/tables.py
+msgid "No patient could be found."
+msgstr "Aucun patient n'a pu être retrouvé."
+
 #: opal/patients/forms.py
 msgid "Could not establish a connection to the hospital interface."
 msgstr ""
@@ -81,10 +85,6 @@ msgstr ""
 #: opal/patients/forms.py
 msgid "Patient is not a test patient."
 msgstr ""
-
-#: opal/patients/forms.py opal/patients/tables.py
-msgid "No patient could be found."
-msgstr "Aucun patient n'a pu être retrouvé."
 
 #: opal/patients/forms.py
 msgid ""
