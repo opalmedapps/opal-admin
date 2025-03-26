@@ -51,7 +51,6 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_twilio',
 ]
 THIRD_PARTY_APPS = [
     'crispy_forms',
@@ -67,6 +66,7 @@ THIRD_PARTY_APPS = [
     'formtools',
     'slippers',
     'fontawesomefree',
+    'django_twilio',
 ]
 
 LOCAL_APPS = [
