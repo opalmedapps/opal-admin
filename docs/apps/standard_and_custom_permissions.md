@@ -78,3 +78,29 @@ Use the template tag `{{ perms }}` in the HTML file for further restrictions:
 {% endif %}
 ```
 *NOTE* `{{ perms }}` can be used in the HTML templates without adding `PermissionRequiredMixin`.
+
+## Testing the permissions
+
+PermissionDenied exception is raised with any permission whether built-in or custom permission. Hence, we can use it to test
+if exception is raised. In the references below, there are more than one suggestion to test, however, the most compact and 
+straight forward testing is the following: in `test_views.py` file add the following:
+
+```python
+from django.test import TestCase, RequestFactory
+from django.core.exceptions import PermissionDenied
+
+class TestPermission(TestCase):
+    def test_permission_view(self):
+        user = UserFactory()
+        path = reverse("my_view")
+        request = RequestFactory().get(path)
+        request.user = user
+        with pytest.raises(PermissionDenied) as e_info:
+            MyView.as_view()(request)
+```
+
+### References
+
+1. [How To Test - PermissionRequiredMixin]( https://splunktool.com/test-permissionrequiredmixin-raises-permissiondenied-instead-of-403)
+2. [How To raise 403 instead of PermissionDenied]( https://stackoverflow.com/questions/42284168/test-permissionrequiredmixin-raises-permissiondenied-instead-of-403)
+3. [PermissionDenied Exception](https://docs.djangoproject.com/en/1.10/topics/testing/tools/#exceptions)
