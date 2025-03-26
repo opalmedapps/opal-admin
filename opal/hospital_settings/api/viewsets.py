@@ -20,7 +20,7 @@ class InstitutionViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ['code']
 
     @action(detail=True, methods=['get'])
-    def retrieve_term_of_use(self, request: Request, pk: int) -> Response:
+    def retrieve_terms_of_use(self, request: Request, pk: int) -> Response:
         """Retrieve the terms of use content from the backend.
 
         Args:

@@ -33,12 +33,12 @@ class InstitutionSerializer(serializers.HyperlinkedModelSerializer):
 class TermsOfUseSerialiser(serializers.HyperlinkedModelSerializer):
     """This class defines how the `terms of use` of an `Institution` is serialized for an API."""
 
-    url = serializers.HyperlinkedIdentityField(view_name='api:institutions-detail')
+    url = serializers.HyperlinkedIdentityField(view_name='api:institutions-retrieve-terms-of-use')
     terms_of_use_encoded = serializers.SerializerMethodField('get_terms_of_use_encoded')
 
     class Meta:
         model = Institution
-        fields = ['url', 'terms_of_use_encoded']
+        fields = ['id', 'url', 'terms_of_use_encoded']
 
     def get_terms_of_use_encoded(self, obj: Institution) -> Optional[str]:  # noqa: WPS615
         """Get the terms of use content in base64 encoded form.

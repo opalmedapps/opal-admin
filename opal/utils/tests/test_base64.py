@@ -4,7 +4,8 @@ from pathlib import Path
 from opal.utils.base64 import Base64Util
 
 LOGO_PATH = Path('opal/tests/fixtures/test_logo.png')
-NON_IMAGE_FILE = Path('opal/tests/fixtures/non_image_file.txt')
+TXT_FILE_PATH = Path('opal/tests/fixtures/test_txt.txt')
+PDF_FILE_PATH = Path('opal/tests/fixtures/test_PDF.pdf')
 
 base64_util = Base64Util()
 
@@ -95,7 +96,40 @@ def test_encode_image_to_base64_not_image() -> None:
     """Ensure function returns an empty string for a given non-image file."""
     try:
         base64_str = base64_util.encode_image_to_base64(
-            NON_IMAGE_FILE,
+            TXT_FILE_PATH,
+        )
+    except OSError:
+        assert base64_str == ''
+
+
+# encode_pdf_to_base64 function tests
+
+def test_encode_pdf_to_base64() -> None:
+    """Ensure function returns encoded base64 string of the logo image."""
+    base64_str = base64_util.encode_pdf_to_base64(PDF_FILE_PATH)
+    assert base64_str != ''
+    assert base64_str is not None
+    assert base64_util.is_base64(base64_str)
+
+
+def test_encode_pdf_to_base64_invalid_path() -> None:
+    """Ensure function returns an empty string for a given invalid file path."""
+    try:
+        base64_str = base64_util.encode_pdf_to_base64(Path('test/invalid/path'))
+    except OSError:
+        assert base64_str == ''
+
+    try:
+        base64_str = base64_util.encode_pdf_to_base64(Path(''))
+    except OSError:
+        assert base64_str == ''
+
+
+def test_encode_pdf_to_base64_not_pdf() -> None:
+    """Ensure function returns an empty string for a given non-image file."""
+    try:
+        base64_str = base64_util.encode_pdf_to_base64(
+            TXT_FILE_PATH,
         )
     except OSError:
         assert base64_str == ''
