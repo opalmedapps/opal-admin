@@ -208,10 +208,9 @@ class PatientCaregiversSerializer(DynamicFieldsSerializer):
             obj: Object of Patient.
 
         Returns:
-            `Institution_code` if exists otherwise emtpy string.
+            `Institution_code` of the institution.
         """
-        institution = InstitutionSerializer(Institution.objects.get(), fields=('code',)).data
-        return institution['code'] if 'code' in institution else ''
+        return Institution.objects.get().code
 
     class Meta:
         model = Patient
