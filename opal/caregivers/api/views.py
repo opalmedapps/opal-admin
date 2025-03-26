@@ -145,12 +145,9 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         input_serializer.is_valid(raise_exception=True)
 
         email = input_serializer.validated_data['email']
-        #  Check email is registered or not
-        try:
+        #  Check whether the email is already registered
+        if User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            pass  # noqa: WPS420
-        else:
             self._send_registered_email(email, user)
             return Response()
 
@@ -226,7 +223,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
 
     def _send_registered_email(self, email: str, user: User) -> None:
         """
-        Send registerd confirmation email to the user with an template according to the user language.
+        Send already registered email to the user with an template according to the user language.
 
         Args:
             email: input email address
@@ -247,7 +244,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         )
 
         send_mail(
-            _('Registered Confirmation'),
+            _('Your existing Opal account'),
             email_plain,
             # TODO: change to a proper from email
             settings.EMAIL_HOST_USER,

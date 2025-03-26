@@ -223,7 +223,6 @@ class TestApiEmailVerification:
     ) -> None:
         """Test that the registered confirmation email is sent when verifying an email address."""
         api_client.force_login(user=admin_user)
-        print(admin_user.email)
         caregiver_profile = caregiver_factory.CaregiverProfile()
         relationship = patient_factory.Relationship(caregiver=caregiver_profile)
         registration_code = caregiver_factory.RegistrationCode(relationship=relationship)
@@ -242,7 +241,7 @@ class TestApiEmailVerification:
         assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
         assert mail.outbox[0].to == [email]
         assert 'Dear' in mail.outbox[0].body
-        assert mail.outbox[0].subject == 'Registered Confirmation'
+        assert mail.outbox[0].subject == 'Your existing Opal account'
 
     def test_registration_code_not_exists(self, api_client: APIClient, admin_user: AbstractUser) -> None:
         """Test registration code not exists."""
