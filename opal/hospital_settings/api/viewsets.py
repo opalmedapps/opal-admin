@@ -1,6 +1,5 @@
 """This module provides `ViewSets` for the hospital-specific settings REST API."""
 from rest_framework import viewsets
-from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -19,13 +18,12 @@ class InstitutionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = InstitutionSerializer
     filterset_fields = ['code']
 
-    @action(detail=True, methods=['get'])
     def retrieve_terms_of_use(self, request: Request, pk: int) -> Response:
         """Retrieve the terms of use content from the backend.
 
         Args:
-            request (Request): The Request details
-            pk (int): The primary key of the Institution
+            request: The Request details
+            pk: The primary key of the Institution
 
         Returns:
             Response: encoded base64 string of the file content

@@ -71,5 +71,10 @@ urlpatterns = [
         SecurityAnswerViewSet.as_view({'post': 'verify_answer'}),
         name='caregivers-securityquestions-verify',
     ),
+    path(
+        'institutions/<int:pk>/terms-of-use/',
+        settings_views.InstitutionViewSet.as_view({'get': 'retrieve_terms_of_use'}),
+        name='institutions-terms-of-use',
+    ),
     path('', include(router.urls)),
 ]

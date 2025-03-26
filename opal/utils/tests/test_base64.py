@@ -73,63 +73,26 @@ def test_is_base64_non_base64_error() -> None:
 
 def test_encode_image_to_base64() -> None:
     """Ensure function returns encoded base64 string of the logo image."""
-    base64_str = base64_util.encode_image_to_base64(LOGO_PATH)
-    assert base64_str != ''
-    assert base64_str is not None
+    base64_str = base64_util.encode_to_base64(LOGO_PATH)
+    assert base64_str
+    assert base64_util.is_base64(base64_str)
+
+
+def test_encode_pdf_to_base64() -> None:
+    """Ensure function returns encoded base64 string of the PDF file."""
+    base64_str = base64_util.encode_to_base64(PDF_FILE_PATH)
+    assert base64_str
     assert base64_util.is_base64(base64_str)
 
 
 def test_encode_image_to_base64_invalid_path() -> None:
     """Ensure function returns an empty string for a given invalid file path."""
     try:
-        base64_str = base64_util.encode_image_to_base64(Path('test/invalid/path'))
+        base64_str = base64_util.encode_to_base64(Path('test/invalid/path'))
     except OSError:
         assert base64_str == ''
 
     try:
-        base64_str = base64_util.encode_image_to_base64(Path(''))
-    except OSError:
-        assert base64_str == ''
-
-
-def test_encode_image_to_base64_not_image() -> None:
-    """Ensure function returns an empty string for a given non-image file."""
-    try:
-        base64_str = base64_util.encode_image_to_base64(
-            TXT_FILE_PATH,
-        )
-    except OSError:
-        assert base64_str == ''
-
-
-# encode_pdf_to_base64 function tests
-
-def test_encode_pdf_to_base64() -> None:
-    """Ensure function returns encoded base64 string of the logo image."""
-    base64_str = base64_util.encode_pdf_to_base64(PDF_FILE_PATH)
-    assert base64_str != ''
-    assert base64_str is not None
-    assert base64_util.is_base64(base64_str)
-
-
-def test_encode_pdf_to_base64_invalid_path() -> None:
-    """Ensure function returns an empty string for a given invalid file path."""
-    try:
-        base64_str = base64_util.encode_pdf_to_base64(Path('test/invalid/path'))
-    except OSError:
-        assert base64_str == ''
-
-    try:
-        base64_str = base64_util.encode_pdf_to_base64(Path(''))
-    except OSError:
-        assert base64_str == ''
-
-
-def test_encode_pdf_to_base64_not_pdf() -> None:
-    """Ensure function returns an empty string for a given non-image file."""
-    try:
-        base64_str = base64_util.encode_pdf_to_base64(
-            TXT_FILE_PATH,
-        )
+        base64_str = base64_util.encode_to_base64(Path(''))
     except OSError:
         assert base64_str == ''
