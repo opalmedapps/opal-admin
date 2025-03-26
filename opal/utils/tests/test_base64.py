@@ -45,7 +45,7 @@ def test_is_base64_type_error_returns_false() -> None:
 
     is_base64 = False
     try:
-        assert base64_util.is_base64(None) is False  # type: ignore
+        assert base64_util.is_base64(None) is False
     except TypeError:
         assert is_base64 is False
 
@@ -80,7 +80,6 @@ def test_encode_image_to_base64() -> None:
 
 def test_encode_image_to_base64_invalid_path() -> None:
     """Ensure function returns an empty string for a given invalid file path."""
-    base64_str = ''
     try:
         base64_str = base64_util.encode_image_to_base64(Path('test/invalid/path'))
     except OSError:
@@ -94,7 +93,6 @@ def test_encode_image_to_base64_invalid_path() -> None:
 
 def test_encode_image_to_base64_not_image() -> None:
     """Ensure function returns an empty string for a given non-image file."""
-    base64_str = ''
     try:
         base64_str = base64_util.encode_image_to_base64(
             NON_IMAGE_FILE,
