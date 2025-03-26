@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-02 11:13-0500\n"
+"POT-Creation-Date: 2022-12-05 15:21-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -250,6 +250,10 @@ msgstr "En attendant"
 #: opal/patients/tables.py
 msgid "No caregiver pending access requests."
 msgstr ""
+
+#: opal/patients/tables.py
+msgid "MRN"
+msgstr "MRN"
 
 #: opal/patients/tables.py
 msgid "RAMQ"
