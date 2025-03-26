@@ -36,7 +36,9 @@ def test_get_answer_list(api_client: APIClient, admin_user: AbstractUser) -> Non
     assert response.status_code == HTTPStatus.OK
     assert response.data['count'] == 2
     assert response.data['results'][0]['question'] == security_answer1.question
+    assert response.data['results'][0]['answer'] == security_answer1.answer
     assert response.data['results'][1]['question'] == security_answer2.question
+    assert response.data['results'][1]['answer'] == security_answer2.answer
 
 
 def test_get_random_answer(api_client: APIClient, admin_user: AbstractUser) -> None:
