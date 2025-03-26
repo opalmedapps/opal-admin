@@ -1314,7 +1314,7 @@ class TestRegistrationCompletionView:  # noqa: WPS338 (let helper methods be fir
             first_name='Marge',
             last_name='Simpson',
         )
-        caregiver_factories.CaregiverProfile(user=caregiver)
+        caregiver_factories.CaregiverProfile(user=caregiver, legacy_id=legacy_user.usersernum)
         registration_code, _ = self._build_access_request(self_relationship=True)
         patient = registration_code.relationship.patient
 
