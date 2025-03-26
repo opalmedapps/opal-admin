@@ -447,6 +447,21 @@ def test_generate_pdf_one_page() -> None:
     assert pdf_bytes, 'PDF should not be empty'
 
 
+def test_generate_pdf_charts() -> None:
+    """Ensure that the pdf is correctly generated."""
+    pdf_bytes = questionnaire.generate_pdf(
+        INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        PATIENT_REPORT_DATA_WITH_NO_PAGE_BREAK,
+        [QUESTIONNAIRE_REPORT_DATA_WITH_CHARTS],
+    )
+    content = pdf_bytes.decode('latin1')
+    page_count = content.count('/Type /Page\n')
+
+    assert page_count == 2, 'PDF should have the expected amount of pages'
+    assert isinstance(pdf_bytes, bytearray), 'Output'
+    assert pdf_bytes, 'PDF should not be empty'
+
+
 def test_generate_pdf_multiple_pages() -> None:
     """Ensure that the pdf is correctly generated with the toc being multiple pages."""
     questionnaire_data = [QUESTIONNAIRE_REPORT_DATA_SHORT_NICKNAME for _ in range(17)]
