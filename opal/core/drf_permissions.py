@@ -40,9 +40,35 @@ class FullDjangoModelPermissions(permissions.DjangoModelPermissions):
     }
 
 
+class IsSuperUser(permissions.IsAuthenticated):
+    """
+    Allows access only to super users.
+
+    This is an improvement over DRF's `IsAdminUser` which only checks for the user's `is_staff` field.
+    """
+
+    def has_permission(self, request: Request, view: 'APIView') -> bool:
+        """
+        Check if the user is authenticated and is a superuser.
+
+        Args:
+            request: the HTTP request
+            view: the view that is being accessed
+
+        Returns:
+            True, if the check is successful, False otherwise
+        """
+        return (
+            super().has_permission(request, view)
+            and request.user.is_superuser
+        )
+
+
 class UsernameRequired(permissions.IsAuthenticated):
     """
     Allows access only to authenticated user with a given username.
+
+    Additionally, allows access to super users.
 
     Do not use this permission class directly. Instead, use one of the subclasses.
     Subclasses need to define the `required_username` attribute.
@@ -73,7 +99,10 @@ class UsernameRequired(permissions.IsAuthenticated):
 
         return (
             super().has_permission(request, view)
-            and str(request.user.username) == self.required_username
+            and (
+                str(request.user.username) == self.required_username
+                or request.user.is_superuser
+            )
         )
 
 

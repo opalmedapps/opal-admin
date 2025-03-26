@@ -225,6 +225,29 @@ class TestFullDjangoModelPermissions:
         assert drf_permissions.FullDjangoModelPermissions().has_permission(request, view)
 
 
+def test_issuperuser_unauthenticated() -> None:
+    """The `IsSuperUser` permission requires an authenticated user."""
+    request = Request(RequestFactory().get('/'))
+
+    assert not drf_permissions.IsSuperUser().has_permission(request, APIView())
+
+
+def test_issuperuser_unauthorized() -> None:
+    """The `IsSuperUser` permission rejects users that are not a superuser."""
+    request = Request(RequestFactory().get('/'))
+    request.user = User.objects.create(username='testuser', is_staff=True)
+
+    assert not drf_permissions.IsSuperUser().has_permission(request, APIView())
+
+
+def test_issuperuser_authorized() -> None:
+    """The `IsSuperUser` permission requires a superuser."""
+    request = Request(RequestFactory().get('/'))
+    request.user = User.objects.create(username='testuser', is_superuser=True)
+
+    assert drf_permissions.IsSuperUser().has_permission(request, APIView())
+
+
 class _InvalidUsernameRequired(drf_permissions.UsernameRequired):
     pass  # noqa: WPS420, WPS604
 
@@ -245,6 +268,19 @@ def test_username_required_unauthenticated(permission_class: type[drf_permission
     request = Request(RequestFactory().get('/'))
 
     assert not permission_class().has_permission(request, APIView())
+
+
+@pytest.mark.parametrize('permission_class', [
+    drf_permissions.IsListener,
+    drf_permissions.IsRegistrationListener,
+    drf_permissions.IsInterfaceEngine,
+])
+def test_username_required_admin_permitted(permission_class: type[drf_permissions.UsernameRequired]) -> None:
+    """The permissions succeed if the user is an admin (superuser)."""
+    request = Request(RequestFactory().get('/'))
+    request.user = User.objects.create(username='testuser', is_superuser=True)
+
+    assert permission_class().has_permission(request, APIView())
 
 
 @pytest.mark.parametrize('permission_class', [
