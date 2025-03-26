@@ -1,11 +1,7 @@
 """Module providing API views for the `health_data` app."""
 from typing import Any, Dict
 
-from django.db.models import QuerySet
-
-from rest_framework import generics, permissions, status
-from rest_framework.request import Request
-from rest_framework.response import Response
+from rest_framework import generics, permissions, serializers
 
 from opal.patients.models import Patient
 
@@ -24,16 +20,25 @@ class CreateQuantitySampleView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = None
 
-    def get_queryset(self) -> QuerySet[QuantitySample]:
+    def get_serializer(self, *args: Any, **kwargs: Any) -> serializers.BaseSerializer[QuantitySample]:
         """
-        Filter the `QuantitySample` queryset by the `patient_id` from the URL path.
+        Return the serializer for this API view.
+
+        Sets the serializers `many` argument to `True` if a list is passed as the data.
+
+        Args:
+            args: additional arguments
+            kwargs: additional keyword arguments
 
         Returns:
-            a queryset with `QuantitySamples` belonging to the requested patient
+            the serializer instance
         """
-        patient_id = self.kwargs['patient_id']
+        # support multiple elements
+        # see: https://www.django-rest-framework.org/api-guide/serializers/#customizing-listserializer-behavior
+        if isinstance(kwargs.get('data', {}), list):
+            kwargs['many'] = True
 
-        return QuantitySample.objects.filter(patient_id=patient_id)
+        return super().get_serializer(*args, **kwargs)
 
     def get_serializer_context(self) -> Dict[str, Any]:
         """
@@ -55,26 +60,3 @@ class CreateQuantitySampleView(generics.CreateAPIView):
         context.update({'patient': patient})
 
         return context
-
-    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """
-        Create one or more new model instances.
-
-        Supports data as dictionary (one) or list of dictionaries (one or more new instances).
-        See: https://www.django-rest-framework.org/api-guide/serializers/#customizing-listserializer-behavior
-
-        Args:
-            request: the HTTP request
-            args: additional arguments
-            kwargs: additional keyword arguments
-
-        Returns:
-            the newly created model instances
-        """
-        # copied from rest_framework.mixins.CreateModelMixin to better support creation of multiple objects
-        serializer = self.get_serializer(data=request.data, many=isinstance(request.data, list))
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
