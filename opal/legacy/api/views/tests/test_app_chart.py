@@ -29,6 +29,7 @@ class TestChartAppView:
         api_client.credentials(HTTP_APPUSERID=user.username)
         response = api_client.get(reverse('api:app-chart', kwargs={'legacy_id': 51}))
         assert 'unread_appointment_count' in response.data
+        assert 'unread_lab_result_count' in response.data
         assert 'unread_document_count' in response.data
         assert 'unread_txteammessage_count' in response.data
         assert 'unread_educationalmaterial_count' in response.data

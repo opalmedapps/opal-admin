@@ -15,7 +15,7 @@ from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.hospital_settings.api.serializers import InstitutionSerializer
 from opal.hospital_settings.models import Institution
 from opal.patients.api.serializers import HospitalPatientSerializer, PatientSerializer, RelationshipTypeSerializer
-from opal.patients.models import Patient
+from opal.patients.models import Patient, RelationshipStatus
 
 
 class EmailVerificationSerializer(DynamicFieldsSerializer[EmailVerification]):
@@ -255,11 +255,7 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):
     The serializer provides the name of the patient as well as the patient's caregivers and their devices.
     """
 
-    caregivers = CaregiverSerializer(
-        fields=('language', 'username', 'devices'),
-        many=True,
-    )
-
+    caregivers = serializers.SerializerMethodField()
     institution = serializers.SerializerMethodField()
 
     def get_institution(self, obj: Patient) -> dict[str, str]:  # noqa: WPS615
@@ -273,6 +269,25 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer[Patient]):
             acronym of the singleton institution
         """
         return Institution.objects.values('acronym_en', 'acronym_fr').get()
+
+    def get_caregivers(self, obj: Patient) -> dict[str, Any]:  # noqa: WPS615
+        """
+        Return the active caregivers of the patient.
+
+        A caregiver is active if it has a confirmed relationship with the patient.
+
+        Args:
+            obj: the patient
+
+        Returns:
+            the caregivers of the patient with confirmed relationships
+        """
+        caregivers = obj.caregivers.filter(relationships__status=RelationshipStatus.CONFIRMED)
+        return CaregiverSerializer(
+            caregivers,
+            fields=('language', 'username', 'devices'),
+            many=True,
+        ).data
 
     class Meta:
         model = Patient

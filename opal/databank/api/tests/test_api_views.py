@@ -42,7 +42,6 @@ class TestCreateDatabankConsentView:
         response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': PATIENT_UUID}),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertContains(
@@ -59,7 +58,6 @@ class TestCreateDatabankConsentView:
         response = user_api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': PATIENT_UUID}),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertContains(
@@ -80,7 +78,6 @@ class TestCreateDatabankConsentView:
         response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': PATIENT_UUID}),
             data=data,
-            format='json',
         )
 
         assertJSONEqual(
@@ -114,7 +111,6 @@ class TestCreateDatabankConsentView:
                 'has_questionnaires': False,
                 'middle_name': 'Bert',
             },
-            format='json',
         )
 
         assertContains(
@@ -146,7 +142,6 @@ class TestCreateDatabankConsentView:
                 'middle_name': 'Bert',
                 'city_of_birth': '',
             },
-            format='json',
         )
 
         assertContains(
@@ -178,7 +173,6 @@ class TestCreateDatabankConsentView:
                 'middle_name': '',
                 'city_of_birth': 'ddd',
             },
-            format='json',
         )
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -198,7 +192,6 @@ class TestCreateDatabankConsentView:
         response = api_client.post(
             reverse('api:databank-consent-create', kwargs={'uuid': str(patient.uuid)}),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_201_CREATED

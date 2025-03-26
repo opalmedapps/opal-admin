@@ -29,6 +29,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 # Don't watch model events by default.
 # Also helps suppressing data migration errors during test initialization.
 DJANGO_EASY_AUDIT_WATCH_MODEL_EVENTS = False
+# Avoid errors when using force_login() due to request.META['REMOTE_ADDR'] missing
+# https://github.com/soynatan/django-easy-audit/issues/263
+DJANGO_EASY_AUDIT_WATCH_AUTH_EVENTS = False
 
 # Whitenoise
 # ------------------------------------------------------------------------------

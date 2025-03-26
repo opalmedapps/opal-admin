@@ -158,10 +158,13 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         with assertRaisesMessage(ValueError, message):
             self._call_command('send_databank_data')
 
-    def test_send_to_oie_request_exception(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
-        """Verify oie sender errors get properly handled."""
+    def test_send_to_oie_bad_configuration_exception(
+        self,
+        mocker: MockerFixture,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """Verify the request exception is handled when connection details for the OIE are wrong."""
         django_pat1 = patient_factories.Patient()
-        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
         yesterday = datetime.now() - timedelta(days=1)
         databank_factories.DatabankConsent(
             patient=django_pat1,
@@ -175,16 +178,102 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         generated_data = {
             'status': 'error',
             'data': {
-                'message': 'request failed',
+                'message': 'No connection adapters were found for HOST',
             },
         }
-        legacy_factories.LegacyAppointmentFactory(checkin=1, patientsernum=legacy_pat1)
         mock_post = RequestMockerTest.mock_requests_post(mocker, generated_data)
-        mock_post.side_effect = requests.RequestException('request failed')
+        mock_post.side_effect = requests.RequestException('No connection adapters were found for HOST')
+        mock_post.return_value.status_code = HTTPStatus.BAD_GATEWAY
         command = send_databank_data.Command()
         command._send_to_oie_and_handle_response({})
         captured = capsys.readouterr()
-        assert 'Databank sender OIE Error: request failed' in captured.err
+        assert 'OIE connection Error: No connection adapters were found for HOST' in captured.err
+
+    def test_send_to_oie_bad_gateway_error(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
+        """Verify bad gateway error is logged to stderr."""
+        django_pat1 = patient_factories.Patient()
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        databank_data_to_send = {
+            'patientList': [
+                {
+                    'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+                    'DEMO': [
+                        {
+                            'last_updated': '2023-12-08 11:18:58-05:00',
+                            'patient_id': 51,
+                            'opal_registration_date': '2023-10-08 11:18:58-04:00',
+                            'patient_sex': 'Female',
+                            'patient_dob': '1986-10-01 00:00:00-04:00',
+                            'patient_primary_language': 'EN',
+                            'patient_death_date': '',
+                        },
+                    ],
+                },
+            ],
+        }
+        response_data = {'message': 'Bad Gateway'}
+        mock_post = RequestMockerTest.mock_requests_post(mocker, response_data)
+        mock_post.return_value.status_code = HTTPStatus.BAD_GATEWAY
+        command = send_databank_data.Command()
+        command._send_to_oie_and_handle_response(databank_data_to_send)
+        captured = capsys.readouterr()
+        assert '502 oie response error' in captured.err
+        assert 'Bad Gateway' in captured.err
+
+    def test_send_to_oie_missing_endpoint_allowance_error(
+        self,
+        mocker: MockerFixture,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """Verify resource not found (missing endpoint in nginx) is logged."""
+        django_pat1 = patient_factories.Patient()
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        databank_data_to_send = {
+            'patientList': [
+                {
+                    'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+                    'DEMO': [
+                        {
+                            'last_updated': '2023-12-08 11:18:58-05:00',
+                            'patient_id': 51,
+                            'opal_registration_date': '2023-10-08 11:18:58-04:00',
+                            'patient_sex': 'Female',
+                            'patient_dob': '1986-10-01 00:00:00-04:00',
+                            'patient_primary_language': 'EN',
+                            'patient_death_date': '',
+                        },
+                    ],
+                },
+            ],
+        }
+        response_data = {'message': 'Resource not found'}
+        mock_post = RequestMockerTest.mock_requests_post(mocker, response_data)
+        mock_post.return_value.status_code = HTTPStatus.NOT_FOUND
+        command = send_databank_data.Command()
+        command._send_to_oie_and_handle_response(databank_data_to_send)
+        captured = capsys.readouterr()
+        assert '404 oie response error' in captured.err
+        assert 'Resource not found' in captured.err
 
     def test_demographics_success_response(self, mocker: MockerFixture) -> None:
         """Test the expected response for demographics data sending."""
@@ -365,6 +454,108 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command = send_databank_data.Command()
         command.handle()
 
+        databank_patient1 = databank_models.DatabankConsent.objects.get(
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        assert command.patient_data_success_tracker[databank_patient1.guid] == {
+            databank_models.DataModuleType.APPOINTMENTS: True,
+            databank_models.DataModuleType.DIAGNOSES: True,
+            databank_models.DataModuleType.DEMOGRAPHICS: False,
+            databank_models.DataModuleType.LABS: True,
+            databank_models.DataModuleType.QUESTIONNAIRES: True,
+        }
+        assert not all(command.patient_data_success_tracker[databank_patient1.guid].values())
+        assert databank_models.SharedData.objects.all().count() == 0
+        assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
+
+    def test_parse_aggregate_response_failure_unauthorized(
+        self,
+        mocker: MockerFixture,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """Ensure method not allowed/unauthorized error is correctly handled and SharedData not updated."""
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        # Make patient1 a failed response
+        RequestMockerTest.mock_requests_post(
+            mocker,
+            response_data={
+                'demo_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [
+                    405,
+                    '["Method Not Allowed"]',
+                ],
+            },
+        )
+        command = send_databank_data.Command()
+        command.handle()
+        captured = capsys.readouterr()
+        err_message = '{0}{1}'.format(
+            '405 error for patient a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274 : ',
+            'Method Not Allowed',
+        )
+        assert err_message in captured.err
+        databank_patient1 = databank_models.DatabankConsent.objects.get(
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        assert command.patient_data_success_tracker[databank_patient1.guid] == {
+            databank_models.DataModuleType.APPOINTMENTS: True,
+            databank_models.DataModuleType.DIAGNOSES: True,
+            databank_models.DataModuleType.DEMOGRAPHICS: False,
+            databank_models.DataModuleType.LABS: True,
+            databank_models.DataModuleType.QUESTIONNAIRES: True,
+        }
+        assert not all(command.patient_data_success_tracker[databank_patient1.guid].values())
+        assert databank_models.SharedData.objects.all().count() == 0
+        assert databank_patient1.last_synchronized == timezone.make_aware(last_sync)
+
+    def test_parse_aggregate_response_failure_bad_request(
+        self,
+        mocker: MockerFixture,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """Ensure bad request databank response error is correctly handled and SharedData not updated."""
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=False,
+            has_demographics=True,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        # Make patient1 a failed response
+        RequestMockerTest.mock_requests_post(
+            mocker,
+            response_data={
+                'demo_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [
+                    400,
+                    '["Data was missing"]',
+                ],
+            },
+        )
+        command = send_databank_data.Command()
+        command.handle()
+        captured = capsys.readouterr()
+        err_message = '{0}{1}'.format(
+            '400 error for patient a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274 : ',
+            'Data was missing',
+        )
+        assert err_message in captured.err
         databank_patient1 = databank_models.DatabankConsent.objects.get(
             guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
         )
@@ -628,6 +819,79 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             data_id=124,
         )
         assert shared_data.data_id == 124
+
+    def test_update_metadata_with_diagnosis_data(self) -> None:
+        """Test just the isolated creation of diagnosis-type SharedData instances."""
+        sent_diagnoses_data = [
+            {
+                'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+                databank_models.DataModuleType.DIAGNOSES: [
+                    {'diagnosis_id': 1},
+                    {'diagnosis_id': 2},
+                    {'diagnosis_id': 3},
+                ],
+            },
+            {
+                'GUID': 'b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+                databank_models.DataModuleType.DIAGNOSES: [
+                    {'diagnosis_id': 4},
+                ],
+            },
+        ]
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        django_pat2 = patient_factories.Patient(ramq='SIMM12345677', legacy_id=52)
+        legacy_pat2 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat2.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=True,
+            has_demographics=False,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        databank_factories.DatabankConsent(
+            patient=django_pat2,
+            guid='b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+            has_appointments=False,
+            has_diagnoses=True,
+            has_demographics=False,
+            has_questionnaires=False,
+            has_labs=False,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat2)
+        command = send_databank_data.Command()
+        mock_databank_patient1 = databank_models.DatabankConsent.objects.get(
+            guid='a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        mock_databank_patient2 = databank_models.DatabankConsent.objects.get(
+            guid='b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
+        )
+        command._parse_aggregate_databank_response(
+            aggregate_response={
+                'diag_a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '[]'],
+                'diag_b12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274': [201, '[]'],
+            },
+            original_data_sent=sent_diagnoses_data,
+        )
+        # Check if SharedData instance is created for diagnosis data
+        shared_data_count1 = databank_models.SharedData.objects.filter(
+            databank_consent=mock_databank_patient1,
+            data_type=databank_models.DataModuleType.DIAGNOSES,
+        ).count()
+        assert shared_data_count1 == 3
+        shared_data_count2 = databank_models.SharedData.objects.filter(
+            databank_consent=mock_databank_patient2,
+            data_type=databank_models.DataModuleType.DIAGNOSES,
+        ).count()
+        assert shared_data_count2 == 1
 
     def test_empty_oie_response(self, mocker: MockerFixture, capsys: pytest.CaptureFixture[str]) -> None:
         """Test that execution doesnt fail if oie response is empty."""

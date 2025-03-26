@@ -471,7 +471,7 @@ def test_long_patient_names_not_splitted(first_name: str, last_name: str) -> Non
     patient_info = next((elem for elem in patient_list if elem.get('name') == 'patient_name'))
     # Wrap the text with the maximum characters can be filled in each line.
     wrapper = textwrap.TextWrapper(
-        width=int((190 - 108) / 2) - 1,
+        width=int((185 - 110) / 2) - 1,
     )
     patient_name = f'{last_name}, {first_name}'.upper()
     expected_patient_name = wrapper.fill(text=f'Nom/Name: {patient_name}')

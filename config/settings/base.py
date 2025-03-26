@@ -462,6 +462,8 @@ REST_FRAMEWORK = {
     # use rest_framework.pagination.PageNumberPagination to enable for specific endpoints
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    # set default request format to JSON
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
 # django-cors-headers
@@ -478,6 +480,10 @@ CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS')
 DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = ['^/admin/jsi18n/', '^/static/', '^/favicon.ico$']
 # Make events read-only to disallow deleting
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
+# Propagate exceptions during debug
+DJANGO_EASY_AUDIT_PROPAGATE_EXCEPTIONS = DEBUG
+# Disable extra DB calls to check whether user exists
+DJANGO_EASY_AUDIT_CHECK_IF_REQUEST_USER_EXISTS = False  # noqa: WPS118
 
 # django-tables2
 # ------------------------------------------------------------------------------

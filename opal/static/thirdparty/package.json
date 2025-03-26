@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "bootstrap": "5.3.2",
-    "unpoly": "3.5.0"
+    "unpoly": "3.7.1"
   },
   "scripts": {
     "postinstall": "node copy_distribution_files.js"

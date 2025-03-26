@@ -183,7 +183,6 @@ def test_update_specific_security_answer(api_client: APIClient, listener_user: U
             kwargs={'username': listener_user.username, 'pk': security_answer.id},
         ),
         data=new_question,
-        format='json',
     )
     security_answer.refresh_from_db()
     assert response.status_code == HTTPStatus.OK
@@ -204,7 +203,6 @@ def test_verify_answer_success(api_client: APIClient, listener_user: User) -> No
             kwargs={'username': listener_user.username, 'pk': '{pk}'.format(pk=answer_id)},
         ),
         data=answer,
-        format='json',
     )
     assert response.status_code == HTTPStatus.OK
 
@@ -223,6 +221,5 @@ def test_verify_answer_failure(api_client: APIClient, listener_user: User) -> No
             kwargs={'username': listener_user.username, 'pk': '{pk}'.format(pk=answer_id)},
         ),
         data=answer,
-        format='json',
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST

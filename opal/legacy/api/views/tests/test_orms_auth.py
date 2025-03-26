@@ -34,7 +34,6 @@ class TestORMSLoginView:
                 'username': 'testuser',
                 'password': 'testpass',
             },
-            format='json',
         )
 
         assertContains(response, 'key')
@@ -49,7 +48,6 @@ class TestORMSLoginView:
         response = api_client.post(
             reverse('api:orms-login'),
             data={},
-            format='json',
         )
 
         assertContains(
@@ -71,7 +69,6 @@ class TestORMSLoginView:
                 'username': 'wronguser',
                 'password': 'wrongpass',
             },
-            format='json',
         )
 
         assertContains(
@@ -96,7 +93,6 @@ class TestORMSLoginView:
                 'username': 'testuser',
                 'password': 'testpass',
             },
-            format='json',
         )
 
         assertContains(
@@ -129,7 +125,6 @@ class TestORMSLoginView:
                 'username': 'ormsuser',
                 'password': 'ormspass',
             },
-            format='json',
         )
 
         user_response = api_client.post(
@@ -138,7 +133,6 @@ class TestORMSLoginView:
                 'username': 'testuser',
                 'password': 'testpass',
             },
-            format='json',
         )
 
         assertContains(orms_user_response, 'key')
@@ -172,7 +166,7 @@ class TestORMSValidateView:
         user.last_name = 'lastname'
         user.save()
 
-        response = api_client.get(reverse('api:orms-validate'), format='json')
+        response = api_client.get(reverse('api:orms-validate'))
         assert response.status_code == status.HTTP_200_OK
         assert response.data == {'username': 'testuser', 'first_name': 'firstname', 'last_name': 'lastname'}
 

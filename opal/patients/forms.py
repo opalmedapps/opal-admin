@@ -265,6 +265,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
         Args:
             response: OIE service response
         """
+        messages = []
         if response['status'] == 'success':
             self.patient = response['data']
         else:
@@ -274,6 +275,22 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 self.add_error(NON_FIELD_ERRORS, _('Could not establish a connection to the hospital interface.'))
             elif 'no_test_patient' in messages:
                 self.add_error(NON_FIELD_ERRORS, _('Patient is not a test patient.'))
+
+        errors = {
+            ' dateOfBirth': _('Patient Date of Birth is invalid.'),
+            ' firstName': _('Patient firstName is invalid.'),
+            ' lastName': _('Patient lastName is invalid.'),
+            ' sex': _('Patient sex is invalid.'),
+            ' alias': _('Patient alias is invalid.'),
+            ' ramq ': _('Patient ramq is invalid.'),
+            ' ramqExpiration': _('Patient ramq expiration is invalid.'),
+            'Patient MRN': _('Patient MRN is invalid.'),
+        }
+
+        for message in messages:
+            for error, text in errors.items():
+                if error in message:
+                    self.add_error(NON_FIELD_ERRORS, text)
 
 
 class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
@@ -528,12 +545,13 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
         """
         super().clean()
         cleaned_data = self.cleaned_data
+        patient = self.patient
+        patient_instance = patient if isinstance(patient, Patient) else None
 
         if self.is_existing_user_selected(cleaned_data):
             self._validate_existing_user_fields(cleaned_data)
 
             existing_user = self.existing_user
-            patient = self.patient
             relationship_type = cleaned_data.get('relationship_type')
 
             if existing_user:
@@ -541,10 +559,9 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
                     self._validate_patient_requestor(patient, existing_user)
 
                 if relationship_type:
-                    patient_instance = patient if isinstance(patient, Patient) else None
                     self._validate_relationship(patient_instance, existing_user, relationship_type)
-        else:
-            self._validate_existing_relationship(cleaned_data)
+        elif patient_instance:
+            self._validate_existing_relationship(cleaned_data, patient_instance)
 
         return cleaned_data
 
@@ -628,7 +645,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             )
         return option_descriptions
 
-    def _validate_existing_relationship(self, cleaned_data: dict[str, Any]) -> None:
+    def _validate_existing_relationship(self, cleaned_data: dict[str, Any], patient: Patient) -> None:
         """
         Validate the existing relationship selection by looking up the caregiver.
 
@@ -638,6 +655,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
 
         Args:
             cleaned_data: the form's cleaned data
+            patient: Patient object
         """
         # at the beginning (empty form) they are not in the cleaned data
         if 'first_name' in cleaned_data and 'last_name' in cleaned_data:
@@ -645,6 +663,7 @@ class AccessRequestRequestorForm(DisableFieldsMixin, DynamicFormMixin, forms.For
             last_name = cleaned_data['last_name']
 
             existing_relationship = Relationship.objects.filter(
+                patient=patient,
                 caregiver__user__first_name=first_name,
                 caregiver__user__last_name=last_name,
                 status__in={RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING},

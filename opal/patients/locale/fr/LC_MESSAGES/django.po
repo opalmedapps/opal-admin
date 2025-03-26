@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-30 17:18+0000\n"
+"POT-Creation-Date: 2023-12-19 08:58-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -77,6 +77,38 @@ msgstr "Impossible d'établir une connexion à l'interface de l'hôpital."
 #: opal/patients/forms.py
 msgid "Patient is not a test patient."
 msgstr "Le patient n'est pas un patient test."
+
+#: opal/patients/forms.py
+msgid "Patient Date of Birth is invalid."
+msgstr "La date de naissance du patient n'est pas valide"
+
+#: opal/patients/forms.py
+msgid "Patient firstName is invalid."
+msgstr "Le prénom du patient n'est pas valide."
+
+#: opal/patients/forms.py
+msgid "Patient lastName is invalid."
+msgstr "Le nom du patient n'est pas valide"
+
+#: opal/patients/forms.py
+msgid "Patient sex is invalid."
+msgstr "Le sexe du patient n'est pas valide"
+
+#: opal/patients/forms.py
+msgid "Patient alias is invalid."
+msgstr "L'alias du patient n'est pas valide"
+
+#: opal/patients/forms.py
+msgid "Patient ramq is invalid."
+msgstr "Le ramq du patient n'est pas valide"
+
+#: opal/patients/forms.py
+msgid "Patient ramq expiration is invalid."
+msgstr "L'expiration du ramq du patient n'est pas valide"
+
+#: opal/patients/forms.py
+msgid "Patient MRN is invalid."
+msgstr "Le MRN du patient n'est pas valide"
 
 #: opal/patients/forms.py
 msgid ""

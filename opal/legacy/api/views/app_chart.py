@@ -39,6 +39,10 @@ class AppChartView(APIView):
                 legacy_id,
                 username,
             ).count(),
+            'unread_lab_result_count': models.LegacyPatientTestResult.objects.get_unread_queryset(
+                legacy_id,
+                username,
+            ).count(),
             'unread_document_count': models.LegacyDocument.objects.get_unread_queryset(
                 legacy_id,
                 username,

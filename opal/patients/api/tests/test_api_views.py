@@ -1,5 +1,4 @@
 """Test module for the `patients` app REST API endpoints."""
-import copy
 import json
 from collections.abc import Callable
 from datetime import datetime
@@ -15,13 +14,12 @@ from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.test import APIClient
 
-from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, Device, RegistrationCode
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
 from opal.patients.factories import HospitalPatient, Patient, Relationship
 from opal.users import factories as caregiver_factories
-from opal.users.models import Caregiver, User
+from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 
@@ -230,216 +228,6 @@ class TestRetrieveRegistrationDetailsView:
         }
 
 
-class TestRegistrationCompletionView:
-    """Test class tests the api registration/<str: code>/register."""
-
-    input_data = {
-        'patient': {
-            'legacy_id': 1,
-        },
-        'caregiver': {
-            'language': 'fr',
-            'phone_number': '+15141112222',
-            'username': 'test-username',
-            'legacy_id': 1,
-        },
-        'security_answers': [
-            {
-                'question': 'correct?',
-                'answer': 'yes',
-            },
-            {
-                'question': 'correct?',
-                'answer': 'maybe',
-            },
-        ],
-    }
-
-    def test_unauthenticated_unauthorized(
-        self,
-        api_client: APIClient,
-        user: User,
-        registration_listener_user: User,
-    ) -> None:
-        """Test that unauthenticated and unauthorized users cannot access the API."""
-        url = reverse('api:registration-register', kwargs={'code': '123456'})
-
-        response = api_client.get(url)
-
-        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
-
-        api_client.force_login(user)
-        response = api_client.get(url)
-
-        assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
-
-        api_client.force_login(registration_listener_user)
-        response = api_client.options(url)
-
-        assert response.status_code == HTTPStatus.OK
-
-    def test_register_success(self, api_client: APIClient, admin_user: User) -> None:
-        """Test api registration register success."""
-        api_client.force_login(user=admin_user)
-        # Build relationships: code -> relationship -> patient
-        patient = Patient()
-        caregiver = CaregiverProfile()
-        relationship = Relationship(patient=patient, caregiver=caregiver)
-        registration_code = RegistrationCode(relationship=relationship)
-
-        response = api_client.post(
-            reverse(
-                'api:registration-register',
-                kwargs={'code': registration_code.code},
-            ),
-            data=self.input_data,
-            format='json',
-        )
-
-        registration_code.refresh_from_db()
-        security_answers = caregiver_models.SecurityAnswer.objects.all()
-        assert response.status_code == HTTPStatus.OK
-        assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
-        assert len(security_answers) == 2
-
-    def test_existing_patient_caregiver(self, api_client: APIClient, admin_user: User) -> None:
-        """Existing patient and caregiver don't cause the serializer to fail."""
-        api_client.force_login(user=admin_user)
-        Relationship(patient__legacy_id=1, caregiver__legacy_id=1)
-
-        response = api_client.post(
-            reverse(
-                'api:registration-register',
-                kwargs={'code': '123456'},
-            ),
-            data=self.input_data,
-            format='json',
-        )
-
-        assert response.status_code == HTTPStatus.NOT_FOUND
-
-    def test_non_existent_registration_code(self, api_client: APIClient, admin_user: User) -> None:
-        """Test non-existent registration code."""
-        api_client.force_login(user=admin_user)
-
-        response = api_client.post(
-            reverse(
-                'api:registration-register',
-                kwargs={'code': 'code11111111'},
-            ),
-            data=self.input_data,
-            format='json',
-        )
-
-        assert response.status_code == HTTPStatus.NOT_FOUND
-
-    def test_registered_registration_code(self, api_client: APIClient, admin_user: User) -> None:
-        """Test registered registration code."""
-        api_client.force_login(user=admin_user)
-        registration_code = RegistrationCode(
-            status=caregiver_models.RegistrationCodeStatus.REGISTERED,
-        )
-
-        response = api_client.post(
-            reverse(
-                'api:registration-register',
-                kwargs={'code': registration_code.code},
-            ),
-            data=self.input_data,
-            format='json',
-        )
-
-        assert response.status_code == HTTPStatus.NOT_FOUND
-
-    def test_register_with_invalid_input_data(self, api_client: APIClient, admin_user: User) -> None:
-        """Test validation of patient's legacy_id."""
-        api_client.force_login(user=admin_user)
-
-        invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
-        invalid_data['patient']['legacy_id'] = 0
-
-        response = api_client.post(
-            reverse(
-                'api:registration-register',
-                kwargs={'code': '123456'},
-            ),
-            data=invalid_data,
-            format='json',
-        )
-
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.json() == {
-            'patient': {'legacy_id': ['Ensure this value is greater than or equal to 1.']},
-        }
-
-    def test_register_with_invalid_phone(self, api_client: APIClient, admin_user: User) -> None:
-        """Test validation of the phone number."""
-        api_client.force_login(user=admin_user)
-
-        registration_code = RegistrationCode()
-
-        invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
-        invalid_data['caregiver']['phone_number'] = '1234567890'
-
-        response = api_client.post(
-            reverse(
-                'api:registration-register',
-                kwargs={'code': registration_code.code},
-            ),
-            data=invalid_data,
-            format='json',
-        )
-
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.json() == {
-            'detail': "({'phone_number': [ValidationError(['Enter a valid value.'])]}, None, None)",
-        }
-        # check that no data was changed
-        registration_code.refresh_from_db()
-        assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
-        security_answers = caregiver_models.SecurityAnswer.objects.all()
-        assert not security_answers
-
-    def test_remove_skeleton_caregiver(self, api_client: APIClient, admin_user: User) -> None:
-        """Test api registration register remove skeleton caregiver."""
-        api_client.force_login(user=admin_user)
-        # Build existing caregiver
-        caregiver = caregiver_factories.Caregiver(
-            username='test-username',
-            first_name='caregiver',
-            last_name='test',
-        )
-        caregiver_profile = CaregiverProfile(user=caregiver)
-        # Build skeleton user
-        skeleton = caregiver_factories.Caregiver(
-            username='skeleton-username',
-            first_name='skeleton',
-            last_name='test',
-        )
-        skeleton_profile = CaregiverProfile(user=skeleton)
-        # Build relationships: code -> relationship -> patient
-        relationship = Relationship(caregiver=skeleton_profile)
-        registration_code = RegistrationCode(relationship=relationship)
-
-        response = api_client.post(
-            reverse(
-                'api:registration-register',
-                kwargs={'code': registration_code.code},
-            ),
-            data=self.input_data,
-            format='json',
-        )
-
-        registration_code.refresh_from_db()
-        relationship.refresh_from_db()
-        assert response.status_code == HTTPStatus.OK
-        assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
-        assert relationship.caregiver.id == caregiver_profile.id
-        assert relationship.caregiver.user.id == caregiver.id
-        assert not Caregiver.objects.filter(username=skeleton.username).exists()
-        assert not caregiver_models.CaregiverProfile.objects.filter(user=skeleton).exists()
-
-
 class TestPatientDemographicView:
     """Class wrapper for patient demographic endpoint tests."""
 
@@ -498,7 +286,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=data,
-            format='json',
         )
 
         assertContains(
@@ -510,7 +297,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=data,
-            format='json',
         )
 
         assertContains(
@@ -534,7 +320,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=data,
-            format='json',
         )
 
         assertJSONEqual(
@@ -555,7 +340,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=data,
-            format='json',
         )
 
         assertJSONEqual(
@@ -578,7 +362,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -598,7 +381,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -629,7 +411,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertRaisesMessage(
@@ -645,7 +426,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertRaisesMessage(
@@ -683,7 +463,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertRaisesMessage(
@@ -699,7 +478,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assertRaisesMessage(
@@ -740,7 +518,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -753,7 +530,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -788,7 +564,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -801,7 +576,6 @@ class TestPatientDemographicView:
         response = api_client.patch(
             reverse('api:patient-demographic-update'),
             data=self._get_valid_input_data(),
-            format='json',
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -850,7 +624,6 @@ class TestPatientDemographicView:
         response = api_client.put(
             reverse('api:patient-demographic-update'),
             data=payload,
-            format='json',
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -919,24 +692,28 @@ class TestPatientCaregiverDevicesView:
         """Test get patient caregiver devices success."""
         api_client.force_login(user=admin_user)
 
-        legacy_id = 1
-        patient = Patient(legacy_id=legacy_id)
+        patient = Patient()
 
         user1 = caregiver_factories.Caregiver(language='en', phone_number='+11234567890')
         user2 = caregiver_factories.Caregiver(language='fr', phone_number='+11234567891')
         caregiver1 = CaregiverProfile(user=user1)
         caregiver2 = CaregiverProfile(user=user2)
-        Relationship(caregiver=caregiver1, patient=patient)
-        Relationship(caregiver=caregiver2, patient=patient)
+        Relationship(caregiver=caregiver1, patient=patient, status=patient_models.RelationshipStatus.CONFIRMED)
+        Relationship(caregiver=caregiver2, patient=patient, status=patient_models.RelationshipStatus.CONFIRMED)
+        Relationship(patient=patient, caregiver=caregiver1, status=patient_models.RelationshipStatus.EXPIRED)
+        Relationship(patient=patient, status=patient_models.RelationshipStatus.PENDING)
         device1 = Device(caregiver=caregiver1)
         device2 = Device(caregiver=caregiver2)
-
         institution = Institution()
+
         response = api_client.get(reverse(
             'api:patient-caregiver-devices',
-            kwargs={'legacy_id': legacy_id},
+            kwargs={'legacy_id': patient.legacy_id},
         ))
+
         assert response.status_code == HTTPStatus.OK
+        # ensure only confirmed relationships are returned
+        assert len(response.json()['caregivers']) == 2
         assert response.json() == {
             'first_name': patient.first_name,
             'last_name': patient.last_name,
@@ -1026,7 +803,6 @@ class TestPatientView:
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': 'ALL'},
-            format='json',
         )
 
         patient.refresh_from_db()
@@ -1045,7 +821,6 @@ class TestPatientView:
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': 'ALL'},
-            format='json',
         )
 
         patient.refresh_from_db()
@@ -1064,7 +839,6 @@ class TestPatientView:
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': 'ALL', 'ramq': 'SIMM86101799', 'first_name': 'Marge'},
-            format='json',
         )
 
         patient.refresh_from_db()
@@ -1086,7 +860,6 @@ class TestPatientView:
                 kwargs={'legacy_id': 1},
             ),
             data={'data_access': ''},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -1107,7 +880,6 @@ class TestPatientView:
                 kwargs={'legacy_id': 1},
             ),
             data={},
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -1159,7 +931,6 @@ class TestPatientExistsView:
         response = api_client.post(
             reverse('api:patient-exists'),
             data=self.input_data_cases['valid'],
-            format='json',
         )
 
         assert response.status_code == HTTPStatus.OK
@@ -1174,7 +945,6 @@ class TestPatientExistsView:
         response = api_client.post(
             reverse('api:patient-exists'),
             data=self.input_data_cases['invalid_site'],
-            format='json',
         )
         assert 'Provided "XXX" site acronym does not exist.' in response.data[0]['site_code']
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -1186,7 +956,6 @@ class TestPatientExistsView:
         response = api_client.post(
             reverse('api:patient-exists'),
             data=self.input_data_cases['patient_not_found'],
-            format='json',
         )
         expected_error = '{0} {1}'.format(
             'Cannot find patient record with the provided MRNs and sites or',
@@ -1202,7 +971,6 @@ class TestPatientExistsView:
         response = api_client.post(
             reverse('api:patient-exists'),
             data=self.input_data_cases['multiple_patients'],
-            format='json',
         )
         expected_error = '{0} {1}'.format(
             'Cannot find patient record with the provided MRNs and sites or',
@@ -1218,7 +986,6 @@ class TestPatientExistsView:
         response = api_client.post(
             reverse('api:patient-exists'),
             data=self.input_data_cases['invalid_mrn'],
-            format='json',
         )
         assert 'Ensure this field has no more than 10 characters.' in response.data[0]['mrn']
         assert response.status_code == HTTPStatus.BAD_REQUEST
@@ -1228,7 +995,6 @@ class TestPatientExistsView:
         response = api_client.post(
             reverse('api:patient-exists'),
             data=self.input_data_cases['valid'],
-            format='json',
         )
         assertContains(
             response=response,

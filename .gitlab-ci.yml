@@ -55,9 +55,9 @@ stages:
 
 build image:
   stage: Build
-  image: docker:24.0.7
+  image: docker:25.0.2
   services:
-    - docker:24.0.7-dind
+    - docker:25.0.2-dind
   variables:
     # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
     DOCKER_HOST: tcp://docker:2376
@@ -126,7 +126,7 @@ markdownlint:
   extends:
     - .default_needs
   image:
-    name: davidanson/markdownlint-cli2:v0.11.0
+    name: davidanson/markdownlint-cli2:v0.12.1
     # overwrite default entrypoint (which is a call to markdownlint-cli2)
     entrypoint: [""]
   # this is not a Python script so we don't need to do all this extra stuff
@@ -134,7 +134,7 @@ markdownlint:
     - markdownlint-cli2 --version
   script:
     # use the config file that is stored outside the root
-    - markdownlint-cli2-config .gitlab/markdownlint/.markdownlint-cli2.yaml "**/*.md" "#.venv"
+    - markdownlint-cli2 --config .gitlab/markdownlint/.markdownlint-cli2.yaml "**/*.md" "#.venv"
   artifacts:
     when: always
     reports:
