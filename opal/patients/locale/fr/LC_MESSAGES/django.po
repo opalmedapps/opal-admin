@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-13 15:11-0400\n"
+"POT-Creation-Date: 2022-08-22 22:01+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,224 +18,231 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: opal/patients/apps.py opal/patients/models.py
+#: apps.py:11 models.py:121
 msgid "Patients"
 msgstr "Patients"
 
-#: opal/patients/models.py
+#: models.py:19
 msgid "Name"
 msgstr "Nom"
 
-#: opal/patients/models.py
+#: models.py:24
 msgid "Description"
 msgstr "Description"
 
-#: opal/patients/models.py
+#: models.py:28
 msgid "Start age"
 msgstr "Âge de début"
 
-#: opal/patients/models.py
+#: models.py:29
 msgid "Minimum age the relationship is allowed to start."
 msgstr "L'âge auquel la relation peut commencer."
 
-#: opal/patients/models.py
+#: models.py:35
 msgid "End age"
 msgstr "Âge de fin"
 
-#: opal/patients/models.py
+#: models.py:36
 msgid "Age at which the relationship ends automatically."
 msgstr "L'âge auquel la relation se termine."
 
-#: opal/patients/models.py
+#: models.py:44
 msgid "Form required"
 msgstr "Formulaire obligatoire"
 
-#: opal/patients/models.py
+#: models.py:46
 msgid "Whether the hospital form is required to be completed by the caregiver"
 msgstr "Si le formulaire hospitalier doit être rempli par le proche aidant"
 
-#: opal/patients/models.py
+#: models.py:51
 msgid "Caregiver Relationship Type"
 msgstr "Type de relation avec le proche aidant"
 
-#: opal/patients/models.py
+#: models.py:52
 msgid "Caregiver Relationship Types"
 msgstr "Types de relations avec le proche aidant"
 
-#: opal/patients/models.py
+#: models.py:71
 msgid "Female"
 msgstr "Féminin"
 
-#: opal/patients/models.py
+#: models.py:72
 msgid "Male"
 msgstr "Masculin"
 
-#: opal/patients/models.py
+#: models.py:73
 msgid "Other"
 msgstr "Autre"
 
-#: opal/patients/models.py
+#: models.py:74
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: opal/patients/models.py
+#: models.py:86
 msgid "First Name"
 msgstr "Prénom"
 
-#: opal/patients/models.py
+#: models.py:90
 msgid "Last Name"
 msgstr "Nom de famille"
 
-#: opal/patients/models.py
+#: models.py:94
 msgid "Date of Birth"
 msgstr "Date de naissance"
 
-#: opal/patients/models.py
+#: models.py:97
 msgid "Sex"
 msgstr "Sexe"
 
-#: opal/patients/models.py
+#: models.py:102
 msgid "Health Insurance Number"
 msgstr "Numéro d'assurance maladie"
 
-#: opal/patients/models.py
+#: models.py:107
 msgid "Caregivers"
 msgstr "Proches aidants"
 
-#: opal/patients/models.py
+#: models.py:113
 msgid "Legacy ID"
 msgstr "Identifiant existant"
 
-#: opal/patients/models.py
+#: models.py:120 models.py:154 models.py:248
 #, fuzzy
 #| msgid "Patients"
 msgid "Patient"
 msgstr "Patients"
 
-#: opal/patients/models.py
+#: models.py:142
 msgid "Pending"
 msgstr "En attendant"
 
-#: opal/patients/models.py
+#: models.py:143
 msgid "Confirmed"
 msgstr "Confirmé"
 
-#: opal/patients/models.py
+#: models.py:144
 msgid "Denied"
 msgstr "Refusé"
 
-#: opal/patients/models.py
+#: models.py:145
 msgid "Expired"
 msgstr "Expiré"
 
-#: opal/patients/models.py
+#: models.py:146
 msgid "Revoked"
 msgstr "Révoqué"
 
-#: opal/patients/models.py
+#: models.py:161
 msgid "Caregiver"
 msgstr "Proche aidant"
 
-#: opal/patients/models.py
-#: opal/patients/templates/patients/relationship_type/form.html
+#: models.py:170 templates/patients/relationship_type/form.html:7
 msgid "Relationship Type"
 msgstr "Type de relation avec le proche aidant"
 
-#: opal/patients/models.py
+#: models.py:174
 msgid "Relationship Status"
 msgstr "Statut de la relation"
 
-#: opal/patients/models.py
+#: models.py:181
+msgid "Reason of Status Change"
+msgstr "Raison du changement de statut"
+
+#: models.py:188
 msgid "Relationship Request Date"
 msgstr "Date de la demande de relation"
 
-#: opal/patients/models.py
+#: models.py:192
 msgid "Relationship Start Date"
 msgstr "Date de début de la relation"
 
-#: opal/patients/models.py
+#: models.py:196
 msgid "Relationship End Date"
 msgstr "Date de fin de relation"
 
-#: opal/patients/models.py
+#: models.py:203
 msgid "Relationship"
 msgstr "Relation"
 
-#: opal/patients/models.py
+#: models.py:204
 msgid "Relationships"
 msgstr "Relations"
 
-#: opal/patients/models.py
+#: models.py:236
 msgid "Start date should be earlier than end date."
 msgstr "Date de début doit être antérieure à la date de fin."
 
-#: opal/patients/models.py
+#: models.py:240
+msgid "Reason is mandatory when status is denied or revoked."
+msgstr "La raison est obligatoire lorsque le statut est refusé ou révoqué."
+
+#: models.py:254
 msgid "Site"
 msgstr "Site"
 
-#: opal/patients/models.py
+#: models.py:259
 msgid "Medical Record Number"
 msgstr "Numéro de dossier médical"
 
-#: opal/patients/models.py
+#: models.py:263
 msgid "Active"
 msgstr "Actif"
 
-#: opal/patients/models.py
+#: models.py:268
 msgid "Hospital Patient"
 msgstr "Patient de l'hôpital"
 
-#: opal/patients/models.py
+#: models.py:269
 msgid "Hospital Patients"
 msgstr "Patients de l'hôpital"
 
-#: opal/patients/tables.py
+#: tables.py:17
 msgid "Actions"
 msgstr ""
 
-#: opal/patients/tables.py
+#: tables.py:29
 msgid "No relationship types defined."
 msgstr ""
 
-#: opal/patients/templates/patients/relationship_type/confirm_delete.html
+#: templates/patients/relationship_type/confirm_delete.html:5
 msgid "Delete Relationship Type"
 msgstr ""
 
-#: opal/patients/templates/patients/relationship_type/confirm_delete.html
+#: templates/patients/relationship_type/confirm_delete.html:14
 #, python-format
 msgid ""
 "Are you sure you want to delete the following relationship type: %(object)s?"
 msgstr ""
 
-#: opal/patients/templates/patients/relationship_type/confirm_delete.html
+#: templates/patients/relationship_type/confirm_delete.html:19
 msgid "Yes"
 msgstr ""
 
-#: opal/patients/templates/patients/relationship_type/confirm_delete.html
+#: templates/patients/relationship_type/confirm_delete.html:19
 msgid "Delete"
 msgstr "Supprimer"
 
-#: opal/patients/templates/patients/relationship_type/confirm_delete.html
-#: opal/patients/templates/patients/relationship_type/form.html
+#: templates/patients/relationship_type/confirm_delete.html:23
+#: templates/patients/relationship_type/form.html:25
 msgid "Cancel"
 msgstr ""
 
-#: opal/patients/templates/patients/relationship_type/form.html
+#: templates/patients/relationship_type/form.html:7
 msgid "Update"
 msgstr ""
 
-#: opal/patients/templates/patients/relationship_type/form.html
+#: templates/patients/relationship_type/form.html:7
 msgid "Create"
 msgstr ""
 
-#: opal/patients/templates/patients/relationship_type/form.html
+#: templates/patients/relationship_type/form.html:27
 msgid "Save"
 msgstr ""
 
-#: opal/patients/templates/patients/relationship_type/list.html
+#: templates/patients/relationship_type/list.html:6
 msgid "Relationship Types"
 msgstr ""
 
-#: opal/patients/templates/patients/relationship_type/list.html
+#: templates/patients/relationship_type/list.html:18
 msgid "New Relationship Type"
 msgstr ""
