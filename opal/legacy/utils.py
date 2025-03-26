@@ -482,7 +482,7 @@ def get_questionnaire_data(patient: Patient) -> list[QuestionnaireData]:
     try:
         query_result = _fetch_questionnaires_from_db(external_patient_id)
     except OperationalError as exc:
-        raise DataFetchError(f'Error fetching questionnaires: {exc}')
+        raise DataFetchError(f'Error fetching questionnaires: {exc}') from exc
 
     try:
         data_list = _parse_query_result(query_result)
