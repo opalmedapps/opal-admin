@@ -141,7 +141,8 @@ class PatientManager(models.Manager):
         patients: Any = self.prefetch_related(
             'hospital_patients__site',
         ).filter(
-            models.Q(hospital_patients__mrn__in=mrns) & models.Q(hospital_patients__site__code__in=sites),
+            hospital_patients__mrn__in=mrns,
+            hospital_patients__site__code__in=sites,
         )
 
         # Get first `Patient` object from the queryset
