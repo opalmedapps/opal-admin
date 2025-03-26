@@ -7,12 +7,13 @@ from django.utils import timezone
 
 SPLIT_LENGTH = 120
 
+# consider only completed and in progress questionnaires
 LEGACY_RESPONDENT_QUERY = """
     SELECT
         aq.respondentUsername AS Username,
         aq.respondentDisplayName AS CaregiverName
     FROM answerQuestionnaire aq
-    WHERE aq.status = 2 OR aq.status = 3
+    WHERE aq.status = 1 OR aq.status = 2
     GROUP BY aq.respondentUsername, aq.respondentDisplayName;
 """
 
