@@ -1509,6 +1509,20 @@ def test_accessrequestrequestorform_existing_relationship() -> None:
     assert form.non_field_errors()[0] == 'An active relationship with a caregiver with this name already exists.'
 
 
+def test_accessrequestrequestorform_existing_relationship_no_data() -> None:
+    """Ensure the `clean()` can handle non-existent user first and last name fields."""
+    form = forms.AccessRequestRequestorForm(
+        patient=OIE_PATIENT_DATA,
+        data={
+            'user_type': constants.UserType.NEW.name,
+            'relationship_type': RelationshipType.objects.mandatary(),
+            'id_checked': True,
+        },
+    )
+
+    assert not form.is_valid()
+
+
 def test_accessrequestconfirmform() -> None:
     """Ensure the confirm form is invalid by default."""
     form = forms.AccessRequestConfirmForm(username='noone')
