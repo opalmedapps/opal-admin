@@ -96,8 +96,6 @@ msgstr "Bienvenue dans le groupe Opal"
 msgid "Thank you for deciding to create an account with us"
 msgstr "Merci d'avoir choisi de créer un compte avec nous"
 
-#: opal/templates/email/registered_confirmation.html
-#: opal/templates/email/registered_confirmation.txt
 #: opal/templates/email/verification_code.html
 #: opal/templates/email/verification_code.txt
 msgid ""
