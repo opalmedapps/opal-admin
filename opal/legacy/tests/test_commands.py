@@ -2,8 +2,10 @@ from io import StringIO
 from typing import Any
 
 from django.core.management import call_command
+from django.core.management.base import CommandError
 
 import pytest
+from django_test_migrations.migrator import Migrator
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import SecurityAnswer, SecurityQuestion
@@ -16,8 +18,8 @@ from opal.users import factories as user_factories
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 
-class TestBasicClass:
-    """Basic test class."""
+class CommandTestMixin:
+    """Mixin to facilitate testing of management commands."""
 
     def _call_command(self, command_name: str, *args: Any, **kwargs: Any) -> tuple[str, str]:
         """
@@ -43,7 +45,7 @@ class TestBasicClass:
         return out.getvalue(), err.getvalue()
 
 
-class TestSecurityQuestionsMigration(TestBasicClass):
+class TestSecurityQuestionsMigration(CommandTestMixin):
     """Test class for security questions migration."""
 
     def test_import_fails_question_exists(self) -> None:
@@ -71,7 +73,7 @@ class TestSecurityQuestionsMigration(TestBasicClass):
         assert error == ''
 
 
-class TestSecurityAnswersMigration(TestBasicClass):
+class TestSecurityAnswersMigration(CommandTestMixin):
     """Test class for security answers migration."""
 
     def test_import_fails_legacy_user_not_exists(self) -> None:
@@ -198,7 +200,7 @@ class TestSecurityAnswersMigration(TestBasicClass):
         assert error == ''
 
 
-class TestPatientAndPatientIdentifierMigration(TestBasicClass):
+class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
     """Test class for security answers migration."""
 
     def test_import_legacy_patient_not_exist_fail(self) -> None:
@@ -293,27 +295,43 @@ class TestPatientAndPatientIdentifierMigration(TestBasicClass):
         assert 'Number of imported patients is: 0\n' in message
 
 
-class TestUsersCaregiversMigration(TestBasicClass):
+class TestUsersCaregiversMigration(CommandTestMixin):
     """Test class for users and caregivers migrations from legacy DB."""
+
+    def test_import_user_no_self_relationshiptype(self, migrator: Migrator) -> None:
+        """Test import fails if no self relationship type exists."""
+        # Must revert to state before prepopulation to test command error
+        migrator.apply_initial_migration(('patients', '0013_relationshiptype_role'))  # noqa: WPS204
+
+        with pytest.raises(CommandError, match="RelationshipType for 'Self' not found"):
+            self._call_command('migrate_users')
 
     def test_import_user_caregiver_no_legacy_users(self) -> None:
         """Test import fails no legacy users exist."""
+        patient_factories.RelationshipType(role_type=RoleType.SELF)
+
         message, error = self._call_command('migrate_users')
+
         assert 'Number of imported users is: 0' in message
 
     def test_import_user_caregiver_no_patient_exist(self) -> None:
         """Test import fails, a corresponding patient in new backend does not exist."""
+        patient_factories.RelationshipType(role_type=RoleType.SELF)
         legacy_factories.LegacyUserFactory(usertypesernum=99)
+
         message, error = self._call_command('migrate_users')
-        assert 'Patient with sernum: 99, does not exist,skipping.\n' in error
+
+        assert 'Patient with sernum: 99, does not exist, skipping.\n' in error
 
     def test_import_user_caregiver_already_exist(self) -> None:
         """Test import fails, caregiver profile has already been migrated."""
         legacy_user = legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
-        patient_factories.RelationshipType(name='self')
+        patient_factories.RelationshipType(role_type=RoleType.SELF)
         patient_factories.CaregiverProfile(legacy_id=legacy_user.usersernum)
+
         message, error = self._call_command('migrate_users')
+
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
         assert 'Number of imported users is: 0\n' in message
 
@@ -329,7 +347,9 @@ class TestUsersCaregiversMigration(TestBasicClass):
             type=relationshiptype,
             status=RelationshipStatus.CONFIRMED,
         )
+
         message, error = self._call_command('migrate_users')
+
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
         assert 'Number of imported users is: 0\n' in message
         assert 'Self relationship for patient with legacy_id: 99 already exists.\n' in message
@@ -340,7 +360,9 @@ class TestUsersCaregiversMigration(TestBasicClass):
         patient_factories.Patient(legacy_id=99)
         patient_factories.RelationshipType(role_type=RoleType.SELF)
         patient_factories.CaregiverProfile(legacy_id=55)
+
         message, error = self._call_command('migrate_users')
+
         assert 'Nothing to be done for sernum: 55, skipping.\n' in message
         assert 'Number of imported users is: 0\n' in message
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
@@ -352,6 +374,7 @@ class TestUsersCaregiversMigration(TestBasicClass):
         patient_factories.Patient(legacy_id=99)
         patient_factories.RelationshipType(role_type=RoleType.SELF)
         message, error = self._call_command('migrate_users')
+
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
         assert 'Number of imported users is: 1\n' in message
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
@@ -366,6 +389,7 @@ class TestUsersCaregiversMigration(TestBasicClass):
         patient_factories.Patient(legacy_id=100, first_name='Test_2')
         patient_factories.RelationshipType(role_type=RoleType.SELF)
         message, error = self._call_command('migrate_users')
+
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
         assert 'Legacy user with sernum: 56 has been migrated\n' in message
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message

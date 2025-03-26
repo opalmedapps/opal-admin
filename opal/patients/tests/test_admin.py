@@ -35,3 +35,14 @@ def test_relationshiptype_admin_has_delete_permission_true() -> None:  # noqa: W
     caregiver_relationshiptype = factories.RelationshipType()
 
     assert admin.has_delete_permission(request=request, obj=caregiver_relationshiptype)
+
+
+def test_relationshiptype_admin_has_delete_permission_obj_none_false() -> None:  # noqa: WPS118
+    """Ensure admin portal deletion privileges evaluate correctly for nonetype object."""
+    admin = RelationshipTypeAdmin(models.RelationshipType, site)
+    request = HttpRequest()
+    request.method = 'POST'
+    request.path = '/admin/patients/relationshiptype/'
+    request.POST['action'] = 'delete_selected'
+
+    assert admin.has_delete_permission(request=request, obj=None)

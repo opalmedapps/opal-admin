@@ -339,7 +339,7 @@ class Relationship(models.Model):
         """Validate date and reason fields.
 
         Raises:
-            ValidationError: the error shows when enteries do not comply with the validation rules.
+            ValidationError: the error shows when entries do not comply with the validation rules.
         """
         if self.end_date is not None and self.start_date >= self.end_date:
             raise ValidationError({'start_date': _('Start date should be earlier than end date.')})

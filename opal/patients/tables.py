@@ -77,6 +77,7 @@ class RelationshipTypeTable(tables.Table):
             'description',
             'start_age',
             'end_age',
+            'role_type',
             'form_required',
             'can_answer_questionnaire',
             'actions',

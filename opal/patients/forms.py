@@ -107,8 +107,8 @@ class RelationshipTypeUpdateForm(forms.ModelForm):
             'description_fr',
             'start_age',
             'end_age',
+            'role_type',
             'form_required',
             'can_answer_questionnaire',
         ]
-    name_en = forms.CharField(disabled=True)
-    name_fr = forms.CharField(disabled=True)
+    role_type = forms.CharField(disabled=True)
