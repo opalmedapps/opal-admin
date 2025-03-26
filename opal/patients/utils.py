@@ -141,7 +141,13 @@ def valid_relationship_types(patient: Patient) -> QuerySet[RelationshipType]:
     """
     relationship_types_queryset = search_relationship_types_by_patient_age(patient.date_of_birth)
 
-    return relationship_types_queryset.exclude(role_type=RoleType.SELF)
+    if Relationship.objects.filter(
+        patient=patient,
+        type__role_type=RoleType.SELF,
+    ).exists():
+        return relationship_types_queryset.exclude(role_type=RoleType.SELF)
+
+    return relationship_types_queryset
 
 
 def get_patient_by_ramq_or_mrn(ramq: Optional[str], mrn: str, site: str) -> Optional[Patient]:
