@@ -117,38 +117,35 @@ def test_find_caregiver_failure() -> None:
 
 def test_update_caregiver_success() -> None:
     """Test update caregiver information success."""
-    phone_number1 = '+15141112222'
-    phone_number2 = '+15141112223'
-    language1 = 'en'
-    language2 = 'fr'
-    username1 = 'username-1'
-    username2 = 'username-2'
-    user = User(phone_number=phone_number1, language=language1, username=username1)
+    email = 'test@example.com'
+    phone_number = '+15141112223'
+    language = 'fr'
+    username = 'username-2'
+    user = User(email='foo@bar.com', phone_number='+15141112222', language='en', username='username-1')
 
-    utils.update_caregiver(user, username2, language2, phone_number2)
+    utils.update_caregiver(user, email, username, language, phone_number)
 
     user.refresh_from_db()
-    assert user.language == language2
-    assert user.phone_number == phone_number2
-    assert user.username == username2
+    assert user.email == email
+    assert user.language == language
+    assert user.phone_number == phone_number
+    assert user.username == username
 
 
 def test_update_caregiver_failure() -> None:
     """Test update caregiver information failure."""
-    phone_number1 = '+15141112222'
-    phone_number2 = '11111112223'
-    language1 = 'en'
-    language2 = 'fr'
-    username1 = 'username-1'
-    username2 = 'username-2'
-    user = User(phone_number=phone_number1, language=language1, username=username1)
+    email = 'test@example.com'
+    phone_number = '11111112223'
+    language = 'en'
+    username = 'username-1'
+    user = User(email='foo@bar.com', phone_number=phone_number, language=language, username=username)
 
     expected_message = "{'phone_number': ['Enter a valid value.']}"
     with assertRaisesMessage(
         ValidationError,
         expected_message,
     ):
-        utils.update_caregiver(user, username2, language2, phone_number2)
+        utils.update_caregiver(user, email, username, language, phone_number)
 
 
 def test_replace_caregiver() -> None:

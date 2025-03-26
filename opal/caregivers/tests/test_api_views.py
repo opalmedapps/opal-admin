@@ -19,7 +19,7 @@ from rest_framework.test import APIClient
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers import models as caregiver_models
 from opal.patients import factories as patient_factories
-from opal.patients.factories import Patient, Relationship
+from opal.patients.factories import Relationship
 from opal.users import factories as user_factories
 from opal.users.models import Caregiver, User
 
@@ -1027,10 +1027,8 @@ class TestRegistrationCompletionView:
         """Test api registration register success."""
         api_client.force_login(user=admin_user)
         # Build relationships: code -> relationship -> patient
-        patient = Patient()
-        caregiver = caregiver_factories.CaregiverProfile()
-        relationship = Relationship(patient=patient, caregiver=caregiver)
-        registration_code = caregiver_factories.RegistrationCode(relationship=relationship)
+        registration_code = caregiver_factories.RegistrationCode()
+        caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
 
         response = api_client.post(
             reverse(
@@ -1117,6 +1115,7 @@ class TestRegistrationCompletionView:
         api_client.force_login(user=admin_user)
 
         registration_code = caregiver_factories.RegistrationCode()
+        caregiver_factories.EmailVerification(caregiver=registration_code.relationship.caregiver, is_verified=True)
 
         invalid_data: dict[str, Any] = copy.deepcopy(self.input_data)
         invalid_data['caregiver']['phone_number'] = '1234567890'
@@ -1176,3 +1175,79 @@ class TestRegistrationCompletionView:
         assert relationship.caregiver.user.id == caregiver.id
         assert not Caregiver.objects.filter(username=skeleton.username).exists()
         assert not caregiver_models.CaregiverProfile.objects.filter(user=skeleton).exists()
+
+    def test_email_not_verified_new_caregiver(self, api_client: APIClient, admin_user: User) -> None:
+        """The registration fails if the email address wasn't verified when it is a new caregiver."""
+        api_client.force_login(user=admin_user)
+        caregiver = caregiver_factories.CaregiverProfile(user__email='')
+        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver)
+        caregiver_factories.EmailVerification(
+            caregiver=registration_code.relationship.caregiver,
+            email='foo@bar.com',
+            is_verified=False,
+        )
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.input_data,
+        )
+
+        assert response.status_code != HTTPStatus.OK
+        registration_code.refresh_from_db()
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.NEW
+        assert 'Caregiver email is not verified' in response.content.decode()
+
+    def test_email_not_verified_existing_caregiver(self, api_client: APIClient, admin_user: User) -> None:
+        """The registration succeeds with no email verification when it is an existing caregiver."""
+        api_client.force_login(user=admin_user)
+        # create an existing caregiver
+        caregiver_factories.CaregiverProfile(user__username='test-username')
+        caregiver = caregiver_factories.CaregiverProfile(
+            user__first_name='Ske',
+            user__last_name='leton',
+            user__username='skeleton',
+            user__email='',
+        )
+        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver=caregiver)
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.input_data,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        registration_code.refresh_from_db()
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
+        assert Caregiver.objects.count() == 1
+
+    def test_verified_email_copied(self, api_client: APIClient, admin_user: User) -> None:
+        """The verified email is copied to the caregiver."""
+        api_client.force_login(user=admin_user)
+        caregiver_user = user_factories.Caregiver(email='')
+        registration_code = caregiver_factories.RegistrationCode(relationship__caregiver__user=caregiver_user)
+        caregiver_factories.EmailVerification(
+            caregiver=registration_code.relationship.caregiver,
+            email='foo@bar.com',
+            is_verified=True,
+        )
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=self.input_data,
+        )
+
+        assert response.status_code == HTTPStatus.OK
+
+        registration_code.refresh_from_db()
+        assert registration_code.status == caregiver_models.RegistrationCodeStatus.REGISTERED
+        caregiver_user.refresh_from_db()
+        assert caregiver_user.email == 'foo@bar.com'

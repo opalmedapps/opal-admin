@@ -196,8 +196,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
 
         email = input_serializer.validated_data['email']
         #  Check whether the email is already registered
-        caregiver = Caregiver.objects.filter(email=email).first()
-        if caregiver:
+        if Caregiver.objects.filter(email=email).exists():
             raise drf_serializers.ValidationError(
                 _('The email is already registered.'),
             )
@@ -205,7 +204,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         verification_code = generate_random_number(constants.VERIFICATION_CODE_LENGTH)
         caregiver_profile = registration_code.relationship.caregiver
         try:
-            email_verification = registration_code.relationship.caregiver.email_verifications.get(
+            email_verification = caregiver_profile.email_verifications.get(
                 email=email,
             )
         except EmailVerification.DoesNotExist:
@@ -236,7 +235,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
 
         return Response()
 
-    def _send_verification_code_email(  # noqa: WPS210
+    def _send_verification_code_email(
         self,
         email_verification: EmailVerification,
         user: User,
@@ -278,7 +277,7 @@ class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
 
     permission_classes = (IsRegistrationListener,)
 
-    def post(self, request: Request, code: str) -> Response:  # noqa: WPS210
+    def post(self, request: Request, code: str) -> Response:
         """
         Verify that the provided code matches the expected one.
 
@@ -338,7 +337,7 @@ class RegistrationCompletionView(APIView):
             data=request.data,
         )
         serializer.is_valid(raise_exception=True)
-        register_data = serializer.validated_data
+        validated_data = serializer.validated_data
 
         registration_code = get_object_or_404(
             caregiver_models.RegistrationCode.objects.select_related(
@@ -346,39 +345,56 @@ class RegistrationCompletionView(APIView):
                 'relationship__caregiver__user',
             ).filter(code=code, status=caregiver_models.RegistrationCodeStatus.NEW),
         )
+        caregiver_data = validated_data['relationship']['caregiver']
+        existing_caregiver = utils.find_caregiver(caregiver_data['user']['username'])
+        relationship = registration_code.relationship
 
         try:  # noqa: WPS229
             utils.update_registration_code_status(registration_code)
-
-            utils.update_patient_legacy_id(
-                registration_code.relationship.patient,
-                register_data['relationship']['patient']['legacy_id'],
-            )
-
-            existing_caregiver = utils.find_caregiver(register_data['relationship']['caregiver']['user']['username'])
+            utils.update_patient_legacy_id(relationship.patient, validated_data['relationship']['patient']['legacy_id'])
 
             if existing_caregiver:
-                utils.replace_caregiver(existing_caregiver, registration_code.relationship)
+                utils.replace_caregiver(existing_caregiver, relationship)
             else:
-                caregiver_data = register_data['relationship']['caregiver']['user']
-                utils.update_caregiver(
-                    registration_code.relationship.caregiver.user,
-                    caregiver_data['username'],
-                    caregiver_data['language'],
-                    caregiver_data['phone_number'],
-                )
-                utils.update_caregiver_profile(
-                    registration_code.relationship.caregiver,
-                    register_data['relationship']['caregiver']['legacy_id'],
-                )
+                email_verification = relationship.caregiver.email_verifications.filter(is_verified=True)
 
-            caregiver_profile = registration_code.relationship.caregiver
-            utils.insert_security_answers(
-                caregiver_profile,
-                register_data['security_answers'],
-            )
+                if email_verification.count() != 1:
+                    raise drf_serializers.ValidationError(
+                        _('Caregiver email is not verified.'),
+                    )
+
+                self._update_caregiver(relationship.caregiver, email_verification[0].email, caregiver_data)
+
+            utils.insert_security_answers(relationship.caregiver, validated_data['security_answers'])
         except ValidationError as exception:
             transaction.set_rollback(True)
             raise serializers.ValidationError({'detail': str(exception.args)})
 
         return Response()
+
+    def _update_caregiver(
+        self,
+        caregiver_profile: caregiver_models.CaregiverProfile,
+        email: str,
+        caregiver_data: dict[str, Any],
+    ) -> None:
+        """
+        Update the caregiver with the provided data.
+
+        Args:
+            caregiver_profile: the caregiver profile instance to update
+            email: the verified email
+            caregiver_data: the validated data specific to the caregiver
+        """
+        caregiver_data = caregiver_data['user']
+        utils.update_caregiver(
+            caregiver_profile.user,
+            email,
+            caregiver_data['username'],
+            caregiver_data['language'],
+            caregiver_data['phone_number'],
+        )
+        utils.update_caregiver_profile(
+            caregiver_profile,
+            caregiver_data['legacy_id'],
+        )

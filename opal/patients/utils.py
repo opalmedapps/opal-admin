@@ -108,16 +108,18 @@ def find_caregiver(username: str) -> Optional[User]:
     return Caregiver.objects.filter(username=username).first()
 
 
-def update_caregiver(caregiver: User, username: str, language: str, phone_number: str) -> None:
+def update_caregiver(caregiver: User, email: str, username: str, language: str, phone_number: str) -> None:
     """
     Update the caregiver with the given information.
 
     Args:
         caregiver: the caregiver instance to update
+        email: the caregiver's email
         username: the caregiver's username
         language: the caregiver's language
         phone_number: the caregiver's phone number
     """
+    caregiver.email = email
     caregiver.username = username
     caregiver.language = language
     caregiver.phone_number = phone_number
