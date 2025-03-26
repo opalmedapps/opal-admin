@@ -19,7 +19,7 @@ def is_legacy_model(model: Type[Model]) -> bool:
     Returns:
         `True`, if it is a legacy model, `False` otherwise
     """
-    return model._meta.app_label == 'legacy' and not model._meta.managed
+    return model._meta.app_label == 'legacy' and not model._meta.managed  # noqa: WPS437
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -39,4 +39,4 @@ def _manage_unmanaged_models() -> None:
     unmanaged_models = [model for model in models if is_legacy_model(model)]
 
     for model in unmanaged_models:
-        model._meta.managed = True
+        model._meta.managed = True  # noqa: WPS437
