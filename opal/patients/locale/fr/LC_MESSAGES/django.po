@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-15 16:22-0400\n"
+"POT-Creation-Date: 2022-07-13 15:11-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -63,6 +63,22 @@ msgid "Caregiver Relationship Types"
 msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py
+msgid "Female"
+msgstr "Féminin"
+
+#: opal/patients/models.py
+msgid "Male"
+msgstr "Masculin"
+
+#: opal/patients/models.py
+msgid "Other"
+msgstr "Autre"
+
+#: opal/patients/models.py
+msgid "Unknown"
+msgstr "Inconnu"
+
+#: opal/patients/models.py
 msgid "First Name"
 msgstr "Prénom"
 
@@ -71,8 +87,16 @@ msgid "Last Name"
 msgstr "Nom de famille"
 
 #: opal/patients/models.py
-msgid "Patient Date of Birth"
-msgstr "Date de naissance du patient"
+msgid "Date of Birth"
+msgstr "Date de naissance"
+
+#: opal/patients/models.py
+msgid "Sex"
+msgstr "Sexe"
+
+#: opal/patients/models.py
+msgid "Health Insurance Number"
+msgstr "Numéro d'assurance maladie"
 
 #: opal/patients/models.py
 msgid "Caregivers"
@@ -173,15 +197,6 @@ msgstr ""
 msgid "No relationship types defined."
 msgstr ""
 
-#: opal/patients/templates/patients/relationship_type/action_column.html
-msgid "Edit"
-msgstr ""
-
-#: opal/patients/templates/patients/relationship_type/action_column.html
-#: opal/patients/templates/patients/relationship_type/confirm_delete.html
-msgid "Delete"
-msgstr ""
-
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
 msgstr ""
@@ -195,6 +210,10 @@ msgstr ""
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Yes"
 msgstr ""
+
+#: opal/patients/templates/patients/relationship_type/confirm_delete.html
+msgid "Delete"
+msgstr "Supprimer"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 #: opal/patients/templates/patients/relationship_type/form.html

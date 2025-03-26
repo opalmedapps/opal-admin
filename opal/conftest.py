@@ -1,7 +1,9 @@
 """This module is used to provide configuration, fixtures, and plugins for pytest."""
+from pathlib import Path
 from typing import Type
 
 from django.apps import apps
+from django.conf import LazySettings
 from django.db.models import Model
 from django.test import Client
 
@@ -74,3 +76,14 @@ def _manage_unmanaged_models() -> None:
 
     for model in unmanaged_models:
         model._meta.managed = True  # noqa: WPS437
+
+
+@pytest.fixture(autouse=True)
+def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
+    """Fixture changing the `MEDIA_ROOT` value of the `settings.py`.
+
+    Args:
+        tmp_path (Path): Object to a temporary directory which is unique to each test function
+        settings (LazySettings): All the configurations of the `opalAdmin backend` service
+    """
+    settings.MEDIA_ROOT = str(tmp_path.joinpath('media/'))

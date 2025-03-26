@@ -8,7 +8,7 @@ from .models import Institution, Site
 class InstitutionTranslationOptions(TranslationOptions):
     """This class provides translation options for [Institution][opal.hospital_settings.models.Institution]."""
 
-    fields = ('name',)
+    fields = ('name', 'logo')
     required_languages = ('en', 'fr')
 
 

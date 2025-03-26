@@ -2,72 +2,38 @@ import decimal
 
 import pytest
 
-from opal.hospital_settings.views import InstitutionCreateUpdateView, SiteCreateUpdateView
-
 from .. import factories
+from ..forms import InstitutionForm
+from ..models import Institution
+from ..views import SiteCreateUpdateView
 
 pytestmark = pytest.mark.django_db
 
 
-def test_institution_create() -> None:
-    """Ensure that the institution create form is valid."""
-    form_data = {
-        'name_en': 'TEST1_EN',
-        'name_fr': 'TEST1_FR',
-        'code': 'TST',
-    }
-
-    view = InstitutionCreateUpdateView()
-    form = view.get_form_class()(data=form_data)
-
-    assert form.is_valid()
+def test_institution_form_is_valid(institution_form: InstitutionForm) -> None:
+    """Ensure that the institution form is valid."""
+    assert institution_form.is_valid()
 
 
-def test_institution_create_with_missing_code() -> None:
-    """Ensure that the institution form checks for missing code field at the moment of creating a new institution."""
-    form_data = {
-        'name_en': 'TEST1_EN',
-        'name_fr': 'TEST1_FR',
-    }
-
-    view = InstitutionCreateUpdateView()
-    form = view.get_form_class()(data=form_data)
-
-    assert not form.is_valid()
+def test_institution_form_with_missing_code(incomplete_institution_form: InstitutionForm) -> None:
+    """Ensure that the institution form checks for a missing code field."""
+    assert not incomplete_institution_form.is_valid()
 
 
-def test_institution_update() -> None:
-    """Ensure that the institution form checks for missing code field at the moment of creating a new institution."""
-    institution = factories.Institution()
-
-    form_data = {
-        'name_en': 'TEST1_EN',
-        'name_fr': 'TEST1_FR',
-        'code': 'TST',
-    }
-
-    view = InstitutionCreateUpdateView()
-    form = view.get_form_class()(data=form_data, instance=institution)
-
-    assert form.is_valid()
-    form.save()
-    institution.refresh_from_db()
-    assert institution.name == 'TEST1_EN'
+def test_institution_update(institution_form: InstitutionForm) -> None:
+    """Ensure that a valid institution form can be saved."""
+    institution_form.save()
+    assert Institution.objects.all()[0].name_en == institution_form.data['name_en']
 
 
-def test_institution_update_with_missing_field() -> None:
-    """Ensure that the institution form checks for missing code field at the moment of updating an institution."""
-    institution = factories.Institution()
+def test_institution_update_with_missing_field(incomplete_institution_form: InstitutionForm) -> None:
+    """Ensure that the institution form checks for missing code field when creating/updating an institution."""
+    try:
+        incomplete_institution_form.save()
+    except ValueError:
+        assert not incomplete_institution_form.is_valid()
 
-    form_data = {
-        'name_en': 'TEST1_EN_EDIT',
-        'name_fr': 'TEST1_FR_EDIT',
-    }
-
-    view = InstitutionCreateUpdateView()
-    form = view.get_form_class()(data=form_data, instance=institution)
-
-    assert not form.is_valid()
+    assert Institution.objects.count() == 0
 
 
 # SITES
@@ -199,7 +165,13 @@ def test_site_update_with_missing_field() -> None:
     view = SiteCreateUpdateView()
     form = view.get_form_class()(data=form_data, instance=site)
 
-    assert not form.is_valid()
+    try:
+        form.save()
+    except ValueError:
+        assert not form.is_valid()
+
+    site.refresh_from_db()
+    assert site.name_en != form.data['name_en']
 
 
 def test_site_update_nonnumeric_location_fields() -> None:
