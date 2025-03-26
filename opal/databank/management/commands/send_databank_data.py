@@ -207,7 +207,6 @@ class Command(BaseCommand):  # noqa: WPS214
             Any: json object containing response for each individual patient message, or empty if send failed
         """
         response = None
-        print(json.dumps(data, default=str))
         try:
             response = requests.post(
                 url=f'{settings.OIE_HOST}/databank/post',

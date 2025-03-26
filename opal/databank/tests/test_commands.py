@@ -821,7 +821,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert shared_data.data_id == 124
 
     def test_update_metadata_with_diagnosis_data(self) -> None:
-        """Test just the metadata update part of the diagnosis data type."""
+        """Test just the isolated creation of diagnosis-type SharedData instances."""
         sent_diagnoses_data = [
             {
                 'GUID': 'a12c171c8cee87343f14eaae2b034b5a0499abe1f61f1a4bd57d51229bce4274',
