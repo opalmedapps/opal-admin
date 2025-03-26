@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-17 17:06-0400\n"
+"POT-Creation-Date: 2023-08-10 14:44-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -99,6 +99,10 @@ msgstr "Échantillon de quantité"
 #: opal/health_data/models.py
 msgid "Quantity Samples"
 msgstr "Échantillons de quantité"
+
+#: opal/health_data/templates/chart_display.html
+msgid "Smart Devices Data"
+msgstr "Données des appareils intelligents"
 
 #: opal/health_data/templates/chart_display.html
 msgid "No data found for"
