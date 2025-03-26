@@ -116,6 +116,7 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.template.context_processors.media',
                 'opal.core.context_processors.opal_global_settings',
+                'opal.core.context_processors.current_app',
             ],
             # make slippers available in all templates
             'builtins': ['slippers.templatetags.slippers'],
@@ -429,11 +430,16 @@ DJANGO_EASY_AUDIT_UNREGISTERED_URLS_DEFAULT = ['^/admin/jsi18n/', '^/static/', '
 DJANGO_EASY_AUDIT_READONLY_EVENTS = True
 
 # Crispy forms
+# https://django-crispy-forms.readthedocs.io/en/latest/index.html
 #
 # Use Twitter Bootstrap (version 5) as a default template for the project
+# https://django-crispy-forms.readthedocs.io/en/latest/layouts.html#overriding-project-templates
 # Override allowed template packs for bootstrap5
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
+# Make crispy fail loud in debug
+# https://django-crispy-forms.readthedocs.io/en/latest/crispy_tag_forms.html#make-crispy-forms-fail-loud
+CRISPY_FAIL_SILENTLY = not DEBUG
 
 
 # Django Tables2
