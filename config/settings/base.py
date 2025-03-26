@@ -467,7 +467,7 @@ REST_FRAMEWORK = {
 # ------------------------------------------------------------------------------
 # See https://github.com/adamchainz/django-cors-headers#setup
 # A list of origins that are authorized to make cross-site HTTP requests.
-# Make CORS settings optional
+# CORS settings are optional
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
 CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS', default=False)
 
