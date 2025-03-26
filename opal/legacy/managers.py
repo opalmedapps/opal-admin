@@ -136,8 +136,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             scheduledstarttime__date__gte=timezone.localtime(timezone.now()).date(),
             patientsernum__in=Relationship.objects.get_patient_id_list_for_caregiver(user_name),
             state='Active',
-        ).exclude(
-            status='Deleted',
+            status='Open',
         ).order_by(
             'scheduledstarttime',
         ).first()
