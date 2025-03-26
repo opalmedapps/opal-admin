@@ -219,3 +219,43 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         command._send_to_oie_and_handle_response({})
         captured = capsys.readouterr()
         assert 'OIE Error: request failed' in captured.err
+
+    def test_demographics_data_sent_first(self, mocker: MockerFixture) -> None:
+        """Check that demo data is always the first to be sent to ensure candidate exists in external databank."""
+        django_pat1 = patient_factories.Patient(ramq='SIMM12345678', legacy_id=51)
+        legacy_pat1 = legacy_factories.LegacyPatientFactory(patientsernum=django_pat1.legacy_id)
+        last_sync = datetime(2022, 1, 1)
+
+        databank_factories.DatabankConsent(
+            patient=django_pat1,
+            has_appointments=True,
+            has_diagnoses=True,
+            has_demographics=True,
+            has_labs=True,
+            last_synchronized=timezone.make_aware(last_sync),
+        )
+
+        # Create fake data for different modules
+        legacy_factories.LegacyAppointmentFactory(appointmentsernum=1, patientsernum=legacy_pat1)
+        legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1)
+        legacy_factories.LegacyPatientTestResultFactory(patient_ser_num=legacy_pat1)
+
+        # Mock the post request to simulate data being sent
+        RequestMockerTest.mock_requests_post(mocker, {'status': 'success'})
+
+        message, error = self._call_command('send_databank_data')
+
+        # Split the message into lines for easier parsing
+        message_lines = message.split('\n')
+
+        # Find the index of the first line that contains each message type
+        demographics_index = next((idx for idx, line in enumerate(message_lines) if 'Demographics found for' in line), -1)
+        labs_index = next((idx for idx, line in enumerate(message_lines) if 'Labs found for' in line), -1)
+        appointment_index = next((idx for idx, line in enumerate(message_lines) if 'Appointments found for' in line), -1)
+        diagnosis_index = next((idx for idx, line in enumerate(message_lines) if 'Diagnoses found for' in line), -1)
+        # Check that the Demographics message index is smaller than the indices of other messages
+        assert demographics_index != -1
+        assert labs_index > demographics_index
+        assert appointment_index > demographics_index
+        assert diagnosis_index > demographics_index
+        assert not error
