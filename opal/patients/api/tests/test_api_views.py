@@ -156,6 +156,7 @@ class TestApiRetrieveRegistrationDetails:
                 'date_of_birth': datetime.strftime(patient.date_of_birth, '%Y-%m-%d'),
                 'sex': patient.sex,
                 'ramq': patient.ramq,
+                'uuid': str(patient.uuid),
             },
             'hospital_patients': [
                 {
