@@ -461,3 +461,21 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
             'source_system',
             'last_updated',
         ).order_by('component_result_date', 'test_group_indicator', 'test_component_sequence')
+
+    def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet['LegacyPatientTestResult']:
+        """
+        Get the queryset of unread lab results for a given patient.
+
+        Args:
+            patient_sernum: Patient's sernum used to retrieve unread lab results
+            username: Firebase username making the request
+
+        Returns:
+            Queryset of unread lab results
+        """
+        return self.filter(
+            patient_ser_num=patient_sernum,
+            available_at__gt=timezone.now(),
+        ).exclude(
+            read_by__contains=username,
+        )
