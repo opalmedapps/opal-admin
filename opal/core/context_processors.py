@@ -36,10 +36,8 @@ def current_app(request: HttpRequest) -> dict[str, Any]:
     context: dict[str, Any] = {}
 
     if request.resolver_match:
-        print(request.resolver_match)
-        print(request.resolver_match.app_name)
         app_name = request.resolver_match.app_name.replace('-', '_')
-        print(apps.get_app_configs())
+
         if app_name:
             context['app_verbose_name'] = apps.get_app_config(app_name).verbose_name
 
