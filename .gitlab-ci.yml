@@ -152,7 +152,7 @@ django:
     - python manage.py validate_templates
     # compile messages to ensure there are no fuzzy strings
     - echo "Compiling messages (fix fuzzy strings in case of errors) ..."
-    - python manage.py compilemessages
+    - python manage.py compilemessages --ignore .venv
   needs:
     - job: setup
 
