@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any
 
 import pytest
+from _pytest.logging import LogCaptureFixture  # noqa: WPS436
 from pytest_mock.plugin import MockerFixture
 
 from opal.hospital_settings import factories
@@ -204,9 +205,19 @@ def test_get_site_instance_success() -> None:
 
 
 @pytest.mark.django_db()
-def test_get_site_instance_failed() -> None:
-    """Ensure that _get_site_instance() pass invalid receiving facility raising exception."""
+def test_get_site_instance_failed(caplog: LogCaptureFixture) -> None:
+    """Ensure that _get_site_instance() doesn't get Site instance and logs an error."""
     factories.Site(code='RVH')
 
-    with pytest.raises(Site.DoesNotExist):
-        _get_site_instance(receiving_facility='')
+    error = 'A Site instance is not found due to the receiving facility is empty string.'
+    site = _get_site_instance(receiving_facility='')
+    assert caplog.records[0].message == error
+    assert caplog.records[0].levelname == 'ERROR'
+    assert site == Site(
+        name='',
+        street_name='',
+        city='',
+        province_code='',
+        postal_code='',
+        contact_telephone='',
+    )
