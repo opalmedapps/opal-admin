@@ -527,7 +527,7 @@ def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
     patient_uuid = uuid.uuid4()
     utils.initialize_new_opal_patient(mrn_list, patient_uuid)
 
-    mock_error_logger.assert_called_with('Failed to initialize patient via ORMS', mocker.ANY, mocker.ANY, mocker.ANY)
+    mock_error_logger.assert_any_call('Failed to initialize patient via ORMS')
 
 
 def test_create_access_request_existing() -> None:
