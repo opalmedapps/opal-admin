@@ -653,7 +653,6 @@ def fetch_patient_demographic_diagnosis_summary(
         email=models.F('patient__email'),
         language=models.F('patient__language'),
         registration_date=models.F('patient__registration_date'),
-        latest_diagnosis=models.Max('patient__legacydiagnosis__diagnosis_ser_num'),
         latest_diagnosis_description=models.F('patient__legacydiagnosis__description_en'),
         latest_diagnosis_date=models.F('patient__legacydiagnosis__creation_date'),
     ).values(
