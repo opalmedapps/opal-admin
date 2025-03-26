@@ -526,7 +526,6 @@ def test_fetch_questionnaire_from_db(mocker: MockerFixture) -> None:
     external_patient_id = 51
     result = legacy_utils._fetch_questionnaires_from_db(external_patient_id)
 
-    print(result)
     assert len(result) == 1
     assert result[0]['questionnaire_id'] == 12
     assert result[0]['questionnaire_nickname'] == 'Edmonton Symptom Assessment System'
