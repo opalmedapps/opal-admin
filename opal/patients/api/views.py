@@ -44,7 +44,7 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
         return RegistrationCodePatientSerializer
 
 
-class CaregiverView(ListAPIView):
+class CaregiverRelationshipView(ListAPIView):
     """REST API `ListAPIView` returning list of caregivers for a given patient."""
 
     serializer_class = CaregiverRelationshipSerializer
@@ -56,4 +56,8 @@ class CaregiverView(ListAPIView):
         Returns:
             List of caregiver profiles for a given patient
         """
-        return Relationship.objects.filter(patient__legacy_id=self.kwargs['legacy_patient_id'])
+        return Relationship.objects.select_related(
+            'caregiver__user',
+        ).filter(
+            patient__legacy_id=self.kwargs['legacy_patient_id'],
+        )
