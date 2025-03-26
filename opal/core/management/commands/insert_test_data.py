@@ -16,8 +16,8 @@ from dateutil.relativedelta import relativedelta
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType
+from opal.test_results.models import GeneralTest, Note, PathologyObservation, TestType
 from opal.users.models import Caregiver
-from opal.test_results.models import GeneralTest, PathologyObservation, Note, TestType
 
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
 PARKING_URLS_MUHC = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')

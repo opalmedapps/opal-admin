@@ -10,8 +10,8 @@ from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
 from opal.patients import factories
 from opal.patients.models import HospitalPatient, Patient, Relationship
+from opal.test_results.models import GeneralTest, Note, PathologyObservation
 from opal.users.models import Caregiver, User
-from opal.test_results.models import GeneralTest, PathologyObservation, Note
 
 pytestmark = pytest.mark.django_db()
 
