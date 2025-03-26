@@ -464,8 +464,6 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     # set default request format to JSON
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    # TODO: Globally set the DEFAULT_PARSER_CLASSES options?
-    # Or do we want to leave the defaults and specify the HL7Parser on a per-APIView basis?
 }
 
 # django-cors-headers

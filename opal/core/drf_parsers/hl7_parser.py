@@ -1,15 +1,16 @@
 """Module which provides HL7-parsing into JSON data for any generic HL7 segment-structured message."""
 from datetime import datetime
 from pathlib import Path
-from typing import IO, Any, Mapping, TypedDict
+from typing import IO, Any, Mapping
 from django.utils import timezone
 from hl7apy.core import Segment
 from hl7apy.parser import parse_message
 from rest_framework.parsers import BaseParser
-
+from collections import defaultdict
+from opal.hospital_settings.models import Site
 
 class HL7Parser(BaseParser):
-    """Parse HL7-v2 messages and return TypedDict data."""
+    """Parse HL7-v2 messages and return dictionary data."""
 
     media_type = 'application/hl7-v2+er7'
 
@@ -24,15 +25,13 @@ class HL7Parser(BaseParser):
             'RXR': self._parse_rxr_segment,
             'NTE': self._parse_nte_segment,
         }
-        # Initialize a dictionary to hold the parsed data, one PID segment only, and all other segments as lists.
-        self.message_dict: TypedDict = {name: {} if name =='PID' else [] for name in self.segment_parsers.keys()}
 
     def parse(
         self,
         stream: IO,
-        media_type: str | None = 'application/hl7-v2+er7',
+        media_type: str | None = None,
         parser_context: Mapping[str, Any] | None = None,
-    ) -> TypedDict:
+    ) -> defaultdict[Any, list]:
         """Parse the incoming bytestream as an HL7v2 message and return JSON.
 
         Args:
@@ -41,32 +40,39 @@ class HL7Parser(BaseParser):
             parser_context: Additional request metadata to specify parsing functionality
 
         Returns:
-            TypedDict object containing the parsed HL7v2 message
+            dictionary object containing the parsed HL7v2 message
         """
+        # Initialize the message_dict to hold parsed data
+        message_dict = defaultdict(list)
+
         # Read the incoming stream into a string
         raw_data = stream.read()
         # Normalize line endings to CR
         hl7_message = raw_data.replace('\r\n', '\r').replace('\n', '\r')
+
+        # Check for a parser context which defines specific segments to be parsed
+        segments_to_parse = parser_context.get('segments_to_parse') if parser_context else None
+
         # Use hl7apy to parse the message, find_groups=False disables the higher level segment grouping
         # For example, find_groups would typically bundles PID and PV1 into their own 'RDE_O01_PATIENT' grouping)
         for segment in parse_message(hl7_message, find_groups=False).children:
-            # TODO: Do we want to consider using the parser_context to determine which segments to parse?
-            # This could reduce parse time since currently this class will parse every segment it finds which has a parse method
-            # If instead we had the APIView pass a context (a.k.a which HL7 segments it needs) we could skip parsing un-wanted segments
-            # This would become more useful/time-saving as we define additional parse methods for new HL7 segment types (e.g OBX for lab data)
             segment_name = segment.name
+
+            # Skip parsing this segment if segments_to_parse is set and does not request this segment
+            if segments_to_parse and segment_name not in segments_to_parse:
+                continue
+
             # Find the appropriate parsing function based on the segment name
             parse_function = self.segment_parsers.get(segment_name)
-
             # If a parsing function is defined, use it to parse the segment
             if parse_function and segment_name=='PID':
                 # Only 1 PID segment is ever expected
-                self.message_dict[segment_name] = parse_function(segment)
+                message_dict[segment_name] = parse_function(segment)
             elif parse_function:
                 # Other segment types can have multiple
-                self.message_dict[segment_name].append(parse_function(segment))
+                message_dict[segment_name].append(parse_function(segment))
 
-        return self.message_dict
+        return message_dict
 
     def _parse_pid_segment(self, segment: Segment) -> dict:
         """Extract patient data from an HL7v2 PID segment.
@@ -86,8 +92,7 @@ class HL7Parser(BaseParser):
             'date_of_birth': datetime.strptime(segment.pid_7.to_er7(), '%Y%m%d').date(),
             'sex': segment.pid_8.to_er7(),
             'ramq': segment.pid_2.pid_2_1.to_er7(),
-            # TODO: Kill the mrn_sites which aren't in the 'approved/existing site list'
-            'mrn_sites': [(mrn_site.pid_3_1.to_er7(), mrn_site.pid_3_4.to_er7()) for mrn_site in segment.pid_3],
+            'mrn_sites': self._remove_invalid_sites([(mrn_site.pid_3_1.to_er7(), mrn_site.pid_3_4.to_er7()) for mrn_site in segment.pid_3]),
             'address_street': segment.pid_11.pid_11_1.to_er7(),
             'address_city': segment.pid_11.pid_11_3.to_er7(),
             'address_province': segment.pid_11.pid_11_4.to_er7(),
@@ -101,11 +106,13 @@ class HL7Parser(BaseParser):
     def _parse_pv1_segment(self, segment: Segment) -> dict:
         """Extract patient visit data from an HL7v2 PV1 segment.
 
+        https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/PV1
+
         Args:
             segment: HL7 segment data
 
         Returns:
-            Parsed patient data
+            Parsed patient visit data
         """
         return {
             'location_poc': segment.pv1_3.pv1_3_1.to_er7(),
@@ -118,11 +125,13 @@ class HL7Parser(BaseParser):
     def _parse_orc_segment(self, segment: Segment) -> dict:
         """Extract common order data from an HL7v2 ORC segment.
 
+        https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/ORC
+
         Args:
             segment: HL7 segment data
 
         Returns:
-            Parsed patient data
+            Parsed order control data
         """
         return {
             'order_control': segment.orc_1.orc_1_1.to_er7(),
@@ -133,10 +142,10 @@ class HL7Parser(BaseParser):
             'order_interval_pattern': segment.orc_7.orc_7_2_1.to_er7(),
             'order_interval_duration': segment.orc_7.orc_7_2_2.to_er7(),
             'order_duration': segment.orc_7.orc_7_3.to_er7(),
-            'order_start_datetime': timezone.make_aware(datetime.strptime(segment.orc_7.orc_7_4.to_er7(), '%Y%m%d%H%M')),
-            'order_end_datetime': timezone.make_aware(datetime.strptime(segment.orc_7.orc_7_5.to_er7(), '%Y%m%d%H%M')),
+            'order_start_datetime': self._format_datetime_from_er7(segment.orc_7.orc_7_4.to_er7(), '%Y%m%d%H%M'),
+            'order_end_datetime': self._format_datetime_from_er7(segment.orc_7.orc_7_5.to_er7(), '%Y%m%d%H%M'),
             'order_priority': segment.orc_7.orc_7_6.to_er7(),
-            'entered_at': timezone.make_aware(datetime.strptime(segment.orc_9.orc_9_1.to_er7(), '%Y%m%d%H%M%S')),
+            'entered_at': self._format_datetime_from_er7(segment.orc_9.orc_9_1.to_er7(), '%Y%m%d%H%M%S'),
             'entered_by_id': segment.orc_10.orc_10_1.to_er7(),
             'entered_by_family_name': segment.orc_10.orc_10_2.to_er7(),
             'entered_by_given_name': segment.orc_10.orc_10_3.to_er7(),
@@ -146,17 +155,19 @@ class HL7Parser(BaseParser):
             'ordered_by_id': segment.orc_12.orc_12_1.to_er7(),
             'order_by_family_name': segment.orc_12.orc_12_2.to_er7(),
             'order_by_given_name': segment.orc_12.orc_12_3.to_er7(),
-            'effective_at': timezone.make_aware(datetime.strptime(segment.orc_15.orc_15_1.to_er7(), '%Y%m%d%H%M%S')),
+            'effective_at': self._format_datetime_from_er7(segment.orc_15.orc_15_1.to_er7(), '%Y%m%d%H%M%S'),
         }
 
     def _parse_rxe_segment(self, segment: Segment) -> dict:
         """Extract pharmacy encoding data from an HL7v2 RXE segment.
 
+        https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXE
+
         Args:
             segment: HL7 segment data
 
         Returns:
-            Parsed patient data
+            Parsed pharmacy encoding data
         """
         return {
             'pharmacy_quantity': segment.rxe_1.rxe_1_1.to_er7(),
@@ -164,8 +175,8 @@ class HL7Parser(BaseParser):
             'pharmacy_interval_pattern': segment.rxe_1.rxe_1_2_1.to_er7(),
             'pharmacy_interval_duration': segment.rxe_1.rxe_1_2_2.to_er7(),
             'pharmacy_duration': segment.rxe_1.rxe_1_3.to_er7(),
-            'pharmacy_start_datetime': timezone.make_aware(datetime.strptime(segment.rxe_1.rxe_1_4.to_er7(), '%Y%m%d%H%M')),
-            'pharmacy_end_datetime': timezone.make_aware(datetime.strptime(segment.rxe_1.rxe_1_5.to_er7(), '%Y%m%d%H%M')),
+            'pharmacy_start_datetime': self._format_datetime_from_er7(segment.rxe_1.rxe_1_4.to_er7(), '%Y%m%d%H%M'),
+            'pharmacy_end_datetime': self._format_datetime_from_er7(segment.rxe_1.rxe_1_5.to_er7(), '%Y%m%d%H%M'),
             'pharmacy_priority': segment.rxe_1.rxe_1_6.to_er7(),
             'give_identifier': segment.rxe_2.rxe_2_1.to_er7(),
             'give_text': segment.rxe_2.rxe_2_2.to_er7(),
@@ -179,9 +190,7 @@ class HL7Parser(BaseParser):
             'give_dosage_identifier': segment.rxe_6.rxe_6_1.to_er7(),
             'give_dosage_text': segment.rxe_6.rxe_6_2.to_er7(),
             'give_dosage_coding_system': segment.rxe_6.rxe_6_3.to_er7(),
-            # TODO: Do we want to replace the \\E\\.br\\E\\ with a line break character for this piece of text?
-            # Raw form looks like: `50 mg = 0.5 mL SC Q24H \\E\\.br\\E\\BLEEDING RISK- ANTICOAGULANT\\E\\.br\\E\\* HIGH ALERT  *`
-            'provider_administration_instruction': segment.rxe_7.rxe_7_1.to_er7().replace('\\E\\.br\\E\\', '\n'),
+            'provider_administration_instruction': self._fix_breaking_characters(segment.rxe_7.rxe_7_1.to_er7()),
             'dispense_amount': segment.rxe_10.rxe_10_1.to_er7(),
             'dispense_units': segment.rxe_11.rxe_11_1.to_er7(),
             'refills': segment.rxe_12.rxe_12_1.to_er7(),
@@ -197,11 +206,13 @@ class HL7Parser(BaseParser):
     def _parse_rxc_segment(self, segment: Segment) -> dict:
         """Extract pharmacy component data from an HL7v2 RXC segment.
 
+        https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXC
+
         Args:
             segment: HL7 segment data
 
         Returns:
-            Parsed patient data
+            Parsed pharmacy component data
         """
         return {
             'component_type': segment.rxc_1.rxc_1_1.to_er7(),
@@ -218,11 +229,13 @@ class HL7Parser(BaseParser):
     def _parse_rxr_segment(self, segment: Segment) -> dict:
         """Extract pharmacy route data from an HL7v2 RXR segment.
 
+        https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/RXR
+
         Args:
             segment: HL7 segment data
 
         Returns:
-            Parsed patient data
+            Parsed pharmacy route data
         """
         return {
             'route_identifier': segment.rxr_1.rxr_1_1.to_er7(),
@@ -244,11 +257,13 @@ class HL7Parser(BaseParser):
     def _parse_nte_segment(self, segment: Segment) -> dict:
         """Extract note and comment data from an HL7v2 NTE segment.
 
+        https://hl7-definition.caristix.com/v2/HL7v2.3/Segments/NTE
+
         Args:
             segment: HL7 segment data
 
         Returns:
-            Parsed patient data
+            Parsed note data
         """
         return {
             'note_id': segment.nte_1.nte_1_1.to_er7(),
@@ -256,19 +271,43 @@ class HL7Parser(BaseParser):
             'note_comment_text': segment.nte_3.nte_3_1.to_er7(),
         }
 
+    def _format_datetime_from_er7(self, field: str, format: str) -> datetime:
+        """Convert HL7-er7 format to timezone-aware datetime.
 
-from io import StringIO  # noqa: E402
+        Args:
+            field: Extracted HL7 field from the message
+            format: Isoformat for the datetime function
 
-# TODO: Remove
-def temp_demo_parse():  # noqa: WPS210
-    """Provide example usage for testing.
+        Returns:
+            Formatted datetime object
+        """
+        return timezone.make_aware(datetime.strptime(field, format))
 
-    Just open the Django shell, import this file then call hl7_parser.temp_demo_parse()
-    """
-    parent_dir = Path(__file__).resolve().parent.parent
-    with open(parent_dir.joinpath('tests').joinpath('fixtures').joinpath('marge_pharmacy.hl7v2'), 'r') as file:  # noqa: WPS221, E501
-        raw_hl7 = file.read()
-    stream = StringIO(raw_hl7)
-    parser = HL7Parser()
-    json_data = parser.parse(stream)
-    print(json_data)
+    def _fix_breaking_characters(self, field: str) -> str:
+        """Replace incorrectly encoded or interpretted characters with linebreaks.
+
+        Args:
+            field: The HL7 er7 data to be cleaned
+
+        Returns:
+            replaced string
+        """
+        return field.replace('\\E\\.br\\E\\', '\n')
+
+    def _remove_invalid_sites(self, mrn_site_list: list[tuple]) -> list[tuple] | None:
+        """Remove any identifiers using an invalid hospital site.
+
+        Example before and after:
+        [('1111111', 'MGH'), ('2222222', 'MCH'), ('9999996', 'RVH'), ('3333333', 'LAC'), ('12345678', 'HNAM_PERSONID')]
+        [('1111111', 'MGH'), ('2222222', 'MCH'), ('9999996', 'RVH'), ('3333333', 'LAC')]
+
+        Args:
+            mrn_site_list: Patient identifiers list from PID segment
+
+        Returns:
+            Filtered list containing only 'registered' sites, or None
+        """
+        # Extract the english acronym from the valid site list
+        valid_sites = {site_tuple[0] for site_tuple in Site.objects.all().values_list('acronym')}
+        # Filter out the invalid patient mrn_site identifiers
+        return [mrn_site for mrn_site in mrn_site_list if mrn_site[1] in valid_sites]
