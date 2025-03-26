@@ -69,11 +69,11 @@ class UserViewSet(
         try:
             group = Group.objects.get(name=USER_MANAGER_GROUP_NAME)
         except ObjectDoesNotExist:
-            raise NotFound(_('manager group not found.'))
+            raise NotFound(_('Manager group not found.'))
 
         clinicalstaff_user.groups.add(group.pk)
         clinicalstaff_user.save()
-        return Response({'detail': _('user was added to the managers group successfully.')}, status=HTTPStatus.OK)
+        return Response({'detail': _('User was added to the managers group successfully.')}, status=HTTPStatus.OK)
 
     @action(detail=True, methods=['put'], url_path='unset-manager-user')
     def unset_manager_user(self, request: Request, username: str = '') -> Response:
@@ -97,11 +97,31 @@ class UserViewSet(
         try:
             group = Group.objects.get(name=USER_MANAGER_GROUP_NAME)
         except ObjectDoesNotExist:
-            raise NotFound(_('manager group not found.'))
+            raise NotFound(_('Manager group not found.'))
 
         clinicalstaff_user.groups.remove(group.pk)
         clinicalstaff_user.save()
-        return Response({'detail': _('user was removed from the managers group successfully.')}, status=HTTPStatus.OK)
+        return Response({'detail': _('User was removed from the managers group successfully.')}, status=HTTPStatus.OK)
+
+    @action(detail=True, methods=['put'], url_path='deactivate-user')
+    def deactivate_user(self, request: Request, username: str = '') -> Response:
+        """
+        Handle requests for deactivating a user.
+
+        Set the attribute `is_active` to false.
+
+        Args:
+            request: HTTP request.
+            username: user's username.
+
+        Returns:
+            HTTP response with response details.
+        """
+        clinicalstaff_user = self.get_object()
+
+        clinicalstaff_user.is_active = False
+        clinicalstaff_user.save()
+        return Response({'detail': _('User was deactivated successfully.')}, status=HTTPStatus.OK)
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         """
