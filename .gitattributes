@@ -31,3 +31,5 @@ crontab text eol=lf
 # https://css-tricks.com/should-i-use-source-maps-in-production/
 *.css.map filter=lfs diff=lfs merge=lfs -text
 *.js.map filter=lfs diff=lfs merge=lfs -text
+# large SQL files for tests
+opal/tests/**/*.sql filter=lfs diff=lfs merge=lfs -text
