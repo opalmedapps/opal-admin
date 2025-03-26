@@ -15,6 +15,18 @@ from ..models import HospitalPatient, RelationshipStatus, RelationshipType
 pytestmark = pytest.mark.django_db
 
 
+def test_relationshiptype_factory() -> None:
+    """Ensure the RelationshipType factory is building properly."""
+    relationship_type = factories.RelationshipType()
+    relationship_type.full_clean()
+
+
+def test_relationshiptype_factory_multiple() -> None:
+    """Ensure the RelationshipType factory can build multiple default model instances."""
+    factories.RelationshipType()
+    factories.RelationshipType()
+
+
 def test_relationshiptype_str() -> None:
     """Ensure the `__str__` method is defined for the `RelationshipType` model."""
     relationship_type = RelationshipType(name='Test User Patient Relationship Type')
@@ -26,7 +38,8 @@ def test_relationshiptype_duplicate_names() -> None:
     factories.RelationshipType(name='Self')
 
     with assertRaisesMessage(IntegrityError, "Duplicate entry 'Self' for key 'name'"):  # type: ignore[arg-type]
-        factories.RelationshipType(name='Self')
+        relationship_type = factories.RelationshipType.build(name='Self')
+        relationship_type.save()
 
 
 def test_relationshiptype_min_age_lowerbound() -> None:

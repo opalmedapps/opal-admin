@@ -23,6 +23,7 @@ class RelationshipType(DjangoModelFactory):
 
     class Meta:
         model = models.RelationshipType
+        django_get_or_create = ('name',)
 
     name = 'Self'
     name_fr = lazy_attribute(lambda type: f'{type.name} FR')
