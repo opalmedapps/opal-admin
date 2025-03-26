@@ -7,7 +7,7 @@ from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.hospital_settings.models import Site
-from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
+from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
 
 
 class PatientSerializer(DynamicFieldsSerializer):
@@ -189,5 +189,9 @@ class PatientDemographicSerializer(DynamicFieldsSerializer):
                 relationship.caregiver.user.last_name,
             )
             user.save()
+
+        # Prevent caregiver and self access to the deceased patient's data by setting relationship status to expired
+        if instance.date_of_death:
+            instance.relationships.update(status=RelationshipStatus.EXPIRED)
 
         return instance
