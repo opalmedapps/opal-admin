@@ -80,6 +80,8 @@ class RegistrationCode(DjangoModelFactory):
     # Using string model references to avoid circular import
     relationship = SubFactory('opal.patients.factories.Relationship')
     code = 'code12345678'
+    status = models.RegistrationCodeStatus.NEW
+    created_at = Faker('date_time', tzinfo=timezone.get_current_timezone())
 
 
 class EmailVerification(DjangoModelFactory):

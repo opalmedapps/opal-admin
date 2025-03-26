@@ -12,7 +12,7 @@ from opal.patients import models as patients_models
 
 # Population Summary
 def fetch_population_summary() -> dict[str, Any]:
-    """Fetch grouped user/patient population summary.
+    """Fetch grouped user/caregiver population summary.
 
     Returns:
         dictionary with aggregated summaries
@@ -24,12 +24,13 @@ def fetch_population_summary() -> dict[str, Any]:
     ]
 
     return caregivers_models.RegistrationCode.objects.select_related(
+        'relationship__type',
         'relationship__patient',
         'relationship__caregiver__user',
     ).filter(
         created_at__date=timezone.now().date(),
     ).aggregate(
-        patient_signed_up=models.Count('id'),
+        user_signed_up=models.Count('id'),
         incomplete_registration=models.Count(
             'id',
             filter=models.Q(status__in=incomplete_registration_statuses),

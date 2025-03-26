@@ -33,6 +33,7 @@ class RelationshipType(DjangoModelFactory):
     start_age = 14
     form_required = False
     can_answer_questionnaire = False
+    role_type = models.RoleType.CAREGIVER
 
 
 class Patient(DjangoModelFactory):
