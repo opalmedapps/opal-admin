@@ -12,7 +12,7 @@ variables:
   FF_SCRIPT_SECTIONS: "true"
 
 default:
-  image: python:3.11.10-alpine3.20
+  image: python:3.11.11-alpine3.20
   # mark all jobs interruptible by default
   # https://docs.gitlab.com/ee/ci/yaml/index.html#workflowauto_cancelon_new_commit
   interruptible: true
@@ -127,7 +127,7 @@ mypy:
 markdownlint:
   stage: static analysis
   image:
-    name: davidanson/markdownlint-cli2:v0.15.0
+    name: davidanson/markdownlint-cli2:v0.16.0
     # overwrite default entrypoint (which is a call to markdownlint-cli2)
     entrypoint: [""]
   # does not need setup artifacts
