@@ -163,8 +163,10 @@ def test_formactions() -> None:
     form = SampleForm(layouts.FormActions(Submit('foo', 'bar')))
 
     html = render_crispy_form(form)
+    # make HTML one line for easier assertion
+    html = ' '.join(line.strip() for line in html.split('\n'))
 
-    assert '<div class="mb-3 d-flex justify-content-end gap-2"' in html
+    assert '<div  class="mb-3 d-flex justify-content-end gap-2 "' in html
     assert '<input type="submit"' in html
 
 
@@ -173,8 +175,10 @@ def test_formactions_extra_css_class() -> None:
     form = SampleForm(layouts.FormActions(css_class='extra'))
 
     html = render_crispy_form(form)
+    # make HTML one line for easier assertion
+    html = ' '.join(line.strip() for line in html.split('\n'))
 
-    assert '<div class="mb-3 d-flex justify-content-end gap-2 extra"' in html
+    assert '<div  class="mb-3 d-flex justify-content-end gap-2 extra "' in html
 
 
 def test_radioselect_hidden() -> None:

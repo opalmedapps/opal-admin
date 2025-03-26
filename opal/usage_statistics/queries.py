@@ -1,11 +1,12 @@
 """Statistics queries used by usage statistics app."""
 import datetime as dt
+from collections import Counter
 from enum import Enum
 from typing import Any, TypeVar
 
 from django.conf import settings
 from django.db import models
-from django.db.models.functions import TruncDay, TruncMonth, TruncYear
+from django.db.models.functions import ExtractYear, TruncDay, TruncMonth, TruncYear
 
 from opal.caregivers import models as caregivers_models
 from opal.legacy import models as legacy_models
@@ -522,8 +523,110 @@ def fetch_received_questionnaires_summary(
     )
 
 
-# INDIVIDUAL REPORTING
-# TODO: implement QSCCD-2204
+def fetch_users_latest_login_year_summary() -> dict[Any, int]:
+    """Fetch users' latest login statistics grouped by year.
+
+    The goal of the query is to find in a given date range how many users stopped using the app in each year.
+
+    Returns:
+        latest login statistics grouped by year for a given time period.
+    """
+    latest_logins = DailyUserAppActivity.objects.values('action_by_user').annotate(
+        year=ExtractYear(models.Max('last_login')),
+    )
+    latest_logins_by_year = Counter(item['year'] for item in latest_logins)
+    return dict(latest_logins_by_year)
+
+
+# INDIVIDUAL REPORTS
+def fetch_labs_summary_per_patient() -> list[dict[str, Any]]:
+    """Fetch the individual received lab results statistics from the `DailyPatientDataReceived` model.
+
+    The statistics show the number of labs result received per patient and the frequency
+    with which patients receive lab results.
+
+    Returns:
+        individual lab results statistics (per patient).
+    """
+    # TODO: update the query using `lab_groups_received` statistic field once QSCCD-2209 is implemented.
+    # Update query should include `total_lab_groups_received` and `average_labs_per_test_group`.
+    return list(
+        DailyPatientDataReceived.objects.values('patient__legacy_id').annotate(
+            patient_ser_num=models.F('patient__legacy_id'),
+            first_lab_received=models.Min('last_lab_received'),
+            last_lab_received=models.Max('last_lab_received'),
+            # total_lab_groups_received=models.Sum('lab_groups_received'),   noqa: E800
+            total_labs_received=models.Sum('labs_received'),
+            # average_labs_per_test_group=models.F('total_labs_received')    noqa: E800
+            # / models.F('total_lab_groups_received'),  noqa: E800
+        ).order_by('patient_ser_num'),
+    )
+
+
+def fetch_logins_summary_per_user() -> list[dict[str, Any]]:
+    """Fetch individual user login statistics from the `DailyUserAppActivity` model.
+
+    The statistics show user's total login time and login frequency.
+
+    Returns:
+        individual login statistics (per user).
+    """
+    return list(
+        DailyUserAppActivity.objects.values('action_by_user_id').annotate(
+            user_id=models.F('action_by_user_id'),
+            total_logged_in_days=models.Count('action_by_user_id'),
+            total_logins=models.Sum('count_logins'),
+            avg_logins_per_day=models.F('total_logins') / models.F('total_logged_in_days'),
+        ).values(
+            'user_id',
+            'total_logged_in_days',
+            'total_logins',
+            'avg_logins_per_day',
+        ).order_by('user_id'),
+    )
+
+
+def fetch_patient_demographic_diagnosis_summary() -> list[dict[str, Any]]:
+    """Fetch demographic statistics and the latest diagnosis for each individual patient.
+
+    The purpose of the query is to show patient basic information and the latest diagonosis only.
+
+    Returns:
+        demographic information and latest diagnosis per patient.
+    """
+    diagnosis_id_list = legacy_models.LegacyDiagnosis.objects.values('patient_ser_num').annotate(
+        diagnosis_id=models.Max('diagnosis_ser_num'),
+    ).values_list(
+        'diagnosis_id',
+        flat=True,
+    )
+    # TODO: update the query when Diagnosis model is implemented into new backend system
+    demographics_and_diagnosis = legacy_models.LegacyPatientControl.objects.filter(
+        models.Q(patient__legacydiagnosis__diagnosis_ser_num__in=diagnosis_id_list)
+        | models.Q(patient__legacydiagnosis__diagnosis_ser_num__isnull=True),
+    ).annotate(
+        patient_ser_num=models.F('patient__patientsernum'),
+        age=models.F('patient__age'),
+        date_of_birth=models.F('patient__date_of_birth'),
+        sex=models.F('patient__sex'),
+        email=models.F('patient__email'),
+        language=models.F('patient__language'),
+        registration_date=models.F('patient__registration_date'),
+        latest_diagnosis_description=models.F('patient__legacydiagnosis__description_en'),
+        latest_diagnosis_date=models.F('patient__legacydiagnosis__creation_date'),
+    ).values(
+        'patient_ser_num',
+        'age',
+        'date_of_birth',
+        'sex',
+        'email',
+        'language',
+        'registration_date',
+        'latest_diagnosis_description',
+        'latest_diagnosis_date',
+    )
+    return list(demographics_and_diagnosis)
+
 
 def _fetch_received_medical_records_summary(
     start_date: dt.date,
