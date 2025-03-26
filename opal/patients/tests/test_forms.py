@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import pytest
 
 from opal.hospital_settings import factories
@@ -30,25 +32,47 @@ def test_site_selection_not_exist() -> None:
     assert not form.is_valid()
 
 
-def test_search_form_valid() -> None:
+# tuple with valid medical card type and medical number
+# will update the test data once the validator is done in another ticket
+test_valid_medical_card_type_and_number: list[Tuple] = [
+    ('mrn', '99996'),
+    ('ramq', 'HILL20841952'),
+    ('mrn', '000001'),
+]
+
+
+@pytest.mark.parametrize(('card_type', 'card_number'), test_valid_medical_card_type_and_number)
+def test_search_form_valid(
+    card_type: str,
+    card_number: str,
+) -> None:
     """Ensure that the search form is valid."""
     form_data = {
-        'medical_card': 'mrn',
-        'medical_number': '999996',
+        'medical_card': card_type,
+        'medical_number': card_number,
     }
-
     form = SearchForm(data=form_data)
-
     assert form.is_valid()
 
 
-def test_search_form_invalid() -> None:
-    """Ensure that the search form is invalid."""
+# tuple with invalid medical card type and medical number
+# will update the test data once the validator is done in another ticket
+test_invalid_medical_card_type_and_number: list[Tuple] = [
+    ('stm', ''),
+    ('', ''),
+    ('mrn', '   '),
+]
+
+
+@pytest.mark.parametrize(('card_type', 'card_number'), test_invalid_medical_card_type_and_number)
+def test_search_form_invalid(
+    card_type: str,
+    card_number: str,
+) -> None:
+    """Ensure that the search form is valid."""
     form_data = {
-        'medical_card': '',
-        'medical_number': '',
+        'medical_card': card_type,
+        'medical_number': card_number,
     }
-
     form = SearchForm(data=form_data)
-
     assert not form.is_valid()
