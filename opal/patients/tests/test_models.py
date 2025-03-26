@@ -324,6 +324,17 @@ def test_relationship_end_date_beyond_boundary() -> None:
         relationship.clean()
 
 
+def test_relationship_pending_not_apply_self_role() -> None:
+    """Ensure that the relationship Pending status does not apply for the Self relationship."""
+    self_type = RelationshipType.objects.self_type()
+    relationship = factories.Relationship(type=self_type)
+    relationship.status = RelationshipStatus.PENDING
+
+    expected_message = '"Pending" status does not apply for the Self relationship.'
+    with assertRaisesMessage(ValidationError, expected_message):
+        relationship.clean()
+
+
 def test_relationship_invalid_dates_constraint() -> None:
     """Ensure that the date cannot be saved if start date is later than end date."""
     relationship = factories.Relationship()
