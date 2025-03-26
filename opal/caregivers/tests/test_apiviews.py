@@ -183,7 +183,7 @@ class TestApiEmailVerification:
         email_verification = caregiver_model.EmailVerification.objects.get(email=email)
 
         assert len(mail.outbox) == 1
-        assert mail.outbox[0].from_email == settings.EMAIL_HOST_USER
+        assert mail.outbox[0].from_email == settings.EMAIL_FROM_REGISTRATION
         assert mail.outbox[0].to == [email]
         assert email_verification.code in mail.outbox[0].body
         assert 'Dear' in mail.outbox[0].body
