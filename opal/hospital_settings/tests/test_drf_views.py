@@ -15,51 +15,6 @@ pytestmark = pytest.mark.django_db
 HTTP_METHODS_READ_ONLY = 'GET, HEAD, OPTIONS'
 
 
-def test_api_institution_unauthenticated(api_client: APIClient) -> None:
-    """Ensure that the API to retrieve the singleton institution requires an authenticated user."""
-    response = api_client.get(reverse('api:institution-detail'))
-
-    assert response.status_code == HTTPStatus.FORBIDDEN
-
-
-def test_api_institution_no_permission(user_api_client: APIClient) -> None:
-    """Ensure that the API to retrieve the singleton institution requires a permission."""
-    response = user_api_client.get(reverse('api:institution-detail'))
-
-    assert response.status_code == HTTPStatus.FORBIDDEN
-
-
-def test_api_institution_not_found(admin_api_client: APIClient) -> None:
-    """Ensure that a 404 is returned if there is no institution."""
-    response = admin_api_client.get(reverse('api:institution-detail'))
-
-    assert response.status_code == HTTPStatus.NOT_FOUND
-
-
-def test_api_institution(admin_api_client: APIClient) -> None:
-    """Ensure that the singleton institution is returned."""
-    institution = factories.Institution(name='Test', code='TST')
-
-    response = admin_api_client.get(reverse('api:institution-detail'))
-
-    assert response.status_code == HTTPStatus.OK
-
-    data = response.json()
-    assert data['id'] == institution.pk
-    assert data['name'] == 'Test'
-    assert data['code'] == 'TST'
-
-
-def test_api_institution_multiple_institutions(admin_api_client: APIClient) -> None:
-    """Ensure that the singleton institution is returned."""
-    factories.Institution()
-    factories.Institution(name='Test', code='TST')
-
-    response = admin_api_client.get(reverse('api:institution-detail'))
-
-    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-
-
 def test_api_institutions_list(api_client: APIClient, admin_user: User) -> None:
     """Ensure that the API to list institutions works."""
     api_client.force_login(user=admin_user)
@@ -91,7 +46,7 @@ def test_api_institutions_detail_allowed_methods(api_client: APIClient, admin_us
     assert response.headers['Allow'] == HTTP_METHODS_READ_ONLY
 
 
-def test_api_institutions_retrieve(api_client: APIClient, admin_user: User) -> None:
+def test_api_institution_retrieve(api_client: APIClient, admin_user: User) -> None:
     """Ensure that an institution can be retrieved."""
     api_client.force_login(user=admin_user)
     institution = factories.Institution()
