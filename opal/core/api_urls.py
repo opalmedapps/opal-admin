@@ -96,7 +96,7 @@ urlpatterns = [
 
     # PATIENTS ENDPOINTS
     path(
-        'patients/legacy/<int:legacy_id>/check_permissions/',
+        'patients/legacy/<int:legacy_id>/check-permissions/',
         CaregiverPermissionsView.as_view(),
         name='caregiver-permissions',
     ),

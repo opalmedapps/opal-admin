@@ -87,9 +87,9 @@ class LegacyAppointment(models.Model):
     status = models.CharField(db_column='Status', max_length=100)
     readstatus = models.IntegerField(db_column='ReadStatus')
     readby = models.JSONField(db_column='ReadBy', default=list)
-    objects: managers.LegacyAppointmentManager = managers.LegacyAppointmentManager()
     roomlocation_en = models.CharField(db_column='RoomLocation_EN', max_length=100)
     roomlocation_fr = models.CharField(db_column='RoomLocation_FR', max_length=100)
+    objects: managers.LegacyAppointmentManager = managers.LegacyAppointmentManager()
 
     class Meta:
         managed = False

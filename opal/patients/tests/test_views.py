@@ -15,7 +15,6 @@ from django.urls import reverse
 
 import pytest
 from bs4 import BeautifulSoup
-from dateutil.relativedelta import relativedelta
 from pytest_django.asserts import assertContains, assertNotContains, assertQuerysetEqual, assertTemplateUsed
 from pytest_mock.plugin import MockerFixture
 
@@ -63,7 +62,7 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
 )
 
 test_url_template_data: list[Tuple] = [
-    (reverse('patients:relationships-search'), 'patients/relationships/relationship_filter.html'),
+    (reverse('patients:relationships-search-list'), 'patients/relationships/relationship_filter.html'),
 ]
 
 
@@ -160,7 +159,7 @@ def test_relationshiptype_delete_get(relationshiptype_user: Client) -> None:
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
-    assertContains(response, 'Are you sure you want to delete the following relationship type: Caregiver?')
+    assertContains(response, 'Are you sure you want to delete "Caregiver"?')
 
 
 def test_relationshiptype_delete(relationshiptype_user: Client) -> None:
@@ -743,42 +742,6 @@ def test_new_user_case_in_password_step(
 
 
 @pytest.mark.django_db()
-def test_relationship_start_date_adult_patient() -> None:
-    """Test relationsip start date for adult patient."""
-    request = _init_session()
-
-    test_view = _TestAccessRequestView.as_view()
-    response, instance = test_view(request)
-
-    date_of_birth = date(2004, 1, 1)
-    relationship_type = factories.RelationshipType(name='Parent or Guardian', start_age=1)
-
-    assert response.status_code == HTTPStatus.OK
-    assert instance._set_relationship_start_date(
-        date_of_birth=date_of_birth,
-        relationship_type=relationship_type,
-    ) == date.today() - relativedelta(years=constants.RELATIVE_YEAR_VALUE)
-
-
-@pytest.mark.django_db()
-def test_relationship_start_date_younger_patient() -> None:
-    """Test relationsip start date for younger patient."""
-    request = _init_session()
-
-    test_view = _TestAccessRequestView.as_view()
-    response, instance = test_view(request)
-
-    date_of_birth = date(2010, 1, 1)
-    relationship_type = factories.RelationshipType(name='Guardian-Caregiver', start_age=14)
-
-    assert response.status_code == HTTPStatus.OK
-    assert instance._set_relationship_start_date(
-        date_of_birth=date_of_birth,
-        relationship_type=relationship_type,
-    ) == date_of_birth + relativedelta(years=relationship_type.start_age)
-
-
-@pytest.mark.django_db()
 def test_create_caregiver_profile_existing_user() -> None:
     """Test create caregiver profile for the existing user."""
     request = _init_session()
@@ -1207,12 +1170,8 @@ def test_form_pending_update_urls(relationship_user: Client) -> None:
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
     response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
 
-    assert response.context_data['view'].get_context_data()['cancel_url'] == reverse(  # type: ignore[attr-defined]
-        'patients:relationships-pending-list',
-    )
-    assert response.context_data['view'].get_success_url() == reverse(  # type: ignore[attr-defined]
-        'patients:relationships-pending-list',
-    )
+    assert response.context['cancel_url'] == reverse('patients:relationships-pending-list')
+    assert response.context['view'].get_success_url() == reverse('patients:relationships-pending-list')
 
 
 def test_relationshiptype_list_delete_unavailable(relationshiptype_user: Client) -> None:
@@ -1409,7 +1368,7 @@ def test_caregiver_access_tables(user_client: Client, django_user_model: User) -
     user = django_user_model.objects.create(username='test_caregiver_access_user')
     user_client.force_login(user)
 
-    response = user_client.get(reverse('patients:relationships-search'))
+    response = user_client.get(reverse('patients:relationships-search-list'))
 
     assert response.context['tables'][0].__class__ == tables.PatientTable
     assert response.context['tables'][1].__class__ == tables.RelationshipCaregiverTable
@@ -1420,7 +1379,7 @@ def test_caregiver_access_filter(user_client: Client, django_user_model: User) -
     user = django_user_model.objects.create(username='test_caregiver_access_user')
     user_client.force_login(user)
 
-    response = user_client.get(reverse('patients:relationships-search'))
+    response = user_client.get(reverse('patients:relationships-search-list'))
 
     assert response.context['filter'].__class__ == ManageCaregiverAccessFilter
 
@@ -1434,7 +1393,7 @@ def test_caregiver_access_empty_tables_displayed(user_client: Client, django_use
     factories.Relationship(type=models.RelationshipType.objects.parent_guardian())
     factories.Relationship(type=models.RelationshipType.objects.guardian_caregiver())
 
-    request = RequestFactory().get(reverse('patients:relationships-search'))
+    request = RequestFactory().get(reverse('patients:relationships-search-list'))
     request.user = user
 
     response = CaregiverAccessView.as_view()(request)
@@ -1479,7 +1438,7 @@ def test_caregiver_access_tables_displayed_by_mrn(user_client: Client, django_us
     }
     query_string = urllib.parse.urlencode(form_data)
     response = user_client.get(
-        path=reverse('patients:relationships-search'),
+        path=reverse('patients:relationships-search-list'),
         QUERY_STRING=query_string,
     )
 
@@ -1545,7 +1504,7 @@ def test_caregiver_access_tables_displayed_by_ramq(user_client: Client, django_u
     }
     query_string = urllib.parse.urlencode(form_data)
     response = user_client.get(
-        path=reverse('patients:relationships-search'),
+        path=reverse('patients:relationships-search-list'),
         QUERY_STRING=query_string,
     )
     response.content.decode('utf-8')
@@ -1617,9 +1576,9 @@ def test_form_search_result_update(relationship_user: Client) -> None:
     assert response_get.status_code == HTTPStatus.OK
 
     # prepare data to post
-    data = model_to_dict(response_get.context_data['object'])  # type: ignore[attr-defined]
+    data = model_to_dict(response_get.context['object'])
     data['status'] = RelationshipStatus.CONFIRMED
-    data['cancel_url'] = response_get.context_data['cancel_url']  # type: ignore[attr-defined]
+    data['cancel_url'] = response_get.context['cancel_url']
 
     # post
     relationship_user.post(reverse('patients:relationships-search-update', kwargs={'pk': 1}), data=data)
@@ -1636,8 +1595,8 @@ def test_form_search_result_update_view(relationship_user: Client) -> None:
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=RelationshipStatus.PENDING)
     response_get = relationship_user.get(reverse('patients:relationships-search-update', kwargs={'pk': 1}))
 
-    assert response_get.context_data['form'].__class__ == forms.RelationshipAccessForm  # type: ignore[attr-defined]
-    assert response_get.context_data['view'].__class__ == ManageSearchUpdateView  # type: ignore[attr-defined]
+    assert response_get.context['form'].__class__ == forms.RelationshipAccessForm
+    assert response_get.context['view'].__class__ == ManageSearchUpdateView
 
 
 def test_form_search_result_default_sucess_url(relationship_user: Client) -> None:
@@ -1647,12 +1606,8 @@ def test_form_search_result_default_sucess_url(relationship_user: Client) -> Non
     factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=RelationshipStatus.PENDING)
     response_get = relationship_user.get(reverse('patients:relationships-search-update', kwargs={'pk': 1}))
 
-    assert response_get.context_data['view'].get_context_data()['cancel_url'] == reverse(  # type: ignore[attr-defined]
-        'patients:relationships-search',
-    )
-    assert response_get.context_data['view'].get_success_url() == reverse(  # type: ignore[attr-defined]
-        'patients:relationships-search',
-    )
+    assert response_get.context['cancel_url'] == reverse('patients:relationships-search-list')
+    assert response_get.context['view'].get_success_url() == reverse('patients:relationships-search-list')
 
 
 def test_form_search_result_http_referer(relationship_user: Client) -> None:
@@ -1669,7 +1624,7 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
     )
 
     # assert cancel_url being set when HTTP_REFERER is not empty
-    cancel_url = response_get.context_data['view'].get_context_data()['cancel_url']  # type: ignore[attr-defined]
+    cancel_url = response_get.context['cancel_url']
     assert cancel_url == 'patient/test/?search=query'
 
     response_post = relationship_user.post(
@@ -1681,5 +1636,22 @@ def test_form_search_result_http_referer(relationship_user: Client) -> None:
     )
 
     # assert success_url is equal to the new cancel_url
-    success_url = response_post.context_data['view'].get_success_url()  # type: ignore[attr-defined]
+    success_url = response_post.context['view'].get_success_url()
     assert success_url == cancel_url
+
+
+def test_form_search_result_cancel_url(relationship_user: Client) -> None:
+    """Ensure that the cancel button has the cancel_url set."""
+    relationshiptype = factories.RelationshipType(name='relationshiptype')
+    caregiver = factories.CaregiverProfile()
+    factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, status=RelationshipStatus.PENDING)
+    cancel_url = 'patient/test/?search=query'
+    response = relationship_user.get(
+        reverse(
+            'patients:relationships-search-update',
+            kwargs={'pk': 1},
+        ),
+        HTTP_REFERER=cancel_url,
+    )
+
+    assert f'href="{cancel_url}"' in response.content.decode()

@@ -10,7 +10,7 @@ Module also provide mixin classes to make the code reusable.
 See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Optional, TypeVar
 
 from django.db import models
 from django.utils import timezone
@@ -90,7 +90,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
 
     def get_daily_appointments(self, user_name: str) -> models.QuerySet['LegacyAppointment']:
         """
-        Get all appointment for the current day for caregiver related patient(s).
+        Get all appointments for the current day for caregiver related patient(s).
 
         Used by the home page of the app for checkin.
 
@@ -119,6 +119,27 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
         ).exclude(
             status='Deleted',
         )
+
+    def get_closest_appointment(self, user_name: str) -> Optional['LegacyAppointment']:
+        """
+        Get the closest next appointment in time for any of the patients in the user's care.
+
+        Used by the "Home" page of the app for the "Upcoming Appointment" widget.
+
+        Args:
+            user_name: Firebase username making the request
+
+        Returns:
+            Closest appointment for the patient in care (including SELF) and their legacy_id
+        """
+        return self.filter(
+            scheduledstarttime__gte=timezone.localtime(timezone.now()),
+            patientsernum__in=Relationship.objects.get_patient_id_list_for_caregiver(user_name),
+            state='Active',
+            status='Open',
+        ).order_by(
+            'scheduledstarttime',
+        ).first()
 
 
 class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manager['LegacyDocument']):

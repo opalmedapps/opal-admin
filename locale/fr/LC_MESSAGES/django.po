@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-27 21:08-0400\n"
+"POT-Creation-Date: 2023-03-31 16:52-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,10 +17,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-
-#: opal/core/form_layouts.py
-msgid "Cancel"
-msgstr "Annuler"
 
 #: opal/core/form_layouts.py
 msgid "Reset"
@@ -40,7 +36,7 @@ msgstr ""
 "+<countryCode><phoneNumber> (par exemple +15141234567) avec une extension "
 "facultative \"x123\""
 
-#: opal/core/views.py opal/templates/base_generic.html
+#: opal/core/views.py
 msgid "OpalAdmin v2"
 msgstr "OpalAdmin v2"
 
@@ -52,9 +48,26 @@ msgstr "Anglais"
 msgid "French"
 msgstr "Français"
 
-#: opal/templates/base.html opal/templates/layouts/base.html
+#: opal/templates/base.html
 msgid "Opal Health Informatics Group"
 msgstr "Le Groupe Informatique Opal Santé"
+
+#: opal/templates/components/confirm_delete.html
+#, python-format
+msgid "Are you sure you want to delete \"%(object)s\"?"
+msgstr "Voulez-vous vraiment supprimer \"%(object)s\" ?"
+
+#: opal/templates/components/form_cancel.html
+msgid "Cancel"
+msgstr "Annuler"
+
+#: opal/templates/components/form_submit.html
+msgid "Save"
+msgstr "Enregister"
+
+#: opal/templates/components/form_submit.html
+msgid "Yes, delete"
+msgstr "Oui, supprimer"
 
 #: opal/templates/email/verification_code.html
 #: opal/templates/email/verification_code.txt
@@ -108,74 +121,6 @@ msgstr "Cordialement"
 msgid "The Opal team"
 msgstr "L’Équipe Opal"
 
-#: opal/templates/layouts/base.html
-msgid "opal ADMIN"
-msgstr "opal ADMIN"
-
-#: opal/templates/layouts/base.html opal/templates/sidebar.html
-msgid "Hospital Settings"
-msgstr "Paramètres Hospitalier"
-
-#: opal/templates/layouts/base.html opal/templates/sidebar.html
-msgid "Institutions"
-msgstr "Établissements"
-
-#: opal/templates/layouts/base.html opal/templates/sidebar.html
-msgid "Sites"
-msgstr "Sites"
-
-#: opal/templates/layouts/base.html opal/templates/sidebar.html
-msgid "Patients"
-msgstr "Patients"
-
-#: opal/templates/layouts/base.html opal/templates/sidebar.html
-msgid "Relationship Types"
-msgstr "Types de Relations"
-
-#: opal/templates/layouts/base.html
-msgid "Access Request"
-msgstr "Demande d'accès"
-
-#: opal/templates/layouts/base.html
-msgid "Pending Requests"
-msgstr "Requête en attente"
-
-#: opal/templates/layouts/base.html
-msgid "Search Patient Access"
-msgstr "Rechercher l'accès des patients"
-
-#: opal/templates/layouts/base.html opal/templates/sidebar.html
-msgid "Questionnaires"
-msgstr "Questionnaires"
-
-#: opal/templates/layouts/base.html opal/templates/sidebar.html
-msgid "Export Reports"
-msgstr "Exportation de Rapports"
-
-#: opal/templates/layouts/base.html
-msgid "Profile"
-msgstr "Profil"
-
-#: opal/templates/layouts/base.html
-msgid "Logout"
-msgstr "Déconnexion"
-
-#: opal/templates/layouts/base.html
-msgid "Copyright"
-msgstr "Copyright"
-
-#: opal/templates/layouts/base.html
-msgid "All rights reserved."
-msgstr "Tous droits réservés."
-
-#: opal/templates/layouts/base.html
-msgid "Privacy"
-msgstr "Politique de confidentialité"
-
-#: opal/templates/layouts/base.html
-msgid "Terms"
-msgstr "Conditions d'utilisation"
-
 #: opal/templates/sidebar.html
 msgid "new"
 msgstr ""
@@ -193,6 +138,26 @@ msgid "Home Page"
 msgstr ""
 
 #: opal/templates/sidebar.html
+msgid "Hospital Settings"
+msgstr "Paramètres Hospitalier"
+
+#: opal/templates/sidebar.html
+msgid "Institutions"
+msgstr "Établissements"
+
+#: opal/templates/sidebar.html
+msgid "Sites"
+msgstr "Sites"
+
+#: opal/templates/sidebar.html
+msgid "Patients"
+msgstr "Patients"
+
+#: opal/templates/sidebar.html
+msgid "Relationship Types"
+msgstr "Types de Relations"
+
+#: opal/templates/sidebar.html
 msgid "New Access Request"
 msgstr "Nouvelle demande d'accès"
 
@@ -203,6 +168,14 @@ msgstr "Requêtes d'accès en attente"
 #: opal/templates/sidebar.html
 msgid "Manage Caregiver Access"
 msgstr ""
+
+#: opal/templates/sidebar.html
+msgid "Questionnaires"
+msgstr "Questionnaires"
+
+#: opal/templates/sidebar.html
+msgid "Export Reports"
+msgstr "Exportation de Rapports"
 
 #: opal/templates/sidebar.html
 msgid "Log Out"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-06 09:31-0400\n"
+"POT-Creation-Date: 2023-04-14 01:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: opal/patients/api/serializers.py
+msgid "Opal Account Inactivated"
+msgstr ""
+
+#: opal/patients/api/serializers.py
+msgid "Date of death submitted from ADT"
+msgstr ""
 
 #: opal/patients/apps.py opal/patients/models.py
 msgid "Patients"
@@ -149,7 +157,6 @@ msgid "Relationship Type"
 msgstr "Type de relation avec le proche aidant"
 
 #: opal/patients/forms.py
-#: opal/patients/templates/patients/relationship_type/form.html
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -170,7 +177,7 @@ msgid "Mandatary"
 msgstr "Mandataire"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/edit_relationships.html
+#: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid "Caregiver"
 msgstr "Proche aidant"
 
@@ -269,7 +276,7 @@ msgid "UUID"
 msgstr ""
 
 #: opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/relationships/edit_relationships.html
+#: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid "Date of Birth"
 msgstr "Date de naissance"
 
@@ -294,7 +301,7 @@ msgid "Legacy ID"
 msgstr "Identifiant existant"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/edit_relationships.html
+#: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid "Patient"
 msgstr "Patient"
 
@@ -347,6 +354,7 @@ msgid "Can manage relationships"
 msgstr "Types de relations avec le proche aidant"
 
 #: opal/patients/models.py opal/patients/tables.py
+#: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid "Relationship"
 msgstr "Relation"
 
@@ -359,8 +367,36 @@ msgid "Start date cannot be earlier than patient's date of birth"
 msgstr ""
 
 #: opal/patients/models.py
+#, python-brace-format
+msgid "Start date cannot be earlier than {calculated_start_date}."
+msgstr ""
+"La date de début ne peut pas être antérieure à {calculated_start_date}."
+
+#: opal/patients/models.py
+#, python-brace-format
+msgid ""
+"Start date cannot be earlier than {relative_year} years before the request "
+"date of {request_date}."
+msgstr ""
+"La date de début ne peut pas être antérieure à {relative_year} ans avant la "
+"date de demande du {request_date}."
+
+#: opal/patients/models.py
 msgid "Start date should be earlier than end date."
 msgstr "Date de début doit être antérieure à la date de fin."
+
+#: opal/patients/models.py
+#, python-brace-format
+msgid ""
+"End date for {relationship_type} relationship cannot be later than "
+"{end_date}."
+msgstr ""
+"La date de fin de la relation {relationship_type} ne peut pas être "
+"postérieure au {end_date}."
+
+#: opal/patients/models.py
+msgid "End date should be later than start date."
+msgstr "La date de fin doit être postérieure à la date de début."
 
 #: opal/patients/models.py
 msgid "Reason is mandatory when status is denied or revoked."
@@ -447,10 +483,6 @@ msgid "Opal Patient Registration Code"
 msgstr "Code d'enregistrement du patient Opal"
 
 #: opal/patients/templates/patients/access_request/qr_code.html
-msgid "Please follow the instructions below"
-msgstr "Veuillez suivre les instructions ci-dessous"
-
-#: opal/patients/templates/patients/access_request/qr_code.html
 msgid ""
 "A unique one-time Opal registration code has been created for the following "
 "patient:"
@@ -523,31 +555,11 @@ msgstr "Code"
 msgid "Delete Relationship Type"
 msgstr ""
 
-#: opal/patients/templates/patients/relationship_type/confirm_delete.html
-#, python-format
-msgid ""
-"Are you sure you want to delete the following relationship type: %(object)s?"
-msgstr ""
-
-#: opal/patients/templates/patients/relationship_type/confirm_delete.html
-msgid "Yes"
-msgstr ""
-
-#: opal/patients/templates/patients/relationship_type/confirm_delete.html
-msgid "Delete"
-msgstr "Supprimer"
-
-#: opal/patients/templates/patients/relationship_type/confirm_delete.html
-#: opal/patients/templates/patients/relationship_type/form.html
-msgid "Cancel"
-msgstr "Annuler"
-
 #: opal/patients/templates/patients/relationship_type/form.html
 msgid "Update"
 msgstr "Mettre à jour"
 
 #: opal/patients/templates/patients/relationship_type/form.html
-#: opal/patients/templates/patients/relationships/edit_relationships.html
 msgid "Create"
 msgstr "Créer"
 
@@ -559,15 +571,11 @@ msgstr ""
 msgid "New Relationship Type"
 msgstr ""
 
-#: opal/patients/templates/patients/relationships/edit_relationships.html
-msgid "Manage"
-msgstr ""
+#: opal/patients/templates/patients/relationships/edit_relationship.html
+msgid "Edit Caregiver Access Request"
+msgstr "Modifier une demande d'accès"
 
-#: opal/patients/templates/patients/relationships/edit_relationships.html
-msgid "Caregiver Access Requests"
-msgstr "Générer une demande d'accès"
-
-#: opal/patients/templates/patients/relationships/edit_relationships.html
+#: opal/patients/templates/patients/relationships/edit_relationship.html
 msgid "RAMQ"
 msgstr "RAMQ"
 

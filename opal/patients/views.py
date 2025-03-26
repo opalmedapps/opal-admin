@@ -17,7 +17,6 @@ from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 import qrcode
-from dateutil.relativedelta import relativedelta
 from django_filters.views import FilterView
 from django_tables2 import MultiTableMixin, SingleTableView
 from formtools.wizard.views import SessionWizardView
@@ -298,29 +297,6 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         img.save(stream)
         return stream
 
-    def _set_relationship_start_date(self, date_of_birth: date, relationship_type: RelationshipType) -> date:
-        """
-        Calculate the start date for the relationship record.
-
-        Args:
-            date_of_birth: patient's date of birth
-            relationship_type: user selection for relationship type
-
-        Returns:
-            the start date
-        """
-        # Get the date 1 years ago from now
-        reference_date = date.today() - relativedelta(years=constants.RELATIVE_YEAR_VALUE)
-        # Calculate patient age based on reference date
-        age = Patient.calculate_age(
-            date_of_birth=date_of_birth,
-            reference_date=reference_date,
-        )
-        # Return reference date if patient age is larger or otherwise return start date based on patient's age
-        if age < relationship_type.start_age:
-            reference_date = date_of_birth + relativedelta(years=relationship_type.start_age)
-        return reference_date
-
     def _create_caregiver_profile(self, form_data: dict, random_username_length: int) -> dict[str, Any]:
         """
         Create caregiver user and caregiver profile instance if not exists.
@@ -424,7 +400,12 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
                 status=status,
                 reason='',
                 request_date=date.today(),
-                start_date=self._set_relationship_start_date(
+                start_date=Relationship.set_relationship_start_date(
+                    date.today(),
+                    patient_record.date_of_birth,
+                    relationship_type,
+                ),
+                end_date=Relationship.set_relationship_end_date(
                     patient_record.date_of_birth,
                     relationship_type,
                 ),
@@ -545,8 +526,25 @@ class ManageRelationshipUpdateMixin(UpdateView[Relationship, ModelForm[Relations
     """
 
     model = Relationship
-    template_name = 'patients/relationships/edit_relationships.html'
+    template_name = 'patients/relationships/edit_relationship.html'
     form_class = RelationshipAccessForm
+
+    def get_form_kwargs(self) -> Dict[str, Any]:
+        """
+        Build the keyword arguments required to instantiate the `RelationshipAccessForm`.
+
+        Returns:
+            keyword arguments for instantiating the `RelationshipAccessForm`
+        """
+        kwargs = super().get_form_kwargs()
+
+        relationship = self.object
+        patient = relationship.patient
+        kwargs['date_of_birth'] = patient.date_of_birth
+        kwargs['relationship_type'] = relationship.type
+        kwargs['request_date'] = relationship.request_date
+
+        return kwargs
 
 
 class ManagePendingUpdateView(PermissionRequiredMixin, ManageRelationshipUpdateMixin):
@@ -615,14 +613,14 @@ class ManageSearchUpdateView(ManageRelationshipUpdateMixin):
         """
         context = super().get_context_data(**kwargs)
         # to pass url to crispy form to be able to re-use the same form for different purposes
-        default_success_url = reverse_lazy('patients:relationships-search')
-        referer = self.request.META.get('HTTP_REFERER')
+        default_success_url = reverse_lazy('patients:relationships-search-list')
+        referrer = self.request.META.get('HTTP_REFERER')
         # to maintain the value of `cancel_url` when there is a validation error
         if context['view'].request.method == 'POST':
             context['cancel_url'] = context['form'].cleaned_data['cancel_url']
         # provide previous link with parameters to update on clicking cancel button
-        elif referer:
-            context['cancel_url'] = referer
+        elif referrer:
+            context['cancel_url'] = referrer
         else:
             context['cancel_url'] = default_success_url
         return context
@@ -637,7 +635,7 @@ class ManageSearchUpdateView(ManageRelationshipUpdateMixin):
         if self.request.POST.get('cancel_url', False):
             return self.request.POST['cancel_url']
 
-        return reverse_lazy('patients:relationships-search')
+        return reverse_lazy('patients:relationships-search-list')
 
 
 # The order of `MultiTableMixin` and `FilterView` classes is important!
@@ -651,7 +649,7 @@ class CaregiverAccessView(MultiTableMixin, FilterView):
     )
     filterset_class = ManageCaregiverAccessFilter
     tables = [tables.PatientTable, tables.RelationshipCaregiverTable]
-    success_url = reverse_lazy('patients:relationships-search')
+    success_url = reverse_lazy('patients:relationships-search-list')
     template_name = 'patients/relationships/relationship_filter.html'
 
     def get_tables_data(self) -> List[QuerySet[Any]]:
