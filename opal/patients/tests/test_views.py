@@ -12,6 +12,7 @@ from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTem
 
 from opal.hospital_settings.models import Site
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
+from opal.users.factories import User
 
 from .. import factories, forms, models, tables, views
 
@@ -135,9 +136,9 @@ def test_initial_call(
 
     assert response.status_code == HTTPStatus.OK
     assert wizard['steps'].current == 'site'
-    assert wizard['steps'].last == 'relationship'
+    assert wizard['steps'].last == 'finished'
     assert wizard['steps'].next == 'search'
-    assert wizard['steps'].count == 4
+    assert wizard['steps'].count == 7
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
@@ -271,16 +272,22 @@ def test_form_finish(
     assert response.context['header_title'] == 'Requestor Details'
 
 
-def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noqa: WPS231
+def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noqa: C901 WPS231
     """Ensure that when the page is submitted it redirects to the final page."""
     url = reverse('patients:access-request')
     site = factories.Site()
     relationship = factories.RelationshipType()
+    user = User(email='marge.simpson@gmail.com', phone_number='+15141111111')
+    factories.Patient(ramq='MARG99991313')
+    factories.CaregiverProfile(user_id=user.id)
     form_data = [
         ('site', {'sites': site.pk}),
-        ('search', {'medical_card': 'ramq', 'medical_number': 'RAMQ99996666'}),
+        ('search', {'medical_card': 'ramq', 'medical_number': 'MARG99991313'}),
         ('confirm', {'is_correct': True}),
         ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
+        ('account', {'user_type': '1'}),
+        ('existing', {'user_email': 'marge.simpson@gmail.com', 'user_phone': '+15141111111'}),
+        ('finished', {'is_correct': True, 'is_id_checked': True}),
     ]
     response = user_client.get(url)
     assert response.status_code == HTTPStatus.OK
@@ -295,13 +302,19 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noq
         response = user_client.post(url, step_data, follow=True)
         assert response.status_code == HTTPStatus.OK
 
-        if 'site' in step:
+        if 'site' in step:  # noqa: WPS223
             assert response.context['wizard']['steps'].current == 'search'
         elif 'search' in step:
             assert response.context['wizard']['steps'].current == 'confirm'
         elif 'confirm' in step:
             assert response.context['wizard']['steps'].current == 'relationship'
         elif 'relationship' in step:
+            assert response.context['wizard']['steps'].current == 'account'
+        elif 'account' in step:
+            assert response.context['wizard']['steps'].current == 'existing'
+        elif 'existing' in step:
+            assert response.context['wizard']['steps'].current == 'finished'
+        elif 'finished' in step:
             assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')
 
 

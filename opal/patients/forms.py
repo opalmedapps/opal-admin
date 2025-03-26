@@ -529,8 +529,8 @@ class ConfirmExistingUserForm(forms.Form):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
-                Column('is_correct', css_class='form-group col-md-1 mb-0'),
-                Column('is_id_checked', css_class='form-group col-md-1 mb-0'),
+                Column('is_correct', css_class='form-group col-md-2 mb-0'),
+                Column('is_id_checked', css_class='form-group col-md-2 mb-0'),
                 css_class='form-row',
             ),
             ButtonHolder(

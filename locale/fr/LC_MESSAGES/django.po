@@ -32,8 +32,9 @@ msgid ""
 "Enter a valid phone number having the format: +<countryCode><phoneNumber> "
 "(for example +15141234567) with an optional extension \"x123\""
 msgstr ""
-"Saisissez un numéro de téléphone valide au format: +<countryCode><phoneNumber> "
-"(par exemple +15141234567) avec une extension optionnelle \"x123\""
++"Saisissez un numéro de téléphone valide au format: "
++"+<countryCode><phoneNumber> (par exemple +15141234567) avec une extension "
++"optionnelle \"x123\""
 
 #: opal/core/views.py opal/templates/base_generic.html
 msgid "OpalAdmin v2"

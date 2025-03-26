@@ -88,15 +88,14 @@ msgstr "Trouver un compte"
 
 #: opal/patients/forms.py
 msgid ""
-"Opal user was not found in your database. "
-"This may be an out-of-hospital account. "
-"Please proceed to generate a new QR code. "
-"Inform the user they must register at the Registration website."
++"Opal user was not found in your database. This may be an out-of-hospital "
++"account. Please proceed to generate a new QR code. Inform the user they must "
++"register at the Registration website."
 msgstr ""
-"L'utilisateur Opal n'a pas été trouvé dans votre base de données. "
-"Il peut s'agir d'un compte hors hôpital. "
-"Veuillez procéder à la génération d'un nouveau code QR. "
-"Informez l'utilisateur qu'il doit s'inscrire sur le site Web d'inscription."
++"L'utilisateur Opal n'a pas été trouvé dans votre base de données. Il peut "
++"s'agir d'un compte hors hôpital. Veuillez procéder à la génération d'un "
++"nouveau code QR. Informez l'utilisateur qu'il doit s'inscrire sur le site "
++"Web d'inscription."
 
 #: opal/patients/forms.py
 msgid "Create self relationship for patient"
