@@ -140,7 +140,7 @@ class OIEService:
             },
         )
 
-    def find_patient_by_ramq(self, ramq: str) -> dict[str, Any]:  # noqa: WPS210
+    def find_patient_by_ramq(self, ramq: str) -> dict[str, Any]:
         """Search patient info by RAMQ code.
 
         Args:
@@ -154,13 +154,12 @@ class OIEService:
                 {'message': 'Provided RAMQ is invalid.'},
             )
 
-        payload = {
-            'medicareNumber': ramq,
-            'visitInfo': False,
-        }
         response_data = self.communication_manager.submit(
             endpoint='/Patient/get',
-            payload=payload,
+            payload={
+                'medicareNumber': ramq,
+                'visitInfo': False,
+            },
         )
 
         errors = self.validator.is_patient_response_valid(response_data)
