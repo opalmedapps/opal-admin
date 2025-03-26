@@ -24,7 +24,7 @@ msgstr "Annuler"
 
 #: opal/core/form_layouts.py
 msgid "Reset"
-msgstr "Retourner"
+msgstr "Réinitialiser"
 
 #: opal/core/validators.py
 msgid "Enter a valid RAMQ number consisting of 4 letters followed by 8 digits"
