@@ -279,7 +279,7 @@ class AccessRequestSearchPatientForm(DisableFieldsMixin, DynamicFormMixin, forms
                 if 'attribute "status“' in message:  # noqa: WPS223
                     self.add_error(NON_FIELD_ERRORS, _('Response status is invalid.'))
                 elif 'attribute dateOfBirth' in message or 'dateOfBirth is invalid' in message:
-                    self.add_error(NON_FIELD_ERRORS, _('Patient dateOfBirth is invalid.'))
+                    self.add_error(NON_FIELD_ERRORS, _('Patient Date of Birth is invalid.'))
                 elif 'attribute firstName' in message:
                     self.add_error(NON_FIELD_ERRORS, _('Patient firstName is invalid.'))
                 elif 'attribute lastName' in message:

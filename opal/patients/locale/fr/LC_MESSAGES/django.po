@@ -80,10 +80,10 @@ msgstr "Le patient n'est pas un patient test."
 
 #: opal/patients/forms.py
 msgid "Response status is invalid."
-msgstr ""
+msgstr "L'état de la réponse n'est pas valide"
 
 #: opal/patients/forms.py
-msgid "Patient dateOfBirth is invalid."
+msgid "Patient Date of Birth is invalid."
 msgstr "La date de naissance du patient n'est pas valide"
 
 #: opal/patients/forms.py
