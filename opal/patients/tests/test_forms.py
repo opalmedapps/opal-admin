@@ -35,9 +35,9 @@ def test_site_selection_not_exist() -> None:
 # tuple with valid medical card type and medical number
 # will update the test data once the validator is done in another ticket
 test_valid_medical_card_type_and_number: list[Tuple] = [
-    ('mrn', '99996'),
-    ('ramq', 'HILL20841952'),
-    ('mrn', '000001'),
+    ('mrn', 'MRNT99996666'),
+    ('ramq', 'RAMQ99996666'),
+    ('mrn', 'MRNT00001111'),
 ]
 
 

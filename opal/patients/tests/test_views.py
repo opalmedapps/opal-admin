@@ -250,7 +250,7 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:
     site = factories.Site()
     form_data = [
         ('site', {'sites': site.pk}),
-        ('search', {'medical_card': 'mrn', 'medical_number': '999996'}),
+        ('search', {'medical_card': 'ramq', 'medical_number': 'RAMQ99996666'}),
     ]
     response = user_client.get(url)
     assert response.status_code == HTTPStatus.OK
