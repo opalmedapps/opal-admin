@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-07 11:32-0400\n"
+"POT-Creation-Date: 2023-08-18 03:03+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -203,7 +203,6 @@ msgid "Caregiver"
 msgstr "Proche aidant"
 
 #: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/patient_details.html
 msgid "Name"
 msgstr "Nom"
 
@@ -308,7 +307,6 @@ msgid "UUID"
 msgstr "UUID"
 
 #: opal/patients/models.py opal/patients/tables.py
-#: opal/patients/templates/patients/relationships/patient_details.html
 msgid "Date of Birth"
 msgstr "Date de naissance"
 
@@ -639,14 +637,6 @@ msgid ""
 "Caregivers will only have access to the data of their patient once the "
 "relationship has been confirmed."
 msgstr ""
-
-#: opal/patients/templates/patients/relationships/patient_details.html
-msgid "MRN(s)"
-msgstr "MRN(s)"
-
-#: opal/patients/templates/patients/relationships/patient_details.html
-msgid "RAMQ"
-msgstr "RAMQ"
 
 #: opal/patients/templates/patients/relationships/pending_relationship_list.html
 msgid "Manage Caregiver Access"
