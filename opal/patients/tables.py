@@ -123,6 +123,7 @@ class RelationshipCaregiverTable(tables.Table):
 
     relationship_type = tables.Column(
         verbose_name=_('Relationship'),
+        accessor='type',
     )
 
     start_date = tables.DateColumn(
