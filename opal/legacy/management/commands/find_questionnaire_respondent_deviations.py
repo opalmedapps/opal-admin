@@ -75,8 +75,8 @@ class Command(BaseCommand):
 
     def _get_respondents_sync_err(
         self,
-        legacy_respondents: list[tuple],
-        django_respondents: list[tuple],
+        legacy_respondents: list[tuple[str, ...]],
+        django_respondents: list[tuple[str, ...]],
     ) -> Optional[str]:
         """Build error string based on the questionnaire respondents' first & last names deviations.
 
