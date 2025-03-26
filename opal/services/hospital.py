@@ -1,7 +1,4 @@
 """Module providing api functions for the OIE server."""
-from http import HTTPStatus
-from typing import Dict, cast
-
 from django.conf import settings
 
 import requests
@@ -23,17 +20,7 @@ def find_patient_by_mrn(mrn: str, site: str) -> requests.Response:
         'site': site,
         'visitInfo': False,
     }
-    try:
-        response = requests.post(url, data=data)
-    except Exception as ex:
-        # TODO add the exception to log
-        print(ex)
-        response = None
-
-    if response is not None:
-        if cast(Dict[str, dict], response)['status_code'] != HTTPStatus.OK:
-            response = None
-    return response
+    return requests.post(url, data=data)
 
 
 def find_patient_by_ramq(ramq: str) -> requests.Response:
@@ -50,13 +37,4 @@ def find_patient_by_ramq(ramq: str) -> requests.Response:
         'medicareNumber': ramq,
         'visitInfo': False,
     }
-    try:
-        response = requests.post(url, data=data)
-    except Exception as ex:
-        # TODO add the exception to log
-        print(ex)
-        response = None
-    if response is not None:
-        if cast(Dict[str, dict], response)['status_code'] != HTTPStatus.OK:
-            response = None
-    return response
+    return requests.post(url, data=data)
