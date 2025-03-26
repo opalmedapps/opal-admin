@@ -263,6 +263,7 @@ def test_relationship_clean_no_end_date() -> None:
     """Ensure that the relationship with start date but without end date."""
     relationship = factories.Relationship(start_date='2022-05-04', end_date=None)
 
+    relationship.clean_fields()
     relationship.clean()
 
 
@@ -270,6 +271,7 @@ def test_relationship_clean_valid_dates() -> None:
     """Ensure that the date is valid if start date is earlier than end date."""
     relationship = factories.Relationship(start_date='2022-05-01', end_date='2022-05-04')
 
+    relationship.clean_fields()
     relationship.clean()
 
 
@@ -280,6 +282,16 @@ def test_relationship_clean_invalid_dates() -> None:
     relationship.end_date = datetime.date(2022, 5, 4)
 
     expected_message = 'Start date should be earlier than end date.'
+    with assertRaisesMessage(ValidationError, expected_message):
+        relationship.clean()
+
+
+def test_relationship_clean_start_date_before_date_of_birth() -> None:
+    """Ensure that the relationship start_date cannot be before the patient's date of birth."""
+    relationship = factories.Relationship()
+    relationship.start_date = relationship.patient.date_of_birth - datetime.timedelta(days=1)
+
+    expected_message = "Start date can not be earlier than patient's date of birth"
     with assertRaisesMessage(ValidationError, expected_message):
         relationship.clean()
 
