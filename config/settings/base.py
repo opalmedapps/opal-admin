@@ -57,6 +57,9 @@ USE_I18N = True
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(ROOT_DIR / 'locale')]
+# https://docs.djangoproject.com/en/dev/ref/settings/#silenced-system-checks
+# allow definition of PAGE_SIZE globally while having pagination opt-in
+SILENCED_SYSTEM_CHECKS = ['rest_framework.W001']
 
 
 # DATABASES
@@ -422,8 +425,6 @@ TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
 ORMS_GROUP_NAME = 'ORMS Users'
 # base URL to ORMS (no trailing slash)
 ORMS_HOST = env.url('ORMS_HOST').geturl()
-ORMS_USER = env('ORMS_USER')
-ORMS_PASSWORD = env('ORMS_PASSWORD')
 
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'
@@ -454,7 +455,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'opal.core.drf_permissions.CustomDjangoModelPermissions',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # disabled pagination by default
+    # use rest_framework.pagination.PageNumberPagination to enable for specific endpoints
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }

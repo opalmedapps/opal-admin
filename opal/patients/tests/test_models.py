@@ -116,6 +116,19 @@ def test_relationshiptype_default_role() -> None:
     assert relationship_type.role_type == RoleType.CAREGIVER
 
 
+def test_relationshiptype_is_self_true() -> None:
+    """Ensure the RelationshipType correctly identifies a SELF role type."""
+    relationship_type = factories.RelationshipType(role_type=RoleType.SELF)
+    assert relationship_type.is_self
+
+
+@pytest.mark.parametrize('role_type', [role for role in RoleType.values if role != RoleType.SELF])
+def test_relationshiptype_is_self_false(role_type: RoleType) -> None:
+    """Ensure the RelationshipType correctly identifies non-SELF role types."""
+    relationship_type = factories.RelationshipType(role_type=role_type)
+    assert not relationship_type.is_self
+
+
 def test_patient_str() -> None:
     """Ensure the `__str__` method is defined for the `Patient` model."""
     patient = Patient(first_name='First Name', last_name='Last Name')
@@ -160,16 +173,10 @@ def test_patient_invalid_sex() -> None:
         factories.Patient(sex='I')
 
 
-def test_patient_ramq_unique() -> None:
-    """Ensure that the health insurance number is unique."""
+def test_patient_ramq_non_unique() -> None:
+    """Ensure that the health insurance number is non-unique."""
     factories.Patient(ramq='TEST12345678')
-    patient = factories.Patient(ramq='TEST21234567')
-
-    message = "Duplicate entry 'TEST12345678' for key 'ramq'"
-
-    with assertRaisesMessage(IntegrityError, message):
-        patient.ramq = 'TEST12345678'
-        patient.save()
+    factories.Patient(ramq='TEST12345678')
 
 
 def test_patient_ramq_max() -> None:
@@ -204,19 +211,9 @@ def test_patient_ramq_format() -> None:
         patient.clean_fields()
 
 
-def test_patient_ramq_default_value() -> None:
-    """Ensure patient ramq default value is NULL."""
-    patient = Patient(
-        date_of_birth=date.fromisoformat('2022-09-02'),
-        sex='m',
-    )
-    patient.save()
-    assert patient.ramq is None
-
-
 def test_patient_legacy_id_unique() -> None:
     """Ensure that creating a second `Patient` with an existing `legacy_id` raises an `IntegrityError`."""
-    factories.Patient(ramq=None, legacy_id=1)
+    factories.Patient(ramq='', legacy_id=1)
     message = "Duplicate entry '1' for key"
 
     with assertRaisesMessage(IntegrityError, message):
@@ -225,7 +222,7 @@ def test_patient_legacy_id_unique() -> None:
 
 def test_patient_non_existing_legacy_id() -> None:
     """Ensure that creating a second `Patient` with a non-existing legacy_id does not raise a `ValidationError`."""
-    factories.Patient(ramq=None, legacy_id=None)
+    factories.Patient(ramq='', legacy_id=None)
     factories.Patient(ramq='somevalue', legacy_id=None)
 
     assert Patient.objects.count() == 2

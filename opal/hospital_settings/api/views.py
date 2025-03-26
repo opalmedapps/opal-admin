@@ -14,7 +14,6 @@ class RetrieveInstitutionView(generics.RetrieveAPIView):
 
     queryset = Institution.objects.all()
     serializer_class = InstitutionSerializer
-    pagination_class = None
 
     def get_object(self) -> Institution:
         """

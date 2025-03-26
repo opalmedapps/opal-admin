@@ -20,6 +20,10 @@ from opal.users.models import Caregiver
 
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
 PARKING_URLS_MUHC = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
+TRAVEL_URLS_CRE = (
+    'https://live-cbhssjb.pantheonsite.io/cps/travelling',
+    'https://live-cbhssjb.pantheonsite.io/fr/cps/voyager',
+)
 
 
 class InstitutionOption(Enum):
@@ -61,6 +65,7 @@ SITE_DATA = MappingProxyType({
             ('https://muhc.ca/getting-glen-site', 'https://cusm.ca/se-rendre-au-site-glen'),
             Decimal('45.473435'),
             Decimal('-73.601611'),
+            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5149341934', ''),
         ),
         (
             'Montreal General Hospital',
@@ -73,6 +78,7 @@ SITE_DATA = MappingProxyType({
             ),
             Decimal('45.496828'),
             Decimal('-73.588782'),
+            ('Cedar Avenue', '1650', 'H3G1A4', 'Montréal', 'QC', '5149341934', ''),
         ),
         (
             "Montreal Children's Hospital",
@@ -82,6 +88,7 @@ SITE_DATA = MappingProxyType({
             ('https://www.thechildren.com/getting-hospital', 'https://www.hopitalpourenfants.com/se-rendre-lhopital'),
             Decimal('45.473343'),
             Decimal('-73.600802'),
+            ('Decarie Boulevard', '1001', 'H4A3J1', 'Montréal', 'QC', '5144124400', ''),
         ),
         (
             'Lachine Hospital',
@@ -91,6 +98,17 @@ SITE_DATA = MappingProxyType({
             ('https://muhc.ca/how-get-lachine-hospital', 'https://cusm.ca/se-rendre-lhopital-de-lachine'),
             Decimal('45.44121'),
             Decimal('-73.676791'),
+            ('16e Avenue', '650', 'H8S3N5', 'Lachine', 'QC', '5149341934', ''),
+        ),
+        (
+            'Cree Board Of Health And Social Services Of James Bay',
+            'Conseil Cri de la santé et des services sociaux de la Baie James',
+            'CRE',
+            TRAVEL_URLS_CRE,
+            TRAVEL_URLS_CRE,
+            Decimal('45.51640'),
+            Decimal('-73.55529'),
+            ('Boulevard René-Lévesque', '1055', 'H2L4S5', 'Montréal', 'QC', '5148615955', ''),
         ),
     ],
     InstitutionOption.chusj: [
@@ -109,6 +127,7 @@ SITE_DATA = MappingProxyType({
             ),
             Decimal('45.503426'),
             Decimal('-73.624549'),
+            ('Chemin de la Côte-Sainte-Catherine', '3175', 'H3T1C5', 'Montréal', 'QC', '5143454931', ''),
         ),
     ],
 })
@@ -231,8 +250,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     today = date.today()
 
     # hospital settings
-    institution = _create_institution(institution_option)
-    sites = _create_sites(institution_option, institution)
+    institution = create_institution(institution_option)
+    sites = create_sites(institution_option, institution)
 
     mrn_data: dict[str, list[tuple[Site, str]]] = {}  # noqa: WPS234
 
@@ -457,7 +476,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     _create_security_answers(user_bart)
 
 
-def _create_institution(institution_option: InstitutionOption) -> Institution:
+def create_institution(institution_option: InstitutionOption) -> Institution:
     """
     Create, validate and save an institution instance with the given properties.
 
@@ -500,7 +519,7 @@ def _create_institution(institution_option: InstitutionOption) -> Institution:
     return institution
 
 
-def _create_sites(institution_option: InstitutionOption, institution: Institution) -> dict[str, Site]:
+def create_sites(institution_option: InstitutionOption, institution: Institution) -> dict[str, Site]:
     """
     Create sites according to the definition of the `SITE_DATA` constant for the chosen institution.
 
@@ -529,6 +548,7 @@ def _create_site(
     direction_urls: tuple[str, str],
     latitude: Decimal,
     longitude: Decimal,
+    address: tuple[str, str, str, str, str, str, str],
 ) -> Site:
     """
     Create, validate and save a site instance with the given properties.
@@ -542,6 +562,7 @@ def _create_site(
         direction_urls: a tuple of URLs to the English and French direction to the hospital information
         latitude: the latitude of the GPS location of the site
         longitude: the longitude of the GPS location of the site
+        address: a tuple of the address information of the site
 
     Returns:
         the newly created site
@@ -557,6 +578,13 @@ def _create_site(
         direction_url_fr=direction_urls[1],
         latitude=latitude,
         longitude=longitude,
+        street_name=address[0],
+        street_number=address[1],
+        postal_code=address[2],
+        city=address[3],
+        province_code=address[4],
+        contact_telephone=address[5],
+        contact_fax=address[6],
     )
 
     site.full_clean()

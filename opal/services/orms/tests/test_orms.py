@@ -61,7 +61,7 @@ def test_set_opal_patient_empty_input(mocker: MockerFixture) -> None:
     assert 'A list of active (site, mrn) tuples should be provided' in response['data']['message']
 
 
-def test_set_opal_patient(mocker: MockerFixture) -> None:
+def test_set_opal_patient_error(mocker: MockerFixture) -> None:
     """Ensure that set_opal_patient returns an error for invalid input."""
     RequestMockerTest.mock_requests_post(
         mocker,

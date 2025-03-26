@@ -177,7 +177,7 @@ def initialize_new_patient(
         date_of_birth=timezone.make_aware(date_of_birth),
         email=email,
         language=language,
-        ramq=patient.ramq or '',
+        ramq=patient.ramq,
         access_level=ACCESS_LEVEL_MAPPING[patient.data_access],
     )
 

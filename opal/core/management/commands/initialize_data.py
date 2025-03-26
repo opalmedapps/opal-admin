@@ -3,13 +3,15 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 
 from rest_framework.authtoken.models import Token
 
 from opal.caregivers.models import SecurityQuestion
 from opal.users.models import User
+
+from .insert_test_data import InstitutionOption, create_institution, create_sites
 
 
 class Command(BaseCommand):
@@ -24,8 +26,28 @@ class Command(BaseCommand):
         + ' Can only be run at the beginning of setting up a project.'
     )
 
+    def add_arguments(self, parser: CommandParser) -> None:
+        """
+        Add arguments to the command.
+
+        Args:
+            parser: the command parser to add arguments to
+        """
+        parser.add_argument(
+            '--force-delete',
+            action='store_true',
+            default=False,
+            help='Force deleting existing data first before initializing (default: false)',
+        )
+        parser.add_argument(
+            '--muhc-deployment',
+            action='store_true',
+            default=False,
+            help='Add MUHC deployment-specific data such as the MUHC institution, sites',
+        )
+
     @transaction.atomic
-    def handle(self, *args: Any, **kwargs: Any) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         """
         Handle execution of the command.
 
@@ -34,26 +56,45 @@ class Command(BaseCommand):
 
         Args:
             args: additional arguments
-            kwargs: additional keyword arguments
+            options: additional keyword arguments
         """
         if any([
             Group.objects.all().exists(),
             SecurityQuestion.objects.all().exists(),
         ]):
-            self.stderr.write(self.style.ERROR('There already exists data'))
-        else:
-            self._create_data()
-            self.stdout.write(self.style.SUCCESS('Data successfully created'))
+            force_delete: bool = options['force_delete']
 
-    def _create_data(self) -> None:  # noqa: WPS210, WPS213 (local variables, too many expressions)
+            if not force_delete:
+                self.stderr.write(self.style.ERROR('There already exists data'))
+                return
+
+            self.stdout.write(self.style.WARNING('Deleting existing data'))
+
+            # keep system users
+            User.objects.exclude(username__in=['listener', 'interface-engine', 'opaladmin-backend-legacy']).delete()
+            Group.objects.all().delete()
+            SecurityQuestion.objects.all().delete()
+
+            self.stdout.write(self.style.SUCCESS('Data successfully deleted'))
+
+        muhc_deployment: bool = options['muhc_deployment']
+        self._create_data(muhc_deployment)
+
+        self.stdout.write(self.style.SUCCESS('Data successfully created'))
+
+    def _create_data(self, muhc_deployment: bool) -> None:  # noqa: WPS210, WPS213
         """
-        Create all test data.
+        Create all initial data.
 
         Takes care of:
             * default security questions
             * groups and their permissions
             * users
             * tokens for system users
+            * institution and sites for muhc if flag set
+
+        Args:
+            muhc_deployment: whether to insert MUHC specific deployment data
         """
         _create_security_questions()
 
@@ -71,13 +112,13 @@ class Command(BaseCommand):
 
         # users
         # TODO: should non-human users have a different user type (right now it would be clinician/clinical staff)?
-        listener = User(username='listener')
+        listener, _ = User.objects.get_or_create(username='listener')
         listener.set_unusable_password()
         listener.save()
-        interface_engine = User(username='interface-engine')
+        interface_engine, _ = User.objects.get_or_create(username='interface-engine')
         interface_engine.set_unusable_password()
         interface_engine.save()
-        legacy_backend = User(username='opaladmin-backend-legacy')
+        legacy_backend, _ = User.objects.get_or_create(username='opaladmin-backend-legacy')
         legacy_backend.set_unusable_password()
         legacy_backend.save()
 
@@ -136,10 +177,14 @@ class Command(BaseCommand):
             _find_permission('users', 'change_clinicalstaff'),
         ])
 
-        # create tokens for the API users
-        token_listener = Token.objects.create(user=listener)
-        token_interface_engine = Token.objects.create(user=interface_engine)
-        token_legacy_backend = Token.objects.create(user=legacy_backend)
+        if muhc_deployment:
+            institution = create_institution(InstitutionOption.muhc)
+            create_sites(InstitutionOption.muhc, institution)
+
+        # get existing or create new tokens for the API users
+        token_listener, _ = Token.objects.get_or_create(user=listener)
+        token_interface_engine, _ = Token.objects.get_or_create(user=interface_engine)
+        token_legacy_backend, _ = Token.objects.get_or_create(user=legacy_backend)
 
         self.stdout.write(f'{listener.username} token: {token_listener}')
         self.stdout.write(f'{interface_engine.username} token: {token_interface_engine}')
