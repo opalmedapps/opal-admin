@@ -306,16 +306,17 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
             patient_ser_num=patient_ser_num,
             last_updated__gt=last_synchronized,
         ).annotate(
+            diagnosis_id=models.F('diagnosis_ser_num'),
             date_created=models.F('creation_date'),
             source_system=models.F('source_database__source_database_name'),
-            source_system_ser=models.F('diagnosis_aria_ser'),
+            source_system_id=models.F('diagnosis_aria_ser'),
             source_system_code=models.F('diagnosis_code'),
             source_system_code_description=models.F('description_en'),
         ).values(
-            'diagnosis_ser_num',
+            'diagnosis_id',
             'date_created',
             'source_system',
-            'source_system_ser',
+            'source_system_id',
             'source_system_code',
             'source_system_code_description',
             'stage',
@@ -349,6 +350,7 @@ class LegacyTestResultManager(models.Manager['LegacyTestResult']):
             patient_ser_num__patientsernum=patient_ser_num,
             last_updated__gt=last_synchronized,
         ).annotate(
+            test_result_id=models.F('test_result_ser_num'),
             test_component_date=models.F('test_date'),
             test_group_name=models.F('test_result_control_ser_num__group_en'),
             test_component_name=models.F('component_name'),
@@ -358,9 +360,9 @@ class LegacyTestResultManager(models.Manager['LegacyTestResult']):
             min_norm_range=models.F('min_norm'),
             valid_flag=models.F('valid_entry'),
             source_system=models.F('source_database__source_database_name'),
-            source_system_ser=models.F('test_result_aria_ser'),
+            source_system_id=models.F('test_result_aria_ser'),
         ).values(
-            'test_result_ser_num',
+            'test_result_id',
             'test_component_date',
             'test_group_name',
             'test_component_name',
@@ -373,6 +375,6 @@ class LegacyTestResultManager(models.Manager['LegacyTestResult']):
             'approved_flag',
             'valid_flag',
             'source_system',
-            'source_system_ser',
+            'source_system_id',
             'last_updated',
         )
