@@ -20,6 +20,10 @@ from opal.users.models import Caregiver
 
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
 PARKING_URLS_MUHC = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
+TRAVEL_URLS_CRE = (
+    'https://live-cbhssjb.pantheonsite.io/cps/travelling',
+    'https://live-cbhssjb.pantheonsite.io/fr/cps/voyager',
+)
 
 
 class InstitutionOption(Enum):
@@ -95,6 +99,16 @@ SITE_DATA = MappingProxyType({
             Decimal('45.44121'),
             Decimal('-73.676791'),
             ('16e Avenue', '650', 'H8S3N5', 'Lachine', 'QC', '5149341934', ''),
+        ),
+        (
+            'Cree Board Of Health And Social Services Of James Bay',
+            'Conseil Cri de la santé et des services sociaux de la Baie James',
+            'CRE',
+            TRAVEL_URLS_CRE,
+            TRAVEL_URLS_CRE,
+            Decimal('45.51640'),
+            Decimal('-73.55529'),
+            ('Boulevard René-Lévesque', '1055', 'H2L4S5', 'Montréal', 'QC', '5148615955', ''),
         ),
     ],
     InstitutionOption.chusj: [
@@ -236,8 +250,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     today = date.today()
 
     # hospital settings
-    institution = _create_institution(institution_option)
-    sites = _create_sites(institution_option, institution)
+    institution = create_institution(institution_option)
+    sites = create_sites(institution_option, institution)
 
     mrn_data: dict[str, list[tuple[Site, str]]] = {}  # noqa: WPS234
 
@@ -462,7 +476,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:
     _create_security_answers(user_bart)
 
 
-def _create_institution(institution_option: InstitutionOption) -> Institution:
+def create_institution(institution_option: InstitutionOption) -> Institution:
     """
     Create, validate and save an institution instance with the given properties.
 
@@ -505,7 +519,7 @@ def _create_institution(institution_option: InstitutionOption) -> Institution:
     return institution
 
 
-def _create_sites(institution_option: InstitutionOption, institution: Institution) -> dict[str, Site]:
+def create_sites(institution_option: InstitutionOption, institution: Institution) -> dict[str, Site]:
     """
     Create sites according to the definition of the `SITE_DATA` constant for the chosen institution.
 

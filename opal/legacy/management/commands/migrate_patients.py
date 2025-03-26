@@ -94,6 +94,7 @@ class Command(BaseCommand):
                     site__code=legacy_patient_identifier.hospital.code,
                     patient__legacy_id=legacy_patient.patientsernum,
                 ).first()
+                # TODO: Filter out the inactive mrns from this query?
                 if hospital_patient:
                     # when HospitalPatient record already has been migrated
                     self.stdout.write(
