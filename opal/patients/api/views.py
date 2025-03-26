@@ -79,8 +79,8 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.Registrat
             The expected serializer according to the request parameter.
         """
         if 'detailed' in self.request.query_params:
-            return caregiver_serializers.RegistrationCodePatientDetailedSerializer
-        return caregiver_serializers.RegistrationCodePatientSerializer
+            return caregiver_serializers.RegistrationCodeDetailSerializer
+        return caregiver_serializers.RegistrationCodeInfoSerializer
 
 
 class CaregiverRelationshipView(ListAPIView[Relationship]):
@@ -159,7 +159,7 @@ class PatientCaregiverDevicesView(RetrieveAPIView[Patient]):
         'caregivers__user',
         'caregivers__devices',
     )
-    permission_classes = (IsLegacyBackend,)
+    permission_classes = (IsLegacyBackend | IsListener,)
     serializer_class = caregiver_serializers.PatientCaregiverDevicesSerializer
 
     lookup_url_kwarg = 'legacy_id'

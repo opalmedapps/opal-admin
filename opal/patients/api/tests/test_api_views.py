@@ -149,6 +149,10 @@ class TestRetrieveRegistrationDetailsView:
         ))
         assert response.status_code == HTTPStatus.OK
         assert response.json() == {
+            'caregiver': {
+                'first_name': relationship.caregiver.user.first_name,
+                'last_name': relationship.caregiver.user.last_name,
+            },
             'patient': {
                 'first_name': hospital_patient.patient.first_name,
                 'last_name': hospital_patient.patient.last_name,
