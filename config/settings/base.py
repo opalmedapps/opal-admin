@@ -173,7 +173,6 @@ THIRD_PARTY_APPS = [
     'django_tables2',
     'corsheaders',
     'easyaudit',
-    'formtools',
     'slippers',
     'fontawesomefree',
 ]
@@ -456,7 +455,7 @@ REST_FRAMEWORK = {
     ],
     # require specific model permissions (including view) to access API
     'DEFAULT_PERMISSION_CLASSES': [
-        'opal.core.drf_permissions.CustomDjangoModelPermissions',
+        'opal.core.drf_permissions.FullDjangoModelPermissions',
     ],
     # disabled pagination by default
     # use rest_framework.pagination.PageNumberPagination to enable for specific endpoints
