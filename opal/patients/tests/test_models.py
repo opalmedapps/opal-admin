@@ -178,7 +178,7 @@ def test_hospitalpatient_one_patient_one_site() -> None:
     """Ensure the `__str__` method is defined for the `HospitalPatient` model."""
     hospitalpatient = factories.HospitalPatient()
     hospitalpatient.site = factories.Site(name="Montreal Children's Hospital")
-    assert str(hospitalpatient) == "Patient First Name Patient Last Name (MON: 9999996)"
+    assert str(hospitalpatient) == 'Patient First Name Patient Last Name (MON: 9999996)'
 
 
 def test_hospitalpatient_one_patient_many_sites() -> None:
