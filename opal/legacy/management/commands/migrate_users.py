@@ -58,7 +58,7 @@ class Command(BaseCommand):
                     )
                     # count number of migrated users
                     migrated_users_count += 1
-                self.check_relationship(patient, caregiver_profile)
+                self._check_relationship(patient, caregiver_profile)
             else:
                 self.stderr.write(
                     'Patient with sernum: {legacy_id}, does not exist,skipping.'.format(
@@ -69,7 +69,7 @@ class Command(BaseCommand):
             f'Number of imported patients is: {migrated_users_count}',
         )
 
-    def check_relationship(self, patient: Patient, caregiver_profile: CaregiverProfile) -> None:
+    def _check_relationship(self, patient: Patient, caregiver_profile: CaregiverProfile) -> None:
         """
             Check the self relationship between caregiver and patient and migrated if not exist.
 
