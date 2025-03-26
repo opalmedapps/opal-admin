@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from http import HTTPStatus
 
 from django.contrib.auth.models import AbstractUser
@@ -10,6 +11,7 @@ from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 
 from .. import views
+from ..api import views as api_views
 
 pytestmark = pytest.mark.django_db()
 
@@ -125,3 +127,12 @@ def test_createupdateview_update(django_user_model: AbstractUser) -> None:
     )
 
     assert view.get_object() == user
+
+
+def test_languagesview_get() -> None:
+    """The `LanguagesView` can return the languages in the settings."""
+    view = api_views.LanguagesView()
+    response = view.get([])
+    data = response.data
+    assert data[0] == OrderedDict([('code', 'en'), ('name', 'English')])
+    assert data[1] == OrderedDict([('code', 'fr'), ('name', 'French')])
