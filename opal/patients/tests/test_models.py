@@ -454,6 +454,36 @@ def test_relationship_can_update_existing_self() -> None:
     relationship.full_clean()
 
 
+def test_relationship_clean_self_patient_caregiver_names_mismatch() -> None:
+    """Ensure that a name mismatch between patient and caregiver for a self-relationship is detected."""
+    self_type = RelationshipType.objects.self_type()
+
+    relationship = factories.Relationship(
+        patient__first_name='Marge',
+        patient__last_name='Simpson',
+        type=self_type,
+        status=RelationshipStatus.CONFIRMED,
+        caregiver__user__first_name='Marge',
+        caregiver__user__last_name='Simpson',
+    )
+    relationship.full_clean()
+
+    with assertRaisesMessage(
+        ValidationError,
+        'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
+    ):
+        relationship.patient.first_name = 'Homer'
+        relationship.full_clean()
+
+    with assertRaisesMessage(
+        ValidationError,
+        'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
+    ):
+        relationship.patient.first_name = 'Marge'
+        relationship.patient.last_name = 'Flanders'
+        relationship.full_clean()
+
+
 def test_relationship_clean_unsaved_instance() -> None:
     """Ensure that an unsaved relationship instance can be cleaned."""
     self_type = RelationshipType.objects.self_type()

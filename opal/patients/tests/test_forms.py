@@ -1225,7 +1225,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() 
     )
 
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=factories.Patient(),
         data={
             'user_type': constants.UserType.EXISTING.name,
             'relationship_type': RelationshipType.objects.self_type(),
@@ -1236,6 +1236,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() 
     )
 
     assert not form.is_valid()
+    assert len(form.non_field_errors()) == 1
     assert form.non_field_errors()[0] == (
         'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
     )

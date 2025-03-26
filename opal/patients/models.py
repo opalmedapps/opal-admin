@@ -517,6 +517,19 @@ class Relationship(models.Model):  # noqa: WPS214
                     gettext('There already exists an active relationship between the patient and caregiver.'),
                 )
 
+            if (
+                hasattr(self, 'type')
+                and self.type.role_type == RoleType.SELF
+                and (
+                    self.patient.first_name != self.caregiver.user.first_name
+                    or self.patient.last_name != self.caregiver.user.last_name
+                )
+            ):
+                error = gettext(
+                    'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
+                )
+                errors[NON_FIELD_ERRORS].append(error)
+
         if errors:
             raise ValidationError(errors)
 
