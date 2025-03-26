@@ -90,33 +90,21 @@ def test_update_patient_legacy_id_invalid() -> None:
         utils.update_patient_legacy_id(patient, legacy_id)
 
 
-def test_get_caregiver_success_or_not() -> None:
+def test_get_caregiver_success() -> None:
     """Test get caregiver information success or not."""
-    phone_number1 = '+15141112222'
-    phone_number2 = '+15141112223'
-    language1 = 'en'
-    language2 = 'fr'
+    username1 = 'username-1'
+    Caregiver(username=username1)
+    caregiver = utils.get_caregiver(username1)
+    if caregiver:
+        assert caregiver.username == username1
+
+
+def test_get_caregiver_failure() -> None:
+    """Test get caregiver information success or not."""
     username1 = 'username-1'
     username2 = 'username-2'
-    User(phone_number=phone_number1, language=language1, username=username1)
-    info: dict = {
-        'user': {
-            'language': language1,
-            'phone_number': phone_number1,
-            'username': username1,
-        },
-    }
-    caregiver = utils.get_caregiver(info['user'])
-    if caregiver:
-        assert caregiver.language == language1
-        assert caregiver.phone_number == phone_number1
-        assert caregiver.username == username1
-    info['user'] = {
-        'language': language2,
-        'phone_number': phone_number2,
-        'username': username2,
-    }
-    caregiver = utils.get_caregiver(info['user'])
+    Caregiver(username=username1)
+    caregiver = utils.get_caregiver(username2)
     assert not caregiver
 
 
@@ -167,7 +155,7 @@ def test_update_caregiver_failure() -> None:
         utils.update_caregiver(user, info)
 
 
-def test_rebuild_relationship() -> None:
+def test_replace_caregiver() -> None:
     """Test rebuild relationship and remove the skeleton user."""
     phone_number1 = '+15141112222'
     phone_number2 = '+15141112223'
@@ -176,10 +164,13 @@ def test_rebuild_relationship() -> None:
     username1 = 'username-1'
     username2 = 'username-2'
     caregiver = Caregiver(phone_number=phone_number1, language=language1, username=username1)
-    skeleton = User(phone_number=phone_number2, language=language2, username=username2)
-    profile = CaregiverProfile(user=skeleton)
-    relationship = Relationship(caregiver=profile)
-    utils.rebuild_relationship(caregiver, relationship)
+    CaregiverProfile(user=caregiver)
+    skeleton = Caregiver(phone_number=phone_number2, language=language2, username=username2)
+    skeleton_profile = CaregiverProfile(user=skeleton)
+    relationship = patient_factories.Relationship(
+        caregiver=skeleton_profile,
+    )
+    utils.replace_caregiver(caregiver, relationship)
     assert relationship.caregiver.user.username == username1
     expected_message = 'User matching query does not exist.'
     with assertRaisesMessage(

@@ -83,25 +83,17 @@ def update_patient_legacy_id(patient: Patient, legacy_id: int) -> None:
     patient.save()
 
 
-def get_caregiver(caregiver_info: dict[str, Any]) -> Optional[User]:
+def get_caregiver(username: str) -> Optional[User]:
     """
     Get the user if it exists.
 
     Args:
-        caregiver_info: User info to be checked
+        username: caregiver username
 
     Returns:
-        return User if the caregiver eixsts otherwise return None
+        return caregiver if the caregiver eixsts otherwise return None
     """
-    try:
-        user = User.objects.get(
-            username=caregiver_info['username'],
-            language=caregiver_info['language'],
-            phone_number=caregiver_info['phone_number'],
-        )
-    except User.DoesNotExist:
-        return None
-    return user
+    return Caregiver.objects.filter(username=username).first()
 
 
 def update_caregiver(user: User, info: dict[str, Any]) -> None:
@@ -121,18 +113,23 @@ def update_caregiver(user: User, info: dict[str, Any]) -> None:
     user.save()
 
 
-def rebuild_relationship(new_skeleton_user: User, relationship: Relationship) -> None:
+def replace_caregiver(existing_caregiver: User, relationship: Relationship) -> None:
     """
-    Re-link the relationship to the existing caregiver and delete the skeleton one.
+    Re-link the relationship to the existing caregiver_profile.
+
+    And delete the skeleton caregiver_profile and skeleton caregiver
 
     Args:
-        new_skeleton_user: User object
+        existing_caregiver: Caregiver object
         relationship: Relationship object
     """
     old_skeleton_user = relationship.caregiver.user
-    relationship.caregiver.user = new_skeleton_user
-    relationship.caregiver.full_clean()
-    relationship.caregiver.save()
+    old_skeleton_profile = relationship.caregiver
+    existing_profile = caregiver_models.CaregiverProfile.objects.get(user=existing_caregiver)
+    relationship.caregiver = existing_profile
+    relationship.full_clean()
+    relationship.save()
+    old_skeleton_profile.delete()
     old_skeleton_user.delete()
 
 
