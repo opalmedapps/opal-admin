@@ -527,7 +527,7 @@ class ConfirmPasswordForm(forms.Form):
     def clean(self) -> None:
         """Validate the user password."""
         super().clean()
-        confirm_password = self.cleaned_data.get('confirm_password', '')
+        confirm_password = self.cleaned_data.get('confirm_password')
 
         if not authenticate(username=self.authorized_user.username, password=confirm_password):
             self.add_error('confirm_password', _('The password you entered is incorrect. Please try again.'))
