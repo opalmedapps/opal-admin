@@ -88,7 +88,7 @@ def test_pharmacy_component_str() -> None:
     assert str(pharmacycomponent) == 'Component for filler order 25275236'
 
 
-def test_multi_observations_test() -> None:
+def test_multi_components_test() -> None:
     """Ensure multiple component instances can be assigned to one PharmacyEncodedOrder."""
     pharmacyorder = factories.PharmacyEncodedOrderFactory()
     component1 = factories.PharmacyComponentFactory(pharmacy_encoded_order=pharmacyorder)
