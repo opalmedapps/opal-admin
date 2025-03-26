@@ -1,4 +1,5 @@
 """Module providing model factories for hospital settings app models."""
+
 import factory
 from factory.django import DjangoModelFactory
 
@@ -14,8 +15,8 @@ class Institution(DjangoModelFactory):
 
     name = 'McGill University Health Centre'
     name_fr = 'Centre universitaire de santé McGill'
-    logo = 'logo_test.png'
-    logo_fr = 'logo_test.png'
+    logo = factory.django.ImageField(filename='logo_en.png', color='blue', format='PNG', palette='RGBA')
+    logo_fr = factory.django.ImageField(filename='logo_fr.png', color='blue', format='PNG', palette='RGBA')
     code = factory.lazy_attribute(lambda institution: institution.name[:4].upper())
 
 

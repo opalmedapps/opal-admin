@@ -1,12 +1,14 @@
 from http import HTTPStatus
 from typing import Tuple
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms.models import model_to_dict
 from django.test import Client
 from django.urls.base import reverse
 
 import pytest
 from bs4 import BeautifulSoup
+from factory.django import ImageField
 from pytest_django.asserts import assertContains, assertRedirects, assertTemplateUsed
 
 from .. import factories
@@ -98,7 +100,7 @@ def test_institution_list_displays_all(user_client: Client) -> None:
 
 def test_institution_update_object_displayed(user_client: Client) -> None:
     """Ensure that the institution detail page displays all fields."""
-    institution = factories.Institution(name_en='TEST1_EN', name_fr='TEST1_FR')
+    institution = factories.Institution(name='TEST1_EN', name_fr='TEST1_FR')
 
     url = reverse('hospital-settings:institution-update', args=(institution.id,))
     response = user_client.get(url)
@@ -189,6 +191,25 @@ def test_institution_created(user_client: Client) -> None:
     institution = factories.Institution.build()
     form_data = model_to_dict(institution, exclude=['id'])
 
+    with open(file='opal/media/logo_test.png', mode='rb') as f_logo:
+        form_data.update({
+            'logo': SimpleUploadedFile(
+                name='logo_en.png',
+                content=f_logo.read(),
+                content_type='image/png',
+            ),
+        })
+
+        f_logo.seek(0)
+
+        form_data.update({
+            'logo_fr': SimpleUploadedFile(
+                name='logo_fr.png',
+                content=f_logo.read(),
+                content_type='image/png',
+            ),
+        })
+
     user_client.post(url, data=form_data)
 
     assert Institution.objects.count() == 1
@@ -201,8 +222,28 @@ def test_institution_successful_create_redirects(user_client: Client) -> None:
     institution = factories.Institution.build()
     form_data = model_to_dict(institution, exclude=['id'])
 
+    with open(file='opal/media/logo_test.png', mode='rb') as f_logo:
+        form_data.update({
+            'logo': SimpleUploadedFile(
+                name='logo_en.png',
+                content=f_logo.read(),
+                content_type='image/png',
+            ),
+        })
+
+        f_logo.seek(0)
+
+        form_data.update({
+            'logo_fr': SimpleUploadedFile(
+                name='logo_fr.png',
+                content=f_logo.read(),
+                content_type='image/png',
+            ),
+        })
+
     response = user_client.post(url, data=form_data)
 
+    print(form_data)
     assertRedirects(response, reverse('hospital-settings:institution-list'))
 
 
@@ -214,7 +255,15 @@ def test_institution_updated(user_client: Client) -> None:
     institution.name = 'updated'
     form_data = model_to_dict(institution)
 
-    user_client.post(url, data=form_data)
+    form_data.update({
+        'logo': ImageField(filename='logo_en', format='PNG', palette='RGBA'),
+        'logo_fr': ImageField(filename='logo_fr', format='PNG', palette='RGBA'),
+    })
+
+    user_client.post(
+        path=url,
+        data=form_data,
+    )
 
     assert Institution.objects.all()[0].name == 'updated'
 
@@ -223,6 +272,11 @@ def test_institution_successful_update_redirects(user_client: Client, institutio
     """Ensure that after a successful update of an institution, the page is redirected to the list page."""
     url = reverse('hospital-settings:institution-update', args=(institution.id,))
     form_data = model_to_dict(institution)
+
+    form_data.update({
+        'logo': ImageField(filename='logo_en', format='PNG', palette='RGBA'),
+        'logo_fr': ImageField(filename='logo_fr', format='PNG', palette='RGBA'),
+    })
 
     response = user_client.post(url, data=form_data)
 

@@ -1,7 +1,10 @@
 import decimal
 
+from django.core.files.uploadedfile import SimpleUploadedFile
+
 import pytest
 
+from opal import settings
 from opal.hospital_settings.views import InstitutionCreateUpdateView, SiteCreateUpdateView
 
 from .. import factories
@@ -17,8 +20,24 @@ def test_institution_create() -> None:
         'code': 'TST',
     }
 
+    with open('{0}/images/opal_logo_transparent_purple.png'.format(settings.STATICFILES_DIRS[0]), 'rb') as logo_file:
+        file_content = logo_file.read()
+
+    files_data = {
+        'logo_en': SimpleUploadedFile(
+            name='logo_en.png',
+            content=file_content,
+            content_type='image/png',
+        ),
+        'logo_fr': SimpleUploadedFile(
+            name='logo_fr.png',
+            content=file_content,
+            content_type='image/png',
+        ),
+    }
+
     view = InstitutionCreateUpdateView()
-    form = view.get_form_class()(data=form_data)
+    form = view.get_form_class()(data=form_data, files=files_data)
 
     assert form.is_valid()
 
