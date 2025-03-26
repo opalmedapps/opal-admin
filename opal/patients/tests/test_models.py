@@ -200,3 +200,15 @@ def test_hospitalpatient_one_patient_many_sites() -> None:
 
     with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
         HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
+
+
+def test_hospitalpatient_many_patients_one_site() -> None:
+    """Ensure the `__str__` method is defined for the `HospitalPatient` model."""
+    patient1 = factories.Patient(first_name='aaa', last_name='111')
+    patient2 = factories.Patient(first_name='bbb', last_name='222')
+    site = factories.Site(name="Montreal Children's Hospital")
+
+    HospitalPatient.objects.create(patient=patient1, site=site, mrn='9999996')
+    HospitalPatient.objects.create(patient=patient2, site=site, mrn='9999996')
+    hospitalpatients = HospitalPatient.objects.all()
+    assert len(hospitalpatients) == 2
