@@ -94,7 +94,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
         """Override class method and fetch query parameters for the requested questionnaire.
 
         Args:
-            request: post request data. (Specified Anytype because get_questionnaire_detail explicitly expects an int)
+            request: post request data
 
         Returns:
             template rendered with updated context or HttpError
