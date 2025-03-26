@@ -18,12 +18,6 @@ from opal.users.models import User
 
 @pytest.fixture()
 def api_client() -> APIClient:
-    """
-    Fixture providing an instance of Django REST framework's `APIClient`.
-
-    Returns:
-        an instance of `APIClient`
-    """
     return APIClient()
 
 
