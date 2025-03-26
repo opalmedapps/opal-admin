@@ -132,9 +132,9 @@ def test_initialize_new_patient() -> None:
     legacy_patient = legacy_utils.initialize_new_patient(
         patient,
         [
-            (hospital_factories.Site(acronym='RVH', acronym='RVHF'), '9999995', True),
-            (hospital_factories.Site(acronym='MGH', acronym='MGHF'), '7654321', True),
-            (hospital_factories.Site(acronym='MCH', acronym='MCHF'), '1234567', False),
+            (hospital_factories.Site(acronym='RVH', acronym_fr='RVHF'), '9999995', True),
+            (hospital_factories.Site(acronym='MGH', acronym_fr='MGHF'), '7654321', True),
+            (hospital_factories.Site(acronym='MCH', acronym_fr='MCHF'), '1234567', False),
         ],
         self_caregiver=None,
     )
