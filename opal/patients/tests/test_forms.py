@@ -8,11 +8,12 @@ import pytest
 from crispy_forms.utils import render_crispy_form
 from dateutil.relativedelta import relativedelta
 from pytest_mock.plugin import MockerFixture
+from requests.exceptions import RequestException
 
 from opal.caregivers.factories import CaregiverProfile
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.services.twilio import TwilioServiceError
-from opal.users.factories import Caregiver
+from opal.users.factories import Caregiver, User
 
 from .. import constants, factories, forms
 from ..filters import ManageCaregiverAccessFilter
@@ -599,7 +600,7 @@ def test_accessrequestsearchform_mrn_found_patient_model() -> None:
 
 def test_accessrequestsearchform_search_patient_missing_info(mocker: MockerFixture) -> None:
     """Ensure that `_search_patient` function add error to form when no data is provided."""
-    oie_service = mocker.patch(
+    mock_find = mocker.patch(
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
             'status': 'success',
@@ -611,7 +612,6 @@ def test_accessrequestsearchform_search_patient_missing_info(mocker: MockerFixtu
         'medical_number': 'RAMQ12345678',
     }
     form = forms.AccessRequestSearchPatientForm(data=form_data)
-    form.oie_service = oie_service
     form._search_patient(
         card_type='',
         medical_number='',
@@ -621,6 +621,7 @@ def test_accessrequestsearchform_search_patient_missing_info(mocker: MockerFixtu
     # asserting that correct error message is added to non-field form errors list
     err_msg = 'No patient could be found.'
     assert form.non_field_errors()[0] == err_msg
+    mock_find.assert_called_once_with('RAMQ12345678')
 
 
 def test_accessrequestsearchform_mrn_fail_oie(mocker: MockerFixture) -> None:
@@ -1419,6 +1420,36 @@ def test_accessrequestconfirmpatientform_has_multiple_mrns_oie() -> None:
     assert form.non_field_errors()[0] == err_msg
 
 
+def test_accessrequestconfirmform() -> None:
+    """Ensure the confirm form is invalid by default."""
+    form = forms.AccessRequestConfirmForm(username='noone')
+
+    assert not form.is_valid()
+
+
+def test_accessrequestconfirmform_invalid_password(admin_user: User, mocker: MockerFixture) -> None:
+    """Ensure that an invalid password fails the form validation."""
+    # mock authentication and pretend it was unsuccessful
+    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
+    mock_authenticate.return_value = False
+
+    form = forms.AccessRequestConfirmForm(username=admin_user.username, data={
+        'password': 'invalid',
+    })
+
+    assert not form.is_valid()
+    assert form.has_error('password')
+
+
+def test_accessrequestconfirmform_valid_password(admin_user: User) -> None:
+    """Ensure that a valid user's password makes the form valid."""
+    form = forms.AccessRequestConfirmForm(username=admin_user.username, data={
+        'password': 'password',
+    })
+
+    assert form.is_valid()
+
+
 def test_accessrequestsendsmsform_incomplete_data(mocker: MockerFixture) -> None:
     """Ensure that the SMS is not sent when the form is incomplete."""
     mock_send = mocker.patch('opal.services.twilio.TwilioService.send_sms')
@@ -1458,6 +1489,30 @@ def test_accessrequestsendsmsform_send_error(mocker: MockerFixture) -> None:
     mock_send = mocker.patch(
         'opal.services.twilio.TwilioService.send_sms',
         side_effect=TwilioServiceError('catastrophe!'),
+    )
+
+    form = forms.AccessRequestSendSMSForm(
+        '123456',
+        data={
+            'language': 'en',
+            # magic Twilio number: https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To
+            'phone_number': '+15005550001',
+        },
+    )
+
+    form.full_clean()
+
+    assert not form.is_valid()
+    assert len(form.non_field_errors()) == 1
+    assert form.non_field_errors()[0] == 'An error occurred while sending the SMS'
+    mock_send.assert_called_once_with('+15005550001', mocker.ANY)
+
+
+def test_accessrequestsendsmsform_send_request_error(mocker: MockerFixture) -> None:
+    """Ensure that the form shows an error if the connection to Twilio fails."""
+    mock_send = mocker.patch(
+        'opal.services.twilio.TwilioService.send_sms',
+        side_effect=RequestException('SSL key too weak'),
     )
 
     form = forms.AccessRequestSendSMSForm(

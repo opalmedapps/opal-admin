@@ -1,11 +1,13 @@
+import json
 import re
 import urllib
 from datetime import date, datetime
 from http import HTTPStatus
-from typing import Tuple
+from typing import Any
 
 from django.contrib.auth.models import AbstractUser, Permission
-from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied
+from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied, SuspiciousOperation
+from django.core.serializers.json import DjangoJSONEncoder
 from django.forms.models import model_to_dict
 from django.test import Client, RequestFactory
 from django.urls import reverse
@@ -21,12 +23,11 @@ from opal.users.factories import Caregiver
 from opal.users.models import User
 
 from .. import constants, factories, forms, models, tables
-# Add any future GET-requestable patients app pages here for faster test writing
 from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView
 
 pytestmark = pytest.mark.django_db
 
-CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
+OIE_PATIENT_DATA = OIEPatientData(
     date_of_birth=date.fromisoformat('1984-05-09'),
     first_name='Marge',
     last_name='Simpson',
@@ -55,7 +56,7 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
     ],
 )
 
-test_url_template_data: list[Tuple] = [
+test_url_template_data: list[tuple[str, str]] = [
     (reverse('patients:relationships-list'), 'patients/relationships/pending_relationship_list.html'),
 ]
 
@@ -987,7 +988,6 @@ def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client) ->
 # Access Request Tests
 def test_access_request_permission(client: Client, registration_user: User) -> None:
     """Ensure that the access request view can be viewed with the `can_perform_registration` permission."""
-    client.force_login(registration_user)
     response = client.get(reverse('patients:access-request'))
 
     assert response.status_code == HTTPStatus.OK
@@ -1005,7 +1005,6 @@ def test_access_request_no_permission(django_user_model: User) -> None:
 @pytest.mark.skip(reason='the sidebar menus are removed; include the test once the sidebar menus are reverted back.')
 def test_access_request_menu_shown(client: Client, registration_user: User) -> None:
     """Ensures that Opal Registration is displayed for users with permission."""
-    client.force_login(registration_user)
     response = client.get(reverse('start'), follow=True)
 
     assertContains(response, 'Opal Registration')
@@ -1021,33 +1020,234 @@ def test_access_request_menu_hidden(user_client: Client) -> None:
 def test_access_request_cancel_button(client: Client, registration_user: User) -> None:
     """Ensure the cancel button links to the correct URL."""
     url = reverse('patients:access-request')
-    client.force_login(registration_user)
+
     response = client.get(url)
 
     assertContains(response, f'href="{url}"')
 
 
-def test_access_request_initial_search(client: Client, registration_user: User) -> None:
-    """Ensure that the patient search form initializes fields values as expected."""
-    site = factories.Site()
-    client.force_login(registration_user)
+def test_access_request(client: Client, registration_user: User) -> None:
+    """Ensure that a GET request shows the initial search form."""
+    session = client.session
+    session[AccessRequestView.session_key_name] = {'random': 'data'}
 
-    # initialize the session storage
     response = client.get(reverse('patients:access-request'))
 
     assert response.status_code == HTTPStatus.OK
+    expected_data: dict[str, Any] = {}
+    assert client.session[AccessRequestView.session_key_name] == expected_data
+    assert 'management_form' in response.context
+    assert 'search_form' in response.context
+    assert 'next_button_text' in response.context
+
+
+def test_access_request_invalid_management_form(registration_user: User) -> None:
+    """Ensure that a missing step raises an exception."""
+    request = RequestFactory().post(reverse('patients:access-request'), data={'current_step': ''})
+    request.user = registration_user
+
+    view = AccessRequestView.as_view()
+    with pytest.raises(SuspiciousOperation, match='ManagementForm data is missing or has been tampered with.'):
+        view(request)
+
+
+def test_access_request_invalid_step(client: Client, registration_user: User) -> None:
+    """Ensure that an invalid step is detected and the initial page shown."""
+    response = client.post(reverse('patients:access-request'), data={'current_step': 'invalid'})
+
+    assert response.status_code == HTTPStatus.OK
+    # the session was reset
+    expected_data: dict[str, Any] = {}
+    assert client.session[AccessRequestView.session_key_name] == expected_data
+
+
+def test_access_request_no_session_data(client: Client, registration_user: User) -> None:
+    """Ensure that no initialized session data is detected and the initial page shown."""
+    response = client.post(reverse('patients:access-request'), data={'current_step': 'search'})
+
+    assert response.status_code == HTTPStatus.OK
+    # the session was initialized
+    expected_data: dict[str, Any] = {}
+    assert client.session[AccessRequestView.session_key_name] == expected_data
+
+
+def _initialize_session(client: Client, extra_data: dict[str, Any] | None = None) -> None:
+    session = client.session
+
+    data = {}
+    if extra_data:
+        data.update(extra_data)
+
+    session[AccessRequestView.session_key_name] = data
+    session.save()
+
+
+def test_access_request_search_existing_patient(client: Client, registration_user: User) -> None:
+    """Ensure that the patient search form finds the patient and moves to the next step."""
+    _initialize_session(client)
+    hospital_patient = factories.HospitalPatient()
 
     form_data = {
         'current_step': 'search',
         'search-card_type': constants.MedicalCard.MRN.name,
-        'search-medical_number': '',
+        'search-medical_number': hospital_patient.mrn,
+        'next': 'submit',
     }
 
-    response_post = client.post(reverse('patients:access-request'), data=form_data)
+    response = client.post(reverse('patients:access-request'), data=form_data)
 
-    # assert site field is being initialized with site when there is only one site
-    context = response_post.context
-    assert context['current_forms'][0]['site'].initial == site
+    # assert that the patient was found and the next step (showing the patient) is active
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['current_step'] == 'search'
+    assert response.context['next_step'] == 'patient'
+    assert 'patient_form' in response.context
+    assert 'patient_table' in response.context
+
+    # the table shows the correct patient
+    table: tables.PatientTable = response.context['patient_table']
+
+    assert table.data.data == [hospital_patient.patient]
+    # the form's data was saved and models were converted to their pk only
+    session = client.session[AccessRequestView.session_key_name]
+    assert session == {
+        'step_search': {
+            'card_type': constants.MedicalCard.MRN.name,
+            'site': hospital_patient.site.pk,
+            'medical_number': hospital_patient.mrn,
+        },
+        'patient': hospital_patient.patient.pk,
+    }
+
+
+def test_access_request_search_fields_disabled(client: Client, registration_user: User) -> None:
+    """Ensure that the patient search form fields are disabled when moving to the next step."""
+    _initialize_session(client)
+    hospital_patient = factories.HospitalPatient()
+
+    form_data = {
+        'current_step': 'search',
+        'search-card_type': constants.MedicalCard.MRN.name,
+        'search-medical_number': hospital_patient.mrn,
+        'next': 'submit',
+    }
+
+    response = client.post(reverse('patients:access-request'), data=form_data)
+
+    form: forms.AccessRequestSearchPatientForm = response.context['search_form']
+    assert form.fields['card_type'].disabled
+    assert form.fields['site'].disabled
+    assert form.fields['medical_number'].disabled
+    assert form['card_type'].value() == constants.MedicalCard.MRN.name
+    assert form['site'].value() == hospital_patient.site.pk
+    assert form['medical_number'].value() == hospital_patient.mrn
+
+
+def test_access_request_search_new_patient(client: Client, registration_user: User, mocker: MockerFixture) -> None:
+    """Ensure that the patient search form finds a new patient and moves to the next step."""
+    _initialize_session(client)
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+
+    form_data = {
+        'current_step': 'search',
+        'search-card_type': constants.MedicalCard.RAMQ.name,
+        'search-medical_number': 'MARG99991313',
+        'next': 'submit',
+    }
+
+    response = client.post(reverse('patients:access-request'), data=form_data)
+
+    # assert that the patient was found and the next step (showing the patient) is active
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['current_step'] == 'search'
+    assert response.context['next_step'] == 'patient'
+    assert 'patient_form' in response.context
+    assert 'patient_table' in response.context
+
+    # the table is shown with the correct patient data
+    table: tables.PatientTable = response.context['patient_table']
+    assert len(table.data.data) == 1
+    patient = table.data.data[0]
+    # spot check only since some dates are datetimes others are strings
+    assert patient.first_name == OIE_PATIENT_DATA.first_name
+    assert patient.last_name == OIE_PATIENT_DATA.last_name
+    assert patient.ramq == OIE_PATIENT_DATA.ramq
+    assert patient.date_of_birth == OIE_PATIENT_DATA.date_of_birth
+    assert patient.mrns == OIE_PATIENT_DATA.mrns
+
+    # the form's data was saved and models were converted to their pk only
+    session = client.session[AccessRequestView.session_key_name]
+
+    patient_data = OIE_PATIENT_DATA._asdict()
+    patient_data['mrns'] = [mrn._asdict() for mrn in patient_data['mrns']]
+    patient_json = json.dumps(patient_data, cls=DjangoJSONEncoder)
+
+    assert session == {
+        'step_search': {
+            'card_type': constants.MedicalCard.RAMQ.name,
+            'site': None,
+            'medical_number': 'MARG99991313',
+        },
+        'patient': patient_json,
+    }
+
+
+def test_access_request_search_not_found(client: Client, registration_user: User, mocker: MockerFixture) -> None:
+    """Ensure that the patient search form is invalid when no patient is found."""
+    _initialize_session(client)
+    mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'error',
+            'data': {'message': 'patient not found'},
+        },
+    )
+
+    form_data = {
+        'current_step': 'search',
+        'search-card_type': constants.MedicalCard.RAMQ.name,
+        'search-medical_number': 'MARG99991313',
+        'next': 'submit',
+    }
+
+    response = client.post(reverse('patients:access-request'), data=form_data)
+
+    # assert that the patient was found and the next step (showing the patient) is active
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['current_step'] == 'search'
+    assert response.context['next_step'] == 'search'
+    assert 'patient_form' not in response.context
+    assert 'patient_table' not in response.context
+
+
+def test_access_request_confirm_patient(client: Client, registration_user: User) -> None:
+    """Ensure that a patient can be confirmed and moved to the requestor step."""
+    hospital_patient = factories.HospitalPatient()
+    data = {
+        'step_search': {
+            'card_type': constants.MedicalCard.MRN.name,
+            'site': hospital_patient.site.pk,
+            'medical_number': hospital_patient.mrn,
+        },
+        'patient': hospital_patient.patient.pk,
+    }
+    _initialize_session(client, data)
+
+    form_data = {
+        'current_step': 'patient',
+        'next': 'submit',
+    }
+
+    response = client.post(reverse('patients:access-request'), data=form_data)
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['next_step'] == 'relationship'
+    assert 'relationship_form' in response.context
 
 
 def test_access_request_confirmation_no_permission(django_user_model: User) -> None:
@@ -1061,8 +1261,6 @@ def test_access_request_confirmation_no_permission(django_user_model: User) -> N
 
 def test_access_request_confirmation_no_data_redirects(client: Client, registration_user: User) -> None:
     """Ensure that the confirmation view redirects when there is no data in the session."""
-    client.force_login(registration_user)
-
     # initialize the session storage
     response = client.get(reverse('patients:access-request-confirmation'))
 
@@ -1072,8 +1270,6 @@ def test_access_request_confirmation_no_data_redirects(client: Client, registrat
 
 def test_access_request_confirmation_partial_data_redirects(client: Client, registration_user: User) -> None:
     """Ensure that the confirmation view redirects when there is only partial data in the session."""
-    client.force_login(registration_user)
-
     session = client.session
     session[AccessRequestView.session_key_name] = {
         'patient': 'Hans Wurst',
@@ -1089,8 +1285,6 @@ def test_access_request_confirmation_partial_data_redirects(client: Client, regi
 
 def test_access_request_confirmation_no_code(client: Client, registration_user: User) -> None:
     """Ensure that the confirmation view shows the confirmation template for an existing user without a code."""
-    client.force_login(registration_user)
-
     session = client.session
     session[AccessRequestView.session_key_name] = {
         'patient': 'Hans Wurst',
@@ -1115,8 +1309,6 @@ def test_access_request_confirmation_no_code(client: Client, registration_user: 
 
 def test_access_request_confirmation_code(client: Client, registration_user: User) -> None:
     """Ensure that the confirmation view shows the confirmation template for a new user with the code."""
-    client.force_login(registration_user)
-
     data = {
         'patient': 'Hans Wurst',
         'requestor': 'John Wayne',
@@ -1144,8 +1336,6 @@ def test_access_request_confirmation_code(client: Client, registration_user: Use
 
 def test_access_request_confirmation_post_no_code(client: Client, registration_user: User) -> None:
     """Ensure that the confirmation view prevents posts when there is no code."""
-    client.force_login(registration_user)
-
     data = {
         'patient': 'Hans Wurst',
         'requestor': 'John Wayne',
@@ -1164,8 +1354,6 @@ def test_access_request_confirmation_post_no_code(client: Client, registration_u
 
 def test_access_request_confirmation_post_no_data(client: Client, registration_user: User) -> None:
     """Ensure that the confirmation view handles posts for the form."""
-    client.force_login(registration_user)
-
     data = {
         'patient': 'Hans Wurst',
         'requestor': 'John Wayne',
@@ -1189,8 +1377,6 @@ def test_access_request_confirmation_post_success(
     mocker: MockerFixture,
 ) -> None:
     """Ensure that the confirmation view handles posts for the form and re-shows the template on success."""
-    client.force_login(registration_user)
-
     mock_send = mocker.patch('opal.services.twilio.TwilioService.send_sms')
 
     data = {
