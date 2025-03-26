@@ -242,7 +242,119 @@ def test_filter_managecaregiver_missing_ramq() -> None:
     assert form.errors['medical_number'] == ['This field is required.']
 
 
-def test_filter_managecaregiver_missing_valid_mrn() -> None:
+def test_filter_managecaregiver_valid_mrn() -> None:
+    """Ensure that filtering caregiver access by `mrn` passes when required fields are provided."""
+    hospital_patient = factories.HospitalPatient()
+    factories.Site()
+    form_data = {
+        'card_type': constants.MedicalCard.MRN.name,
+        'site': hospital_patient.site.id,
+        'medical_number': '9999996',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data).form
+    site_field = form.fields['site']
+    card_type_field = form.fields['card_type']
+
+    assert form.is_valid()
+    # test that form is defaulted to MRN
+    assert card_type_field.initial == constants.MedicalCard.MRN.name
+    assert not site_field.disabled
+    assert site_field.required
+    assert not isinstance(site_field.widget, HiddenInput)
+    assert site_field.empty_label == 'Choose...'
+
+
+def test_form_common_functions_mrn_selected() -> None:
+    """Ensure common functions defined reused in forms produce expected results when `MRN` is selected."""
+    hospital_patient = factories.HospitalPatient()
+    factories.Site()
+    form_data = {
+        'card_type': constants.MedicalCard.MRN.name,
+        'site': hospital_patient.site.id,
+        'medical_number': '9999996',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data).form
+
+    # test functions
+    assert forms.is_mrn_selected(form)
+    assert not forms.is_not_mrn_or_single_site(form)
+    assert forms.get_site_empty_label(form) == 'Choose...'
+
+
+def test_form_common_functions_mrn_selected_single_site() -> None:
+    """Ensure common functions defined reused in forms produce expected results when `MRN` is selected."""
+    hospital_patient = factories.HospitalPatient()
+    form_data = {
+        'card_type': constants.MedicalCard.MRN.name,
+        'site': hospital_patient.site.id,
+        'medical_number': '9999996',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data).form
+
+    # test functions
+    assert forms.is_mrn_selected(form)
+    assert forms.is_not_mrn_or_single_site(form)
+
+
+def test_form_common_functions_ramq_selected() -> None:
+    """Ensure common functions defined reused in forms produce expected results when `RAMQ` is selected."""
+    factories.HospitalPatient()
+    factories.Site()
+    form_data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'site': '',
+        'medical_number': 'RAMQ12345678',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data).form
+
+    # test functions
+    assert not forms.is_mrn_selected(form)
+    assert forms.is_not_mrn_or_single_site(form)
+    assert forms.get_site_empty_label(form) == 'Not required'
+
+
+def test_filter_managecaregiver_valid_ramq() -> None:
+    """Ensure that filtering caregiver access by `ramq` does not require `site` and disabled it."""
+    factories.HospitalPatient()
+    factories.Site()
+
+    form_data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'site': '',
+        'medical_number': 'RAMQ12345678',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data).form
+    site_field = form.fields['site']
+
+    assert form.is_valid()
+    assert form.cleaned_data['card_type'] == constants.MedicalCard.RAMQ.name
+    assert site_field.disabled
+    assert not site_field.required
+    assert not isinstance(site_field.widget, HiddenInput)
+    assert site_field.empty_label == 'Not required'
+
+
+def test_filter_managecaregiver_valid_ramq_single_site() -> None:
+    """Ensure that filtering caregiver access by `ramq` when there is single site, hides `site`."""
+    hospital_patient = factories.HospitalPatient()
+    form_data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'site': '',
+        'medical_number': 'RAMQ12345678',
+    }
+    form = ManageCaregiverAccessFilter(data=form_data).form
+    site_field = form.fields['site']
+    card_type_field = form.fields['card_type']
+
+    assert card_type_field.initial != constants.MedicalCard.RAMQ.name
+    assert form.is_valid()
+    # assert value of site is set although the field is hidden
+    assert form.cleaned_data['site'] == hospital_patient.site
+    assert site_field.disabled
+    assert isinstance(site_field.widget, HiddenInput)
+
+
+def test_filter_managecaregiver_valid_mrn_single_site() -> None:
     """Ensure that filtering caregiver access by `mrn` passes when required fields are provided."""
     hospital_patient = factories.HospitalPatient()
 
@@ -251,19 +363,17 @@ def test_filter_managecaregiver_missing_valid_mrn() -> None:
         'site': hospital_patient.site.id,
         'medical_number': '9999996',
     }
-    form = ManageCaregiverAccessFilter(data=form_data)
-    assert form.is_valid()
+    form = ManageCaregiverAccessFilter(data=form_data).form
 
+    site_field = form.fields['site']
+    card_type_field = form.fields['card_type']
 
-def test_filter_managecaregiver_valid_ramq() -> None:
-    """Ensure that filtering caregiver access by `ramq` does not require `site`."""
-    form_data = {
-        'card_type': constants.MedicalCard.RAMQ.name,
-        'site': '',
-        'medical_number': 'RAMQ12345678',
-    }
-    form = ManageCaregiverAccessFilter(data=form_data)
+    assert card_type_field.initial == constants.MedicalCard.MRN.name
     assert form.is_valid()
+    # assert value of site is set although the field is hidden
+    assert form.cleaned_data['site'] == hospital_patient.site
+    assert site_field.disabled
+    assert isinstance(site_field.widget, HiddenInput)
 
 
 # Tests for ManageCaregiverAccessUpdateForm
@@ -289,6 +399,81 @@ def test_caregiver_first_last_name_invalid() -> None:
     assert not form.is_valid()
     assert form.errors['first_name'][0] == error_message
     assert form.errors['last_name'][0] == error_message
+
+
+def test_caregiver_access_form_update_self() -> None:
+    """Ensure that `first_name` and `last_name` are readonly, `end_date` is not required and `type` is disabled."""
+    self_type = factories.RelationshipType(role_type=RoleType.SELF.name)
+    patient = factories.Patient()
+
+    relationship = factories.Relationship(
+        patient=patient,
+        type=self_type,
+        status=RelationshipStatus.CONFIRMED,
+    )
+
+    form_data = model_to_dict(relationship)
+    form_data['first_name'] = patient.first_name
+    form_data['last_name'] = patient.last_name
+
+    form = forms.RelationshipAccessForm(data=form_data, instance=relationship)
+
+    assert form.is_valid()
+    form_fields = form.fields
+
+    assert form_fields['first_name'].widget.attrs['readonly']
+    assert form_fields['last_name'].widget.attrs['readonly']
+    assert form_fields['type'].disabled
+    assert form.cleaned_data['type'].role_type == RoleType.SELF.name
+    assert not form_fields['end_date'].required
+
+
+def test_caregiver_access_form_update_self_fail() -> None:
+    """Ensure that different patient and caregiver names and non-confirmed status raise error for self-relationship."""
+    self_type = factories.RelationshipType(role_type=RoleType.SELF.name)
+    patient = factories.Patient()
+
+    relationship = factories.Relationship(
+        patient=patient,
+        type=self_type,
+        status=RelationshipStatus.PENDING,
+    )
+
+    form_data = model_to_dict(relationship)
+    form_data['first_name'] = 'test_first_name'
+    form_data['last_name'] = 'test_last_name'
+
+    diff_name_err = 'A self-relationship was selected but the caregiver appears to be someone other than the patient.'
+    pending_err = '"Pending" status does not apply for the Self relationship.'
+    form = forms.RelationshipAccessForm(data=form_data, instance=relationship)
+
+    assert not form.is_valid()
+    assert diff_name_err in form.errors['__all__']
+    assert pending_err in form.errors['status']
+
+
+def test_caregiver_access_form_update_non_self() -> None:
+    """Ensure that non-self `first_name`,`last_name` are editable, `end_date` is required and `type` is enabled."""
+    patient = factories.Patient()
+
+    relationship = factories.Relationship(
+        patient=patient,
+        status=RelationshipStatus.PENDING,
+    )
+
+    form_data = model_to_dict(relationship)
+    form_data['first_name'] = patient.first_name
+    form_data['last_name'] = patient.last_name
+
+    form = forms.RelationshipAccessForm(data=form_data, instance=relationship)
+
+    assert form.is_valid()
+    form_fields = form.fields
+
+    assert not form_fields['first_name'].widget.attrs.get('readonly')
+    assert not form_fields['last_name'].widget.attrs.get('readonly')
+    assert not form_fields['type'].disabled
+    assert form_fields['end_date'].required
 
 
 # Opal Registration Tests
@@ -369,6 +554,7 @@ def test_accessrequestsearchform_more_than_site() -> None:
     assert not site_field.disabled
     assert site_field.required
     assert not isinstance(site_field.widget, HiddenInput)
+    assert site_field.empty_label == 'Choose...'  # type: ignore[attr-defined]
 
 
 def test_accessrequestsearchform_ramq_validation_fail() -> None:
