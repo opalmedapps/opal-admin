@@ -165,7 +165,7 @@ def test_update_caregiver_profile_failure() -> None:
     legacy_id2 = 'Two'
     profile = CaregiverProfile(legacy_id=legacy_id1)
 
-    expected_message = "{'legacy_id': ['“Two” value must be an integer.']}"
+    expected_message = "{'legacy_id': ['\"Two\" value must be an integer.']}"
     with assertRaisesMessage(
         ValidationError,
         expected_message,
