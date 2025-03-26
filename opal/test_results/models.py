@@ -72,7 +72,8 @@ class GeneralTest(models.Model):
         help_text=_('OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to patients.'),
     )
     case_number = models.CharField(
-        verbose_name=_('Filler Field 1'),
+        verbose_name=_('Case Number'),
+        help_text=_('HL7 Filler Field 1 identifier'),
         max_length=60,
         blank=True,
     )
@@ -151,7 +152,7 @@ class Observation(models.Model):
         null=True,
     )
     value_abnormal = models.CharField(
-        verbose_name=_('Abormal Flag'),
+        verbose_name=_('Abnormal Flag'),
         max_length=1,
         choices=AbnormalFlag.choices,
         default=AbnormalFlag.NORMAL,
