@@ -25,6 +25,8 @@ def test_get_appointment_databank_data() -> None:
         patient_ser_num=consenting_patient.patientsernum,
         last_synchronized=last_cron_sync_time,
     )
+
+    # Define expected result to ensure query doesn't get accidentally altered
     expected_returned_fields = {
         'appointment_ser_num',
         'date_created',
@@ -50,12 +52,13 @@ def test_get_demographics_databank_data() -> None:
     # Prepare patient and last cron run time
     consenting_patient = factories.LegacyPatientFactory()
     last_cron_sync_time = timezone.make_aware(datetime(2023, 1, 1, 0, 0, 5))
-
     # Fetch the data
     databank_data = LegacyPatient.objects.get_databank_data_for_patient(
         patient_ser_num=consenting_patient.patientsernum,
         last_synchronized=last_cron_sync_time,
     )
+
+    # Define expected result to ensure query doesn't get accidentally altered
     expected_returned_fields = {
         'patient_ser_num',
         'opal_registration_date',
@@ -85,8 +88,21 @@ def test_get_diagnosis_databank_data() -> None:
         last_synchronized=last_cron_sync_time,
     )
 
+    # Define expected result to ensure query doesn't get accidentally altered
+    expected_returned_fields = {
+        'diagnosis_ser_num',
+        'date_created',
+        'source_system',
+        'source_system_ser',
+        'source_system_code',
+        'source_system_code_description',
+        'stage',
+        'stage_criteria',
+        'last_updated',
+    }
     for diagnosis in databank_data:
         assert diagnosis['last_updated'] > last_cron_sync_time
+        assert not (set(expected_returned_fields) - set(diagnosis.keys()))
 
     assert databank_data.count() == 2
 
@@ -106,7 +122,26 @@ def test_get_labs_databank_data() -> None:
         last_synchronized=last_cron_sync_time,
     )
 
+    # Define expected result to ensure query doesn't get accidentally altered
+    expected_returned_fields = {
+        'test_result_ser_num',
+        'test_component_date',
+        'test_group_name',
+        'test_component_name',
+        'test_name',
+        'test_value',
+        'test_units',
+        'max_norm_range',
+        'min_norm_range',
+        'abnormal_flag',
+        'approved_flag',
+        'valid_flag',
+        'source_system',
+        'source_system_ser',
+        'last_updated',
+    }
     for lab in databank_data:
         assert lab['last_updated'] > last_cron_sync_time
+        assert not (set(expected_returned_fields) - set(lab.keys()))
 
     assert databank_data.count() == 3
