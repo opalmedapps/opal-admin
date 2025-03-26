@@ -30,7 +30,7 @@ class UnreadQuerySetMixin(models.Manager):
 
         Args:
             patient_sernum: User sernum used to retrieve unread model records queryset.
-            user_name: Username making the request
+            user_name: Firebase username making the request.
 
         Returns:
             Queryset of unread model records.

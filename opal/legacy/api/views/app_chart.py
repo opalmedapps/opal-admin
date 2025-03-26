@@ -25,9 +25,9 @@ class AppChartView(APIView):
         and will provide them for the selected patient instead until the profile selector is finished.
 
         Args:
+            request: http request used to get username making the request
             args: additional arguments
             kwargs: additional keyword arguments
-            request: http request use to get username making the request
 
         Returns:
             Http response with the data needed to display the chart view.
