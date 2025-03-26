@@ -146,3 +146,23 @@ def test_generate_error_bar_chart_success() -> None:
     assert 'Test label x' in chart
     assert 'Test label y' in chart
     assert 'Test label legend' in chart
+
+
+def test_generate_error_bar_chart_custom_candle_labels() -> None:
+    """Ensure generate_error_bar_chart correctly changes candle legend labels."""
+    chart_data = CHART_DATA._replace(
+        data=pd.DataFrame(
+            {'x': 10, 'error_max': 100, 'error_min': 10, 'legend': 'test legend'},
+            {'x': 20, 'error_max': 200, 'error_min': 20, 'legend': 'test legend'},
+            {'x': 30, 'error_max': 300, 'error_min': 30, 'legend': 'test legend'},
+        ),
+    )
+
+    chart = chart_service.generate_error_bar_chart(
+        chart_data,
+        label_error_max='custom error max label',
+        label_error_min='custom error min label',
+    )
+    assert chart
+    assert 'custom error max label' in chart
+    assert 'custom error min label' in chart
