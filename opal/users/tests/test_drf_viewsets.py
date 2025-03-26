@@ -280,6 +280,23 @@ def test_userviewset_create_user_password_invalid(admin_api_client: APIClient) -
     assert 'This password is too short' in response.content.decode()
 
 
+@pytest.mark.xfail
+def test_userviewset_create_user_deactivated(admin_api_client: APIClient) -> None:
+    """The user is created with no password."""
+    user_factories.ClinicalStaff(username='testuser', is_active=False)
+
+    data = {
+        'username': 'testuser',
+    }
+
+    response = admin_api_client.post(reverse('api:users-list'), data=data)
+
+    assert response.status_code == HTTPStatus.CREATED
+
+    user = User.objects.get(username='testuser')
+    assert user.is_active
+
+
 def test_userviewset_create_user_no_group(admin_api_client: APIClient) -> None:
     """The user is created with no groups."""
     data = {
