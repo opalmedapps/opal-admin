@@ -365,8 +365,6 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:  # no
     Returns:
         boolean value indicating success or failure, to help logging in registration endpoint
     """
-    # TODO: remove
-    # django_patient = Patient.objects.get(legacy_id=51)  # noqa: WPS432
     try:  # noqa: WPS229
         legacy_patient = LegacyPatient.objects.get(patientsernum=django_patient.legacy_id)
 
