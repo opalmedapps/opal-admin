@@ -213,11 +213,9 @@ def test_get_site_instance_failed(caplog: LogCaptureFixture) -> None:
     site = _get_site_instance(receiving_facility='')
     assert caplog.records[0].message == error
     assert caplog.records[0].levelname == 'ERROR'
-    assert site == Site(
-        name='',
-        street_name='',
-        city='',
-        province_code='',
-        postal_code='',
-        contact_telephone='',
-    )
+    assert site.name == ''
+    assert site.street_name == ''
+    assert site.city == ''
+    assert site.province_code == ''
+    assert site.postal_code == ''
+    assert site.contact_telephone == ''
