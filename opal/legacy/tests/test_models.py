@@ -67,6 +67,12 @@ def test_legacy_questionnaire_factory() -> None:
     test_questionnaire.full_clean()
 
 
+def test_legacy_questionnaire_control_factory() -> None:
+    """Test whether the factory creates a valid legacy questionnaire control model instance."""
+    test_questionnaire_con = factories.LegacyQuestionnaireControlFactory()
+    test_questionnaire_con.full_clean()
+
+
 def test_legacy_announcement_factory() -> None:
     """Test whether the factory creates a valid legacy announcement model instance."""
     test_announcement = factories.LegacyAnnouncementFactory()
