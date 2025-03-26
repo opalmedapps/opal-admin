@@ -82,7 +82,7 @@ def qr_code(text: str) -> bytes:
     return stream.getvalue()
 
 
-def dicts_to_csv_bytesio(input_dict: list[dict[str, Any]]) -> io.BytesIO:
+def dict_to_csv(input_dict: list[dict[str, Any]]) -> io.BytesIO:
     """Convert a list of dictionaries to a CSV file.
 
     The CSV file is returned in a BytesIO object format.
