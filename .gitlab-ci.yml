@@ -95,7 +95,7 @@ test:
     - mariadb:10.7.1-focal
   # create second DB for legacy DB
   before_script:
-    - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hlocalhost <<EOF GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`;" EOF
+    - MYSQL_PWD=$DB_ROOT_PASSWORD mysql -uroot -hlocalhost <<EOF GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$MARIADB_USER\`@\`%\`; EOF
   script:
     - pytest --version
     - coverage run -m pytest --junitxml=report.xml
