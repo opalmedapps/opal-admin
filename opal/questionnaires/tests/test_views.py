@@ -85,7 +85,6 @@ def test_filter_report_form_exists(user_client: Client, admin_user: AbstractUser
     """Ensure that a form exists in the reports list page pointing to the filter page."""
     user_client.force_login(admin_user)
     response = user_client.get(reverse('questionnaires:reports-list'))
-    assert response.status_code == HTTPStatus.OK
     assertContains(response, reverse('questionnaires:reports-filter'))
 
 
@@ -119,7 +118,6 @@ def test_download_forms_exist(user_client: Client, admin_user: AbstractUser) -> 
             'following': [True],
         },
     )
-    assert response.status_code == HTTPStatus.OK
     assertContains(response, reverse('questionnaires:reports-download-csv'))
     assertContains(response, reverse('questionnaires:reports-download-xlsx'))
 

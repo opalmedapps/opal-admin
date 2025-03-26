@@ -94,10 +94,10 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
         """Override class method and fetch query parameters for the requested questionnaire.
 
         Args:
-            request: post request data
+            request: post request data.
 
         Returns:
-            template rendered with updated context or HttpError
+            template rendered with updated context or HttpError.
         """
         context = self.get_context_data()
         requestor: User = request.user  # type: ignore[assignment]
@@ -219,7 +219,7 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
             request: post request data.
 
         Returns:
-            original template
+            original template.
 
         """
         qid = request.POST.get('questionnaireid')
