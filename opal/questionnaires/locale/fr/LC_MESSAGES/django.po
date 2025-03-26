@@ -24,10 +24,8 @@ msgid "Questionnaires"
 msgstr "Questionnaires"
 
 #: opal/questionnaires/models.py
-#, fuzzy
-#| msgid "Export Reports"
 msgid "Export Report"
-msgstr "Exportation de Rapports"
+msgstr "Exportation du rapport"
 
 #: opal/questionnaires/models.py
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
@@ -37,58 +35,44 @@ msgid "Export Reports"
 msgstr "Exportation de Rapports"
 
 #: opal/questionnaires/tables.py
-#, fuzzy
-#| msgid "Patients"
 msgid "Patient ID"
-msgstr "Les patients"
+msgstr "ID du patient"
 
 #: opal/questionnaires/tables.py
-#, fuzzy
-#| msgid "Questionnaires"
 msgid "Question ID"
-msgstr "Des questions"
+msgstr "Question ID"
 
 #: opal/questionnaires/tables.py
-#, fuzzy
-#| msgid "Questionnaires"
 msgid "Question Text"
-msgstr "Des questions"
+msgstr "Texte de la question"
 
 #: opal/questionnaires/tables.py
 msgid "Answer Text"
 msgstr "Texte de réponse"
 
 #: opal/questionnaires/tables.py
-#, fuzzy
-#| msgid "Date range"
 msgid "Date Created"
-msgstr "Plage de dates"
+msgstr "Date de création"
 
 #: opal/questionnaires/tables.py
-#, fuzzy
-#| msgid "Date range"
 msgid "Date Updated"
-msgstr "Plage de dates"
+msgstr "Date de mise à jour"
 
 #: opal/questionnaires/tables.py
 msgid "No responses found."
 msgstr "Aucune réponse trouvée."
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
-#, fuzzy
-#| msgid "Export Reports"
 msgid "Report:"
-msgstr "Exportation de Rapports"
+msgstr "Rapport :"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
 msgid "between"
 msgstr "entre"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
-#, fuzzy
-#| msgid "End"
 msgid "and"
-msgstr "Fin"
+msgstr "et"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
 msgid "Back"
@@ -107,10 +91,8 @@ msgid "By patients"
 msgstr "Par les patients"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
-#, fuzzy
-#| msgid "Questionnaires"
 msgid "By questions"
-msgstr "Par questions"
+msgstr "Par des questions"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
 msgid "None (single tab)"
@@ -121,9 +103,7 @@ msgid "Cancel"
 msgstr "Annuler"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
-#, fuzzy
-#| msgid "Questionnaires"
-msgid "Questionnaire"
+msgid "Questionnaires"
 msgstr "Questionnaires"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
@@ -167,8 +147,6 @@ msgid "Select All"
 msgstr "Tout sélectionner"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
-#, fuzzy
-#| msgid "Questionnaires"
 msgid "Questions"
 msgstr "Des questions"
 
@@ -177,8 +155,6 @@ msgid "View Report"
 msgstr "Voir le rapport"
 
 #: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html
-#, fuzzy
-#| msgid "Questionnaires"
 msgid "Select questionnaire"
 msgstr "Sélectionnez le questionnaire"
 

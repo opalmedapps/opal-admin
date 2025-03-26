@@ -6,7 +6,6 @@
 staticfiles/
 
 # test data
-# tmp/
 docker/nginx-data/
 opal/media/questionnaire-files/*
 

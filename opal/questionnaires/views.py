@@ -61,7 +61,7 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
         """Override class method and fetch query parameters for the requested questionnaire.
 
         Args:
-            request: post request data. (Specified Anytype because get_questionnaire_detail explicitly expects an int)
+            request: post request data.
 
         Returns:
             template rendered with updated context or HttpError
@@ -214,7 +214,13 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
                     patient_rows = patient_rows.sort_values(['last_updated', 'patient_id'], ascending=[True, True])
                     patient_rows.to_excel(writer, sheet_name=f'question_id-{ques}', index=False, header=True)
         else:
-            df.to_excel(filename_long, sheet_name='Sheet1', index=False, header=True)
+            with tempfile.NamedTemporaryFile(suffix='.xlsx') as temp_file:
+                df.to_excel(temp_file.name, sheet_name='Sheet1', index=False, header=True)
+                return HttpResponse(
+                    temp_file.read(),
+                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    headers={'Content-Disposition': f'attachment; filename = {filename}'},
+                )
 
         with open(filename_long, 'rb') as handle:
             file_content = handle.read()
