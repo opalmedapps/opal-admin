@@ -22,9 +22,9 @@ class ManageCaregiverAccessForm(forms.Form):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        card_type = self.fields['medical_card_type']
+        card_type = self.fields['card_type']
         card_type.widget.attrs.update({'up-validate': ''})
-        card_type_value = self['medical_card_type'].value()
+        card_type_value = self['card_type'].value()
 
         if card_type_value == 'mrn':
             self.fields['site'].required = True
@@ -74,6 +74,15 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             args: additional arguments
             kwargs: additional keyword arguments
         """
+        request = kwargs.get('request')
+
+        if request and 'X-Up-Validate' in request.headers:
+            data = kwargs.pop('data')
+
+            for name, the_filter in self.base_filters.items():
+                # print(the_filter.extra)
+                the_filter.extra['initial'] = data.get(name)
+
         super().__init__(*args, **kwargs)
 
         self.form.helper = FormHelper()
