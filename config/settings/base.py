@@ -164,7 +164,6 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
-    'django_extensions',
     'rest_framework',
     'rest_framework.authtoken',
     'dj_rest_auth',
@@ -279,6 +278,8 @@ STATICFILES_FINDERS = [
 
 # MEDIA
 # ------------------------------------------------------------------------------
+# See https://docs.djangoproject.com/en/dev/howto/static-files/deployment/
+# See https://docs.djangoproject.com/en/dev/howto/static-files/#serving-files-uploaded-by-a-user-during-development
 # https://docs.djangoproject.com/en/dev/ref/settings/#media-root
 MEDIA_ROOT = str(APPS_DIR / 'media')
 # https://docs.djangoproject.com/en/dev/ref/settings/#media-url
@@ -348,29 +349,9 @@ X_FRAME_OPTIONS = 'DENY'
 # ------------------------------------------------------------------------------
 # See https://docs.djangoproject.com/en/dev/topics/email/
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-# TODO: move to test and local?
-# override during debug
-if DEBUG:  # pragma: no cover
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-# still allow users to customize as an environment variable
-EMAIL_BACKEND = env('EMAIL_BACKEND', default=EMAIL_BACKEND)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-host
-EMAIL_HOST = env('EMAIL_HOST')
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-host-user
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-host-password
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-port
-EMAIL_PORT = env.int('EMAIL_PORT')
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-use-tls
-EMAIL_USE_TLS = EMAIL_PORT == 587  # noqa: WPS432
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-use-ssl
-EMAIL_USE_SSL = not EMAIL_USE_TLS
 EMAIL_FROM_REGISTRATION = 'Opal Registration <registration@opalmedapps.ca>'
 
 # ADMIN
@@ -497,28 +478,3 @@ DJANGO_TABLES2_TABLE_ATTRS = {
         'class': 'table-light',
     },
 }
-
-# TODO: move
-# CACHES
-# ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#caches
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': '',
-    },
-}
-
-
-# TODO: move links to production
-# Media files (ONLY DURING DEVELOPMENT!!!)
-# Serving files uploaded by a user during development
-# https://docs.djangoproject.com/en/4.0/howto/static-files/#serving-files-uploaded-by-a-user-during-development
-#
-# For the prod deployment, follow the guides:
-# https://docs.djangoproject.com/en/4.0/howto/static-files/deployment/#how-to-deploy-static-files
-# https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Deployment
-
-# TODO: move
-# https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['.localhost', '127.0.0.1', '[::1]', 'host.docker.internal'])

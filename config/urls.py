@@ -27,9 +27,6 @@ from django.views.generic.base import RedirectView
 
 from opal.core.views import LoginView
 
-# This approach for serving static files is only for development!
-# Please see: https://docs.djangoproject.com/en/dev/howto/static-files/deployment/
-# TODO: Serving static files in production
 urlpatterns = [
     # REST API
     path('api/', include('opal.core.api_urls', namespace='api')),
@@ -54,9 +51,7 @@ urlpatterns = [
         RedirectView.as_view(permanent=True, url=staticfiles_storage.url('images/favicon.ico')),
         name='favicon.ico',
     ),
-]
-
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 admin.site.site_header = _('Opal Management')
 admin.site.site_title = _('Opal Backend Admin')
