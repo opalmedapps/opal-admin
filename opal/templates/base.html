@@ -48,7 +48,8 @@
     {% endcomment %}
     <script defer src="{% static 'thirdparty/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     <script defer src="{% static 'thirdparty/unpoly/js/unpoly.min.js' %}"></script>
-    <script defer src="{% static 'thirdparty/unpoly/js/unpoly-bootstrap5.min.js' %}"></script>
+    {# disabled unpoly bootstrap because it removes the active class from the menu items in the sidebar on child pages #}
+    {# <script defer src="{% static 'thirdparty/unpoly/js/unpoly-bootstrap5.min.js' %}"></script> #}
     {% block javascript %}{% endblock %}
   </head>
   <body>
