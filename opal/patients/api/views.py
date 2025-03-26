@@ -79,8 +79,8 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.Registrat
             The expected serializer according to the request parameter.
         """
         if 'detailed' in self.request.query_params:
-            return caregiver_serializers.RegistrationCodePatientDetailedSerializer
-        return caregiver_serializers.RegistrationCodePatientSerializer
+            return caregiver_serializers.RegistrationCodeDetailSerializer
+        return caregiver_serializers.RegistrationCodeInfoSerializer
 
 
 class CaregiverRelationshipView(ListAPIView[Relationship]):
