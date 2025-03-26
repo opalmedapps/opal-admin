@@ -38,29 +38,23 @@
 
 const fs = require('node:fs').promises;
 const path = require('node:path');
-
 const { createHash } = require('node:crypto');
 
 /**
- * @param {string} filePath The path to the linted file.
- * @param {string} ruleName The name of the rule
- * @param {string} description The description of the violation
- * @returns {string} The fingerprint for the violation
+ * @param {string} violation The complete textual description of the violation
+ * @returns {string} The SHA256 fingerprint for the violation
  */
- function createFingerprint(filePath, ruleName, description) {
-  const md5 = createHash('md5');
-  md5.update(filePath);
-  md5.update(ruleName);
-  md5.update(description);
+const createFingerprint = function createFingerprint (violation) {
+  const sha256 = createHash("sha256");
+  sha256.update(violation);
+  return sha256.digest("hex");
+};
 
-  return md5.digest('hex');
-}
 
 // Writes markdownlint-cli2 results to a file in JSON format following the GitLab CodeClimate spec
 // see: https://docs.gitlab.com/ee/ci/testing/code_quality.html#implementing-a-custom-tool
 const outputFormatter = (options, params) => {
   const { directory, results } = options;
-  const { name, spaces } = (params || {});
 
   let issues = [];
 
@@ -70,6 +64,15 @@ const outputFormatter = (options, params) => {
     const ruleName = ruleNames.join("/");
     const errorDetailText = errorDetail ? ` [${errorDetail}]` : "";
     const text = `${ruleName}: ${ruleDescription}${errorDetailText}`;
+    const column = (errorRange && errorRange[0]) || 0;
+    const columnText = column ? `:${column}` : "";
+    const description = ruleDescription +
+          (errorDetail ? ` [${errorDetail}]` : "") +
+          (errorContext ? ` [Context: "${errorContext}"]` : "");
+    // construct error text with all details to use for unique fingerprint
+    // avoids duplicate fingerprints for the same violation on multiple lines
+    const errorText =
+      `${fileName}:${lineNumber}${columnText} ${ruleName} ${description}`;
 
     /** @type {CodeClimateIssue} */
     const issue = {
@@ -77,7 +80,7 @@ const outputFormatter = (options, params) => {
       check_name: ruleName,
       description: text,
       severity: 'minor',
-      fingerprint: createFingerprint(fileName, ruleName, ruleDescription),
+      fingerprint: createFingerprint(errorText),
       location: {
         path: fileName,
         lines: {
@@ -89,12 +92,11 @@ const outputFormatter = (options, params) => {
     issues.push(issue);
   }
 
-  const content = JSON.stringify(issues, null, spaces || 2);
+  const content = JSON.stringify(issues);
   return fs.writeFile(
     path.resolve(
-      // eslint-disable-next-line no-inline-comments
-      directory /* c8 ignore next */ || "",
-      name || "markdownlint-cli2-results.json"
+      directory,
+      "markdownlint-cli2-results.json"
     ),
     content,
     "utf8"
