@@ -301,29 +301,25 @@ class TestAccessRequestView(views.AccessRequestView):
         return response, self
 
 
-class SessionInit():
-    """This class is to initialize the session."""
+def _init_session() -> HttpRequest:
+    """
+    Initialize the session.
 
+    Returns:
+        the request
+    """
     request = RequestFactory().get('/')
-
-    def init(self) -> HttpRequest:
-        """
-        Initialize the session.
-
-        Returns:
-            the request
-        """
-        # adding session
-        middleware = SessionMiddleware()
-        middleware.process_request(self.request)
-        self.request.session.save()
-        return self.request
+    # adding session
+    middleware = SessionMiddleware()
+    middleware.process_request(request)
+    request.session.save()
+    return request
 
 
 @pytest.mark.django_db()
 def test_unexpected_step() -> None:
     """Test unexpected step 'search'."""
-    request = SessionInit().init()
+    request = _init_session()
 
     test_view = TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -335,7 +331,7 @@ def test_unexpected_step() -> None:
 @pytest.mark.django_db()
 def test_expected_step_without_session_storage() -> None:
     """Test expected step 'site' without session storage of saving user selection."""
-    request = SessionInit().init()
+    request = _init_session()
 
     test_view = TestAccessRequestView.as_view()
     response, instance = test_view(request)
@@ -347,7 +343,7 @@ def test_expected_step_without_session_storage() -> None:
 @pytest.mark.django_db()
 def test_expected_step_with_valid_id_in_session() -> None:
     """Test expected step 'site' with session storage of saving user selection."""
-    request = SessionInit().init()
+    request = _init_session()
     request.session['site_selection'] = 2
     # adding Site records
     factories.Site(pk=1)
@@ -365,7 +361,7 @@ def test_expected_step_with_valid_id_in_session() -> None:
 @pytest.mark.django_db()
 def test_expected_step_with_invalid_id_in_session() -> None:
     """Test expected step 'site' with session storage of saving user selection."""
-    request = SessionInit().init()
+    request = _init_session()
     request.session['site_selection'] = 3
     # adding Site records
     factories.Site(pk=1)
@@ -381,7 +377,7 @@ def test_expected_step_with_invalid_id_in_session() -> None:
 @pytest.mark.django_db()
 def test_process_step_select_site_form() -> None:
     """Test expected form 'SelectSiteForm'."""
-    request = SessionInit().init()
+    request = _init_session()
 
     test_view = TestAccessRequestView.as_view()
     response, instance = test_view(request)
