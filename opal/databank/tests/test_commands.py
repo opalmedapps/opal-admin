@@ -232,6 +232,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
             has_diagnoses=True,
             has_demographics=True,
             has_labs=True,
+            has_questionnaires=True,
             last_synchronized=timezone.make_aware(last_sync),
         )
 
@@ -249,10 +250,18 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         message_lines = message.split('\n')
 
         # Find the index of the first line that contains each message type
-        demographics_index = next((idx for idx, line in enumerate(message_lines) if 'Demographics found for' in line), -1)
-        labs_index = next((idx for idx, line in enumerate(message_lines) if 'Labs found for' in line), -1)
-        appointment_index = next((idx for idx, line in enumerate(message_lines) if 'Appointments found for' in line), -1)
-        diagnosis_index = next((idx for idx, line in enumerate(message_lines) if 'Diagnoses found for' in line), -1)
+        demographics_index = next(
+            (idx for idx, line in enumerate(message_lines) if 'Demographics found for' in line), -1,
+        )
+        labs_index = next(
+            (idx for idx, line in enumerate(message_lines) if 'Labs found for' in line), -1,
+        )
+        appointment_index = next(
+            (idx for idx, line in enumerate(message_lines) if 'Appointments found for' in line), -1,
+        )
+        diagnosis_index = next(
+            (idx for idx, line in enumerate(message_lines) if 'Diagnoses found for' in line), -1,
+        )
         # Check that the Demographics message index is smaller than the indices of other messages
         assert demographics_index != -1
         assert labs_index > demographics_index
