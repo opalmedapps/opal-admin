@@ -387,7 +387,7 @@ def test_accessrequestsearchform_mrn_found_patient_model() -> None:
 
 
 def test_accessrequestsearchform_search_patient_mrn() -> None:
-    """Ensure that `_search_patient` function return correct results."""
+    """Ensure that `_search_patient` function return correct results when searched by mrn."""
     patient = factories.Patient()
     site = factories.Site()
     hospital_patient = factories.HospitalPatient(mrn='9999996', patient=patient, site=site)
@@ -441,8 +441,8 @@ def test_accessrequestsearchform_search_patient_mrn_oie(mocker: MockerFixture) -
     assert form.patient == OIE_PATIENT_DATA
 
 
-def test_accessrequestsearchform_search_patient_fail(mocker: MockerFixture) -> None:
-    """Ensure that `_search_patient` function add error to form when no patient is found."""
+def test_accessrequestsearchform_search_patient_mrn_fail(mocker: MockerFixture) -> None:
+    """Ensure that `_search_patient` function add error to form when no patient is found when search by mrn."""
     oie_service = mocker.patch(
         'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
         return_value={
@@ -463,6 +463,82 @@ def test_accessrequestsearchform_search_patient_fail(mocker: MockerFixture) -> N
         card_type=constants.MedicalCard.MRN.name,
         medical_number='9999996',
         site=site,
+    )
+
+    # asserting that correct error message is added to non-field form errors list
+    assert err_msg in form.errors['__all__']
+
+
+def test_accessrequestsearchform_search_patient_ramq() -> None:
+    """Ensure that `_search_patient` function return correct results when searched by ramq."""
+    patient = factories.Patient()
+    form_data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'medical_number': patient.ramq,
+    }
+
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+
+    form._search_patient(
+        card_type=constants.MedicalCard.RAMQ.name,
+        medical_number=patient.ramq,
+        site=None,
+    )
+
+    # asserting that patient object is set after calling `_search_patinet` function
+    assert form.patient == patient
+
+
+def test_accessrequestsearchform_search_patient_ramq_oie(mocker: MockerFixture) -> None:
+    """
+    Ensure that patient is found by ramq and returned by oie if it exists.
+
+    Mock find_patient_by_mrn and pretend it was successful
+    """
+    oie_service = mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+    form_data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'medical_number': OIE_PATIENT_DATA.ramq,
+    }
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+    form.oie_service = oie_service
+
+    form._search_patient(
+        card_type=constants.MedicalCard.RAMQ.name,
+        medical_number=OIE_PATIENT_DATA.ramq,
+        site=None,
+    )
+
+    # asserting that patient object is set to oie_patient after calling `_search_patinet` function
+    assert form.patient == OIE_PATIENT_DATA
+
+
+def test_accessrequestsearchform_search_patient_ramq_fail(mocker: MockerFixture) -> None:
+    """Ensure that `_search_patient` function add error to form when no patient is found when search by ramq."""
+    oie_service = mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
+        return_value={
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+    form_data = {
+        'card_type': constants.MedicalCard.RAMQ.name,
+        'medical_number': 'RAMQ12345678',
+    }
+    err_msg = 'No patient could be found.'
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+    form.oie_service = oie_service
+    form._search_patient(
+        card_type=constants.MedicalCard.RAMQ.name,
+        medical_number='RAMQ12345678',
+        site=None,
     )
 
     # asserting that correct error message is added to non-field form errors list
