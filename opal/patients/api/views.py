@@ -23,7 +23,6 @@ from ..api.serializers import (
     CaregiverRelationshipSerializer,
     HospitalPatientSerializer,
     PatientDemographicSerializer,
-    PatientExistsSerializer,
     PatientSerializer,
 )
 from ..models import Patient, Relationship
@@ -272,7 +271,12 @@ class PatientExistsView(APIView):
         Returns:
             uuid & legacy_id for the `Patient` object
         """
-        serializer = PatientExistsSerializer(data=request.data, many=True)
+        # Make `is_active` not required for cases when OIE calling the API without knowing if Patient is active in Opal
+        serializer = HospitalPatientSerializer(
+            fields=['mrn', 'site_code'],
+            data=request.data,
+            many=True,
+        )
 
         if serializer.is_valid():
             mrn_site_data = serializer.validated_data
