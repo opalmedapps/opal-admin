@@ -3,7 +3,10 @@ from http import HTTPStatus
 from django.test.client import Client
 from django.urls.base import reverse
 
+import pytest
 
+
+@pytest.mark.django_db
 def test_home_not_defined(client: Client):
     response = client.get('/')
 
