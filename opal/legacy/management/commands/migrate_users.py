@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Any
 
 from django.contrib.auth.models import Group
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.management.base import BaseCommand
 
 from opal.legacy.models import LegacyModule, LegacyOARole, LegacyOARoleModule, LegacyOAUser
@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
     help = 'migrate OAUsers from legacy DB to the new backend'  # noqa: A003
 
-    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
+    def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210, WPS231
         """
         Handle migrate Patients legacy DB to the new backend printout number of patients imported.
 
@@ -34,10 +34,12 @@ class Command(BaseCommand):
             args: non-keyword input arguments.
             kwargs:  variable keyword input arguments.
         """
-        patient_module = LegacyModule.objects.get(name_en='Patient')
-        admin_role = LegacyOARole.objects.get(name_en='Administration')
+        patient_module: LegacyModule = self._get_legacy_object(LegacyModule, 'Patient')
+        admin_role: LegacyOARole = self._get_legacy_object(LegacyOARole, 'Administration')
+
         admin_group = Group.objects.get(name='System Administrators')
         registrant_group = Group.objects.get(name='Registrants')
+
         admin_users_counter = 0
         all_users_counter = 0
         staff_users_counter = 0
@@ -110,3 +112,23 @@ class Command(BaseCommand):
 
         clinical_staff_user.save()
         return True
+
+    def _get_legacy_object(
+        self,
+        legacymodel: type[LegacyModule] | type[LegacyOARole],
+        name: str,
+    ) -> Any:
+        """
+        Get the legacy object from the specified model name or return None.
+
+        Args:
+            legacymodel: legacy model
+            name: the english name used in queryset
+
+        Returns:
+            The object resulted from the query or None
+        """
+        try:
+            return legacymodel.objects.get(name_en=name)
+        except ObjectDoesNotExist:
+            return None
