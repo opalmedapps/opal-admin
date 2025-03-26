@@ -29,7 +29,7 @@ flake8==6.1.0  # https://github.com/PyCQA/flake8
 
 # wemake Python Styleguide
 # see: https://wemake-python-stylegui.de/en/latest/index.html
-wemake-python-styleguide==0.18.0
+wemake-python-styleguide==1.0.0
 # The following plugins are included in wemake-python-styleguide but listed here for information purposes
 # i.e., we would want to use these plugins even if we didn't use the wemake python styleguide
 # darglint==  # https://github.com/terrencepreilly/darglint
