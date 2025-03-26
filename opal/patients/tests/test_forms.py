@@ -288,10 +288,11 @@ def test_accessrequestsearchform_ramq() -> None:
 
 def test_accessrequestrequestorform_patient_search_initials_single_site() -> None:
     """Ensure the `Site` field is initialized as expected without setting any value."""
-    factories.Site()
+    site = factories.Site()
     form = forms.AccessRequestSearchPatientForm()
 
     assert form.fields['site'].disabled
+    assert form.fields['site'].initial == site
     assert isinstance(form.fields['site'].widget, HiddenInput)
 
 
@@ -303,6 +304,7 @@ def test_accessrequestrequestorform_patient_search_initials() -> None:
 
     assert not form.fields['site'].disabled
     assert not isinstance(form.fields['site'].widget, HiddenInput)
+    assert not form.fields['site'].initial
 
 
 def test_accessrequestsearchform_single_site_mrn() -> None:
@@ -384,9 +386,92 @@ def test_accessrequestsearchform_mrn_found_patient_model() -> None:
     assert form.patient == patient
 
 
+def test_accessrequestsearchform_search_patient_mrn() -> None:
+    """Ensure that `_search_patient` function return correct results."""
+    patient = factories.Patient()
+    site = factories.Site()
+    hospital_patient = factories.HospitalPatient(mrn='9999996', patient=patient, site=site)
+    form_data = {
+        'card_type': constants.MedicalCard.MRN.name,
+        'medical_number': hospital_patient.mrn,
+    }
+
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+    form.fields['site'].initial = site
+
+    form._search_patient(
+        card_type=constants.MedicalCard.MRN.name,
+        medical_number=hospital_patient.mrn,
+        site=hospital_patient.site,
+    )
+
+    # asserting that patient object is set after calling `_search_patinet` function
+    assert form.patient == patient
+
+
+def test_accessrequestsearchform_search_patient_mrn_oie(mocker: MockerFixture) -> None:
+    """
+    Ensure that patient is found by mrn and returned by oie if it exists.
+
+    Mock find_patient_by_mrn and pretend it was successful
+    """
+    oie_service = mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
+        return_value={
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+    site = factories.Site(code=OIE_PATIENT_DATA.mrns[0].site)
+    form_data = {
+        'card_type': constants.MedicalCard.MRN.name,
+        'medical_number': OIE_PATIENT_DATA.mrns[0].mrn,
+        'site': site,
+    }
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+    form.oie_service = oie_service
+
+    form._search_patient(
+        card_type=constants.MedicalCard.MRN.name,
+        medical_number=OIE_PATIENT_DATA.mrns[0].mrn,
+        site=site,
+    )
+
+    # asserting that patient object is set to oie_patient after calling `_search_patinet` function
+    assert form.patient == OIE_PATIENT_DATA
+
+
+def test_accessrequestsearchform_search_patient_fail(mocker: MockerFixture) -> None:
+    """Ensure that `_search_patient` function add error to form when no patient is found."""
+    oie_service = mocker.patch(
+        'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
+        return_value={
+            'status': 'success',
+            'data': OIE_PATIENT_DATA,
+        },
+    )
+    site = factories.Site()
+    form_data = {
+        'card_type': constants.MedicalCard.MRN.name,
+        'medical_number': '9999996',
+        'site': site,
+    }
+    err_msg = 'No patient could be found.'
+    form = forms.AccessRequestSearchPatientForm(data=form_data)
+    form.oie_service = oie_service
+    form._search_patient(
+        card_type=constants.MedicalCard.MRN.name,
+        medical_number='9999996',
+        site=site,
+    )
+
+    # asserting that correct error message is added to non-field form errors list
+    assert err_msg in form.errors['__all__']
+
+
 def test_accessrequestsearchform_mrn_fail_oie(mocker: MockerFixture) -> None:
     """
-    Ensure that proper error message is displayed in OIE response when search by mrn.
+    Ensure that error is added if patient is not found in `Patient` model and in `OIE`.
 
     Mock find_patient_by_mrn and pretend it was failed.
     """
