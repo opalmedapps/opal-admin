@@ -3,6 +3,7 @@
 import json
 import logging
 import math
+import textwrap
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, NamedTuple, Optional
@@ -453,7 +454,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         )
         report_prepared_by_template.render()
 
-    def _get_site_address_patient_info_box(self) -> list[dict[str, Any]]:
+    def _get_site_address_patient_info_box(self) -> list[dict[str, Any]]:   # noqa: WPS210
         """Build a table/box that is shown at the top of the first page.
 
         The table contains site's and patient's information.
@@ -474,7 +475,13 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             f'Tél. : {self.pathology_data.site_phone}'
         ) if str(self.pathology_data.site_phone) else ''
 
-        line = self._count_lines_by_long_patient_names()
+        # Wrap the text with the maximum characters can be filled in each line.
+        wrapper = textwrap.TextWrapper(
+            width=int((190 - 138) / 2) - 1,
+        )
+        patient_name = wrapper.fill(text=f'Nom/Name: {self.patient_name}')
+        # Calculate the number of the linse patient name will occupy
+        line = math.ceil(len(patient_name) * 2 / (190 - 138))
         return [
             {
                 'name': 'site_logo',
@@ -574,7 +581,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'italic': 0,
                 'underline': 0,
                 'align': 'L',
-                'text': f'Nom/Name: {self.patient_name}',
+                'text': patient_name,
                 'priority': 0,
                 'multiline': True,
             },
@@ -630,35 +637,6 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'multiline': True,
             },
         ]
-
-    def _count_lines_by_long_patient_names(self) -> int:
-        """Handle long patient names so that they do not break table on the PDF file.
-
-        Returns:
-            number of lines occupied by patient name
-        """
-        # Maximum characters can be filled in each line
-        max_char_per_line = (190 - 138) / 2 - 1
-        name_label = 'Nom/Name: '
-        patient_name = self.patient_name
-        patient_last_name = self.pathology_data.patient_last_name
-        # The number of lines occupied by the patient's name (including name label)
-        line = math.ceil(
-            (len(name_label) + len(patient_name)) * 2 / (190 - 138),
-        )
-        # Return 'line + 2' only if the patient name is longer than 2 times the value of max_char_per_line
-        if (
-            len(patient_name) > max_char_per_line * 2
-        ):
-            return line + 2
-        # Return 'line + 1' if the last name cannot be filled in the first line and other than the first condition
-        elif (
-            len(patient_last_name) > (max_char_per_line - len(name_label) - 1)
-            and len(patient_name) <= max_char_per_line * 2
-        ):
-            return line + 1
-        # Return the value of 'line' other than the 1st and 2nd conditions
-        return line
 
     def _get_report_number_and_date_table(self) -> list[dict[str, Any]]:
         """Build a report number table that is shown inside the main pathology table.
