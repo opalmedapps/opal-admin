@@ -405,17 +405,6 @@ def initialize_new_opal_patient(  # noqa: WPS210
     patient.save()
     logger.info('Successfully initialized patient in legacy DB; patient_uuid = {0}'.format(patient_uuid))
 
-    # Call ORMS to notify it of the existence of the new patient
-    orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
-
-    if orms_response['status'] == 'success':
-        logger.info('Successfully initialized patient via ORMS; patient_uuid = {0}'.format(patient_uuid))
-    else:
-        logger.error('Failed to initialize patient via ORMS')
-        logger.error(
-            'MRNs = {0}, patient_uuid = {1}, ORMS response = {2}'.format(mrn_list, patient_uuid, orms_response),
-        )
-
     # Call the OIE to notify it of the existence of the new patient
     oie_response = oie_service.new_opal_patient(active_mrn_list)
 
@@ -425,6 +414,17 @@ def initialize_new_opal_patient(  # noqa: WPS210
         logger.error('Failed to initialize patient via the OIE')
         logger.error(
             'MRNs = {0}, patient_uuid = {1}, OIE response = {2}'.format(mrn_list, patient_uuid, oie_response),
+        )
+
+    # Call ORMS to notify it of the existence of the new patient
+    orms_response = orms_service.set_opal_patient(active_mrn_list, patient_uuid)
+
+    if orms_response['status'] == 'success':
+        logger.info('Successfully initialized patient via ORMS; patient_uuid = {0}'.format(patient_uuid))
+    else:
+        logger.error('Failed to initialize patient via ORMS')
+        logger.error(
+            'MRNs = {0}, patient_uuid = {1}, ORMS response = {2}'.format(mrn_list, patient_uuid, orms_response),
         )
 
 
