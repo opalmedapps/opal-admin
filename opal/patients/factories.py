@@ -25,7 +25,7 @@ class RelationshipType(DjangoModelFactory):
         model = models.RelationshipType
         django_get_or_create = ('name',)
 
-    name = 'Self'
+    name = 'Caregiver'
     name_fr = lazy_attribute(lambda type: f'{type.name} FR')
     description = 'The patient'
     description_fr = lazy_attribute(lambda type: f'{type.description} FR')
@@ -41,8 +41,8 @@ class Patient(DjangoModelFactory):
         model = models.Patient
         django_get_or_create = ('ramq',)
 
-    first_name = 'Patient First Name'
-    last_name = 'Patient Last Name'
+    first_name = 'Bart'
+    last_name = 'Simpson'
     date_of_birth = datetime.date(1999, 1, 1)
     sex = models.Patient.SexType.MALE
     ramq = ''

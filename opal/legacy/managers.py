@@ -55,7 +55,7 @@ class LegacyNotificationManager(UnreadQuerySetMixin, models.Manager):
     """legacy notification manager."""
 
 
-class LegacyAppointmentManager(models.Manager):
+class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
     """legacy appointment manager."""
 
     def get_unread_queryset(self, patient_sernum: int, user_name: str) -> models.QuerySet:

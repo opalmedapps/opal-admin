@@ -11,11 +11,11 @@ import pytest
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertNotContains, assertRedirects, assertTemplateUsed
 
-from ...users.models import User
+from ...users.factories import User
 from .. import factories
 from ..forms import InstitutionForm
 from ..models import Institution, Site
-from ..views import InstitutionListView
+from ..views import InstitutionListView, SiteListView
 
 pytestmark = pytest.mark.django_db
 
@@ -33,17 +33,17 @@ test_url_template_data: list[Tuple] = [
 
 
 @pytest.mark.parametrize(('url', 'template'), test_url_template_data)
-def test_hospital_settings_urls_exist(user_client: Client, url: str, template: str) -> None:
+def test_hospital_settings_urls_exist(admin_client: Client, url: str, template: str) -> None:
     """Ensure that a page exists at desired URL address."""
-    response = user_client.get(url)
+    response = admin_client.get(url)
 
     assert response.status_code == HTTPStatus.OK
 
 
 @pytest.mark.parametrize(('url', 'template'), test_url_template_data)
-def test_views_use_correct_template(user_client: Client, url: str, template: str) -> None:
+def test_views_use_correct_template(admin_client: Client, url: str, template: str) -> None:
     """Ensure that a page uses appropriate templates."""
-    response = user_client.get(url)
+    response = admin_client.get(url)
 
     assertTemplateUsed(response, template)
 
@@ -123,39 +123,39 @@ test_site_url_template_data: list[Tuple] = [
 
 @pytest.mark.parametrize(('url_name', 'template'), test_site_url_template_data)
 def test_site_urls_exist(
-    user_client: Client,
+    site_user: Client,
     site: Site,
     url_name: str,
     template: str,
 ) -> None:
     """Ensure that `Site` pages exist at desired URL address."""
     url = reverse(url_name, args=(site.id,))
-    response = user_client.get(url)
+    response = site_user.get(url)
 
     assert response.status_code == HTTPStatus.OK
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_site_url_template_data)
 def test_site_urls_use_correct_template(
-    user_client: Client,
+    site_user: Client,
     site: Site,
     url_name: str,
     template: str,
 ) -> None:
     """Ensure that `Site` pages uses appropriate templates."""
     url = reverse(url_name, args=(site.id,))
-    response = user_client.get(url)
+    response = site_user.get(url)
     assertTemplateUsed(response, template)
 
 
-def test_list_all_sites(user_client: Client) -> None:
+def test_list_all_sites(site_user: Client) -> None:
     """Ensure that the site list page template displays all the institutions."""
     factories.Site(name='ST1')
     factories.Site(name='ST2')
     factories.Site(name='ST3')
 
     url = reverse('hospital-settings:site-list')
-    response = user_client.get(url)
+    response = site_user.get(url)
 
     # determine how many sites are displayed
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -163,7 +163,7 @@ def test_list_all_sites(user_client: Client) -> None:
     assert len(returned_sites) == Site.objects.count()
 
 
-def test_site_update_object_displayed(user_client: Client) -> None:
+def test_site_update_object_displayed(site_user: Client) -> None:
     """Ensure that the site detail page displays all the fields."""
     site = factories.Site(
         name_en='TEST1_EN',
@@ -176,7 +176,7 @@ def test_site_update_object_displayed(user_client: Client) -> None:
     )
 
     url = reverse('hospital-settings:site-update', args=(site.id,))
-    response = user_client.get(url)
+    response = site_user.get(url)
 
     assertContains(response, 'TEST1_EN')
     assertContains(response, 'TEST1_FR')
@@ -221,7 +221,8 @@ def test_institution_with_no_logos_create(
 ) -> None:
     """Ensure that new incomplete institution (with missing logo images) form cannot be posted to the server."""
     url = reverse('hospital-settings:institution-create')
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
+
     form_data.pop('logo_fr')
     form_data.pop('logo_en')
 
@@ -240,13 +241,13 @@ def test_institution_with_no_terms_of_use_create(
 ) -> None:
     """Ensure that new incomplete institution (with missing terms of use file) form cannot be posted to the server."""
     url = reverse('hospital-settings:institution-create')
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
     form_data.pop('terms_of_use_fr')
     form_data.pop('terms_of_use_en')
 
     response = user_client.post(
         url,
-        data=institution_form.data,
+        data=form_data,
     )
 
     assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
@@ -268,15 +269,15 @@ def test_institution_updated(user_client: Client, institution_form: InstitutionF
 
     institution_form.save()
 
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
 
     url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
     user_client.post(path=url, data=form_data, files=institution_form.files)
 
-    assert Institution.objects.all()[0].name_en == 'updated name_en'
-    assert Institution.objects.all()[0].name_fr == 'updated name_fr'
+    assert Institution.objects.all()[0].name_en == 'updated name_en'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].name_fr == 'updated name_fr'  # type: ignore[attr-defined]
 
 
 def test_incomplete_institution_update(
@@ -288,7 +289,7 @@ def test_incomplete_institution_update(
     institution_form.save()
 
     url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
     form_data.pop('code')
@@ -300,8 +301,8 @@ def test_incomplete_institution_update(
     )
 
     assertContains(response=response, text='This field is required.', status_code=HTTPStatus.OK)
-    assert Institution.objects.all()[0].name_en != 'updated name_en'
-    assert Institution.objects.all()[0].name_fr != 'updated name_fr'
+    assert Institution.objects.all()[0].name_en != 'updated name_en'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].name_fr != 'updated name_fr'  # type: ignore[attr-defined]
 
 
 def test_institution_with_no_logos_update(
@@ -313,7 +314,7 @@ def test_institution_with_no_logos_update(
     institution_form.save()
 
     url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
     form_data.pop('logo_fr')
@@ -325,8 +326,8 @@ def test_institution_with_no_logos_update(
     )
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
-    assert Institution.objects.all()[0].name_en == 'updated name_en'
-    assert Institution.objects.all()[0].name_fr == 'updated name_fr'
+    assert Institution.objects.all()[0].name_en == 'updated name_en'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].name_fr == 'updated name_fr'  # type: ignore[attr-defined]
 
 
 def test_institution_with_no_terms_of_use_update(
@@ -338,7 +339,7 @@ def test_institution_with_no_terms_of_use_update(
     institution_form.save()
 
     url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
     form_data.pop('terms_of_use_fr')
@@ -350,8 +351,8 @@ def test_institution_with_no_terms_of_use_update(
     )
 
     assertRedirects(response, reverse('hospital-settings:institution-list'))
-    assert Institution.objects.all()[0].name_en == 'updated name_en'
-    assert Institution.objects.all()[0].name_fr == 'updated name_fr'
+    assert Institution.objects.all()[0].name_en == 'updated name_en'  # type: ignore[attr-defined]
+    assert Institution.objects.all()[0].name_fr == 'updated name_fr'  # type: ignore[attr-defined]
 
 
 def test_institution_successful_update_redirects(user_client: Client, institution_form: InstitutionForm) -> None:
@@ -360,7 +361,7 @@ def test_institution_successful_update_redirects(user_client: Client, institutio
     institution_form.save()
     url = reverse('hospital-settings:institution-update', args=(institution_form.instance.id,))
 
-    form_data = institution_form.data
+    form_data = dict(institution_form.data)
     form_data['name_en'] = 'updated name_en'
     form_data['name_fr'] = 'updated name_fr'
 
@@ -385,68 +386,68 @@ def test_institution_deleted(user_client: Client, institution: Institution) -> N
     assert Institution.objects.count() == 0
 
 
-def test_site_created(user_client: Client, institution: Institution) -> None:
+def test_site_created(site_user: Client, institution: Institution) -> None:
     """Ensure that a site can be successfully created."""
     url = reverse('hospital-settings:site-create')
     site = factories.Site.build(institution=institution)
     form_data = model_to_dict(site, exclude=['id'])
 
-    user_client.post(url, data=form_data)
+    site_user.post(url, data=form_data)
 
     assert Site.objects.count() == 1
     assert Site.objects.all()[0].name == site.name
 
 
-def test_site_successful_create_redirects(user_client: Client, institution: Institution) -> None:
+def test_site_successful_create_redirects(site_user: Client, institution: Institution) -> None:
     """Ensure that after a successful creation of a site, the page is redirected to the list page."""
     url = reverse('hospital-settings:site-create')
     site = factories.Site.build(institution=institution)
     form_data = model_to_dict(site, exclude=['id'])
 
-    response = user_client.post(url, data=form_data)
+    response = site_user.post(url, data=form_data)
 
     assertRedirects(response, reverse('hospital-settings:site-list'))
 
 
-def test_site_updated(user_client: Client) -> None:
+def test_site_updated(site_user: Client) -> None:
     """Ensure that a site can be successfully updated."""
     site = factories.Site()
 
     url = reverse('hospital-settings:site-update', args=(site.id,))
     site.name = 'updated'
     form_data = model_to_dict(site)
-    user_client.post(url, data=form_data)
+    site_user.post(url, data=form_data)
 
     assert Site.objects.all()[0].name == 'updated'
 
 
 def test_site_successful_update_redirects(
-    user_client: Client,
+    site_user: Client,
     site: Site,
 ) -> None:
     """Ensure that after a successful update of a site, the page is redirected to the list page."""
     url = reverse('hospital-settings:site-update', args=(site.id,))
     form_data = model_to_dict(site)
 
-    response = user_client.post(url, data=form_data)
+    response = site_user.post(url, data=form_data)
 
     assertRedirects(response, reverse('hospital-settings:site-list'))
 
 
-def test_site_successful_delete_redirects(user_client: Client, site: Site) -> None:
+def test_site_successful_delete_redirects(site_user: Client, site: Site) -> None:
     """Ensure that after a successful delete of a site, the page is redirected to the list page."""
     url = reverse('hospital-settings:site-delete', args=(site.id,))
 
-    response = user_client.delete(url)
+    response = site_user.delete(url)
 
     assertRedirects(response, reverse('hospital-settings:site-list'))
 
 
-def test_site_deleted(user_client: Client, site: Site) -> None:
+def test_site_deleted(site_user: Client, site: Site) -> None:
     """Ensure that a site is deleted from the database."""
     url = reverse('hospital-settings:site-delete', args=(site.id,))
 
-    user_client.delete(url)
+    site_user.delete(url)
 
     assert Site.objects.count() == 0
 
@@ -513,3 +514,77 @@ def test_institution_response_no_menu(user_client: Client, django_user_model: Us
     response = user_client.get('/hospital-settings/')
 
     assertNotContains(response, 'Institutions')
+
+
+@pytest.mark.parametrize(
+    'url_name', [
+        reverse('hospital-settings:site-list'),
+        reverse('hospital-settings:site-update', args=(1,)),
+        reverse('hospital-settings:site-create'),
+        reverse('hospital-settings:site-delete', args=(1,)),
+    ],
+)
+def test_site_permission_required_fail(user_client: Client, django_user_model: User, url_name: str) -> None:
+    """Ensure that `site` permission denied error is raised when not having privilege."""
+    user = django_user_model.objects.create(username='test_site_user')
+    user_client.force_login(user)
+    factories.Site(pk=1)
+    response = user_client.get(url_name)
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+    request.user = user
+
+    with pytest.raises(PermissionDenied):
+        SiteListView.as_view()(request)
+
+
+@pytest.mark.parametrize(
+    'url_name', [
+        reverse('hospital-settings:site-list'),
+        reverse('hospital-settings:site-update', args=(1,)),
+        reverse('hospital-settings:site-create'),
+        reverse('hospital-settings:site-delete', args=(1,)),
+    ],
+)
+def test_site_permission_required_success(user_client: Client, django_user_model: User, url_name: str) -> None:
+    """Ensure that `site` can be accessed with the required permission."""
+    user = django_user_model.objects.create(username='test_site_user')
+    user_client.force_login(user)
+    permission = Permission.objects.get(codename='can_manage_sites')
+    user.user_permissions.add(permission)
+    factories.Site(pk=1)
+
+    response = user_client.get(url_name)
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_site_response_contains_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that site menu is displayed for users with permission."""
+    user = django_user_model.objects.create(username='test_site_user')
+    user_client.force_login(user)
+    permission = Permission.objects.get(codename='can_manage_sites')
+    user.user_permissions.add(permission)
+
+    response = user_client.get('/hospital-settings/')
+
+    assertContains(response, 'Sites')
+
+
+def test_site_response_no_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that site menu is not displayed for users without permission."""
+    user = django_user_model.objects.create(username='test_site_user')
+    user_client.force_login(user)
+
+    response = user_client.get('/hospital-settings/')
+
+    assertNotContains(response, 'Sites')
+
+
+def test_institution_site_response_no_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that hospital settings menu is not displayed for users without institution and site permissions."""
+    user = django_user_model.objects.create(username='test_site_user')
+    user_client.force_login(user)
+
+    response = user_client.get('/hospital-settings/')
+
+    assertNotContains(response, 'Hospital Settings')

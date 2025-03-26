@@ -37,58 +37,20 @@ class PatientSerializer(DynamicFieldsSerializer):
 
 class HospitalPatientSerializer(DynamicFieldsSerializer):
     """
-    Hospital patient serializer.
+    Serializer for converting and validating `HospitalPatient` objects/data.
 
     The serializer inherits from core.api.serializers.DynamicFieldsSerializer,
     and also provides HospitalPatient info and the site code according to the 'fields' arguments.
     """
 
-    site_code = serializers.CharField(
-        source='site.code',
-        read_only=True,
-    )
+    site_code = serializers.CharField(source='site.code')
 
     class Meta:
         model = HospitalPatient
         fields = ['mrn', 'is_active', 'site_code']
 
-
-class CaregiverPatientSerializer(serializers.ModelSerializer):
-    """Serializer for the list of patients for a given caregiver."""
-
-    patient_id = serializers.IntegerField(source='patient.id')
-    patient_legacy_id = serializers.IntegerField(source='patient.legacy_id')
-    first_name = serializers.CharField(source='patient.first_name')
-    last_name = serializers.CharField(source='patient.last_name')
-
-    class Meta:
-        model = Relationship
-        fields = ['patient_id', 'patient_legacy_id', 'first_name', 'last_name', 'status']
-
-
-class CaregiverRelationshipSerializer(serializers.ModelSerializer):
-    """Serializer for the list of caregivers for a given patient."""
-
-    caregiver_id = serializers.IntegerField(source='caregiver.user.id')
-    first_name = serializers.CharField(source='caregiver.user.first_name')
-    last_name = serializers.CharField(source='caregiver.user.last_name')
-
-    class Meta:
-        model = Relationship
-        fields = ['caregiver_id', 'first_name', 'last_name', 'status']
-
-
-class PatientDemographicHospitalPatientSerializer(serializers.ModelSerializer):
-    """Serializer for converting and validating `MRNs` received from the `patient demographic update` endpoint."""
-
-    site_code = serializers.CharField(source='site.code')
-
-    class Meta:
-        model = HospitalPatient
-        fields = ['site_code', 'mrn', 'is_active']
-
     def validate_site_code(self, value: str) -> str:
-        """Check that `site_code` exists in the database (e.g., MGH).
+        """Check that `site_code` exists in the database (e.g., RVH).
 
         Args:
             value: site code to be validated
@@ -106,10 +68,57 @@ class PatientDemographicHospitalPatientSerializer(serializers.ModelSerializer):
         return value
 
 
+class RelationshipTypeSerializer(DynamicFieldsSerializer):
+    """Serializer for the RelationshipType model."""
+
+    class Meta:
+        model = RelationshipType
+        fields = [
+            'id',
+            'name',
+            'description',
+            'start_age',
+            'end_age',
+            'form_required',
+            'can_answer_questionnaire',
+            'role_type',
+        ]
+
+
+class CaregiverPatientSerializer(serializers.ModelSerializer):
+    """Serializer for the list of patients for a given caregiver."""
+
+    patient_id = serializers.IntegerField(source='patient.id')
+    patient_legacy_id = serializers.IntegerField(source='patient.legacy_id')
+    first_name = serializers.CharField(source='patient.first_name')
+    last_name = serializers.CharField(source='patient.last_name')
+    relationship_type = RelationshipTypeSerializer(
+        source='type',
+        fields=('id', 'name', 'can_answer_questionnaire', 'role_type'),
+        many=False,
+    )
+
+    class Meta:
+        model = Relationship
+        fields = ['patient_id', 'patient_legacy_id', 'first_name', 'last_name', 'status', 'relationship_type']
+
+
+class CaregiverRelationshipSerializer(serializers.ModelSerializer):
+    """Serializer for the list of caregivers for a given patient."""
+
+    caregiver_id = serializers.IntegerField(source='caregiver.user.id')
+    first_name = serializers.CharField(source='caregiver.user.first_name')
+    last_name = serializers.CharField(source='caregiver.user.last_name')
+
+    class Meta:
+        model = Relationship
+        fields = ['caregiver_id', 'first_name', 'last_name', 'status']
+
+
 class PatientDemographicSerializer(DynamicFieldsSerializer):
     """Serializer for patient's personal info received from the `patient demographic update` endpoint."""
 
-    mrns = PatientDemographicHospitalPatientSerializer(many=True, required=True)
+    mrns = HospitalPatientSerializer(many=True, required=True)
 
     class Meta:
         model = Patient

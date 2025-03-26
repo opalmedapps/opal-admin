@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Add date_of_death field to Patients model (!714)
 * Generate a random uuid for the caregiver username (!267)
 * feat: Add ePRO questionnaire reporting tool with custom access permission (!275)
+* feat: Build QR code new UI (!148)
 
 ### Documentation
 

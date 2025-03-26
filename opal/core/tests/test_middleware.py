@@ -49,7 +49,7 @@ def test_loginrequired_authenticated(user_client: Client, settings: SettingsWrap
 
     # start redirects to a default page
     assert response.status_code == HTTPStatus.FOUND
-    assert response.url != reverse(settings.LOGIN_URL)
+    assert response['Location'] != reverse(settings.LOGIN_URL)
 
 
 def test_loginrequired_unauthenticated_open_url(client: Client, settings: SettingsWrapper) -> None:

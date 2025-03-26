@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-14 00:07+0300\n"
+"POT-Creation-Date: 2023-01-20 03:18+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,6 +30,107 @@ msgstr "Numéro de dossier médical (NDM)"
 msgid "Medicare Card Number (RAMQ)"
 msgstr "Régie de l'assurance maladie du Québec (RAMQ)"
 
+#: opal/patients/constants.py
+msgid "New Opal User"
+msgstr "Nouvel utilisateur d'Opal"
+
+#: opal/patients/constants.py
+msgid "Existing Opal User"
+msgstr "Utilisateur Opal existant"
+
+#: opal/patients/forms.py
+msgid "At which hospital is the patient?"
+msgstr "Dans quel hôpital se trouve le patient?"
+
+#: opal/patients/forms.py
+msgid "Next"
+msgstr "Suivant"
+
+#: opal/patients/forms.py
+msgid "Please Select A Card Type"
+msgstr "Veuillez sélectionner un type de carte"
+
+#: opal/patients/forms.py
+msgid "Please Input The Card Number"
+msgstr "Veuillez remplir le numéro de la carte"
+
+#: opal/patients/forms.py
+msgid "Correct?"
+msgstr "Correct?"
+
+#: opal/patients/forms.py
+msgid "Relationship types"
+msgstr "Types de relations"
+
+#: opal/patients/forms.py
+msgid "Has the requestor filled out the request form?"
+msgstr "Le demandeur a-t-il rempli le formulaire de demande?"
+
+#: opal/patients/forms.py
+msgid "Form request is required."
+msgstr "La demande de formulaire est obligatoire."
+
+#: opal/patients/forms.py
+msgid "New User or Existing User?"
+msgstr "Nouvel utilisateur ou utilisateur existant?"
+
+#: opal/patients/forms.py
+msgid "Email Address"
+msgstr "Adresse courriel"
+
+#: opal/patients/forms.py
+msgid "Phone Number"
+msgstr "Numéro de téléphone"
+
+#: opal/patients/forms.py
+msgid "Find Account"
+msgstr "Trouver un compte"
+
+#: opal/patients/forms.py
+msgid ""
+"Opal user was not found in your database. This may be an out-of-hospital "
+"account. Please proceed to generate a new QR code. Inform the user they must "
+"register at the Registration website."
+msgstr ""
+"L'utilisateur Opal n'a pas été trouvé dans votre base de données. Il peut "
+"s'agir d'un compte hors hôpital. Veuillez procéder à la génération d'un "
+"nouveau code QR. Informez l'utilisateur qu'il doit s'inscrire sur le site "
+"Web d'inscription."
+
+#: opal/patients/forms.py
+msgid "ID Checked?"
+msgstr "Identité vérifiée?"
+
+#: opal/patients/forms.py
+msgid "Generate Access Request"
+msgstr "Générer une demande d'accès"
+
+#: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
+msgid "First Name"
+msgstr "Prénom"
+
+#: opal/patients/forms.py opal/patients/models.py opal/patients/tables.py
+msgid "Last Name"
+msgstr "Nom de famille"
+
+#: opal/patients/forms.py
+msgid "Generate QR Code"
+msgstr "Générer un code QR"
+
+#: opal/patients/forms.py
+msgid "Please confirm access to patient data by entering your password."
+msgstr ""
+"Veuillez confirmer l'accès aux données du patient en saisissant votre mot de "
+"passe."
+
+#: opal/patients/forms.py
+msgid "Confirm"
+msgstr "Confirmer"
+
+#: opal/patients/forms.py
+msgid "The password you entered is incorrect. Please try again."
+msgstr "Le mot de passe que vous avez entré est incorrect. Veuillez réessayer."
+
 #: opal/patients/forms.py
 msgid "Card Type"
 msgstr "Type de Carte"
@@ -45,6 +146,19 @@ msgstr "Numéro de Carte"
 #: opal/patients/forms.py
 msgid "Search"
 msgstr "Chercher"
+
+#: opal/patients/models.py
+msgid "Self"
+msgstr "Soi"
+
+#: opal/patients/models.py
+#: opal/patients/templates/patients/relationships/pending/form.html
+msgid "Caregiver"
+msgstr "Proche aidant"
+
+#: opal/patients/models.py
+msgid "Parent/Guardian"
+msgstr "Parent/Tuteur"
 
 #: opal/patients/models.py
 msgid "Name"
@@ -87,12 +201,38 @@ msgid "The caregiver can answer questionnaires on behalf of the patient."
 msgstr "Le proche aidant peut répondre aux questionnaires au nom du patient."
 
 #: opal/patients/models.py
+msgid "Relationship Role Type"
+msgstr "Type de relation avec le proche aidant"
+
+#: opal/patients/models.py
+msgid ""
+"Role types track the category of relationship between a caregiver and "
+"patient. A \"Self\" role type indicates a patient who owns the data that is "
+"being accessed."
+msgstr ""
+"Les types de rôle permettent de suivre la catégorie de relation entre un "
+"proche aidantet et un patient. Un rôle de type “Self” indique que le patient "
+"est le propriétaire des données demandées."
+
+#: opal/patients/models.py
+msgid "Can manage relationship types"
+msgstr "Types de relations avec le proche aidant"
+
+#: opal/patients/models.py
 msgid "Caregiver Relationship Type"
 msgstr "Type de relation avec le proche aidant"
 
 #: opal/patients/models.py
 msgid "Caregiver Relationship Types"
 msgstr "Types de relations avec le proche aidant"
+
+#: opal/patients/models.py
+msgid "There must always be exactly one SELF and one PARENTGUARDIAN role"
+msgstr ""
+
+#: opal/patients/models.py
+msgid "The relationship type with this role type cannot be deleted"
+msgstr ""
 
 #: opal/patients/models.py
 msgid "Female"
@@ -109,14 +249,6 @@ msgstr "Autre"
 #: opal/patients/models.py
 msgid "Unknown"
 msgstr "Inconnu"
-
-#: opal/patients/models.py opal/patients/tables.py
-msgid "First Name"
-msgstr "Prénom"
-
-#: opal/patients/models.py opal/patients/tables.py
-msgid "Last Name"
-msgstr "Nom de famille"
 
 #: opal/patients/models.py opal/patients/tables.py
 #: opal/patients/templates/patients/relationships/pending/form.html
@@ -171,11 +303,6 @@ msgstr "Expiré"
 #: opal/patients/models.py
 msgid "Revoked"
 msgstr "Révoqué"
-
-#: opal/patients/models.py
-#: opal/patients/templates/patients/relationships/pending/form.html
-msgid "Caregiver"
-msgstr "Proche aidant"
 
 #: opal/patients/models.py
 #: opal/patients/templates/patients/relationship_type/form.html
@@ -245,11 +372,19 @@ msgstr "Patients de l'hôpital"
 
 #: opal/patients/tables.py
 msgid "Actions"
-msgstr ""
+msgstr "Actions"
 
 #: opal/patients/tables.py
 msgid "No relationship types defined."
-msgstr ""
+msgstr "Aucun type de relation défini."
+
+#: opal/patients/tables.py
+msgid "No patient could be found."
+msgstr "Aucun patient n'a pu être retrouvé."
+
+#: opal/patients/tables.py
+msgid "No existing user could be found."
+msgstr "Aucun utilisateur existant n'a pu être trouvé."
 
 #: opal/patients/tables.py
 msgid "Pending Since"
@@ -283,6 +418,10 @@ msgstr "Statut"
 #: opal/patients/tables.py
 msgid "No caregivers."
 msgstr "Pas des aidants."
+
+#: opal/patients/templates/patients/access_request/access_request.html
+msgid "New Patient Data Access Request"
+msgstr "Nouvelle demande d'accès aux données patient"
 
 #: opal/patients/templates/patients/relationship_type/confirm_delete.html
 msgid "Delete Relationship Type"
@@ -340,6 +479,7 @@ msgid "Search for a specific patient to see all their caregivers."
 msgstr "Recherchez un patient spécifique pour voir tous ses aidants."
 
 #: opal/patients/templates/patients/relationships-search/form.html
+#: opal/patients/views.py
 msgid "Patient Details"
 msgstr "Détails du patient"
 
@@ -354,3 +494,25 @@ msgstr "Date de la demande de relation"
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"
 msgstr ""
+
+#: opal/patients/views.py
+msgid "Hospital Information"
+msgstr "Patient de l'hôpital"
+
+#: opal/patients/views.py
+msgid "Requestor Details"
+msgstr "Détails du demandeur"
+
+#: opal/patients/views.py
+msgid "Confirm access to patient data"
+msgstr "Confirmer l'accès aux données du patient"
+
+#: opal/patients/views.py
+msgid "QR Code Generation"
+msgstr "Générateur de code QR"
+
+#: opal/patients/views.py
+msgid "Please note multiple MRNs need to be merged by medical records."
+msgstr ""
+"Veuillez noter que plusieurs MRN doivent être fusionnés par dossiers "
+"médicaux."

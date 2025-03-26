@@ -2,21 +2,24 @@
 
 # Testing
 #
-mypy==0.942  # https://github.com/python/mypy
-pytest==7.2.0  # https://github.com/pytest-dev/pytest
+mypy==0.981  # https://github.com/python/mypy
+pytest==7.2.1  # https://github.com/pytest-dev/pytest
 pytest-mock==3.10.0  # https://github.com/pytest-dev/pytest-mock/
 pytest-socket==0.5.1  # https://github.com/miketheman/pytest-socket
 pytest-sugar==0.9.6  # https://github.com/Frozenball/pytest-sugar
 pytest-randomly==3.12.0  # https://github.com/pytest-dev/pytest-randomly
 django-test-migrations==1.2.0  # https://github.com/wemake-services/django-test-migrations
-coverage==7.0.4  # https://github.com/nedbat/coveragepy
+coverage==7.0.5  # https://github.com/nedbat/coveragepy
 factory-boy==3.2.1  # https://github.com/FactoryBoy/factory_boy
 
 # mypy library stubs
 # see: https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
-django-stubs==1.10.1  # https://github.com/typeddjango/django-stubs
-djangorestframework-stubs==1.5.0  # https://github.com/typeddjango/djangorestframework-stubs
-types-requests==2.28.9
+# django-stubs==1.13.1  # https://github.com/typeddjango/django-stubs
+git+https://github.com/typeddjango/django-stubs.git@1c482dc16db7a521fc9f99d3ae5269c7ca0a0b48
+# djangorestframework-stubs==1.8.0  # https://github.com/typeddjango/djangorestframework-stubs
+git+https://github.com/typeddjango/djangorestframework-stubs.git@728da9c1ba7fa2a6eb3442eb599d0b38e6529492
+types-requests==2.28.11.8
+types-python-dateutil==2.8.19.6
 
 # Code quality
 #
@@ -51,7 +54,8 @@ flake8-pytest-style==1.6.0  # https://github.com/m-burst/flake8-pytest-style
 # Django
 #
 django-coverage-plugin==3.0.0  # https://github.com/nedbat/django_coverage_plugin
-pytest-django==4.5.2  # https://github.com/pytest-dev/pytest-django
+# pytest-django==4.5.2  # https://github.com/pytest-dev/pytest-django
+git+https://github.com/pytest-dev/pytest-django.git@42b7db2f4f5dbe785e57652d1d4ea9eda39e56e3
 
 # Pre-commit
 #

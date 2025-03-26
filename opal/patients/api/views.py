@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models.query import QuerySet
 
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.generics import ListAPIView, RetrieveAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.api import serializers as caregiver_serializers
-from opal.core.drf_permissions import CaregiverPatientPermissions, UpdateModelPermissions
+from opal.core.drf_permissions import CaregiverSelfPermissions, UpdateModelPermissions
 
 from ..api.serializers import CaregiverRelationshipSerializer, PatientDemographicSerializer
 from ..models import HospitalPatient, Patient, Relationship
@@ -34,12 +34,26 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
             'relationship__patient__hospital_patients',
         ).filter(
             status=caregiver_models.RegistrationCodeStatus.NEW,
-            relationship__patient__date_of_death=None,
         )
     )
 
     lookup_url_kwarg = 'code'
     lookup_field = 'code'
+
+    def get_object(self) -> Any:
+        """
+        Override get_object to filter RegistrationCode by patient date_of_death.
+
+        Raises:
+            PermissionDenied: return forbidden error for deceased patients.
+
+        Returns:
+            The object of RegistrationCode
+        """
+        registration_code = super().get_object()
+        if registration_code.relationship.patient.date_of_death:
+            raise PermissionDenied()
+        return registration_code
 
     def get_serializer_class(self, *args: Any, **kwargs: Any) -> Type[serializers.BaseSerializer]:
         """Override 'get_serializer_class' to switch the serializer based on the GET parameter `detailed`.
@@ -122,7 +136,7 @@ class CaregiverRelationshipView(ListAPIView):
 
     serializer_class = CaregiverRelationshipSerializer
     pagination_class = None
-    permission_classes = [IsAuthenticated, CaregiverPatientPermissions]
+    permission_classes = [IsAuthenticated, CaregiverSelfPermissions]
 
     def get_queryset(self) -> QuerySet[Relationship]:
         """Query set to retrieve list of caregivers for the input patient.
@@ -148,6 +162,8 @@ class PatientDemographicView(UpdateAPIView):
     def get_object(self) -> Any:
         """Perform a custom lookup for a `Patient` object.
 
+        Since there is no `lookup_url` parameter in the endpoints, the lookup is performed by using the provided `mrns`.
+
         Returns:
             `Patient` object
 
@@ -163,7 +179,7 @@ class PatientDemographicView(UpdateAPIView):
 
         hospital_patient = HospitalPatient.objects.get_hospital_patient_by_site_mrn_list(
             serializer.validated_data.get('mrns'),
-        ).first()
+        )
 
         # Raise `NotFound` if `HospitalPatient` queryset is empty
         if not hospital_patient:
@@ -176,4 +192,9 @@ class PatientDemographicView(UpdateAPIView):
                 },
             )
 
-        return get_object_or_404(self.get_queryset(), id=hospital_patient.patient_id)
+        obj = get_object_or_404(self.get_queryset(), id=hospital_patient.patient_id)
+
+        # May raise a permission denied
+        self.check_object_permissions(self.request, obj)
+
+        return obj

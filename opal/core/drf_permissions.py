@@ -10,7 +10,7 @@ from django.http import HttpRequest
 from rest_framework import exceptions, permissions
 
 from opal.caregivers.models import CaregiverProfile
-from opal.patients.models import Relationship, RelationshipStatus
+from opal.patients.models import Relationship, RelationshipStatus, RoleType
 
 if TYPE_CHECKING:
     from rest_framework.views import APIView
@@ -183,3 +183,60 @@ class UpdateModelPermissions(permissions.DjangoModelPermissions):
         'PUT': ['%(app_label)s.change_%(model_name)s'],  # noqa: WPS323
         'PATCH': ['%(app_label)s.change_%(model_name)s'],  # noqa: WPS323
     }
+
+
+class CaregiverSelfPermissions(CaregiverPatientPermissions):
+    """
+    Global permission check that validates the permission of a caregiver trying to access a patient's data.
+
+    Additionally, this check returns True only if the caregiver has a self relationshiptype role with the patient.
+
+    Requirements:
+        request.headers['Appuserid']: The caregiver's username.
+        legacy_id (from the view's kwargs): The patient's legacy ID.
+    """
+
+    def has_permission(self, request: HttpRequest, view: 'APIView') -> bool:  # noqa: WPS210
+        """
+        Permission check that looks for a confirmed self relationship between a caregiver and a patient.
+
+        If found, the permission is granted, otherwise, it's rejected with a detailed message.
+        Requirements (input parameters) expected by this function are described in the class-level docstring above.
+
+        Args:
+            request: The http request to allow or deny.
+            view: The view through which the request was made.
+
+        Returns:
+            True if the caregiver has a confirmed relationship with the patient.
+        """
+        # Read and validate the input parameters
+        caregiver_username = self._get_caregiver_username(request)
+        patient_legacy_id = self._get_patient_legacy_id(view)
+
+        # Perform the permission checks
+        caregiver_profile = self._check_caregiver_exists(caregiver_username)
+        relationships_with_target = self._check_has_relationship_with_target(caregiver_profile, patient_legacy_id)
+        self._check_has_valid_relationship(relationships_with_target)  # Has confirmed relationships
+        self._check_has_self_relationship_type(relationships_with_target)  # Has confirmed, SELF relationship(s)
+
+        return True
+
+    def _check_has_self_relationship_type(self, relationships_with_target: QuerySet[Relationship]) -> None:
+        """
+        Validate whether at least one of the relationships between a patient and caregiver has a SELF role type.
+
+        Args:
+            relationships_with_target: The list of relationships between the caregiver and patient to check.
+
+        Raises:
+            PermissionDenied: If none of the provided relationships have a SELF status.
+        """
+        valid_relationships = [rel for rel in relationships_with_target if rel.type.role_type == RoleType.SELF]
+        if not valid_relationships:
+            raise exceptions.PermissionDenied(
+                'Caregiver has a confirmed relationship with the patient, but its role type is not SELF.',
+            )
+
+# Future Enhancement: Pull common permissions functionality into an abstract base class
+#                     to allow for faster definition of new perms in the future
