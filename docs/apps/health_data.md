@@ -2,11 +2,11 @@
 
 The `health_data` app provides the ability to store different health data for patients.
 The data usually comes from various smart devices and is provided by the patient directly through the mobile app.
-It could also come from a clinician where the data might be entered manually.
+It could also come from a clinician wherein the data can be entered manually.
 
 The general design is that the models provide the data structure to support this.
 An API allows the app to add new data.
-And views allow clinicians to view the data.
+Views allow clinicians to view the data.
 
 ## Data Design
 
