@@ -4,6 +4,7 @@ from typing import Any, Dict
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 import pandas as pd
@@ -36,12 +37,13 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
         """
         context = super().get_context_data(**kwargs)
         patient = get_object_or_404(Patient, id=self.kwargs['id'])
+        x_axis = str(_('Date'))
         context.update(
             {
                 'patient': patient,
                 'bm_graph': self._generate_plot(
-                    title='Body Mass',
-                    xlab='Date',
+                    title=str(_('Body Mass')),
+                    xlab=x_axis,
                     ylab=str(QuantitySampleType.BODY_MASS.label),
                     data=QuantitySample.objects.filter(
                         patient=patient,
@@ -49,8 +51,8 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
                     ),
                 ),
                 'bt_graph': self._generate_plot(
-                    title='Body Temperature',
-                    xlab='Date',
+                    title=str(_('Body Temperature')),
+                    xlab=x_axis,
                     ylab=str(QuantitySampleType.BODY_TEMPERATURE.label),
                     data=QuantitySample.objects.filter(
                         patient=patient,
@@ -58,8 +60,8 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
                     ),
                 ),
                 'hr_graph': self._generate_plot(
-                    title='Heart Rate',
-                    xlab='Date',
+                    title=str(_('Heart Rate')),
+                    xlab=x_axis,
                     ylab=str(QuantitySampleType.HEART_RATE.label),
                     data=QuantitySample.objects.filter(
                         patient=patient,
@@ -67,8 +69,8 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
                     ),
                 ),
                 'hrv_graph': self._generate_plot(
-                    title='Heart Rate Variability',
-                    xlab='Date',
+                    title=str(_('Heart Rate Variability')),
+                    xlab=x_axis,
                     ylab=str(QuantitySampleType.HEART_RATE_VARIABILITY.label),
                     data=QuantitySample.objects.filter(
                         patient=patient,
@@ -76,8 +78,8 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
                     ),
                 ),
                 'os_graph': self._generate_plot(
-                    title='Oxygen Saturation',
-                    xlab='Date',
+                    title=str(_('Oxygen Saturation')),
+                    xlab=x_axis,
                     ylab=str(QuantitySampleType.OXYGEN_SATURATION),
                     data=QuantitySample.objects.filter(
                         patient=patient,
