@@ -14,7 +14,7 @@ django-tables2==2.4.1  # https://github.com/jieter/django-tables2
 
 # MySQL/MariaDB
 #
-mysqlclient==2.1.0 # https://github.com/PyMySQL/mysqlclient
+mysqlclient==2.1.1 # https://github.com/PyMySQL/mysqlclient
 
 # Other
 #
