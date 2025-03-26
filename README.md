@@ -359,25 +359,24 @@ If a dev chooses they can also run Django backend using SSL/TLS mode to encrypt 
 
 1. In the `db-docker` repository, follow the [Running the databases with encrypted connections](https://gitlab.com/opalmedapps/db-docker/-/tree/use-override-for-ssl#running-the-databases-with-encrypted-connections) section to generate self-signed certificates and set the databases in the SSL/TLS mode.
 
-2. In the Django `Backend`, open a bash CLI and navigate to the `certs/` directory. There should be `openssl-server.cnf` file that provides the details for openssl to generate the certificates required to enable encrypted connections between any client application container and the database container.
+2. In the `db-docker` project, open a bash CLI and navigate to the `certs/` directory. There should be eight files: two certificate authority (CA) certificates (e.g., `ca-key.pem`, `ca.pem`), three database/server certificates (e.g., `server-cert.pem`, `server-key.pem`, `server-req.pem`), and three OpenSSL configuration files (e.g., `openssl-server.cnf`, `openssl-ca.cnf`, and `v3.ext`).
 
-3. Copy to the current (e.g., `certs/`) folder the `ca-key.pem` and `ca.pem` certificate authority (CA) certificates that were generated in the `db-docker`.
-
-4. Generate the server certificate:
+3. Generate the `django-db` (a.k.a., `backend-db`) certificate:
 
     ```shell
     # Create the server's private key and a certificate request for the CA
-    openssl req -config openssl-server.cnf -newkey rsa:4096 -nodes -keyout server-key.pem -out server-req.pem
+    openssl req -config openssl-server.cnf -newkey rsa:4096 -nodes -keyout backend-db-key.pem -out backend-db-req.pem
     # let the CA issue a certificate for the server
-    openssl x509 -req -in server-req.pem -days 3600 -CA ca.pem -CAkey ca-key.pem -set_serial 01 -out server-cert.pem -sha256
+    openssl x509 -req -in backend-db-req.pem -days 3600 -CA ca.pem -CAkey ca-key.pem -set_serial 01 -out backend-db-cert.pem -sha256
     ```
 
-5. Check the validity of these certs (a message like 'certificate OK' should appear.)
+4. Check the validity of the certificate (a message like 'certificate OK' should appear.)
 
     ```shell
-    openssl verify -CAfile ca.pem server-cert.pem
-    openssl verify -CAfile ca.pem ca.pem
+    openssl verify -CAfile ca.pem backend-db-cert.pem
     ```
+
+5. Copy the new certificates (`ca.pem`, `backend-db-key.pem`, and `backend-db-cert.pem`) to the `Django-backend` project and place them in the `certs/` folder. The remaining setup steps should be done within `Django-backend` project.
 
 6. To enable SSL/TLS for Django's database connections, in the .env file, set `DATABASE_USE_SSL=True` and fill in the `SSL_CA` variable with the path to the public key of the certificate authority file (e.g., `/app/certs/ca.pem`).
 

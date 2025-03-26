@@ -185,7 +185,7 @@ Temporary Items
 
 # Database certificates
 certs/*
-!certs/openssl-server.cnf
+!certs/.gitkeep
 
 # Multiple compose files
 docker-compose.override.yml

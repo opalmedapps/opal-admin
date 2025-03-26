@@ -8,8 +8,8 @@ require_secure_transport = ON
 ## Specify certs locations
 ## see: https://mariadb.com/kb/en/ssltls-system-variables
 ssl-ca = /certs/ca.pem
-ssl-cert = /certs/server-cert.pem
-ssl-key = /certs/server-key.pem
+ssl-cert = /certs/backend-db-cert.pem
+ssl-key = /certs/backend-db-key.pem
 ## config generated using https://ssl-config.mozilla.org/ with intermediate config
 ssl-cipher = ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
 tls_version = TLSv1.2,TLSv1.3
