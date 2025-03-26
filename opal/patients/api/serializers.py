@@ -49,8 +49,8 @@ class CaregiverPatientSerializer(serializers.ModelSerializer):
         fields = ['patient_id', 'patient_legacy_id', 'first_name', 'last_name', 'status']
 
 
-class CaregiverSerializer(serializers.ModelSerializer):
-    """Serializer for the my caregiver list page in the app."""
+class CaregiverRelationshipSerializer(serializers.ModelSerializer):
+    """Serializer for the list of caregivers for a given patient."""
 
     caregiver_id = serializers.IntegerField(source='caregiver.user.id')
     first_name = serializers.CharField(source='caregiver.user.first_name')

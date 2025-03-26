@@ -32,14 +32,30 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: AbstractUser) -> N
     assert response.status_code == HTTPStatus.OK
     assert response.json()[0] == {
         'caregiver_id': caregiver1.user.id,
-        'firstname': caregiver1.user.first_name,
-        'lastname': caregiver1.user.last_name,
+        'first_name': caregiver1.user.first_name,
+        'last_name': caregiver1.user.last_name,
     }
     assert response.json()[1] == {
         'caregiver_id': caregiver2.user.id,
-        'firstname': caregiver2.user.first_name,
-        'lastname': caregiver2.user.last_name,
+        'first_name': caregiver2.user.first_name,
+        'last_name': caregiver2.user.last_name,
     }
+
+
+def test_my_caregiver_list_failure(api_client: APIClient, admin_user: AbstractUser) -> None:
+    """Test the failure of the caregivers list for a given patient."""
+    api_client.force_login(user=admin_user)
+    patient = Patient()
+    caregiver1 = CaregiverProfile()
+    caregiver2 = CaregiverProfile()
+    Relationship(patient=patient, caregiver=caregiver1)
+    Relationship(patient=patient, caregiver=caregiver2)
+    response = api_client.get(reverse(
+        'api:caregivers-list',
+        kwargs={'legacy_patient_id': 1654161},
+    ))
+
+    assert not response.data
 
 
 def test_registration_code(api_client: APIClient, admin_user: AbstractUser) -> None:

@@ -9,7 +9,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from opal.caregivers.api.serializers import RegistrationCodePatientDetailedSerializer, RegistrationCodePatientSerializer
 from opal.caregivers.models import RegistrationCode, RegistrationCodeStatus
-from opal.patients.api.serializers import CaregiverSerializer
+from opal.patients.api.serializers import CaregiverRelationshipSerializer
 from opal.patients.models import Relationship
 
 
@@ -45,9 +45,9 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
 
 
 class GetCaregiverList(ListAPIView):
-    """REST API `ListAPIView` returning list of caregivers for a given patient.."""
+    """REST API `ListAPIView` returning list of caregivers for a given patient."""
 
-    serializer_class = CaregiverSerializer
+    serializer_class = CaregiverRelationshipSerializer
     pagination_class = None
 
     def get_queryset(self) -> QuerySet[Relationship]:
