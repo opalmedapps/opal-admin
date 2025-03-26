@@ -26,7 +26,7 @@ To specify a translation string in a template code, include `{% load i18n %}` to
 
 !!! note
 
-    You can provide additional context which is especially helpful if a word can have several meanings in another language. See the [documentation on contextual markers](https://docs.djangoproject.com/en/dev/topics/i18n/translation/#contextual-markers-1) for more information.
+    You can provide additional context which is especially helpful if a word can have several meanings in another language. See the [documentation on contextual markers](https://docs.djangoproject.com/en/dev/topics/i18n/translation/#contextual-markers) for more information.
 
 To create or update a message file that keeps all the translations, run this command:
 
@@ -43,5 +43,9 @@ where **fr** is the locale name for the message file you want to create. Note th
 Once you have filled in or updated the message file, it must be compiled. Run the following command to compile a new binary file:
 
 ```sh
-django-admin compilemessages
+django-admin compilemessages --ignore .venv
 ```
+
+!!! note "Running commands on Windows"
+
+    Above commands will not work on Windows because the `gettext` package [is not installed](https://docs.djangoproject.com/en/dev/topics/i18n/translation/#gettext-on-windows). You can run these commands on the container instead by prefixing all commands with `docker compose exec app`.
