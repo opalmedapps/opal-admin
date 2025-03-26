@@ -13,7 +13,6 @@ from easyaudit.models import RequestEvent
 from pytest_django.asserts import assertTemplateUsed, assertURLEqual
 
 from opal.questionnaires.factories import QuestionnaireProfile as QuestionnaireProfileFactory
-from opal.questionnaires.models import QuestionnaireProfile
 from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
@@ -338,12 +337,3 @@ def test_detail_template_download_xlsx(user_client: Client, admin_user: Abstract
         filename = f'attachment; filename = questionnaire-11-{date.today().isoformat()}.xlsx'  # noqa: WPS237
         assert header.get('Content-Disposition') == filename
         assert int(header.get('Content-Length', 0)) > 0
-
-
-def test_dashboard_questionnaires_following(user_client: Client, admin_user: AbstractUser) -> None:
-    """Ensure that the questionnaires following functionality works as expected in dashboard."""
-    user_client.force_login(admin_user)
-    response = user_client.get(reverse('questionnaires:reports-dashboard'))
-    q_prof = QuestionnaireProfile.objects.all()
-    print(response)
-    print(q_prof)
