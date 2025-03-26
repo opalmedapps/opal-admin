@@ -70,8 +70,8 @@ class SecurityAnswerViewSet(  # noqa: WPS215
         """
         Handle GET requests for a random pair of security question and answer.
 
-        Security: this endpoint exposes security answers, and should only be called by the listener
-        TODO: Use permissions (e.g. group permissions) to restrict access of this endpoint only to the listener
+        Security: this endpoint exposes security answers, and should only be called by the listener.
+        TODO: Use permissions (e.g. group permissions) to restrict access of this endpoint only to the listener.
 
         Args:
             request: Http request.
