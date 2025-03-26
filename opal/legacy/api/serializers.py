@@ -49,6 +49,14 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer):
         source='aliasexpressionsernum.aliassernum.appointmentcheckin.checkinpossible',
     )
 
+    checkininstruction_en = serializers.CharField(
+        source='aliasexpressionsernum.aliassernum.appointmentcheckin.checkininstruction_en',
+    )
+
+    checkininstruction_fr = serializers.CharField(
+        source='aliasexpressionsernum.aliassernum.appointmentcheckin.checkininstruction_fr',
+    )
+
     patient = LegacyPatientSerializer(
         source='patientsernum',
         fields=('patientsernum', 'firstname', 'lastname'),
@@ -78,6 +86,8 @@ class LegacyAppointmentDetailedSerializer(serializers.ModelSerializer):
             'scheduledstarttime',
             'checkin',
             'checkinpossible',
+            'checkininstruction_en',
+            'checkininstruction_fr',
             'roomlocation_en',
             'roomlocation_fr',
             'hospitalmap',

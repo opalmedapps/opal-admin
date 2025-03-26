@@ -138,6 +138,8 @@ class LegacyAppointmentcheckin(models.Model):
         related_name='appointmentcheckin',
     )
     checkinpossible = models.IntegerField(db_column='CheckinPossible')
+    checkininstruction_en = models.TextField(db_column='CheckinInstruction_EN')
+    checkininstruction_fr = models.TextField(db_column='CheckinInstruction_FR')
 
     class Meta:
         managed = False
