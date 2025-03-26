@@ -8,6 +8,8 @@ variables:
   MARIADB_DATABASE: test_$DB_NAME
   MARIADB_USER: $DB_USER
   MARIADB_PASSWORD: $DB_PASSWORD
+  # collapsible multi-line commands
+  FF_SCRIPT_SECTIONS: "true"
 
 
 stages:
