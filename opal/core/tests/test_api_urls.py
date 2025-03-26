@@ -245,3 +245,10 @@ def test_patient_demographic_defined(settings: SettingsWrapper) -> None:
     url_path = '/{api_root}/patients/demographic/'.format(api_root=settings.API_ROOT)
     assert reverse('api:patient-demographic-update') == url_path
     assert resolve(url_path).view_name == 'api:patient-demographic-update'
+
+
+def test_patient_pathology_create_defined(settings: SettingsWrapper) -> None:
+    """Ensure that the endpoint for creating/adding pathology records is defined."""
+    url_path = '/{api_root}/patients/pathology/'.format(api_root=settings.API_ROOT)
+    assert reverse('api:patient-pathology-create') == url_path
+    assert resolve(url_path).view_name == 'api:patient-pathology-create'
