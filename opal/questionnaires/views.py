@@ -7,9 +7,7 @@ from typing import Any
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpResponse
-from django.utils.decorators import method_decorator
 from django.utils.encoding import smart_str
-from django.views.decorators.http import require_http_methods
 from django.views.generic.base import TemplateView
 
 import django_tables2 as tables
@@ -56,8 +54,8 @@ class ExportReportQueryTemplateView(PermissionRequiredMixin, TemplateView):
     model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     logger = logging.getLogger(__name__)
+    http_method_names = ['post']
 
-    @method_decorator(require_http_methods(['POST']))
     def post(self, request: Any) -> Any:
         """Override class method and fetch query parameters for the requested questionnaire.
 
@@ -100,8 +98,8 @@ class ExportReportViewReportTemplateView(PermissionRequiredMixin, TemplateView):
     model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     logger = logging.getLogger(__name__)
+    http_method_names = ['post']
 
-    @method_decorator(require_http_methods(['POST']))
     def post(self, request: Any) -> Any:
         """Override class method and fetch report for the requested questionnaire.
 
@@ -136,8 +134,8 @@ class ExportReportDownloadCSVTemplateView(PermissionRequiredMixin, TemplateView)
     model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     logger = logging.getLogger(__name__)
+    http_method_names = ['post']
 
-    @method_decorator(require_http_methods(['POST']))
     def post(self, request: Any) -> Any:  # noqa: WPS210
         """Grab existing backend report and convert to csv.
 
@@ -176,8 +174,8 @@ class ExportReportDownloadXLSXTemplateView(PermissionRequiredMixin, TemplateView
     model = ExportReportPermission
     permission_required = ('questionnaires.export_report')
     logger = logging.getLogger(__name__)
+    http_method_names = ['post']
 
-    @method_decorator(require_http_methods(['POST']))
     def post(self, request: Any) -> Any:  # noqa: WPS210
         """Grab existing backend report and convert to xlsx.
 
