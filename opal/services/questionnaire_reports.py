@@ -220,7 +220,7 @@ class QuestionnairePDF(FPDF):  # noqa: WPS214
         self.set_font(family=QUESTIONNAIRE_REPORT_FONT, style='U', size=10)
         self.set_text_color(0, 0, 255)
         self.set_x(160)
-        self.cell(**header_toc_link, link=self.add_link(page=1))  # type: ignore[arg-type]
+        self.cell(**header_toc_link, link=str(self.add_link(page=1)))
 
         self.line(10, 18, 200, 18)  # X1, Y1, X2, Y2
 
