@@ -33,19 +33,18 @@ class Command(BaseCommand):
         )
 
         for relationship in relationships_to_check:
-            if relationship.patient.date_of_birth:
-                patient_age = Patient.calculate_age(date_of_birth=relationship.patient.date_of_birth)
+            patient_age = Patient.calculate_age(date_of_birth=relationship.patient.date_of_birth)
 
-                if patient_age >= relationship.type.end_age:
-                    relationship.status = RelationshipStatus.EXPIRED
-                    relationship.save()
-                    number_of_updates += 1
-                    self.stdout.write(
-                        'Expired relationship: id={id} | age {age} >= {end_age} end_age'.format(
-                            id=relationship.id,
-                            age=patient_age,
-                            end_age=relationship.type.end_age,
-                        ),
-                    )
+            if patient_age >= relationship.type.end_age:
+                relationship.status = RelationshipStatus.EXPIRED
+                relationship.save()
+                number_of_updates += 1
+                self.stdout.write(
+                    'Expired relationship: id={id} | age {age} >= {end_age} end_age'.format(
+                        id=relationship.id,
+                        age=patient_age,
+                        end_age=relationship.type.end_age,
+                    ),
+                )
 
         self.stdout.write(f'Updated {number_of_updates} relationship(s) from confirmed to expired.')
