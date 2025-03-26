@@ -312,28 +312,28 @@ def test_hospitalpatient_factory_multiple() -> None:
 def test_hospitalpatient_str() -> None:
     """Ensure the `__str__` method is defined for the `HospitalPatient` model."""
     site = factories.Site(name="Montreal Children's Hospital")
-    hospitalpatient = factories.HospitalPatient(site=site)
+    hospital_patient = factories.HospitalPatient(site=site)
 
-    assert str(hospitalpatient) == 'Patient First Name Patient Last Name (MON: 9999996)'
+    assert str(hospital_patient) == 'Patient First Name Patient Last Name (MON: 9999996)'
 
 
 def test_hospitalpatient_one_patient_many_sites() -> None:
-    """Test one patient has many hospital_patients."""
+    """Ensure a patient can have MRNs at different sites."""
     patient = factories.Patient(first_name='aaa', last_name='bbb')
     site1 = factories.Site(name="Montreal Children's Hospital")
     site2 = factories.Site(name='Royal Victoria Hospital')
 
     HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
     HospitalPatient.objects.create(patient=patient, site=site2, mrn='9999996')
-    hospitalpatients = HospitalPatient.objects.all()
-    assert len(hospitalpatients) == 2
+
+    assert HospitalPatient.objects.count() == 2
 
     with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
         HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
 
 
 def test_hospitalpatient_many_patients_one_site() -> None:
-    """Test many patients have the same site and mrn."""
+    """Ensure a (site, MRN) pair can only be used once."""
     patient1 = factories.Patient(first_name='aaa', last_name='111')
     patient2 = factories.Patient(
         first_name='bbb',
@@ -345,6 +345,18 @@ def test_hospitalpatient_many_patients_one_site() -> None:
 
     with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
         HospitalPatient.objects.create(patient=patient2, site=site, mrn='9999996')
+
+
+def test_hospitalpatient_patient_site_unique() -> None:
+    """Ensure a patient can only have one MRN at a specific site."""
+    patient = factories.Patient()
+    site = factories.Site()
+
+    HospitalPatient.objects.create(patient=patient, site=site, mrn='9999996')
+
+    expected_message = r"Duplicate entry '(\d+\-\d+)' for key 'patients_hospitalpatient_patient_id_site_id_(\d+)_uniq"
+    with pytest.raises(IntegrityError, match=expected_message):
+        HospitalPatient.objects.create(patient=patient, site=site, mrn='9999997')
 
 
 def test_can_answer_questionnaire_default() -> None:
