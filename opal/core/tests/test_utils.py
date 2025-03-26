@@ -1,4 +1,4 @@
-from ..utils import generate_random_registration_code, generate_random_uuid
+from ..utils import generate_random_registration_code, generate_random_uuid, qr_code
 
 
 def test_random_uuid_length() -> None:
@@ -36,3 +36,10 @@ def test_random_registration_code_is_unique() -> None:
     code1 = generate_random_registration_code('XX', 10)
     code2 = generate_random_registration_code('XX', 10)
     assert code1 != code2
+
+
+def test_qr_code() -> None:
+    """Ensure a QR code can be built as an in-memory SVG image."""
+    code = qr_code('https://opalmedapps.ca')
+
+    assert code.startswith(b'<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n<svg xmlns:svg="http://www.w3.org/2000/svg"')

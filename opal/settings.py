@@ -131,6 +131,10 @@ TEMPLATES = [
 ]
 
 
+# https://docs.djangoproject.com/en/dev/ref/settings/#form-renderer
+FORM_RENDERER = 'django.forms.renderers.DjangoDivFormRenderer'
+
+
 # https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = 'opal.wsgi.application'
 
@@ -498,7 +502,7 @@ TEST_PATIENTS = env.list('TEST_PATIENT_QUESTIONNAIREDB_IDS', default=[])
 # ORMS settings
 # ------------------------------------------------------------------------------
 # Name of the group for the ORMS users
-# Please see: https://docs.djangoproject.com/en/3.2/topics/auth/default/#groups
+# Please see: https://docs.djangoproject.com/en/dev/topics/auth/default/#groups
 ORMS_USER_GROUP = 'orms'
 
 # Institution code for registration
