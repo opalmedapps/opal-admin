@@ -79,7 +79,7 @@ class TestHomeAppView:
         relationship = patient_factories.Relationship(status='CON')
         patient = factories.LegacyPatientFactory(patientsernum=relationship.patient.legacy_id)
         alias = factories.LegacyAliasFactory()
-        alias_expression = factories.LegacyAliasexpressionFactory(aliassernum=alias)
+        alias_expression = factories.LegacyAliasExpressionFactory(aliassernum=alias)
         # create an appointment close to the end of the day
         appointment = factories.LegacyAppointmentFactory(
             patientsernum=patient,

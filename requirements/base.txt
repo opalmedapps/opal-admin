@@ -28,13 +28,13 @@ mysqlclient==2.1.1 # https://github.com/PyMySQL/mysqlclient
 #
 # secure password hashes using argon2
 argon2-cffi==21.3.0  # https://github.com/hynek/argon2_cffi
-requests==2.28.2  # https://github.com/psf/requests
+requests==2.30.0  # https://github.com/psf/requests
 # required for ImageFields
 Pillow==9.5.0  # https://pypi.org/project/Pillow
 
 # Export Report functionality
 #
-pandas==1.5.3  # https://pypi.org/project/pandas/
+pandas==2.0.1  # https://pypi.org/project/pandas/
 openpyxl==3.1.2  # https://pypi.org/project/openpyxl/
 
 # Interactive data visualization
