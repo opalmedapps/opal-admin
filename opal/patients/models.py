@@ -275,8 +275,8 @@ class Relationship(models.Model):
             if self.status in RelationshipStatus.REVOKED or self.status in RelationshipStatus.DENIED:
                 raise ValidationError({'reason': _('Reason is mandatory when status is denied or revoked.')})
 
-    @staticmethod
-    def valid_statuses(initial: RelationshipStatus) -> list[RelationshipStatus]:  # noqa: WPS602
+    @classmethod
+    def valid_statuses(cls, initial: RelationshipStatus) -> list[RelationshipStatus]:  # noqa: WPS602
         """
         Select the proper status for the selected relationship status.
 

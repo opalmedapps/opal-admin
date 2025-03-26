@@ -11,7 +11,7 @@ from opal.caregivers.models import CaregiverProfile
 from opal.users import factories as user_factories
 
 from .. import constants, factories
-from ..models import HospitalPatient, Patient, RelationshipStatus, RelationshipType
+from ..models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType
 
 pytestmark = pytest.mark.django_db
 
@@ -500,3 +500,66 @@ def test_same_birth_and_death_date() -> None:
     patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 1, 23))
 
     patient.clean()
+
+
+@pytest.mark.parametrize(
+    'initial_status', [
+        RelationshipStatus.DENIED,
+        RelationshipStatus.CONFIRMED,
+        RelationshipStatus.PENDING,
+        RelationshipStatus.REVOKED,
+        RelationshipStatus.EXPIRED,
+    ],
+)
+def test_validstatuses_contain_initial_status(initial_status: RelationshipStatus) -> None:
+    """Ensure that the returned list of statuses includes the initial status."""
+    validstatuses = Relationship.valid_statuses(initial_status)
+
+    assert initial_status in validstatuses
+
+
+def test_validstatuses_not_contain_wrong_status_pending() -> None:
+    """Ensure that valid statuses do no contain wrong status for PENDING."""
+    initial_status = RelationshipStatus.PENDING
+    validstatuses = Relationship.valid_statuses(initial_status)
+
+    assert RelationshipStatus.REVOKED not in validstatuses
+    assert RelationshipStatus.EXPIRED not in validstatuses
+
+
+def test_validstatuses_not_contain_wrong_status_confirmed() -> None:
+    """Ensure that valid statuses do no contain wrong status for CONFIRMED."""
+    initial_status = RelationshipStatus.CONFIRMED
+    validstatuses = Relationship.valid_statuses(initial_status)
+
+    assert RelationshipStatus.EXPIRED not in validstatuses
+
+
+def test_validstatuses_not_contain_wrong_status_denied() -> None:
+    """Ensure that valid statuses do no contain wrong status for DENIED."""
+    initial_status = RelationshipStatus.DENIED
+    validstatuses = Relationship.valid_statuses(initial_status)
+
+    assert RelationshipStatus.EXPIRED not in validstatuses
+    assert RelationshipStatus.REVOKED not in validstatuses
+
+
+def test_validstatuses_not_contain_wrong_status_revoked() -> None:
+    """Ensure that valid statuses do no contain wrong status for REVOKED."""
+    initial_status = RelationshipStatus.REVOKED
+    validstatuses = Relationship.valid_statuses(initial_status)
+
+    assert RelationshipStatus.DENIED not in validstatuses
+    assert RelationshipStatus.EXPIRED not in validstatuses
+    assert RelationshipStatus.PENDING not in validstatuses
+
+
+def test_validstatuses_not_contain_wrong_status_expired() -> None:
+    """Ensure that valid statuses do no contain wrong status for EXPIRED."""
+    initial_status = RelationshipStatus.EXPIRED
+    validstatuses = Relationship.valid_statuses(initial_status)
+
+    assert RelationshipStatus.DENIED not in validstatuses
+    assert RelationshipStatus.CONFIRMED not in validstatuses
+    assert RelationshipStatus.PENDING not in validstatuses
+    assert RelationshipStatus.REVOKED not in validstatuses
