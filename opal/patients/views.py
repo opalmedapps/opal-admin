@@ -32,7 +32,7 @@ from opal.users.models import Caregiver
 
 from . import constants
 from .filters import ManageCaregiverAccessFilter
-from .forms import RelationshipAccessForm, RelationshipTypeUpdateForm
+from .forms import ManageCaregiverAccessUpdateForm, RelationshipAccessForm, RelationshipTypeUpdateForm
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, Site
 
 
@@ -703,9 +703,8 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
             )
 
         user_record = relationship_record.caregiver.user
-        user_record.first_name = request.POST['first_name']
-        user_record.last_name = request.POST['last_name']
-        # TODO: run standard validations on the first/last field that are relevant to the user module.
-        user_record.save()
+        user_form = ManageCaregiverAccessUpdateForm(request.POST or None, instance=user_record)
+        if user_form.is_valid():
+            user_form.save()
 
         return super().post(request, **kwargs)
