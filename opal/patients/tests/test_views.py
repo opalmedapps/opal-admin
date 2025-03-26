@@ -34,6 +34,8 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
     last_name='Simpson',
     sex='F',
     alias='',
+    deceased=True,
+    death_date_time=datetime.strptime('2054-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
     ramq='MARG99991313',
     ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
     mrns=[
@@ -353,6 +355,8 @@ def test_form_error_in_template(
                 last_name='Simpson',
                 sex='F',
                 alias='',
+                deceased=True,
+                death_date_time=datetime.strptime('2054-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
                 ramq='MARG99991313',
                 ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
                 mrns=[
@@ -914,6 +918,8 @@ def test_create_new_relationship() -> None:
         last_name='Simpson',
         sex='F',
         alias='',
+        deceased=True,
+        death_date_time=datetime.strptime('2084-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
         ramq='LISA99991313',
         ramq_expiration=datetime.strptime('2044-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
         mrns=[
@@ -1027,6 +1033,8 @@ def test_some_mrns_have_same_site_code() -> None:
         last_name=patient_data.last_name,
         sex=patient_data.sex,
         alias=patient_data.alias,
+        deceased=patient_data.deceased,
+        death_date_time=patient_data.death_date_time,
         ramq=patient_data.ramq,
         ramq_expiration=patient_data.ramq_expiration,
         mrns=[
@@ -1059,6 +1067,8 @@ def test_all_mrns_have_same_site_code() -> None:
         last_name=patient_data.last_name,
         sex=patient_data.sex,
         alias=patient_data.alias,
+        deceased=patient_data.deceased,
+        death_date_time=patient_data.death_date_time,
         ramq=patient_data.ramq,
         ramq_expiration=patient_data.ramq_expiration,
         mrns=[
@@ -1091,6 +1101,8 @@ def test_no_mrns_have_same_site_code() -> None:
         last_name=patient_data.last_name,
         sex=patient_data.sex,
         alias=patient_data.alias,
+        deceased=patient_data.deceased,
+        death_date_time=patient_data.death_date_time,
         ramq=patient_data.ramq,
         ramq_expiration=patient_data.ramq_expiration,
         mrns=[
@@ -1123,6 +1135,8 @@ def test_error_message_mrn_with_same_site_code() -> None:
         last_name=patient_data.last_name,
         sex=patient_data.sex,
         alias=patient_data.alias,
+        deceased=patient_data.deceased,
+        death_date_time=patient_data.death_date_time,
         ramq=patient_data.ramq,
         ramq_expiration=patient_data.ramq_expiration,
         mrns=[

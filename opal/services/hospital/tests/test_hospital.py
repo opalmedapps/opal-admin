@@ -30,6 +30,8 @@ OIE_PATIENT_DATA = dict({
     'lastName': 'TESTMUSEMGHPROD',
     'sex': 'F',
     'alias': '',
+    'deceased': True,
+    'deathDateTime': '2023-01-01 00:00:00',
     'ramq': 'TESS53510111',
     'ramqExpiration': '2018-01-31 23:59:59',
     'mrns': [
@@ -352,6 +354,11 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
         last_name=str(OIE_PATIENT_DATA['lastName']),
         sex=str(OIE_PATIENT_DATA['sex']),
         alias=str(OIE_PATIENT_DATA['alias']),
+        deceased=bool(OIE_PATIENT_DATA['deceased']),
+        death_date_time=datetime.strptime(
+            str(OIE_PATIENT_DATA['deathDateTime']),
+            '%Y-%m-%d %H:%M:%S',
+        ),
         ramq=str(OIE_PATIENT_DATA['ramq']),
         ramq_expiration=datetime.strptime(
             str(OIE_PATIENT_DATA['ramqExpiration']),
@@ -422,6 +429,11 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
         last_name=str(OIE_PATIENT_DATA['lastName']),
         sex=str(OIE_PATIENT_DATA['sex']),
         alias=str(OIE_PATIENT_DATA['alias']),
+        deceased=bool(OIE_PATIENT_DATA['deceased']),
+        death_date_time=datetime.strptime(
+            str(OIE_PATIENT_DATA['deathDateTime']),
+            '%Y-%m-%d %H:%M:%S',
+        ),
         ramq=str(OIE_PATIENT_DATA['ramq']),
         ramq_expiration=datetime.strptime(
             str(OIE_PATIENT_DATA['ramqExpiration']),
