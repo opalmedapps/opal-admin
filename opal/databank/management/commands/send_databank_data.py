@@ -1,20 +1,27 @@
 """Command for sending data to the Databank."""
 import json
+from collections import defaultdict
 from typing import Any
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models.query import QuerySet
 
+import requests
+from requests.auth import HTTPBasicAuth
+
 from opal.databank.models import DatabankConsent, DataModuleType
 from opal.legacy.models import LegacyAppointment, LegacyDiagnosis, LegacyPatient, LegacyPatientTestResult
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
+from opal.services.hospital.hospital import OIEService
 
 
 class Command(BaseCommand):
     """Command to send the data of consenting databank patients to the external databank."""
 
     help = "send consenting Patients' data to the databank"  # noqa: A003
+    oie = OIEService()
 
     @transaction.atomic
     def handle(self, *args: Any, **kwargs: Any) -> None:
@@ -36,15 +43,17 @@ class Command(BaseCommand):
         }
 
         for module, queryset in consenting_patients_querysets.items():
-            if queryset:
+            patients_list = list(queryset.iterator())
+            patients_count = len(patients_list)
+
+            if patients_count > 0:
                 self.stdout.write(
                     f'Number of {DataModuleType(module).label}-consenting patients is: {queryset.count()}',
                 )
 
                 # Retrieve patient data for each module type and send all at once
                 combined_module_data: dict = {}
-                i = 0
-                for databank_patient in queryset:
+                for idx, databank_patient in enumerate(patients_list):
                     databank_data = self._retrieve_databank_data_for_patient(databank_patient, module)
                     if databank_data:
                         nested_databank_data = self._nest_and_serialize_queryset(
@@ -52,10 +61,21 @@ class Command(BaseCommand):
                             databank_data,
                             module,
                         )
-                        combined_module_data[f'patient{i}'] = nested_databank_data
-                        i += 1
+                        combined_module_data[idx] = nested_databank_data
                 if combined_module_data:
-                    print(json.dumps(combined_module_data, default=str))
+                    try:
+                        requests.post(
+                            url=f'{settings.OIE_HOST}/databank/post',
+                            auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
+                            json=json.dumps(combined_module_data, default=str),
+                            timeout=5,
+                        ).json()
+                        # TODO: QSCCD-1096 Handle response_data / partial sender errors
+                    except requests.exceptions.RequestException as exc:
+                        # log OIE errors
+                        self.stderr.write(
+                            f'OIE Error: {exc}',
+                        )
             else:
                 self.stderr.write(
                     f'No patients found consenting to {DataModuleType(module).label} data donation.',
@@ -106,9 +126,9 @@ class Command(BaseCommand):
                 raise ValueError(f'{module} not a valid databank data type.')
 
         if databank_data:
-            # Serialize, nest, return the data for this patient
+            # Return the data for this patient
             self.stdout.write(
-                f'{len(databank_data)} instances of {DataModuleType(module).label} successfully serialized',
+                f'{len(databank_data)} instances of {DataModuleType(module).label} found for {databank_patient.patient}',  # noqa: E501, WPS221
             )
             return databank_data
         else:
@@ -128,4 +148,21 @@ class Command(BaseCommand):
             Nested dictionary list
         """
         data = list(queryset)
+
+        # Extra nesting requirements for lab data to reduce data repetition among components of a single lab group
+        if nesting_key == 'LABS':
+            groups = defaultdict(list)
+            for item in data:
+                # Group by test_group_name and test_group_indicator
+                key = (item.pop('test_group_name', None), item.pop('test_group_indicator', None))
+                groups[key].append(item)
+            # Convert the defaultdict to the final format
+            data = [
+                {
+                    'test_group_name': key[0],
+                    'test_group_indicator': key[1],
+                    'components': value,
+                }
+                for key, value in groups.items()
+            ]
         return {'GUID': guid, nesting_key: data}
