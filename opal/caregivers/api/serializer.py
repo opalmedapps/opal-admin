@@ -6,7 +6,7 @@ from opal.patients.serializer import HospitalPatientRegistrationSerializer, Pati
 
 
 class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer):
-    """Serializer for the return value of registration encrytion info."""
+    """Serializer for the return value of registration encryption info."""
 
     patient = PatientRegistrationSerializer(source='relationship.patient', many=False, read_only=True)
     hospital_patients = HospitalPatientRegistrationSerializer(
@@ -21,7 +21,7 @@ class RegistrationEncryptionInfoSerializer(serializers.ModelSerializer):
 
 
 class SecurityQuestionSerializer(serializers.ModelSerializer):
-    """This class defines how a `SecurityQuestion` is serialized for an API."""
+    """Serializer for security questions."""
 
     class Meta:
         model = SecurityQuestion
@@ -29,7 +29,7 @@ class SecurityQuestionSerializer(serializers.ModelSerializer):
 
 
 class SecurityAnswerSerializer(serializers.ModelSerializer):
-    """This class defines how a `SecurityAnswer` is serialized for an API."""
+    """Serializer for security answers."""
 
     class Meta:
         model = SecurityAnswer

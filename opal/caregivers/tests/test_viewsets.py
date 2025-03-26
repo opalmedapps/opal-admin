@@ -8,7 +8,7 @@ from opal.caregivers.factories import SecurityAnswer, SecurityQuestion
 
 
 def test_get_all_active_security_questions(api_client: APIClient, admin_user: AbstractUser) -> None:
-    """Test get all active security questions."""
+    """Test get only active security questions."""
     api_client.force_login(user=admin_user)
     security_question = SecurityQuestion()
     security_question2 = SecurityQuestion(is_active=False)
