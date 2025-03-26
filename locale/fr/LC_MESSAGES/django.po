@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-28 14:22-0400\n"
+"POT-Creation-Date: 2024-05-24 15:45-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -143,38 +143,44 @@ msgstr "Oui, supprimer"
 
 #: opal/templates/email/verification_code.txt
 #, python-format
+msgid " Dear %(first_name)s %(last_name)s, "
+msgstr " Bonjour %(first_name)s %(last_name)s, "
+
+#: opal/templates/email/verification_code.txt
 msgid ""
-"Dear %(first_name)s %(last_name)s,\n"
-"\n"
 "To verify your email address, please enter the code below on the "
-"verification page:\n"
-"\n"
-"%(code)s\n"
-"\n"
-"This code will expire in %(timeout)s minutes. Once the code has expired, you "
-"will need to request a new verification code to continue the registration "
-"process.\n"
-"If you are not trying to create an Opal account using this email address, "
-"you can disregard this email.\n"
-"\n"
-"The Opal team\n"
-"https://opalmedapps.com\n"
+"verification page: "
 msgstr ""
-"Bonjour %(first_name)s %(last_name)s ,\n"
-"\n"
 "Pour effectuer la vérification de votre adresse courriel, veuillez entrer "
-"le code ci-dessous sur la page de vérification :\n"
-"\n"
-"%(code)s\n"
-"\n"
-"Ce code expirera dans %(timeout)s minutes. Une fois le code expiré, vous devrez "
-"demander un nouveau code pour procéder avec votre inscription .\n"
+"le code ci-dessous sur la page de vérification : "
+
+#: opal/templates/email/verification_code.txt
+#, python-format
+msgid " This code will expire in %(timeout)s minutes. "
+msgstr " Ce code expirera dans %(timeout)s minutes. "
+
+#: opal/templates/email/verification_code.txt
+msgid ""
+"Once the code has expired, you will need to request a new verification code "
+"to continue the registration process."
+msgstr ""
+"Une fois le code expiré, vous devrez demander un nouveau code pour procéder avec votre inscription. "
+
+#: opal/templates/email/verification_code.txt
+msgid ""
+"If you are not trying to create an Opal account using this email address, "
+"you can disregard this email."
+msgstr ""
 "Si vous n'avez pas effectué de demande de création de compte Opal en "
-"utilisant cette adresse courriel, veuillez ne pas tenir compte de ce "
-"message .\n"
-"\n"
-"L’Équipe Opal\n"
-"https://opalmedapps.com/fr-selected\n"
+"utilisant cette adresse courriel, veuillez ne pas tenir compte de ce message."
+
+#: opal/templates/email/verification_code.txt
+msgid "The Opal team"
+msgstr "L’équipe Opal"
+
+#: opal/templates/email/verification_code.txt
+msgid "https://opalmedapps.com"
+msgstr "https://opalmedapps.com/fr-selected"
 
 #: opal/templates/sidebar.html
 msgid "Go back to opalADMIN menu"
