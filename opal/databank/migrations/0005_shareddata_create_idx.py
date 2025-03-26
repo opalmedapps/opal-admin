@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddIndex(
             model_name='shareddata',
-            index=models.Index(fields=['sent_at'], name='sent_at_idx'),
+            index=models.Index(fields=['sent_at'], name='shareddata_sent_at_idx'),
         ),
         migrations.AddIndex(
             model_name='shareddata',

@@ -350,9 +350,7 @@ class Command(BaseCommand):  # noqa: WPS214
         if DataModuleType.DEMOGRAPHICS in synced_data:  # noqa: WPS223
             sent_patient_id = synced_data.get(DataModuleType.DEMOGRAPHICS)[0].get('patient_id')
             SharedData.objects.create(
-                databank_consent=databank_patient,
-                data_id=sent_patient_id,
-                data_type=DataModuleType.DEMOGRAPHICS,
+                databank_consent=databank_patient, data_id=sent_patient_id, data_type=DataModuleType.DEMOGRAPHICS,
             )
         elif DataModuleType.LABS in synced_data:
             sent_test_result_ids = [
@@ -374,9 +372,7 @@ class Command(BaseCommand):  # noqa: WPS214
                 for questionnaire_answer in synced_data.get(DataModuleType.QUESTIONNAIRES, [])
             ]
             self._create_shared_data_instances(
-                databank_patient,
-                DataModuleType.QUESTIONNAIRES,
-                sent_questionnaire_answer_ids,
+                databank_patient, DataModuleType.QUESTIONNAIRES, sent_questionnaire_answer_ids,
             )
         elif DataModuleType.APPOINTMENTS in synced_data:
             sent_appointment_ids = [

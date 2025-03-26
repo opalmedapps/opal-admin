@@ -133,7 +133,7 @@ class SharedData(models.Model):
         ]
         # Filtering or sorting this table by sent_at, databank_consent, or both together will be faster
         indexes = [
-            models.Index(fields=['sent_at'], name='sent_at_idx'),
+            models.Index(fields=['sent_at'], name='shareddata_sent_at_idx'),
             models.Index(fields=['databank_consent', 'sent_at'], name='databank_consent_sent_at_idx'),
         ]
 
