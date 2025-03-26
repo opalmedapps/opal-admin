@@ -632,7 +632,7 @@ def test_process_questionnaire_data_invalid_date_format(mocker: MockerFixture) -
         },
     ]
 
-    with pytest.raises(ValueError, match="time data 'invalid-date' does not match format "):
+    with pytest.raises(ValueError, match="Invalid isoformat string: 'invalid-date'"):
         legacy_utils._process_questionnaire_data(parsed_data_list)
 
 
@@ -709,7 +709,7 @@ def test_invalid_question_date_format() -> None:
         },
     ]
 
-    with pytest.raises(ValueError, match="time data '2024-23-02 12:00:00' does not match format "):
+    with pytest.raises(ValueError, match='month must be in '):
         legacy_utils._process_questions(parsed_question_list)
 
 

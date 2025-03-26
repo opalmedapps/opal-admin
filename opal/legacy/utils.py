@@ -557,7 +557,7 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
             QuestionnaireData(
                 questionnaire_id=data['questionnaire_id'],
                 questionnaire_title=data['questionnaire_nickname'],
-                last_updated=datetime.strptime(data['last_updated'], '%Y-%m-%d %H:%M:%S'),
+                last_updated=datetime.fromisoformat(data['last_updated']),
                 questions=questions,
             ),
         )
@@ -597,7 +597,7 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[Question]:
                 section_id=que['section_id'],
                 answers=[
                     (
-                        datetime.strptime(answer[0], '%Y-%m-%d %H:%M:%S'),
+                        datetime.fromisoformat(answer[0]),
                         str(answer[1]),
                     ) for answer in answers
                 ],
@@ -620,17 +620,6 @@ def generate_questionnaire_report(
     Returns:
         bytearray: the generated questionnaire report
     """
-    combined_questionnaire_data = []
-    for questionnaire_data in questionnaire_data_list:
-        combined_questionnaire_data.append(
-            QuestionnaireData(
-                questionnaire_id=questionnaire_data.questionnaire_id,
-                questionnaire_title=questionnaire_data.questionnaire_title,
-                last_updated=questionnaire_data.last_updated,
-                questions=questionnaire_data.questions,
-            ),
-        )
-
     return generate_pdf(
         institution=InstitutionData(
             institution_logo_path=Path(Institution.objects.get().logo.path),
@@ -646,5 +635,5 @@ def generate_questionnaire_report(
                 ).values('mrn', 'site_code'),
             ),
         ),
-        questionnaires=combined_questionnaire_data,
+        questionnaires=questionnaire_data_list,
     )
