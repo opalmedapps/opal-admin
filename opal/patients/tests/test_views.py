@@ -8,7 +8,7 @@ from django.test import Client, RequestFactory
 from django.urls import reverse
 
 import pytest
-from pytest_django.asserts import assertContains, assertQuerysetEqual
+from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 
 from opal.hospital_settings.models import Site
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
@@ -158,7 +158,7 @@ def test_form_post_error(
     assert response.context['wizard']['form'].errors == {'sites': ['This field is required.']}
 
 
-def _wizard_step_data(site: Site) -> Tuple[dict, dict, dict]:
+def _wizard_step_data(site: Site) -> Tuple[dict, dict, dict, dict]:
     return (
         {
             'site-sites': site.pk,
@@ -172,6 +172,10 @@ def _wizard_step_data(site: Site) -> Tuple[dict, dict, dict]:
         {
             'confirm-is_correct': True,
             'access_request_view-current_step': 'confirm',
+        },
+        {
+            'relationship-relationship_type': factories.RelationshipType().pk,
+            'access_request_view-current_step': 'relationship',
         },
     )
 
@@ -261,16 +265,22 @@ def test_form_finish(
     assert response.context['wizard']['steps'].current == 'confirm'
     assert response.context['header_title'] == 'Patient Details'
 
+    response = user_client.post(url, wizard_step_data[2])
+    assert response.status_code == HTTPStatus.OK
+    assert response.context['wizard']['steps'].current == 'relationship'
+    assert response.context['header_title'] == 'Requestor Details'
 
-def test_access_request_done_redirects_temp(user_client: Client) -> None:
+
+def test_access_request_done_redirects_temp(user_client: Client) -> None:  # noqa: WPS231
     """Ensure that when the page is submitted it redirects to the final page."""
     url = reverse('patients:access-request')
     site = factories.Site()
+    relationship = factories.RelationshipType()
     form_data = [
         ('site', {'sites': site.pk}),
         ('search', {'medical_card': 'ramq', 'medical_number': 'RAMQ99996666'}),
         ('confirm', {'is_correct': True}),
-        ('relationship', {'types': [factories.RelationshipType(), factories.RelationshipType(name='Second')]}),
+        ('relationship', {'relationship_type': relationship.pk, 'requestor_form': False}),
     ]
     response = user_client.get(url)
     assert response.status_code == HTTPStatus.OK
@@ -291,6 +301,8 @@ def test_access_request_done_redirects_temp(user_client: Client) -> None:
             assert response.context['wizard']['steps'].current == 'confirm'
         elif 'confirm' in step:
             assert response.context['wizard']['steps'].current == 'relationship'
+        elif 'relationship' in step:
+            assertTemplateUsed(response, 'patients/access_request/test_qr_code.html')
 
 
 class TestAccessRequestView(views.AccessRequestView):
