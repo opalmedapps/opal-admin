@@ -137,3 +137,28 @@ def test_save_lab_observation_incorrect_type() -> None:
 
     # Check if desired error message is in the list of error messages
     assert 'LabObservations can only be linked to GeneralTest of type LAB.' in exc_info.value.messages
+
+
+def test_general_test_observations_reverse_relationship() -> None:
+    """Test that the observations property correctly returns a GeneralTest's observation instances."""
+    # Create a GeneralTest instance of type PATHOLOGY
+    pathology_test = factories.GeneralTest(type=models.TestType.PATHOLOGY)
+
+    # Create a related PathologyObservation instance
+    factories.PathologyObservationFactory(general_test=pathology_test)
+
+    # Check that the observations property returns PathologyObservation
+    assert pathology_test.observations.count() == 1
+    for path_observation in pathology_test.observations:
+        assert isinstance(path_observation, models.PathologyObservation)
+
+    # Create a GeneralTest instance of type LAB
+    lab_test = factories.GeneralTest(type=models.TestType.LAB)
+
+    # Create a related LabObservation instance
+    factories.LabObservationFactory(general_test=lab_test)
+
+    # Check that the observations property returns LabObservation
+    assert lab_test.observations.count() == 1
+    for lab_observation in lab_test.observations:
+        assert isinstance(lab_observation, models.LabObservation)
