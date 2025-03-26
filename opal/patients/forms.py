@@ -780,6 +780,31 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
             ),
         )
 
+    def clean(self) -> dict[str, Any]:
+        """
+        Validate the that patient and caregiver have same names when relationship is of `SELF` type.
+
+        Returns:
+            the cleaned form data
+        """
+        super().clean()
+        caregiver_firstname: Optional[str] = self.cleaned_data.get('first_name')
+        caregiver_lastname: Optional[str] = self.cleaned_data.get('last_name')
+        type_field: RelationshipType = cast(RelationshipType, self.cleaned_data.get('type'))
+
+        if type_field.role_type == RoleType.SELF.name:
+            if (
+                self.instance.patient.first_name != caregiver_firstname
+                or self.instance.patient.last_name != caregiver_lastname
+            ):
+                # this is to capture before saving patient and caregiver has matching names
+                error = (_(
+                    'A self-relationship was selected but the caregiver appears to be someone other than the patient.',
+                ))
+                self.add_error(NON_FIELD_ERRORS, error)
+
+        return self.cleaned_data
+
 
 # TODO Future Enhancement review UI and decide whether or not to add role_type as read-only field in UI.
 class RelationshipTypeUpdateForm(forms.ModelForm[RelationshipType]):
