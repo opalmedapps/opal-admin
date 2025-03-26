@@ -48,8 +48,8 @@ def generate_pathology_report(
             patient_ramq=patient.ramq if patient.ramq else '',
             patient_sites_and_mrns=list(
                 patient.hospital_patients.all().annotate(
-                    site_acronym=models.F('site__acronym'),
-                ).values('mrn', 'site_acronym'),
+                    site_code=models.F('site__acronym'),
+                ).values('mrn', 'site_code'),
             ),
             test_number=pathology_data['case_number'] if 'case_number' in pathology_data else '',
             test_collected_at=pathology_data['collected_at'],

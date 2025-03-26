@@ -291,45 +291,45 @@ def test_get_patient_by_ramq_in_success() -> None:
     """Get the patient instance by RAMQ in success."""
     ramq = 'MARG99991313'
     mrn = '9999993'
-    site_acronym = 'MGH'
+    site_code = 'MGH'
 
     patient = patient_factories.Patient(ramq=ramq)
 
-    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_acronym) == patient
+    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) == patient
 
 
 def test_get_patient_by_ramq_in_failed() -> None:
     """Get the patient instance by RAMQ in failed."""
     ramq = 'MARG99991313'
     mrn = '9999993'
-    site_acronym = 'MGH'
+    site_code = 'MGH'
     patient_factories.Patient(ramq='')
 
-    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_acronym) is None
+    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) is None
 
 
 def test_get_patient_by_mrn_in_success() -> None:
     """Get the patient instance by MRN and site acronym in success."""
     ramq = ''
     mrn = '9999993'
-    site_acronym = 'MGH'
+    site_code = 'MGH'
     patient = patient_factories.Patient()
-    site = Site(acronym=site_acronym)
+    site = Site(acronym=site_code)
     patient_factories.HospitalPatient(patient=patient, site=site, mrn=mrn)
 
-    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_acronym) == patient
+    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) == patient
 
 
 def test_get_patient_by_mrn_in_failed() -> None:
     """Get the patient instance by MRN and site acronym in failed."""
     ramq = ''
     mrn = '9999993'
-    site_acronym = 'MGH'
+    site_code = 'MGH'
     patient = patient_factories.Patient()
-    site = Site(acronym=site_acronym)
+    site = Site(acronym=site_code)
     patient_factories.HospitalPatient(patient=patient, site=site, mrn='9999996')
 
-    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_acronym) is None
+    assert utils.get_patient_by_ramq_or_mrn(ramq, mrn, site_code) is None
 
 
 def test_create_patient() -> None:

@@ -269,8 +269,8 @@ class PatientExistsView(APIView):
 
     For example, for an input Mrn+Site list
     [
-    {"site_acronym": "RVH", "mrn": "9999996"},
-    {"site_acronym": "LAC", "mrn": "0765324"}
+    {"site_code": "RVH", "mrn": "9999996"},
+    {"site_code": "LAC", "mrn": "0765324"}
     ]
 
     We want to query the database using the condition:
@@ -301,7 +301,7 @@ class PatientExistsView(APIView):
         """
         # Make `is_active` not required for cases when OIE calling the API without knowing if Patient is active in Opal
         serializer = HospitalPatientSerializer(
-            fields=('mrn', 'site_acronym'),
+            fields=('mrn', 'site_code'),
             data=request.data,
             many=True,
         )

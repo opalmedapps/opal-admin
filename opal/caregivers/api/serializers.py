@@ -169,7 +169,7 @@ class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
     )
     hospital_patients = HospitalPatientSerializer(
         source='relationship.patient.hospital_patients',
-        fields=('mrn', 'site_acronym'),
+        fields=('mrn', 'site_code'),
         many=True,
         read_only=True,
     )
@@ -255,9 +255,9 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer):
         many=True,
     )
 
-    institution_acronym = serializers.SerializerMethodField()
+    institution_code = serializers.SerializerMethodField()
 
-    def get_institution_acronym(self, obj: Patient) -> str:  # noqa: WPS615
+    def get_institution_code(self, obj: Patient) -> str:  # noqa: WPS615
         """
         Get a single institution acronym.
 
@@ -275,6 +275,6 @@ class PatientCaregiverDevicesSerializer(DynamicFieldsSerializer):
             'first_name',
             'last_name',
             'data_access',
-            'institution_acronym',
+            'institution_code',
             'caregivers',
         ]

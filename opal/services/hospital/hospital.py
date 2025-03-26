@@ -216,7 +216,7 @@ class OIEService:
         Tries calling the OIE using each of the patient's MRNs until one succeeds.
 
         Args:
-            active_mrn_list: a list of all active (site_acronym, mrn) tuples belonging to the patient
+            active_mrn_list: a list of all active (site_code, mrn) tuples belonging to the patient
 
         Returns:
             A wrapped success response from the OIE or an error in JSON format
@@ -230,13 +230,13 @@ class OIEService:
                 },
             )
 
-        for site_acronym, mrn in active_mrn_list:
+        for site_code, mrn in active_mrn_list:
             response_data = self.communication_manager.submit(
                 # TODO Update to 'Patient/New' after the renaming is deployed
                 endpoint='/Patient/UpdateOpalStatus',
                 payload={
                     'mrn': mrn,
-                    'site': site_acronym,
+                    'site': site_code,
                 },
             )
 

@@ -150,7 +150,7 @@ def test_site_factory_multiple() -> None:
     assert site.institution == site2.institution
 
 
-def test_site_acronym_unique() -> None:
+def test_site_code_unique() -> None:
     """The institution name needs to be unique."""
     factories.Site(acronym='MVP')
 

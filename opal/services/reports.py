@@ -111,7 +111,7 @@ class PathologyData(NamedTuple):
         patient_last_name: patient's last name (e.g., Simpson)
         patient_date_of_birth: patient's birth date (e.g., 03/19/1986)
         patient_ramq: patient's RAMQ number (SIMM99999999)
-        patient_sites_and_mrns: patient's sites and MRNs => [{'mrn': 'X', 'site_acronym': '1'}]
+        patient_sites_and_mrns: patient's sites and MRNs => [{'mrn': 'X', 'site_code': '1'}]
         test_number: the report number (e.g., AS-2021-62605)
         test_collected_at: date and time when the specimen was collected (e.g., 2021-Nov-25 09:55)
         test_reported_at: date and time when the specimen was reported (e.g., 2021-Nov-28 11:52)
@@ -172,7 +172,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         self.patient_name = f'{pathology_data.patient_last_name}, {pathology_data.patient_first_name}'.upper()
         # Concatenated patient's site codes and MRNs for the header.
         sites_and_mrns_list = [
-            f'{site_mrn["site_acronym"]}-{site_mrn["mrn"]}' for site_mrn in self.pathology_data.patient_sites_and_mrns
+            f'{site_mrn["site_code"]}-{site_mrn["mrn"]}' for site_mrn in self.pathology_data.patient_sites_and_mrns
         ]
         self.patient_sites_and_mrns_str = ', '.join(
             sites_and_mrns_list,
@@ -462,7 +462,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
         """
         sites_and_mrns = self.pathology_data.patient_sites_and_mrns
         mrns_and_sites_multiline = '\n'.join(
-            [f'{site_mrn["site_acronym"]}# : {site_mrn["mrn"]}' for site_mrn in sites_and_mrns],
+            [f'{site_mrn["site_code"]}# : {site_mrn["mrn"]}' for site_mrn in sites_and_mrns],
         )
         return [
             {

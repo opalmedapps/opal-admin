@@ -51,16 +51,16 @@ class HospitalPatientSerializer(DynamicFieldsSerializer):
     and also provides `HospitalPatient` info and the site acronym according to the 'fields' arguments.
     """
 
-    site_acronym = serializers.CharField(source='site.acronym')
+    site_code = serializers.CharField(source='site.acronym')
 
     class Meta:
         model = HospitalPatient
-        fields = ['mrn', 'is_active', 'site_acronym']
+        fields = ['mrn', 'is_active', 'site_code']
         # make the is_active field required
         extra_kwargs = {'is_active': {'required': True}}
 
-    def validate_site_acronym(self, value: str) -> str:
-        """Check that `site_acronym` exists in the database (e.g., RVH).
+    def validate_site_code(self, value: str) -> str:
+        """Check that `site_code` exists in the database (e.g., RVH).
 
         Args:
             value: site acronym to be validated
