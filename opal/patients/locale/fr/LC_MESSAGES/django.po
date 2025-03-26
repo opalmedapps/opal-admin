@@ -265,7 +265,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Relationship Request Date"
 msgid "Delete Relationship Pending Request"
-msgstr "Date de la demande de relation"
+msgstr "Supprimer la demande de lien en attente"
 
 #: opal/patients/templates/patients/relationships/pending/confirm_delete.html
 #, python-format
@@ -278,7 +278,7 @@ msgstr ""
 #, fuzzy
 #| msgid "Relationship Request Date"
 msgid "Pending Relationships Access Request"
-msgstr "Date de la demande de relation"
+msgstr "Date de la demande de lien relationnel"
 
 #: opal/patients/templates/patients/relationships/pending/list.html
 msgid "Pending Caregiver Access Requests"
