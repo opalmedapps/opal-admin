@@ -1,10 +1,12 @@
 from http import HTTPStatus
+from typing import Tuple
 
 from django.forms.models import model_to_dict
 from django.test import Client
 from django.urls import reverse
 
-from pytest_django.asserts import assertContains, assertQuerysetEqual
+import pytest
+from pytest_django.asserts import assertContains, assertQuerysetEqual, assertTemplateUsed
 
 from .. import factories, models, tables
 
@@ -107,3 +109,49 @@ def test_relationshiptype_delete(user_client: Client) -> None:
     )
 
     assert models.RelationshipType.objects.count() == 0
+
+
+# tuple with patients wizard form templates and corresponding url names
+test_patient_multiform_url_template_data: list[Tuple] = [
+    ('patients:form_step', 'patients/wizard_forms/wizard_forms.html'),
+]
+
+
+@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
+def test_patient_wizard_urls_exist(
+    user_client: Client,
+    url_name: str,
+    template: str,
+) -> None:
+    """Ensure that each step pages exists at desired URL address."""
+    url = reverse(url_name, kwargs={'step': 'site'})
+    response = user_client.get(url)
+
+    assert response.status_code == HTTPStatus.OK
+
+
+@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
+def test_patient_wizard_urls_use_correct_template(
+    user_client: Client,
+    url_name: str,
+    template: str,
+) -> None:
+    """Ensure that each step pages exist at desired URL address."""
+    url = reverse(url_name, kwargs={'step': 'site'})
+    response = user_client.get(url)
+
+    assertTemplateUsed(response, template)
+
+
+@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
+def test_patient_wizard_current_step(
+    user_client: Client,
+    url_name: str,
+    template: str,
+) -> None:
+    """Ensure that each step pages exist at desired URL address."""
+    url = reverse(url_name, kwargs={'step': 'site'})
+    response = user_client.get(url)
+    management_form = response.context['wizard']['management_form']
+
+    assertQuerysetEqual(management_form['current_step'].value(), 'site')
