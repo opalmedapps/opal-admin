@@ -1,3 +1,4 @@
+from datetime import datetime
 from http import HTTPStatus
 from typing import Any, Tuple
 
@@ -11,6 +12,7 @@ import pytest
 from pytest_django.asserts import assertContains, assertQuerysetEqual
 
 from opal.hospital_settings.models import Site
+from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 
 from .. import factories, forms, models, tables, views
 
@@ -411,76 +413,109 @@ def test_process_step_select_site_form() -> None:
     assert request.session['site_selection'] == site.pk
 
 
+def _patient_data() -> Any:
+    return {
+        'dateOfBirth': '2007-01-01 09:20:30',
+        'firstName': 'SANDRA',
+        'lastName': 'TESTMUSEMGHPROD',
+        'sex': 'F',
+        'alias': '',
+        'ramq': 'TESS53510111',
+        'ramqExpiration': '2018-01-31 23:59:59',
+    }
+
+
 @pytest.mark.django_db()
 def test_some_mrns_have_same_site_code() -> None:
     """Test some MRN records have the same site code."""
-    patient_mrn_records = {
-        'mrns': [
-            {
-                'site': 'MGH',
-                'mrn': '9999993',
-                'active': True,
-            },
-            {
-                'site': 'MGH',
-                'mrn': '9999994',
-                'active': True,
-            },
-            {
-                'site': 'RVH',
-                'mrn': '9999993',
-                'active': True,
-            },
+    patient_mrn_records = OIEPatientData(
+        date_of_birth=datetime.strptime(_patient_data()['dateOfBirth'], '%Y-%m-%d %H:%M:%S'),
+        first_name=_patient_data()['firstName'],
+        last_name=_patient_data()['lastName'],
+        sex=_patient_data()['sex'],
+        alias=_patient_data()['alias'],
+        ramq=_patient_data()['ramq'],
+        ramq_expiration=datetime.strptime(_patient_data()['ramqExpiration'], '%Y-%m-%d %H:%M:%S'),
+        mrns=[
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MGH',
+                mrn='9999994',
+                active=True,
+            ),
+            OIEMRNData(
+                site='RVH',
+                mrn='9999993',
+                active=True,
+            ),
         ],
-    }
+    )
     assert views.AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_mrn_records) is True
 
 
 @pytest.mark.django_db()
 def test_all_mrns_have_same_site_code() -> None:
     """Test all MRN records have the same site code."""
-    patient_mrn_records = {
-        'mrns': [
-            {
-                'site': 'MGH',
-                'mrn': '9999993',
-                'active': True,
-            },
-            {
-                'site': 'MGH',
-                'mrn': '9999994',
-                'active': True,
-            },
-            {
-                'site': 'MGH',
-                'mrn': '9999993',
-                'active': True,
-            },
+    patient_mrn_records = OIEPatientData(
+        date_of_birth=datetime.strptime(_patient_data()['dateOfBirth'], '%Y-%m-%d %H:%M:%S'),
+        first_name=_patient_data()['firstName'],
+        last_name=_patient_data()['lastName'],
+        sex=_patient_data()['sex'],
+        alias=_patient_data()['alias'],
+        ramq=_patient_data()['ramq'],
+        ramq_expiration=datetime.strptime(_patient_data()['ramqExpiration'], '%Y-%m-%d %H:%M:%S'),
+        mrns=[
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MGH',
+                mrn='9999994',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
         ],
-    }
+    )
     assert views.AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_mrn_records) is True
 
 
 @pytest.mark.django_db()
 def test_no_mrns_have_same_site_code() -> None:
     """Test No MRN records have the same site code."""
-    patient_mrn_records = {
-        'mrns': [
-            {
-                'site': 'MGH',
-                'mrn': '9999993',
-                'active': True,
-            },
-            {
-                'site': 'MCH',
-                'mrn': '9999994',
-                'active': True,
-            },
-            {
-                'site': 'RVH',
-                'mrn': '9999993',
-                'active': True,
-            },
+    patient_mrn_records = OIEPatientData(
+        date_of_birth=datetime.strptime(_patient_data()['dateOfBirth'], '%Y-%m-%d %H:%M:%S'),
+        first_name=_patient_data()['firstName'],
+        last_name=_patient_data()['lastName'],
+        sex=_patient_data()['sex'],
+        alias=_patient_data()['alias'],
+        ramq=_patient_data()['ramq'],
+        ramq_expiration=datetime.strptime(_patient_data()['ramqExpiration'], '%Y-%m-%d %H:%M:%S'),
+        mrns=[
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MCH',
+                mrn='9999994',
+                active=True,
+            ),
+            OIEMRNData(
+                site='RVH',
+                mrn='9999993',
+                active=True,
+            ),
         ],
-    }
+    )
     assert views.AccessRequestView()._has_multiple_mrns_with_same_site_code(patient_mrn_records) is False

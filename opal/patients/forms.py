@@ -1,7 +1,6 @@
 """This module provides forms for Patients."""
-import json
-from datetime import date, datetime
-from typing import Any, Dict, List, Optional, Set, Union
+from datetime import datetime
+from typing import Any, Dict, Optional, Set, Union
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -11,9 +10,10 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
 
 from opal.core import validators
+from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 
 from . import constants
-from .models import RelationshipType, Site
+from .models import Patient, RelationshipType, Site
 
 
 class SelectSiteForm(forms.Form):
@@ -62,21 +62,21 @@ def _patient_data() -> Any:
         'ramq': 'TESS53510111',
         'ramqExpiration': '2018-01-31 23:59:59',
         'mrns': [
-            {
-                'site': 'MGH',
-                'mrn': '9999993',
-                'active': True,
-            },
-            {
-                'site': 'MCH',
-                'mrn': '9999994',
-                'active': True,
-            },
-            {
-                'site': 'RVH',
-                'mrn': '9999993',
-                'active': True,
-            },
+            OIEMRNData(
+                site='MGH',
+                mrn='9999993',
+                active=True,
+            ),
+            OIEMRNData(
+                site='MCH',
+                mrn='9999994',
+                active=True,
+            ),
+            OIEMRNData(
+                site='RVH',
+                mrn='9999993',
+                active=True,
+            ),
         ],
     }
 
@@ -114,13 +114,16 @@ def _find_patient_by_mrn_success(mrn: str, site: str) -> Any:
     """
     return {
         'status': 'success',
-        'data': {
-            'first_name': _patient_data()['firstName'],
-            'last_name': _patient_data()['lastName'],
-            'date_of_birth': _patient_data()['dateOfBirth'],
-            'ramq': _patient_data()['ramq'],
-            'mrns': _patient_data()['mrns'],
-        },
+        'data': OIEPatientData(
+            date_of_birth=datetime.strptime(_patient_data()['dateOfBirth'], '%Y-%m-%d %H:%M:%S'),
+            first_name=_patient_data()['firstName'],
+            last_name=_patient_data()['lastName'],
+            sex=_patient_data()['sex'],
+            alias=_patient_data()['alias'],
+            ramq=_patient_data()['ramq'],
+            ramq_expiration=datetime.strptime(_patient_data()['ramqExpiration'], '%Y-%m-%d %H:%M:%S'),
+            mrns=_patient_data()['mrns'],
+        ),
     }
 
 
@@ -136,13 +139,16 @@ def _find_patient_by_ramq(ramq: str) -> Any:
     """
     return {
         'status': 'success',
-        'data': {
-            'first_name': _patient_data()['firstName'],
-            'last_name': _patient_data()['lastName'],
-            'date_of_birth': _patient_data()['dateOfBirth'],
-            'ramq': _patient_data()['ramq'],
-            'mrns': _patient_data()['mrns'],
-        },
+        'data': OIEPatientData(
+            date_of_birth=datetime.strptime(_patient_data()['dateOfBirth'], '%Y-%m-%d %H:%M:%S'),
+            first_name=_patient_data()['firstName'],
+            last_name=_patient_data()['lastName'],
+            sex=_patient_data()['sex'],
+            alias=_patient_data()['alias'],
+            ramq=_patient_data()['ramq'],
+            ramq_expiration=datetime.strptime(_patient_data()['ramqExpiration'], '%Y-%m-%d %H:%M:%S'),
+            mrns=_patient_data()['mrns'],
+        ),
     }
 
 
@@ -219,7 +225,7 @@ class SearchForm(forms.Form):
             self.add_error('medical_number', response['data']['message'])
         # save patient data to the JSONfield
         elif response and response['status'] == 'success':
-            self.cleaned_data['patient_record'] = json.dumps(response['data'])  # type: ignore[index]
+            self.cleaned_data['patient_record'] = response['data']  # type: ignore[index]
 
 
 class ConfirmPatientForm(forms.Form):
@@ -249,7 +255,12 @@ class ConfirmPatientForm(forms.Form):
 
 
 class AvailableRadioSelect(forms.RadioSelect):
-    """Subclass of Django's select widget that allows disabling options."""
+    """
+    Subclass of Django's select widget that allows disabling options.
+
+    Taken inspiration from:
+        * https://stackoverflow.com/questions/673199/disabled-option-for-choicefield-django/50109362#50109362
+    """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """
@@ -259,11 +270,11 @@ class AvailableRadioSelect(forms.RadioSelect):
             args: additional arguments
             kwargs: additional keyword arguments
         """
-        self._available_choices: List[int] = []
+        self._available_choices: list[int] = []
         super().__init__(*args, **kwargs)
 
     @property
-    def available_choices(self) -> List:
+    def available_choices(self) -> list[int]:
         """
         Get _available_choices.
 
@@ -273,7 +284,7 @@ class AvailableRadioSelect(forms.RadioSelect):
         return self._available_choices
 
     @available_choices.setter
-    def available_choices(self, other: List) -> None:
+    def available_choices(self, other: list[int]) -> None:
         """
         Set _available_choices.
 
@@ -316,15 +327,15 @@ class AvailableRadioSelect(forms.RadioSelect):
 
 
 class RequestorDetailsForm(forms.Form):
-    """This `RequestorDetailsForm` provides an radio button to choose relationship to the patient."""
+    """This `RequestorDetailsForm` provides a radio button to choose the relationship to the patient."""
 
-    types = forms.ModelChoiceField(
+    relationship_type = forms.ModelChoiceField(
         queryset=RelationshipType.objects.all(),
         widget=AvailableRadioSelect,
         label=_('Caregiver relationship type'),
     )
 
-    def __init__(self, date_of_birth: str, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, date_of_birth: datetime, *args: Any, **kwargs: Any) -> None:
         """
         Initialize the layout for card type select box and card number input box.
 
@@ -337,37 +348,15 @@ class RequestorDetailsForm(forms.Form):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
-                Column('types', css_class='form-group col-md-3 mb-0'),
+                Column('relationship_type', css_class='form-group col-md-3 mb-0'),
                 css_class='form-row',
             ),
             ButtonHolder(
                 Submit('wizard_goto_step', _('Generate QR Code')),
             ),
         )
-        if date_of_birth is not None:
-            self.age = calculate_age(datetime.strptime(date_of_birth, '%Y-%m-%d %H:%M:%S'))
-            available_choices = RelationshipType.objects.filter_by_patient_age(
-                patient_age=self.age,
-            ).values_list('id', flat=True)
-            self.fields['types'].widget.available_choices = available_choices
-
-
-def calculate_age(birthdate: date) -> int:
-    """
-    Return the age based on the given date of birth.
-
-    Args:
-        birthdate: pass the given date of birth.
-
-    Returns:
-        the age based on the given date of birth.
-    """
-    # Get today's date object
-    today = date.today()
-    # A bool that represents if today's day/month precedes the birth day/month
-    one_or_zero = ((today.month, today.day) < (birthdate.month, birthdate.day))
-    # Calculate the difference in years from the date object's components
-    year_difference = today.year - birthdate.year
-    # The difference in years is not enough.
-    # To get it right, subtract 1 or 0 based on if today precedes the birthdate's month/day.
-    return year_difference - one_or_zero
+        self.age = Patient.calculate_age(Patient(date_of_birth=date_of_birth))
+        available_choices = RelationshipType.objects.filter_by_patient_age(
+            patient_age=self.age,
+        ).values_list('id', flat=True)
+        self.fields['relationship_type'].widget.available_choices = available_choices
