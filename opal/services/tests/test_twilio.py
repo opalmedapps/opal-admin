@@ -37,6 +37,10 @@ class TestTwilioService:
     @patch.object(MessageList, 'create', create)
     def test_send_sms_successfully(self, settings: SettingsWrapper) -> None:
         """Ensure sending sms successfully."""
+        settings.TWILIO_ACCOUNT_SID = 'ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+        settings.TWILIO_AUTH_TOKEN = str('your_auth_token')
+        settings.TWILIO_FROM = '+15145551234'
+
         account_sid = settings.TWILIO_ACCOUNT_SID
         auth_token = settings.TWILIO_AUTH_TOKEN
         from_ = settings.TWILIO_FROM
@@ -62,6 +66,10 @@ class TestTwilioService:
     @patch.object(MessageList, 'create', create)
     def test_send_sms_exception(self, settings: SettingsWrapper) -> None:
         """Ensure we catch and handle the TwilioException correctly."""
+        settings.TWILIO_ACCOUNT_SID = 'ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+        settings.TWILIO_AUTH_TOKEN = str('your_auth_token')
+        settings.TWILIO_FROM = '+15145551234'
+        
         account_sid = settings.TWILIO_ACCOUNT_SID
         auth_token = settings.TWILIO_AUTH_TOKEN
         from_ = settings.TWILIO_FROM
