@@ -90,6 +90,17 @@ mypy:
     - mypy --version
     - mypy opal/
 
+markdownlint:
+  stage: Static Analysis
+  image:
+    name: davidanson/markdownlint-cli2:v0.5.1
+    # entrypoint:
+    #   - sh
+  script:
+    # - markdownlint-cli2 --version
+    # - markdownlint-cli2 "**/*.md" "#.venv"
+    - "**/*.md"
+
 test:
   stage: Test
   # set up DB service only for the test job since it is not used by others
