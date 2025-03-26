@@ -1,7 +1,8 @@
 """This module provides views for patient settings."""
 import io
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 
+from django.forms import Form
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -9,7 +10,6 @@ from django.utils.translation import gettext_lazy as _
 from django.views import generic
 
 import qrcode
-from coreapi import Object
 from django_tables2 import SingleTableView
 from formtools.wizard.views import SessionWizardView
 from qrcode.image import svg
@@ -92,23 +92,24 @@ class AccessRequestView(SessionWizardView):
         """
         return [self.template_list[self.steps.current]]
 
-    def process_step(self, form: Any) -> Any:
+    def process_step(self, form: Form) -> Any:
         """
         Postprocess the form data.
 
         Args:
-            form: a list of different forms
+            form: the form of the step being processed
 
         Returns:
             the raw `form.data` dictionary
         """
+        form_step_data = self.get_form_step_data(form)
         if self.steps.current == 'site':
-            site_selection = self.get_form_step_data(form=form)['site-sites']
+            site_selection = form_step_data['site-sites']
             self.request.session['site_selection'] = site_selection
 
-        return self.get_form_step_data(form)
+        return form_step_data
 
-    def get_context_data(self, form: Any, **kwargs: Any) -> Object:
+    def get_context_data(self, form: Form, **kwargs: Any) -> Dict[str, Any]:
         """
         Return the template context for a step.
 
@@ -119,7 +120,7 @@ class AccessRequestView(SessionWizardView):
         Returns:
             the template context for a step
         """
-        context = super().get_context_data(form=form, **kwargs)
+        context: Dict[str, Any] = super().get_context_data(form=form, **kwargs)
         if self.steps.current == 'site':
             context.update({'header_title': _('Hospital Information')})
         elif self.steps.current == 'search':
@@ -141,7 +142,7 @@ class AccessRequestView(SessionWizardView):
         """
         initial: dict[str, str] = self.initial_dict.get(step, {})
         if step == 'site' and 'site_selection' in self.request.session:
-            site_user_selection = Site.objects.get(pk=self.request.session['site_selection'])
+            site_user_selection = Site.objects.filter(pk=self.request.session['site_selection']).first()
             if site_user_selection:
                 initial.update({
                     'sites': site_user_selection,

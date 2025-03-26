@@ -345,7 +345,7 @@ def test_expected_step_without_session_storage() -> None:
 
 
 @pytest.mark.django_db()
-def test_expected_step_with_session_storage() -> None:
+def test_expected_step_with_valid_id_in_session() -> None:
     """Test expected step 'site' with session storage of saving user selection."""
     request = SessionInit().init()
     request.session['site_selection'] = 2
@@ -357,7 +357,25 @@ def test_expected_step_with_session_storage() -> None:
     response, instance = test_view(request)
 
     assert response.status_code == HTTPStatus.OK
-    assert instance.get_form_initial('site') == {'sites': Site.objects.get(pk=2)}
+    assert instance.get_form_initial('site') == {
+        'sites': Site.objects.filter(pk=2).first(),
+    }
+
+
+@pytest.mark.django_db()
+def test_expected_step_with_invalid_id_in_session() -> None:
+    """Test expected step 'site' with session storage of saving user selection."""
+    request = SessionInit().init()
+    request.session['site_selection'] = 3
+    # adding Site records
+    factories.Site(pk=1)
+    factories.Site(pk=2)
+
+    test_view = TestAccessRequestView.as_view()
+    response, instance = test_view(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assert instance.get_form_initial('site') == {}  # noqa: WPS520
 
 
 @pytest.mark.django_db()
