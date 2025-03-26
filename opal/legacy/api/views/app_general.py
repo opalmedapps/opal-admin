@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from opal.core.drf_permissions import IsListener
 from opal.legacy import models
-from opal.patients.models import Relationship
+from opal.patients.models import Relationship, RelationshipStatus
 
 from ..serializers import AnnouncementUnreadCountSerializer
 
@@ -19,19 +19,21 @@ class AppGeneralView(APIView):
         """
         Handle GET requests from `api/app/general`.
 
-        The function provides the number of unread values for the user
-        and will provide them for the selected patient instead until the profile selector is finished.
+        The function provides the number of unread values for the Opal app user.
 
         Args:
-            request: Http request made by the listener.
+            request: HTTP request made by the listener.
 
         Returns:
-            Http response with the data needed to display the general view.
+            HTTP response with the data needed to display the general view.
         """
         unread_count = {
             'unread_announcement_count': models.LegacyAnnouncement.objects.get_unread_queryset(
-                Relationship.objects.get_patient_id_list_for_caregiver(request.headers['Appuserid']),
-                request.headers['Appuserid'],
+                patient_sernum_list=Relationship.objects.get_list_of_patients_ids_for_caregiver(
+                    username=request.headers['Appuserid'],
+                    status=RelationshipStatus.CONFIRMED,
+                ),
+                username=request.headers['Appuserid'],
             ),
         }
 

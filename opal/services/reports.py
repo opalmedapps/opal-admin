@@ -1082,7 +1082,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'type': 'T',
                 'x1': 15,
                 'y1': y_position + 30,
-                'x2': 160,
+                'x2': 155,
                 'y2': y_position + 38,
                 'font': PATHOLOGY_REPORT_FONT,
                 'size': 10,
@@ -1097,7 +1097,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             {
                 'name': 'electronically_signed_at_placeholder',
                 'type': 'T',
-                'x1': 161,
+                'x1': 156,
                 'y1': y_position + 30,
                 'x2': 195,
                 'y2': y_position + 38,

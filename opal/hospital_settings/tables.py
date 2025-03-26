@@ -25,7 +25,7 @@ class InstitutionTable(tables.Table):
 
     class Meta:
         model = Institution
-        fields = ['code', 'name', 'actions']
+        fields = ['acronym', 'name', 'actions']
         empty_text = _('No institutions defined.')
 
 
@@ -48,5 +48,5 @@ class SiteTable(tables.Table):
 
     class Meta:
         model = Site
-        fields = ['code', 'name', 'actions']
+        fields = ['acronym', 'name', 'actions']
         empty_text = _('No sites defined.')
