@@ -10,7 +10,7 @@ from opal.caregivers.models import CaregiverProfile
 from opal.users import factories as user_factories
 
 from .. import constants, factories
-from ..models import HospitalPatient, RelationshipStatus, RelationshipType
+from ..models import HospitalPatient, Patient, RelationshipStatus, RelationshipType
 
 pytestmark = pytest.mark.django_db
 
@@ -100,7 +100,7 @@ def test_relationshiptype_max_age_upperbound() -> None:
 
 def test_patient_str() -> None:
     """Ensure the `__str__` method is defined for the `Patient` model."""
-    patient = factories.Patient(first_name='First Name', last_name='Last Name')
+    patient = Patient(first_name='First Name', last_name='Last Name')
     assert str(patient) == 'First Name Last Name'
 
 
@@ -110,22 +110,33 @@ def test_patient_factory() -> None:
     patient.full_clean()
 
 
+def test_patient_invalid_sex() -> None:
+    """Ensure that a patient cannot be saved with an invalid sex type."""
+    message = 'CONSTRAINT `patients_patient_sex_valid` failed'
+    with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
+        factories.Patient(sex='I')
+
+
+def test_patient_health_insurance_number_unique() -> None:
+    """Ensure that the health insurance number is unique."""
+    factories.Patient(health_insurance_number='TEST')
+
+    message = "Duplicate entry 'TEST' for key 'health_insurance_number'"
+
+    with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
+        factories.Patient(health_insurance_number='TEST')
+
+
 def test_relationship_str() -> None:
     """Ensure the `__str__` method is defined for the `Relationship` model."""
     patient = factories.Patient(first_name='Kobe', last_name='Briant')
 
     caregiver = user_factories.Caregiver(first_name='John', last_name='Wayne')
-    profile = CaregiverProfile()
-    profile.user = caregiver
+    profile = CaregiverProfile(user=caregiver)
 
-    relationshiptype = factories.RelationshipType(name='caregiver', name_fr='Proche aidant')
+    relationship = factories.Relationship.build(patient=patient, caregiver=profile)
 
-    relationship = factories.Relationship()
-    relationship.patient = patient
-    relationship.caregiver = profile
-    relationship.type = relationshiptype
-
-    assert str(relationship) == 'Kobe Briant <--> John Wayne [caregiver]'
+    assert str(relationship) == 'Kobe Briant <--> John Wayne [Self]'
 
 
 def test_relationship_factory() -> None:
@@ -218,7 +229,11 @@ def test_hospitalpatient_one_patient_many_sites() -> None:
 def test_hospitalpatient_many_patients_one_site() -> None:
     """Test many patients have the same site and mrn."""
     patient1 = factories.Patient(first_name='aaa', last_name='111')
-    patient2 = factories.Patient(first_name='bbb', last_name='222')
+    patient2 = factories.Patient(
+        first_name='bbb',
+        last_name='222',
+        health_insurance_number='TEST',
+    )
     site = factories.Site(name="Montreal Children's Hospital")
 
     HospitalPatient.objects.create(patient=patient1, site=site, mrn='9999996')

@@ -42,6 +42,8 @@ class Patient(DjangoModelFactory):
     first_name = 'Patient First Name'
     last_name = 'Patient Last Name'
     date_of_birth = datetime.date(1999, 1, 1)
+    sex = models.Patient.SexType.MALE
+    health_insurance_number = 'OTES12345678'
     legacy_id = Sequence(lambda number: number + 1)
 
 

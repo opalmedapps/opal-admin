@@ -59,8 +59,27 @@ class RelationshipType(models.Model):
         return self.name
 
 
+class SexType(models.TextChoices):
+    """
+    The choice of sex types.
+
+    The available types are currently defined as they are used at the MUHC.
+    The values are the raw values as they are retrieved in HL7.
+    """
+
+    FEMALE = 'F', _('Female')
+    MALE = 'M', _('Male')
+    OTHER = 'O', _('Other')
+    UNKNOWN = 'U', _('Unknown')
+
+
 class Patient(models.Model):
-    """patient model."""
+    """A patient whose data can be accessed."""
+
+    # TextChoices need to be defined outside to use them in constraints
+    # define them as class attributes for easier access
+    # see: https://stackoverflow.com/q/71522816
+    SexType = SexType
 
     first_name = models.CharField(
         verbose_name=_('First Name'),
@@ -71,7 +90,17 @@ class Patient(models.Model):
         max_length=150,
     )
     date_of_birth = models.DateField(
-        verbose_name=_('Patient Date of Birth'),
+        verbose_name=_('Date of Birth'),
+    )
+    sex = models.CharField(
+        verbose_name=_('Sex'),
+        max_length=1,
+        choices=SexType.choices,
+    )
+    health_insurance_number = models.CharField(
+        verbose_name=_('Health Insurance Number'),
+        max_length=12,
+        unique=True,
     )
     caregivers = models.ManyToManyField(
         verbose_name=_('Caregivers'),
@@ -89,6 +118,12 @@ class Patient(models.Model):
     class Meta:
         verbose_name = _('Patient')
         verbose_name_plural = _('Patients')
+        constraints = [
+            models.CheckConstraint(
+                name='%(app_label)s_%(class)s_sex_valid',  # noqa: WPS323
+                check=models.Q(sex__in=SexType.values),
+            ),
+        ]
 
     def __str__(self) -> str:
         """
