@@ -1,4 +1,5 @@
 """Module providing business logic for generating charts using plotly library."""
+import logging
 from types import MappingProxyType
 from typing import Final, NamedTuple, Optional
 
@@ -35,6 +36,8 @@ CHART_LAYOUT: Final = MappingProxyType({
     },
 })
 
+LOGGER = logging.getLogger(__name__)
+
 
 class ChartService():
     """Service that provides functionality for generating plotly charts in HTML format."""
@@ -53,30 +56,46 @@ class ChartService():
         Returns:
             HTML string representation of the plot
         """
-        if (
-            not chart_data.data.empty
-            and set({'x', 'error_max', 'error_min', 'legend'}).issubset(chart_data.data.columns)
-        ):
-            chart_data.data['error_diff'] = chart_data.data['error_max'] - chart_data.data['error_min']
-            figure = px.scatter(
-                chart_data.data,
-                x='x',
-                y='error_max',
-                title=chart_data.title,
-                color='legend',
-                labels={
-                    'x': chart_data.label_x,
-                    'error_max': chart_data.label_y,
-                    'legend': chart_data.label_legend,
-                },
-                error_y=[0] * len(chart_data.data['error_max']),  # noqa: WPS435 list multiplication creates references
-                error_y_minus='error_diff',
-            )
+        if chart_data.data.empty:
+            return None
 
-            figure.update_layout(CHART_LAYOUT)
+        if not set({'x', 'error_max', 'error_min', 'legend'}).issubset(chart_data.data.columns):
+            LOGGER.error('{0}\n{1}\n{2} {3}\n\n'.format(
+                'An error occurred in ChartService::generate_error_bar_chart(chart_data: ChartData):',
+                'chart_data.data should contain the following columns: x, error_max, error_min, legend',
+                'The columns received:',
+                chart_data.data.columns,
+            ))
+            return None
 
-            return figure.to_html()  # type: ignore[no-any-return]
-        return None
+        chart_data.data['error_diff'] = chart_data.data['error_max'] - chart_data.data['error_min']
+        figure = px.scatter(
+            chart_data.data,
+            x='x',
+            y='error_max',
+            title=chart_data.title,
+            color='legend',
+            labels={
+                'x': chart_data.label_x,
+                'error_max': chart_data.label_y,
+                'legend': chart_data.label_legend,
+            },
+            error_y=[0] * len(chart_data.data['error_max']),  # noqa: WPS435 list multiplication creates references
+            error_y_minus='error_diff',
+            hover_data={
+                'error_min': False,
+                'error_max': False,
+                'error_diff': False,
+                'x': False,
+                'min': chart_data.data['error_min'],
+                'max': chart_data.data['error_max'],
+                'legend': True,
+            },
+        )
+
+        figure.update_layout(CHART_LAYOUT)
+
+        return figure.to_html()  # type: ignore[no-any-return]
 
     def generate_line_chart(
         self,
@@ -92,27 +111,34 @@ class ChartService():
         Returns:
             HTML string representation of the plot
         """
-        if (
-            not chart_data.data.empty
-            and set({'x', 'y', 'legend'}).issubset(chart_data.data.columns)
-        ):
-            #  Plotly chart customization: https://plotly.com/python/line-charts/
-            figure = px.line(
-                chart_data.data,
-                x='x',
-                y='y',
-                title=chart_data.title,
-                color='legend',
-                markers=True,
-                labels={
-                    'x': chart_data.label_x,
-                    'y': chart_data.label_y,
-                    'legend': chart_data.label_legend,
-                },
-                hover_data=['y', 'legend'],
-            )
+        if chart_data.data.empty:
+            return None
 
-            figure.update_layout(CHART_LAYOUT)
+        if not set({'x', 'y', 'legend'}).issubset(chart_data.data.columns):
+            LOGGER.error('{0}\n{1}\n{2} {3}\n\n'.format(
+                'An error occurred in ChartService::generate_line_chart(chart_data: ChartData):',
+                'chart_data.data should contain the following columns: x, y, legend',
+                'The columns received:',
+                chart_data.data.columns,
+            ))
+            return None
 
-            return figure.to_html()  # type: ignore[no-any-return]
-        return None
+        #  Plotly chart customization: https://plotly.com/python/line-charts/
+        figure = px.line(
+            chart_data.data,
+            x='x',
+            y='y',
+            title=chart_data.title,
+            color='legend',
+            markers=True,
+            labels={
+                'x': chart_data.label_x,
+                'y': chart_data.label_y,
+                'legend': chart_data.label_legend,
+            },
+            hover_data=['y', 'legend'],
+        )
+
+        figure.update_layout(CHART_LAYOUT)
+
+        return figure.to_html()  # type: ignore[no-any-return]
