@@ -503,7 +503,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
             width=int((185 - 110) / 2) - 1,
         )
         patient_name = wrapper.fill(text=f'Nom/Name: {self.patient_name}')
-        # Calculate the number of the linse patient name will occupy
+        # Calculate the number of the lines patient name will occupy
         line = math.ceil(len(patient_name) * 2 / (185 - 110))
         return [
             {
