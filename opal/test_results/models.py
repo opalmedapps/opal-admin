@@ -22,51 +22,51 @@ class GeneralTest(models.Model):
         related_name='general_test',
     )
     type = models.CharField(  # noqa: A003
-        _('Type'),
+        verbose_name=_('Type'),
         max_length=1,
         choices=TestType.choices,
         help_text=_('The test type, for example pathlogy or regular lab.'),
     )
     sending_facility = models.CharField(
-        _('Sending facility'),
+        verbose_name=_('Sending facility'),
         max_length=6,
         blank=True,
     )
     receiving_facility = models.CharField(
-        _('Receiving facility'),
+        verbose_name=_('Receiving facility'),
         max_length=6,
         blank=True,
     )
     collected_at = models.DateTimeField(
-        _('Collected At'),
+        verbose_name=_('Collected At'),
         help_text=_('When the specimen was collected from the patient.'),
     )
     received_at = models.DateTimeField(
-        _('Received At'),
+        verbose_name=_('Received At'),
         help_text=_('When the test result was entered into the source system.'),
     )
     message_type = models.CharField(
-        _('Message Type'),
+        verbose_name=_('Message Type'),
         max_length=3,
         blank=True,
         help_text=_('HL7 message type indicator.'),
     )
     message_event = models.CharField(
-        _('Message Event'),
+        verbose_name=_('Message Event'),
         max_length=3,
         blank=True,
         help_text=_('HL7 message trigger event indicator.'),
     )
     test_group_code = models.CharField(
-        _('Test Group Code'),
+        verbose_name=_('Test Group Code'),
         max_length=30,
     )
     test_group_code_description = models.CharField(
-        _('Test Group Code Description'),
+        verbose_name=_('Test Group Code Description'),
         max_length=60,
     )
     legacy_document_id = models.IntegerField(
-        _('Legacy Document ID'),
+        verbose_name=_('Legacy Document ID'),
         blank=True,
         null=True,
         help_text=_('OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to patients.'),
@@ -114,46 +114,46 @@ class Observation(models.Model):
         related_name='observation',
     )
     identifier_code = models.CharField(
-        _('Observation Identifier'),
+        verbose_name=_('Observation Identifier'),
         max_length=20,
         help_text=_('Test component code.'),
     )
     identifier_text = models.CharField(
-        _('Observation Identifier Text'),
+        verbose_name=_('Observation Identifier Text'),
         max_length=199,
         help_text=_('Test component text.'),
     )
     value = models.CharField(
-        _('Value'),
+        verbose_name=_('Value'),
         max_length=512,
     )
     value_units = models.CharField(
-        _('Value Units'),
+        verbose_name=_('Value Units'),
         max_length=20,
         blank=True,
     )
     value_min_range = models.FloatField(
-        _('Minimum Value Range'),
+        verbose_name=_('Minimum Value Range'),
         blank=True,
         null=True,
     )
     value_max_range = models.FloatField(
-        _('Maximum Value Range'),
+        verbose_name=_('Maximum Value Range'),
         blank=True,
         null=True,
     )
     value_abnormal = models.CharField(
-        _('Abormal Flag'),
+        verbose_name=_('Abormal Flag'),
         max_length=1,
         choices=AbnormalFlag.choices,
         default=AbnormalFlag.NORMAL,
     )
     observed_at = models.DateTimeField(
-        _('Observed At'),
+        verbose_name=_('Observed At'),
         help_text=_('When this specific observation segment was entered into the source system.'),
     )
     updated_at = models.DateTimeField(
-        _('Updated At'),
+        verbose_name=_('Updated At'),
         auto_now=True,
     )
 
@@ -186,14 +186,14 @@ class Note(models.Model):
         related_name='note',
     )
     note_source = models.CharField(
-        _('Note Source'),
+        verbose_name=_('Note Source'),
         max_length=30,
     )
     note_text = models.TextField(
-        _('Note Text'),
+        verbose_name=_('Note Text'),
     )
     updated_at = models.DateTimeField(
-        _('Updated At'),
+        verbose_name=_('Updated At'),
         auto_now=True,
     )
 
@@ -203,7 +203,7 @@ class Note(models.Model):
         verbose_name_plural = _('Notes')
 
     def __str__(self) -> str:
-        """Return the note text attached to the parent GeneralTest repr.
+        """Return the note text attached to the parent GeneralTest representation.
 
         Returns:
             string repr

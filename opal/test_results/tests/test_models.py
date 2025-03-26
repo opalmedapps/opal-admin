@@ -27,17 +27,17 @@ def test_note_factory() -> None:
     note.full_clean()
 
 
-def test_multi_obx_test() -> None:
+def test_multi_observations_test() -> None:
     """Ensure multiple observation and note instances can be assigned to one GeneralTest."""
     test = factories.GeneralTestFactory()
-    obx1 = factories.ObservationFactory(general_test=test)
-    obx2 = factories.ObservationFactory(general_test=test)
-    obx3 = factories.ObservationFactory(general_test=test)
-    obx4 = factories.ObservationFactory(general_test=test)
-    nte1 = factories.NoteFactory(general_test=test)
-    nte2 = factories.NoteFactory(general_test=test)
+    observation1 = factories.ObservationFactory(general_test=test)
+    observation2 = factories.ObservationFactory(general_test=test)
+    observation3 = factories.ObservationFactory(general_test=test)
+    observation4 = factories.ObservationFactory(general_test=test)
+    note1 = factories.NoteFactory(general_test=test)
+    note2 = factories.NoteFactory(general_test=test)
 
-    components = [obx1, obx2, obx3, obx4, nte1, nte2]
+    components = [observation1, observation2, observation3, observation4, note1, note2]
     for component in components:
         assert component.general_test.type == test.type  # type: ignore[attr-defined]
         component.full_clean()  # type: ignore[attr-defined]
@@ -57,12 +57,12 @@ def test_observation_str() -> None:
     general_test = factories.GeneralTestFactory(
         type=models.TestType.PATHOLOGY,
     )
-    obx = factories.ObservationFactory(
+    observation = factories.ObservationFactory(
         general_test=general_test,
         value='Left breast mass',
         value_abnormal=models.AbnormalFlag.NORMAL,
     )
-    assert str(obx) == f'SPSPECI : Left breast mass  [{models.AbnormalFlag.NORMAL}]'
+    assert str(observation) == f'SPSPECI : Left breast mass  [{models.AbnormalFlag.NORMAL}]'
 
 
 def test_note_str() -> None:

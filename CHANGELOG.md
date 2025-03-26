@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * feat: Add TwilioService and twilio modules (!520)
 * feat: management command to send data from consenting patients to the databank (!679)
 * feat: add blood pressure types for the QuantitySample
+* feat: add test_results app to store pathology and lab results (!709)
 
 ### Documentation
 
