@@ -472,6 +472,13 @@ def test_relationship_same_relation_diff_type() -> None:
     factories.Relationship(patient=patient, caregiver=profile, type=type2)
 
 
+def test_relationshiptype_default() -> None:
+    """Ensure there are two relationship types by default."""
+    assert RelationshipType.objects.count() == 2
+    assert RelationshipType.objects.filter(role_type=RoleType.SELF).count() == 1
+    assert RelationshipType.objects.filter(role_type=RoleType.PARENTGUARDIAN).count() == 1
+
+
 def test_relationshiptype_self_role_delete_error() -> None:
     """Ensure operator can not delete a self role type."""
     relationship_type = factories.RelationshipType()
@@ -498,8 +505,6 @@ def test_relationshiptype_duplicate_self_role() -> None:
     roletype_self.role_type = RoleType.SELF
     roletype_self.full_clean()
     roletype_self.save()
-
-    assert False
 
     roletype_self_copy = factories.RelationshipType()
     roletype_self_copy.role_type = RoleType.SELF
