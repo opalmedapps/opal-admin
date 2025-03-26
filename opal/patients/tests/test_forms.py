@@ -1186,7 +1186,6 @@ def test_accessrequestrequestorform_existing_user_found() -> None:
         },
     )
 
-    print(form.errors)
     assert form.is_valid()
     assert form.existing_user == caregiver
 

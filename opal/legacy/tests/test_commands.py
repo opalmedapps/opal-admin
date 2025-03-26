@@ -295,8 +295,13 @@ class TestUsersCaregiversMigration(CommandTestMixin):
     def test_import_user_caregiver_already_exist(self) -> None:
         """Test import fails, caregiver profile has already been migrated."""
         legacy_user = legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
-        patient_factories.Patient(legacy_id=99)
-        patient_factories.CaregiverProfile(legacy_id=legacy_user.usersernum)
+        patient = patient_factories.Patient(legacy_id=99)
+        patient_factories.CaregiverProfile(
+            legacy_id=legacy_user.usersernum,
+            # use same name to satisfy self relationship constraint
+            user__first_name=patient.first_name,
+            user__last_name=patient.last_name,
+        )
 
         message, error = self._call_command('migrate_users')
 
@@ -324,9 +329,14 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 
     def test_import_user_caregiver_no_relation(self) -> None:
         """Test import pass for relationship for already migrated caregiver."""
-        legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
-        patient_factories.Patient(legacy_id=99)
-        patient_factories.CaregiverProfile(legacy_id=55)
+        legacy_user = legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
+        patient = patient_factories.Patient(legacy_id=99)
+        patient_factories.CaregiverProfile(
+            legacy_id=legacy_user.usersernum,
+            # use same name to satisfy self relationship constraint
+            user__first_name=patient.first_name,
+            user__last_name=patient.last_name,
+        )
 
         message, error = self._call_command('migrate_users')
 
@@ -336,9 +346,13 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 
     def test_import_new_user_caregiver_no_relation(self) -> None:
         """Test import pass for caregiver profile and relationship."""
-        legacy_factories.LegacyPatientFactory(patientsernum=99)
+        legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=99)
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
-        patient_factories.Patient(legacy_id=99)
+        patient_factories.Patient(
+            legacy_id=99,
+            first_name=legacy_patient.firstname,
+            last_name=legacy_patient.lastname,
+        )
         message, error = self._call_command('migrate_users')
 
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
@@ -347,12 +361,21 @@ class TestUsersCaregiversMigration(CommandTestMixin):
 
     def test_import_new_user_caregiver_with_relation(self) -> None:
         """Test import pass for multiple caregiver profiles and their relations."""
-        legacy_factories.LegacyPatientFactory(patientsernum=99)
-        legacy_factories.LegacyPatientFactory(patientsernum=100)
+        legacy_patient1 = legacy_factories.LegacyPatientFactory(patientsernum=99)
+        legacy_patient2 = legacy_factories.LegacyPatientFactory(patientsernum=100)
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99, usertype='Patient', username='test1')
         legacy_factories.LegacyUserFactory(usersernum=56, usertypesernum=100, usertype='Patient', username='test2')
-        patient_factories.Patient(legacy_id=99, first_name='Test_1', ramq='RAMQ12345678')
-        patient_factories.Patient(legacy_id=100, first_name='Test_2')
+        patient_factories.Patient(
+            legacy_id=99,
+            first_name=legacy_patient1.firstname,
+            last_name=legacy_patient1.lastname,
+            ramq='RAMQ12345678',
+        )
+        patient_factories.Patient(
+            legacy_id=100,
+            first_name=legacy_patient2.firstname,
+            last_name=legacy_patient2.lastname,
+        )
         message, error = self._call_command('migrate_users')
 
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
@@ -413,8 +436,8 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         ) in error
 
         assert 'OpalDB.Patient  <===>  opal.patients_patient:' in error
-        assert "(1, '', 'Bart', 'Simpson', '1999-01-01', 'M', None, None, None)" in error
-        assert "(51, '123456', 'TEST', 'LEGACY', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en')" in error
+        assert "(1, '', 'Marge', 'Simpson', '1999-01-01', 'M', None, None, None)" in error
+        assert "(51, '123456', 'Marge', 'Simpson', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en')" in error
         assert '{0}\n\n\n'.format(120 * '-')
 
     def test_deviations_uneven_hospi_patient_records(self) -> None:
