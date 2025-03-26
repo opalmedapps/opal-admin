@@ -500,11 +500,11 @@ class PathologyPDF(FPDF):  # noqa: WPS214
 
         # Wrap the text with the maximum characters can be filled in each line.
         wrapper = textwrap.TextWrapper(
-            width=int((190 - 108) / 2) - 1,
+            width=int((195 - 108) / 2) - 1,
         )
         patient_name = wrapper.fill(text=f'Nom/Name: {self.patient_name}')
         # Calculate the number of the linse patient name will occupy
-        line = math.ceil(len(patient_name) * 2 / (190 - 108))
+        line = math.ceil(len(patient_name) * 2 / (195 - 108))
         return [
             {
                 'name': 'site_name',
@@ -579,10 +579,10 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'type': 'T',
                 'x1': 108,
                 'y1': 47,
-                'x2': 190,
+                'x2': 195,
                 'y2': 51,
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 10,
+                'size': 9,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -599,7 +599,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'x2': 190,
                 'y2': 47 + 4 * (line + 1),
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 10,
+                'size': 9,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -616,7 +616,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'x2': 190,
                 'y2': 47 + 4 * (line + 2),
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 10,
+                'size': 9,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
@@ -633,7 +633,7 @@ class PathologyPDF(FPDF):  # noqa: WPS214
                 'x2': 190,
                 'y2': 47 + 4 * (line + 3),
                 'font': PATHOLOGY_REPORT_FONT,
-                'size': 10,
+                'size': 9,
                 'bold': 0,
                 'italic': 0,
                 'underline': 0,
