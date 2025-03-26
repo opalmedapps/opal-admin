@@ -376,7 +376,7 @@ def test_accessrequestsearchform_mrn_fail_oie(mocker: MockerFixture) -> None:
         return_value={
             'status': 'error',
             'data': {
-                'message': 'connection_error',
+                'message': 'Could not establish a connection to the hospital interface.',
             },
         },
     )
