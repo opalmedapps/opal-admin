@@ -5,7 +5,9 @@ django-environ==0.11.2  # https://github.com/joke2k/django-environ
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions
 django-modeltranslation==0.18.11  # https://django-modeltranslation.readthedocs.io/en/latest/
 # pinned to commit until new release
-# TODO: explain why
+# Generic support for DRF needed to avoid having to monkeypatch DRF (causes problems with loading of settings)
+# https://github.com/typeddjango/djangorestframework-stubs/issues/255#issuecomment-1320496964
+# Unreleased fix: https://github.com/encode/django-rest-framework/pull/8825
 git+https://github.com/encode/django-rest-framework.git@0abb84f  # https://www.django-rest-framework.org/
 dj-rest-auth==5.0.2  # https://github.com/iMerica/dj-rest-auth
 django-filter==23.4  # https://github.com/carltongibson/django-filter
