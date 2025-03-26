@@ -708,4 +708,4 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
         # TODO: run standard validations on the first/last field that are relevant to the user module.
         user_record.save()
 
-        return super().post(request, kwargs['pk'])
+        return super().post(request, **kwargs)
