@@ -97,6 +97,8 @@ test:
   script:
     - pytest --version
     - coverage run -m pytest --junitxml=report.xml
+  needs:
+    - job: setup
   artifacts:
     when: always
     reports:
