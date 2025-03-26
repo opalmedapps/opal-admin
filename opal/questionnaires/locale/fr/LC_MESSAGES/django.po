@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-01 13:38-0400\n"
+"POT-Creation-Date: 2022-11-21 13:34-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,20 +36,20 @@ msgid "Export Reports"
 msgstr "Exportation de Rapports"
 
 #: opal/questionnaires/models.py
-msgid "UUID"
-msgstr ""
-
-#: opal/questionnaires/models.py
 msgid "User"
 msgstr ""
 
 #: opal/questionnaires/models.py
+msgid "Questionnaire List"
+msgstr ""
+
+#: opal/questionnaires/models.py
 msgid "Questionnaire Profile"
-msgstr "Questionnaires"
+msgstr ""
 
 #: opal/questionnaires/models.py
 msgid "Questionnaire Profiles"
-msgstr "Questionnaires"
+msgstr ""
 
 #: opal/questionnaires/tables.py
 msgid "Patient ID"
