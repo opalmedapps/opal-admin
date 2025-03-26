@@ -142,7 +142,7 @@ class TestCreatePathologyView:
         )
         user.user_permissions.add(
             Permission.objects.get(codename='add_generaltest'),
-            Permission.objects.get(codename='add_observation'),
+            Permission.objects.get(codename='add_pathologyobservation'),
             Permission.objects.get(codename='add_note'),
             Permission.objects.get(codename='change_patient'),
         )
