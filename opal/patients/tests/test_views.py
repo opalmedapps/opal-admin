@@ -12,6 +12,7 @@ from django.forms.models import model_to_dict
 from django.http import HttpRequest
 from django.test import Client, RequestFactory
 from django.urls import reverse
+from django.utils.html import strip_tags
 
 import pytest
 from bs4 import BeautifulSoup
@@ -1729,6 +1730,10 @@ def test_not_display_duplicated_patients(relationship_user: Client, django_user_
     # To confirm there is no duplicated patients
     patients = search_tables[0].find_all('tr')
     assert len(patients) == 1
+
+    # Assert patient name to make sure the search result is patient2
+    patient_names = patients[0].find_all('td')
+    assert strip_tags(patient_names[0]) == str(patient2)
 
 
 def test_caregiver_access_tables_displayed_by_ramq(relationship_user: Client, django_user_model: User) -> None:
