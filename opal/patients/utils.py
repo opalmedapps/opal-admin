@@ -264,7 +264,7 @@ def create_patient(  # noqa: WPS211
     last_name: str,
     date_of_birth: date,
     sex: Patient.SexType,
-    ramq: Optional[str],
+    ramq: str,
     mrns: list[tuple[Site, str, bool]],
 ) -> Patient:
     """

@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group
 
 from rest_framework import serializers
 
-from ..models import Caregiver
+from ..models import Caregiver, ClinicalStaff
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -31,4 +31,22 @@ class UserCaregiverUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'email',
         ]
-        extra_kwargs = {'email': {'allow_blank': False, 'required': True}}
+        extra_kwargs = {
+            'email': {'allow_blank': False, 'required': True},
+        }
+
+
+class ClinicalStaffDetailSerializer(serializers.ModelSerializer):
+    """
+    ClinicalStaff data serializer.
+
+    The serializer is used to provide details of a clinical staff user.
+    """
+
+    class Meta:
+        model = ClinicalStaff
+        fields = [
+            'username',
+            'first_name',
+            'last_name',
+        ]
