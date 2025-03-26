@@ -1,3 +1,4 @@
+import pytest
 
 from typing import Dict, cast
 
@@ -31,28 +32,39 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_mrn return the expected OIE data structure."""
     # mock find_patient_by_mrn and pretend it was successful
     mock_oie_response = mocker.patch('opal.services.hospital.OIECommunicationService.find_patient_by_mrn')
-    mock_oie_response.return_value = OIE_data
+    mock_oie_response.return_value = {
+        'status_code': 200,
+        'data': OIE_data,
+    }
 
     response = communicate_service.find_patient_by_mrn('9999993', 'MGH')
     data = cast(Dict[str, dict], response)['data']
     assert data is not None
 
 
+@pytest.mark.enable_socket
 def test_find_patient_by_mrn_failure(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_mrn return None."""
     # mock find_patient_by_mrn and pretend it was failed
     mock_oie_response = mocker.patch('opal.services.hospital.OIECommunicationService.find_patient_by_mrn')
-    mock_oie_response.return_value = None
+    mock_oie_response.return_value = {
+        'status_code': 403,
+        'data': None,
+    }
 
     response = communicate_service.find_patient_by_mrn('9999993', 'MGH')
-    assert response is None
+    data = cast(Dict[str, dict], response)['data']
+    assert data is None
 
 
 def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_ramq return the expected OIE data structure."""
     # mock find_patient_by_mrn and pretend it was successful
     mock_oie_response = mocker.patch('opal.services.hospital.OIECommunicationService.find_patient_by_ramq')
-    mock_oie_response.return_value = OIE_data
+    mock_oie_response.return_value = {
+        'status_code': 200,
+        'data': OIE_data,
+    }
 
     response = communicate_service.find_patient_by_ramq('AAAA9999999')
     data = cast(Dict[str, dict], response)['data']
@@ -63,7 +75,11 @@ def test_find_patient_by_ramq_failure(mocker: MockerFixture) -> None:
     """Ensure that find_patient_by_ramq return None."""
     # mock find_patient_by_mrn and pretend it was failed
     mock_oie_response = mocker.patch('opal.services.hospital.OIECommunicationService.find_patient_by_ramq')
-    mock_oie_response.return_value = None
+    mock_oie_response.return_value = {
+        'status_code': 403,
+        'data': None,
+    }
 
     response = communicate_service.find_patient_by_ramq('AAAA9999999')
-    assert response is None
+    data = cast(Dict[str, dict], response)['data']
+    assert data is None
