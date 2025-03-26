@@ -13,10 +13,10 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
 
 from opal.core import validators
+from opal.core.form_layouts import CancelButton
 from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 from opal.users.models import Caregiver, User
 
-from ..core.form_layouts import CancelButton
 from . import constants
 from .models import Patient, RelationshipType, Site
 

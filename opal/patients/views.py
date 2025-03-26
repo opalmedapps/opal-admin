@@ -262,7 +262,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         # get a random registration code
         registration_code = generate_random_registration_code(constants.REGISTRATION_CODE_LENGTH)
         # create the registration code instance for the relationship
-        self._create_registration_code(relationship, registration_code)
+        RegistrationCode.objects.get_or_create(relationship=relationship, code=registration_code)
         # generate QR code for Opal registration system
         stream = self._generate_qr_code(registration_code)
 
@@ -279,7 +279,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             registration_code: registration code
 
         Returns:
-            the start date
+            a stream of in-memory bytes for a QR-code image
         """
         factory = svg.SvgImage
         img = qrcode.make(
@@ -290,19 +290,6 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         stream = io.BytesIO()
         img.save(stream)
         return stream
-
-    def _create_registration_code(self, relationship: Relationship, registration_code: str) -> None:
-        """
-        Create registration code instance for the given relationship.
-
-        Args:
-            relationship: relationship instance
-            registration_code: registration code
-        """
-        RegistrationCode.objects.get_or_create(
-            relationship=relationship,
-            code=registration_code,
-        )
 
     def _set_relationship_start_date(self, date_of_birth: date, relationship_type: str) -> date:
         """
