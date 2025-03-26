@@ -9,8 +9,12 @@ from pytest_django.asserts import assertRaisesMessage
 from opal.caregivers.models import CaregiverProfile
 from opal.users import factories as user_factories
 
+from opal.hospital_settings.models import Site
+
 from .. import constants, factories
 from ..models import RelationshipStatus, RelationshipType
+from ..models import Patient
+from ..models import HospitalPatient
 
 pytestmark = pytest.mark.django_db
 
@@ -172,3 +176,28 @@ def test_relationship_status_constraint() -> None:
     constraint_name = 'patients_relationship_status_valid'
     with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
         relationship.save()
+
+
+"""======================= Test model HospitalPatient =========================="""
+
+
+def test_HospitalPatient_onePatient_oneSite() -> None:
+    """Ensure the `__str__` method is defined for the `HospitalPatient` model."""
+    hospitalPatient = factories.HospitalPatient()
+    hospitalPatient.site = factories.Site(name='Montreal Children''s Hospital')
+    assert str(hospitalPatient) == 'Patient First Name Patient Last Name Montreal Children''s Hospital'
+
+
+def test_HospitalPatient_onePatient_manySites() -> None:
+    """test one patient has many hospital_patients."""
+    patient = factories.Patient(first_name='aaa', last_name='bbb')
+    site1 = factories.Site(name='Montreal Children''s Hospital')
+    site2 = factories.Site(name='Royal Victoria Hospital')
+
+    HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
+    HospitalPatient.objects.create(patient=patient, site=site2, mrn='9999996')
+    hopitalPatients = Site.objects.all()
+    assert len(hopitalPatients) == 2
+
+    with assertRaisesMessage(IntegrityError, 'Duplicate entry'):
+        HospitalPatient.objects.create(patient=patient, site=site1, mrn='9999996')
