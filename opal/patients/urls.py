@@ -44,9 +44,8 @@ urlpatterns = [
     ),
     # Access request pages
     path(
-        # TODO: rename when old one is removed
-        'access-request-new/',
-        views.NewAccessRequestView.as_view(),
-        name='access-request-new',
+        'access-request/',
+        views.AccessRequestView.as_view(),
+        name='access-request',
     ),
 ]
