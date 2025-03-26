@@ -47,6 +47,7 @@ COPY ./opal/ ./opal
 COPY ./locale/ ./locale
 COPY manage.py .
 COPY .env.sample .
+COPY docker/start.sh ./start.sh
 
 # Set up the cron jobs
 COPY ./docker/crontab /tmp/crontab
@@ -58,3 +59,4 @@ RUN crontab /tmp/crontab \
   && rm .env
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
+CMD [ "./start.sh" ]
