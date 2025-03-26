@@ -74,21 +74,6 @@ class HospitalPatientSerializer(DynamicFieldsSerializer):
         return value
 
 
-class PatientExistsSerializer(HospitalPatientSerializer):
-    """Serializer for patient identifiers.
-
-    Extention of existing HospitalPatientSerializer class which makes is_active not required
-    for use case of the OIE calling the API without knowing if Patient is active in Opal.
-    """
-
-    class Meta(HospitalPatientSerializer.Meta):
-        extra_kwargs: dict[str, dict[str, Any]] = {
-            'is_active': {
-                'required': False,
-            },
-        }
-
-
 class RelationshipTypeSerializer(DynamicFieldsSerializer):
     """Serializer for the RelationshipType model."""
 
