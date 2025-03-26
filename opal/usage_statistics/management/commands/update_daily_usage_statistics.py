@@ -1,4 +1,4 @@
-"""Command for updating the `DailyUserAppActivity` and `DailyUserPatientActivity` models on daily basis."""
+"""Command for populating the application activity statistics to the statistics models on daily basis."""
 
 import datetime as dt
 from collections import UserDict
@@ -57,7 +57,7 @@ class Command(BaseCommand):
     """
     Command to update the daily app activity statistics per user and patient.
 
-    The command populates `DailyUserAppActivity` and `DailyUserPatientActivity` models.
+    The command populates `DailyUserAppActivity`, `DailyUserPatientActivity` and `DailyPatientDataReceived` models.
     """
 
     help = '{0}\n{1}'.format(  # noqa: A003
@@ -87,8 +87,10 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args: Any, **options: Any) -> None:
-        """
-        Populate daily application activity statistics to the `DailyUserAppActivity` and `DailyUserPatientActivity`.
+        """Populate the daily application activities to the statistics models.
+
+        The statistics are populated to the `DailyUserAppActivity`, `DailyUserPatientActivity`
+        and `DailyPatientDataReceived` models.
 
         By default, the command calculates the usage statistics for the previous complete day (e.g., 00:00:00-23:59:59).
 
@@ -280,7 +282,8 @@ class Command(BaseCommand):
     def _delete_stored_statistics(self) -> bool:
         """Delete daily application activity statistics data.
 
-        The records are deleted from the `DailyUserAppActivity`, `DailyUserPatientActivity`, `DailyPatientDataReceived`.
+        The records are deleted from the `DailyUserAppActivity`, `DailyUserPatientActivity`
+        an `DailyPatientDataReceived` models.
 
         Returns:
             True, if the records were deleted, False otherwise
