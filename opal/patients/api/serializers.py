@@ -13,17 +13,11 @@ class PatientSerializer(DynamicFieldsSerializer):
     is used to get patient information according to the 'fields' arguments.
     """
 
+    legacy_id = serializers.IntegerField(min_value=1)  # noqa: WPS432
+
     class Meta:
         model = Patient
-        fields = ['first_name', 'last_name', 'date_of_birth', 'sex', 'ramq']
-
-
-class RelationshipSerializer(DynamicFieldsSerializer):
-    """Patient serializer used to get relationship information."""
-
-    class Meta:
-        model = Relationship
-        fields = ['id', 'status', 'patient_id', 'caregiver_id']
+        fields = ['first_name', 'last_name', 'legacy_id', 'date_of_birth', 'sex', 'ramq']
 
 
 class HospitalPatientSerializer(DynamicFieldsSerializer):

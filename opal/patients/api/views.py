@@ -4,7 +4,6 @@ from typing import Any, Type
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models.query import QuerySet
 from django.db.utils import DataError
 from django.utils import timezone
 
@@ -19,8 +18,7 @@ from opal.caregivers import models as caregiver_models
 from opal.caregivers.api import serializers as caregiver_serializers
 from opal.users.models import User
 
-from ..models import Patient, Relationship
-from .data_validators import RegisterApiValidator
+from ..models import Patient
 
 
 class RetrieveRegistrationDetailsView(RetrieveAPIView):
@@ -57,21 +55,17 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
 class RegistrationRegisterView(APIView):
     """Registration-register api class."""
 
+    queryset = (
+        caregiver_models.RegistrationCode.objects.select_related(
+            'relationship__patient',
+            'relationship__caregiver',
+        ).filter(status=caregiver_models.RegistrationCodeStatus.NEW)
+    )
+    serializer_class = caregiver_serializers.RegistrationRegisterSerializer
+    lookup_url_kwarg = 'code'
+    lookup_field = 'code'
+
     permission_classes = [IsAuthenticated]
-
-    def __init__(self) -> None:
-        """Initialize RegistrationRegisterView."""
-        self.validator = RegisterApiValidator()
-
-    def get_queryset(self) -> QuerySet[Relationship]:
-        """
-        Override get_queryset to filter relationship by caregiver code.
-
-        Returns:
-            The queryset of Relationship
-        """
-        code = self.kwargs['code']
-        return Relationship.objects.filter(registration_codes__code=code)
 
     @transaction.atomic
     def post(self, request: Request, code: str) -> Response:  # noqa: C901 WPS210 WPS231
@@ -82,31 +76,25 @@ class RegistrationRegisterView(APIView):
             request (Request): request data of post api.
             code (str): registration code.
 
-        Raises:
-            ValidationError: if registration code is invalid.
-            ValidationError: if input register data is invalid.
-
         Returns:
-            Http response with the list of patients for a given caregiver.
+            Http response with the error or success message.
         """
         db_error = ''
-        relationship = self.get_queryset().get()
-
-        if not relationship:
-            raise serializers.ValidationError('Registration code is invalid.')
-
-        register_data, validator_errors = self.validator.is_register_data_valid(request.data)
-        if validator_errors:
-            raise serializers.ValidationError(detail=validator_errors)
+        request_serializer = self.serializer_class(
+            data=request.data,
+            partial=True,
+        )
+        request_serializer.is_valid(raise_exception=True)
+        register_data = request_serializer.data
 
         # update registration code status
-        registration_code = caregiver_models.RegistrationCode.objects.get(code=code)
+        registration_code = self.queryset.get()
         registration_code.status = caregiver_models.RegistrationCodeStatus.REGISTERED
         registration_code.save()
 
         # update patient legacy_id
-        patient = relationship.patient
-        patient.legacy_id = register_data.legacy_id
+        patient = Patient.objects.get(relationships=registration_code.relationship)
+        patient.legacy_id = register_data['patient']['legacy_id']
         try:  # noqa: WPS229
             Patient.full_clean(patient)
             patient.save()
@@ -114,10 +102,10 @@ class RegistrationRegisterView(APIView):
             db_error = str(exception_patient.args)
 
         # update caregiver
-        user = User.objects.get(caregiverprofile=relationship.caregiver)
-        user.language = register_data.language
-        user.phone_number = register_data.phone_number
-        user.email = register_data.email
+        user = User.objects.get(caregiverprofile__relationships=registration_code.relationship)
+        user.language = register_data['caregiver']['language']
+        user.phone_number = register_data['caregiver']['phone_number']
+        user.email = register_data['caregiver']['email']
         user.date_joined = timezone.now()
         user.is_active = True
         try:  # noqa: WPS229
@@ -130,12 +118,12 @@ class RegistrationRegisterView(APIView):
 
         # insert related security answers
         if caregiver_profile and not db_error:
-            for data in register_data.security_answers:
+            for data in register_data['caregiver']['security_answers']:
                 try:
                     caregiver_models.SecurityAnswer.objects.create(
                         user=caregiver_profile,
-                        question=data.question,
-                        answer=data.answer,
+                        question=data['question'],
+                        answer=data['answer'],
                     )
                 except DataError as exception_answer:
                     db_error = str(exception_answer.args)

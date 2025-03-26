@@ -72,6 +72,24 @@ def test_registration_code_detailed(api_client: APIClient, admin_user: AbstractU
         ),
     )
     assert response.status_code == HTTPStatus.OK
+    print(response.json())
+    print(
+        {
+            'patient': {
+                'first_name': patient.first_name,
+                'last_name': patient.last_name,
+                'date_of_birth': datetime.strftime(patient.date_of_birth, '%Y-%m-%d'),
+                'sex': patient.sex,
+                'ramq': patient.ramq,
+            },
+            'hospital_patients': [
+                {
+                    'mrn': hospital_patient.mrn,
+                    'site_code': site.code,
+                },
+            ],
+        }
+    )
     assert response.json() == {
         'patient': {
             'first_name': patient.first_name,
@@ -89,99 +107,149 @@ def test_registration_code_detailed(api_client: APIClient, admin_user: AbstractU
     }
 
 
-def test_registration_register_success(api_client: APIClient, admin_user: AbstractUser) -> None:
-    """Test api registration code register success."""
-    api_client.force_login(user=admin_user)
-    # Build relationships: code -> relationship -> patient
-    patient = Patient()
-    user = User()
-    caregiver = CaregiverProfile(user=user)
-    relationship = Relationship(patient=patient, caregiver=caregiver)
-    registration_code = RegistrationCode(relationship=relationship)
-    valid_input_data = {
-        'patient': {
-            'legacy_id': 1,
-        },
-        'caregiver': {
-            'language': 'fr',
-            'phone_number': '+15141112222',
-            'email': 'aaa@aaa.com',
-            'security_answers': [
-                {
-                    'question': 'correct?',
-                    'answer': 'yes',
-                },
-                {
-                    'question': 'correct?',
-                    'answer': 'maybe',
-                },
-            ],
-        },
-    }
+class TestApiRegistrationRegister:
+    """Test class tests the api registration/<str: code>/register."""
 
-    response = api_client.post(
-        reverse(
-            'api:registration-register',
-            kwargs={'code': registration_code.code},
-        ),
-        data=valid_input_data,
-        format='json',
-    )
+    def test_register_success(sefl, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test api registration register success."""
+        api_client.force_login(user=admin_user)
+        # Build relationships: code -> relationship -> patient
+        patient = Patient()
+        user = User()
+        caregiver = CaregiverProfile(user=user)
+        relationship = Relationship(patient=patient, caregiver=caregiver)
+        registration_code = RegistrationCode(relationship=relationship)
+        valid_input_data = {
+            'patient': {
+                'legacy_id': 1,
+            },
+            'caregiver': {
+                'language': 'fr',
+                'phone_number': '+15141112222',
+                'email': 'aaa@aaa.com',
+                'security_answers': [
+                    {
+                        'question': 'correct?',
+                        'answer': 'yes',
+                    },
+                    {
+                        'question': 'correct?',
+                        'answer': 'maybe',
+                    },
+                ],
+            },
+        }
 
-    registration_code.refresh_from_db()
-    security_answers = SecurityAnswer.objects.all()
-    assert response.status_code == HTTPStatus.OK
-    assert registration_code.status == RegistrationCodeStatus.REGISTERED
-    assert len(security_answers) == 2
-    assert response.json() == {
-        'detail': 'Saved the patient data successfully.',
-    }
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=valid_input_data,
+            format='json',
+        )
 
+        registration_code.refresh_from_db()
+        security_answers = SecurityAnswer.objects.all()
+        assert response.status_code == HTTPStatus.OK
+        assert registration_code.status == RegistrationCodeStatus.REGISTERED
+        assert len(security_answers) == 2
+        assert response.json() == {
+            'detail': 'Saved the patient data successfully.',
+        }
 
-def test_registration_register_invalid_email(api_client: APIClient, admin_user: AbstractUser) -> None:
-    """Test api registration code register success."""
-    api_client.force_login(user=admin_user)
-    # Build relationships: code -> relationship -> patient
-    patient = Patient()
-    user = User()
-    caregiver = CaregiverProfile(user=user)
-    relationship = Relationship(patient=patient, caregiver=caregiver)
-    registration_code = RegistrationCode(relationship=relationship)
-    valid_input_data = {
-        'patient': {
-            'legacy_id': 1,
-        },
-        'caregiver': {
-            'language': 'fr',
-            'phone_number': '+15141112222',
-            'email': 'aaaaaaaaa',
-            'security_answers': [
-                {
-                    'question': 'correct?',
-                    'answer': 'yes',
-                },
-                {
-                    'question': 'correct?',
-                    'answer': 'maybe',
-                },
-            ],
-        },
-    }
+    def test_register_with_invalid_input_data(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test api registration register success."""
+        api_client.force_login(user=admin_user)
+        # Build relationships: code -> relationship -> patient
+        patient = Patient()
+        user = User()
+        caregiver = CaregiverProfile(user=user)
+        relationship = Relationship(patient=patient, caregiver=caregiver)
+        registration_code = RegistrationCode(relationship=relationship)
+        valid_input_data = {
+            'patient': {
+                'legacy_id': 0,
+            },
+            'caregiver': {
+                'language': 'fr',
+                'phone_number': '+15141112222',
+                'email': 'aaaaaaaaa',
+                'security_answers': [
+                    {
+                        'question': 'correct?',
+                        'answer': 'yes',
+                    },
+                    {
+                        'question': 'correct?',
+                        'answer': 'maybe',
+                    },
+                ],
+            },
+        }
 
-    response = api_client.post(
-        reverse(
-            'api:registration-register',
-            kwargs={'code': registration_code.code},
-        ),
-        data=valid_input_data,
-        format='json',
-    )
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=valid_input_data,
+            format='json',
+        )
 
-    registration_code.refresh_from_db()
-    security_answers = SecurityAnswer.objects.all()
-    assert response.status_code == HTTPStatus.OK
-    assert registration_code.status == RegistrationCodeStatus.NEW
-    assert not security_answers
-    assert response.json() == {
-        'detail': "({'email': [ValidationError(['Enter a valid email address.'])]}, None, None)",
-    }
+        registration_code.refresh_from_db()
+        security_answers = SecurityAnswer.objects.all()
+        assert response.status_code == HTTPStatus.BAD_REQUEST
+        assert registration_code.status == RegistrationCodeStatus.NEW
+        assert not security_answers
+        assert response.json() == {
+            'patient': {'legacy_id': ['Ensure this value is greater than or equal to 1.']},
+        }
+
+    def test_register_with_invalid_email(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test api registration register success."""
+        api_client.force_login(user=admin_user)
+        # Build relationships: code -> relationship -> patient
+        patient = Patient()
+        user = User()
+        caregiver = CaregiverProfile(user=user)
+        relationship = Relationship(patient=patient, caregiver=caregiver)
+        registration_code = RegistrationCode(relationship=relationship)
+        valid_input_data = {
+            'patient': {
+                'legacy_id': 1,
+            },
+            'caregiver': {
+                'language': 'fr',
+                'phone_number': '+15141112222',
+                'email': 'aaaaaaaaa',
+                'security_answers': [
+                    {
+                        'question': 'correct?',
+                        'answer': 'yes',
+                    },
+                    {
+                        'question': 'correct?',
+                        'answer': 'maybe',
+                    },
+                ],
+            },
+        }
+
+        response = api_client.post(
+            reverse(
+                'api:registration-register',
+                kwargs={'code': registration_code.code},
+            ),
+            data=valid_input_data,
+            format='json',
+        )
+
+        registration_code.refresh_from_db()
+        security_answers = SecurityAnswer.objects.all()
+        assert response.status_code == HTTPStatus.OK
+        assert registration_code.status == RegistrationCodeStatus.NEW
+        assert not security_answers
+        assert response.json() == {
+            'detail': "({'email': [ValidationError(['Enter a valid email address.'])]}, None, None)",
+        }

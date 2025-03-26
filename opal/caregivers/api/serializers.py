@@ -3,7 +3,8 @@ from typing import Dict
 
 from rest_framework import serializers
 
-from opal.caregivers.models import RegistrationCode, SecurityAnswer, SecurityQuestion
+from opal.caregivers.models import CaregiverProfile, RegistrationCode, SecurityAnswer, SecurityQuestion
+from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.hospital_settings.api.serializers import InstitutionSerializer
 from opal.hospital_settings.models import Institution
 from opal.patients.api.serializers import HospitalPatientSerializer, PatientSerializer
@@ -63,6 +64,7 @@ class RegistrationCodePatientDetailedSerializer(serializers.ModelSerializer):
 
     patient = PatientSerializer(
         source='relationship.patient',
+        fields=('first_name', 'last_name', 'date_of_birth', 'sex', 'ramq'),
         many=False,
         read_only=True,
     )
@@ -86,15 +88,7 @@ class SecurityQuestionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title_en', 'title_fr']
 
 
-class UpdateSecurityAnswerSerializer(serializers.ModelSerializer):
-    """Serializer for security answers."""
-
-    class Meta:
-        model = SecurityAnswer
-        fields = ['id', 'question', 'answer']
-
-
-class SecurityAnswerSerializer(serializers.ModelSerializer):
+class ReadSecurityAnswerSerializer(serializers.ModelSerializer):
     """Serializer for security answers."""
 
     class Meta:
@@ -110,3 +104,57 @@ class VerifySecurityAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = SecurityAnswer
         fields = ['answer']
+
+
+class SecurityAnswerSerializer(DynamicFieldsSerializer):
+    """Serializer for security answers."""
+
+    class Meta:
+        model = SecurityAnswer
+        fields = ['id', 'question', 'answer']
+
+
+class CaregiverSerializer(DynamicFieldsSerializer):
+    """Serializer for security questions."""
+
+    security_answers = SecurityAnswerSerializer(
+        fields=('question', 'answer'),
+        many=True,
+    )
+    language = serializers.CharField(source='user.language')
+    phone_number = serializers.CharField(source='user.phone_number')
+    email = serializers.CharField(source='user.email')
+
+    class Meta:
+        model = CaregiverProfile
+        fields = [
+            'id',
+            'uuid',
+            'language',
+            'phone_number',
+            'email',
+            'security_answers',
+        ]
+
+
+class RegistrationRegisterSerializer(DynamicFieldsSerializer):
+    """RegistrationCode serializer used to get patient and caregiver information.
+
+    The information include Patient and Caregiver data.
+    """
+
+    patient = PatientSerializer(
+        source='relationship.patient',
+        fields=('legacy_id',),
+        many=False,
+    )
+
+    caregiver = CaregiverSerializer(
+        source='relationship.caregiver',
+        fields=('language', 'email', 'phone_number', 'security_answers'),
+        many=False,
+    )
+
+    class Meta:
+        model = RegistrationCode
+        fields = ['patient', 'caregiver']
