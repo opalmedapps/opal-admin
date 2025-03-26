@@ -5,13 +5,14 @@ from pathlib import Path
 from typing import Any
 
 from django.conf import settings
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.utils import timezone, translation
 
 from rest_framework import permissions, response, status, views
 from rest_framework.request import Request
 
 from opal.hospital_settings.models import Institution
-from opal.patients.models import HospitalPatient
+from opal.patients.models import Patient
 from opal.services.hospital.hospital import OIEReportExportData, OIEService
 from opal.services.reports import QuestionnaireReportRequestData, ReportService
 
@@ -51,18 +52,18 @@ class QuestionnairesReportView(views.APIView):
         # Validate received data. Return a 400 response if the data was invalid.
         serializer.is_valid(raise_exception=True)
 
-        hospital_patient = HospitalPatient.objects.get_hospital_patient_by_site_mrn(
-            site=serializer.validated_data.get('site'),
-            mrn=serializer.validated_data.get('mrn'),
-        ).first()
-
-        if (
-            not hospital_patient
-            or not hospital_patient.patient
-            or not hospital_patient.patient.legacy_id
-        ):
+        try:
+            patient = Patient.objects.get_patient_by_site_mrn_list(
+                [
+                    {
+                        'site': {'code': serializer.validated_data.get('site')},
+                        'mrn': serializer.validated_data.get('mrn'),
+                    },
+                ],
+            )
+        except (ObjectDoesNotExist, MultipleObjectsReturned):
             return self._create_error_response(
-                'Could not find `HospitalPatient` object data.',
+                'Could not find `Patient` record with the provided MRN and site code.',
             )
 
         # the language used in the current thread
@@ -72,7 +73,10 @@ class QuestionnairesReportView(views.APIView):
         # Generate questionnaire report
         encoded_report = self.report_service.generate_questionnaire_report(
             QuestionnaireReportRequestData(
-                patient_id=hospital_patient.patient.legacy_id,
+                patient_id=patient.legacy_id if patient.legacy_id else patient.id,
+                patient_name=f'{patient.first_name} {patient.last_name}',
+                patient_site=serializer.validated_data.get('site'),
+                patient_mrn=serializer.validated_data.get('mrn'),
                 logo_path=Path(Institution.objects.get(pk=1).logo.path),
                 language=lang,
             ),

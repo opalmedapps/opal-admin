@@ -3,13 +3,17 @@ from http import HTTPStatus
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import pytest
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from requests import Response
 from requests.exceptions import RequestException
 
+from opal.patients import factories as patient_factories
 from opal.services.reports import QuestionnaireReportRequestData, ReportService
 from opal.utils.base64 import Base64Util
+
+pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 
 BASE64_ENCODED_REPORT = 'T1BBTCBURVNUIEdFTkVSQVRFRCBSRVBPUlQgUERG'
 ENCODING = 'utf-8'
@@ -17,6 +21,9 @@ INVALID_PATIENT_SER_NUM = -1
 LOGO_PATH = Path('opal/tests/fixtures/test_logo.png')
 NON_STRING_VALUE = 123
 PATIENT_SER_NUM = 51
+PATIENT_NAME = 'Bart Simpson'
+PATIENT_SITE = 'RVH'
+PATIENT_MRN = '9999996'
 TEST_LEGACY_QUESTIONNAIRES_REPORT_URL = 'http://localhost:80/report'
 
 reports_service = ReportService()
@@ -68,6 +75,9 @@ def test_is_questionnaire_report_data_valid() -> None:
     """Ensure `QuestionnaireReportRequestData` successfully validates."""
     report_data = QuestionnaireReportRequestData(
         patient_id=PATIENT_SER_NUM,
+        patient_name=PATIENT_NAME,
+        patient_site=PATIENT_SITE,
+        patient_mrn=PATIENT_MRN,
         logo_path=LOGO_PATH,
         language='en',
     )
@@ -79,6 +89,9 @@ def test_is_questionnaire_report_invalid_patient() -> None:
     """Ensure invalid `QuestionnaireReportRequestData` (invalid patient) are handled and does not result in an error."""
     report_data = QuestionnaireReportRequestData(
         patient_id=INVALID_PATIENT_SER_NUM,
+        patient_name=PATIENT_NAME,
+        patient_site=PATIENT_SITE,
+        patient_mrn=PATIENT_MRN,
         logo_path=LOGO_PATH,
         language='en',
     )
@@ -90,6 +103,9 @@ def test_is_questionnaire_report_invalid_logo() -> None:
     """Ensure invalid `QuestionnaireReportRequestData` (invalid logo) are handled and does not result in an error."""
     report_data = QuestionnaireReportRequestData(
         patient_id=PATIENT_SER_NUM,
+        patient_name=PATIENT_NAME,
+        patient_site=PATIENT_SITE,
+        patient_mrn=PATIENT_MRN,
         logo_path=Path('invalid/logo/path'),
         language='en',
     )
@@ -101,6 +117,9 @@ def test_is_questionnaire_report_invalid_language() -> None:
     """Ensure invalid `QuestionnaireReportRequestData` (invalid language) are handled without errors."""
     report_data = QuestionnaireReportRequestData(
         patient_id=PATIENT_SER_NUM,
+        patient_name=PATIENT_NAME,
+        patient_site=PATIENT_SITE,
+        patient_mrn=PATIENT_MRN,
         logo_path=LOGO_PATH,
         language='invalid_language',
     )
@@ -112,12 +131,18 @@ def test_is_questionnaire_report_invalid_language() -> None:
 
 def test_request_base64_report(mocker: MockerFixture) -> None:
     """Ensure successful report request returns base64 encoded pdf report."""
+    patient_factories.HospitalPatient(
+        site=patient_factories.Site(code='RVH'),
+    )
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
 
     response_base64_report = reports_service._request_base64_report(
         QuestionnaireReportRequestData(
             patient_id=PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -129,7 +154,14 @@ def test_request_base64_report(mocker: MockerFixture) -> None:
     mock_post.assert_called_once()
     post_data = json.loads(mock_post.call_args[1]['data'])
 
-    assert list(post_data.keys()) == ['patient_id', 'logo_base64', 'language']
+    assert list(post_data.keys()) == [
+        'patient_id',
+        'patient_name',
+        'patient_site',
+        'patient_mrn',
+        'logo_base64',
+        'language',
+    ]
 
 
 def test_request_base64_report_error(mocker: MockerFixture) -> None:
@@ -142,6 +174,9 @@ def test_request_base64_report_error(mocker: MockerFixture) -> None:
     base64_report = reports_service._request_base64_report(
         QuestionnaireReportRequestData(
             patient_id=PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -161,6 +196,9 @@ def test_request_base64_report_bad_request(mocker: MockerFixture) -> None:
     base64_report = reports_service._request_base64_report(
         QuestionnaireReportRequestData(
             patient_id=PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -179,6 +217,9 @@ def test_request_base64_report_json_key_error(mocker: MockerFixture) -> None:
     base64_report = reports_service._request_base64_report(
         QuestionnaireReportRequestData(
             patient_id=PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -197,6 +238,9 @@ def test_request_base64_report_json_decode_error(mocker: MockerFixture) -> None:
     base64_report = reports_service._request_base64_report(
         QuestionnaireReportRequestData(
             patient_id=PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -214,6 +258,9 @@ def test_request_base64_report_is_string(mocker: MockerFixture) -> None:
     base64_report = reports_service._request_base64_report(
         QuestionnaireReportRequestData(
             patient_id=PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -225,6 +272,9 @@ def test_request_base64_report_is_string(mocker: MockerFixture) -> None:
 
 def test_request_base64_report_not_string(mocker: MockerFixture) -> None:
     """Ensure returned base64EncodedReport non-string value is handled and does not result in an error."""
+    patient_factories.HospitalPatient(
+        site=patient_factories.Site(code='RVH'),
+    )
     generated_report_data = _create_generated_report_data(HTTPStatus.OK)
     mock_post = _mock_requests_post(mocker, generated_report_data)
     data = _create_generated_report_data(HTTPStatus.OK)
@@ -234,6 +284,9 @@ def test_request_base64_report_not_string(mocker: MockerFixture) -> None:
     base64_report = reports_service._request_base64_report(
         QuestionnaireReportRequestData(
             patient_id=PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -255,6 +308,9 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
     reports_service._request_base64_report(
         QuestionnaireReportRequestData(
             patient_id=PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -265,6 +321,9 @@ def test_request_base64_report_uses_settings(mocker: MockerFixture, settings: Se
     headers = {'Content-Type': 'application/json'}
     payload = json.dumps({
         'patient_id': PATIENT_SER_NUM,
+        'patient_name': 'Bart Simpson',
+        'patient_site': 'RVH',
+        'patient_mrn': '9999996',
         'logo_base64': Base64Util().encode_to_base64(LOGO_PATH),
         'language': 'en',
     })
@@ -285,6 +344,9 @@ def test_questionnaire_report(mocker: MockerFixture) -> None:
     base64_report = reports_service.generate_questionnaire_report(
         QuestionnaireReportRequestData(
             patient_id=PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -304,6 +366,9 @@ def test_questionnaire_report_error(mocker: MockerFixture) -> None:
     base64_report = reports_service.generate_questionnaire_report(
         QuestionnaireReportRequestData(
             patient_id=INVALID_PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -321,6 +386,9 @@ def test_questionnaire_report_invalid_patient(mocker: MockerFixture) -> None:
     base64_report = reports_service.generate_questionnaire_report(
         QuestionnaireReportRequestData(
             patient_id=INVALID_PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=LOGO_PATH,
             language='en',
         ),
@@ -338,6 +406,9 @@ def test_questionnaire_report_invalid_logo(mocker: MockerFixture) -> None:
     base64_report = reports_service.generate_questionnaire_report(
         QuestionnaireReportRequestData(
             patient_id=PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=Path('invalid/logo/path'),
             language='en',
         ),
@@ -355,6 +426,9 @@ def test_questionnaire_report_invalid_language(mocker: MockerFixture) -> None:
     base64_report = reports_service.generate_questionnaire_report(
         QuestionnaireReportRequestData(
             patient_id=PATIENT_SER_NUM,
+            patient_name=PATIENT_NAME,
+            patient_site=PATIENT_SITE,
+            patient_mrn=PATIENT_MRN,
             logo_path=LOGO_PATH,
             language='invalid language',
         ),

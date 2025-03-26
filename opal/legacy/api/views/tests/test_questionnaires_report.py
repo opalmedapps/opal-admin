@@ -1,11 +1,13 @@
 from pathlib import Path
 from typing import Any
 
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
 import pytest
+from pytest_django.asserts import assertRaisesMessage
 from pytest_django.fixtures import SettingsWrapper
 from pytest_mock.plugin import MockerFixture
 from rest_framework import status
@@ -64,15 +66,6 @@ class TestQuestionnairesReportView:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert 'Ensure this field has no more than 10 characters.' in str(response.data['mrn'])
 
-    def test_mrn_not_found(self, api_client: APIClient, admin_user: User) -> None:
-        """Test providing an MRN that doesn't exist."""
-        hospital_patient = patient_factories.HospitalPatient()
-
-        response = self.make_request(api_client, admin_user, hospital_patient.site.code, 'wrong mrn')
-
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'Provided MRN does not exist.' in str(response.data['mrn'])
-
     def test_no_mrn(self, api_client: APIClient, admin_user: User) -> None:
         """Test providing an empty MRN."""
         hospital_patient = patient_factories.HospitalPatient()
@@ -95,15 +88,6 @@ class TestQuestionnairesReportView:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert 'Ensure this field has no more than 10 characters.' in str(response.data['site'])
-
-    def test_site_not_found(self, api_client: APIClient, admin_user: User) -> None:
-        """Test providing a site code that doesn't exist."""
-        hospital_patient = patient_factories.HospitalPatient()
-
-        response = self.make_request(api_client, admin_user, 'wrong site', hospital_patient.mrn)
-
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'Provided site code does not exist.' in str(response.data['site'])
 
     def test_no_site(self, api_client: APIClient, admin_user: User) -> None:
         """Test providing an empty site code."""
@@ -129,8 +113,7 @@ class TestQuestionnairesReportView:
         response = self.make_request(api_client, admin_user, 'wrong site', 'wrong mrn')
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'Provided site code does not exist.' in str(response.data['site'])
-        assert 'Provided MRN does not exist.' in str(response.data['mrn'])
+        assert 'Could not find `Patient` record with the provided MRN and site code.' in str(response.data)
 
     def test_no_site_mrn(self, api_client: APIClient, admin_user: User) -> None:
         """Test providing an empty site code and MRN."""
@@ -140,36 +123,51 @@ class TestQuestionnairesReportView:
         assert 'This field may not be blank.' in str(response.data['site'])
         assert 'This field may not be blank.' in str(response.data['mrn'])
 
-    def test_missing_hospital_patient_data(
+    def test_report_generation_raises_does_not_exist_exception(
         self,
         api_client: APIClient,
         admin_user: User,
         mocker: MockerFixture,
     ) -> None:
-        """Ensure that missing `HospitalPatient` data are handled properly."""
-        hospital_settings_factories.Institution(pk=1)
-        hospital_patient = patient_factories.HospitalPatient()
-        hospital_patient.patient.legacy_id = ''
-
-        message = 'Could not find `HospitalPatient` object data.'
+        """Ensure that report generation raises exception in case `Patient` record cannot be found."""
+        message = 'Could not find `Patient` record with the provided MRN and site code.'
         error_response = {'status': 'error', 'message': message}
-
-        # mock `HospitalPatient's` `get_hospital_patient_by_site_mrn` request
-        mock_get_hospital_patient_by_site_mrn_first = mocker.patch(
-            'django.db.models.QuerySet.first',
-            return_value=None,
-        )
 
         # mock the logger
         mock_logger = mocker.patch('logging.Logger.error', return_value=None)
 
-        response = self.make_request(api_client, admin_user, hospital_patient.site.code, hospital_patient.mrn)
-
-        mock_get_hospital_patient_by_site_mrn_first.assert_called_once()
+        response = self.make_request(api_client, admin_user, 'TEST_SITE', 'TEST_MRN')
 
         mock_logger.assert_called_once_with(message)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.data == error_response
+        assertRaisesMessage(ObjectDoesNotExist, message)
+
+    def test_report_generation_raises_multiple_object_exception(
+        self,
+        api_client: APIClient,
+        admin_user: User,
+        mocker: MockerFixture,
+    ) -> None:
+        """Ensure that report generation raises exception if we get several patients with the same mrn/site codes."""
+        message = 'Could not find `Patient` record with the provided MRN and site code.'
+        error_response = {'status': 'error', 'message': message}
+
+        # mock the logger
+        mock_logger = mocker.patch('logging.Logger.error', return_value=None)
+
+        # mock the get_patient_by_site_mrn_list
+        mocker.patch(
+            'opal.patients.models.Patient.objects.get_patient_by_site_mrn_list',
+            side_effect=MultipleObjectsReturned,
+        )
+
+        response = self.make_request(api_client, admin_user, 'TEST_SITE', 'TEST_MRN')
+
+        mock_logger.assert_called_once_with(message)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == error_response
+        assertRaisesMessage(MultipleObjectsReturned, message)
 
     def test_unset_language(
         self,
@@ -182,7 +180,9 @@ class TestQuestionnairesReportView:
         settings.LANGUAGES = [('fr', 'French')]
 
         institution = hospital_settings_factories.Institution(pk=1)
-        hospital_patient = patient_factories.HospitalPatient()
+        hospital_patient = patient_factories.HospitalPatient(
+            site=patient_factories.Site(code='RVH'),
+        )
 
         # mock an actual call to the legacy report generation service to raise a request error
         mock_generate_questionnaire_report = mocker.patch(
@@ -201,6 +201,9 @@ class TestQuestionnairesReportView:
         mock_generate_questionnaire_report.assert_called_once_with(
             QuestionnaireReportRequestData(
                 patient_id=hospital_patient.patient.legacy_id,
+                patient_name='Bart Simpson',
+                patient_site='RVH',
+                patient_mrn='9999996',
                 logo_path=Path(institution.logo.path),
                 language=settings.LANGUAGES[0][0],
             ),
@@ -215,7 +218,9 @@ class TestQuestionnairesReportView:
     ) -> None:
         """Ensure that unsuccessful report generation is handled properly and does not cause any exceptions."""
         institution = hospital_settings_factories.Institution(pk=1)
-        hospital_patient = patient_factories.HospitalPatient()
+        hospital_patient = patient_factories.HospitalPatient(
+            site=patient_factories.Site(code='RVH'),
+        )
 
         message = 'An error occurred during report generation.'
         error_response = {'status': 'error', 'message': message}
@@ -234,6 +239,9 @@ class TestQuestionnairesReportView:
         mock_generate_questionnaire_report.assert_called_once_with(
             QuestionnaireReportRequestData(
                 patient_id=hospital_patient.patient.legacy_id,
+                patient_name='Bart Simpson',
+                patient_site='RVH',
+                patient_mrn='9999996',
                 logo_path=Path(institution.logo.path),
                 language='en',
             ),
