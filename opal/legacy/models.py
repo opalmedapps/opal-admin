@@ -37,12 +37,15 @@ class LegacyPatient(models.Model):
     """Patient model from the legacy database."""
 
     patientsernum = models.AutoField(db_column='PatientSerNum', primary_key=True)
-    dateofbirth = models.DateTimeField(db_column='DateOfBirth')
-    ssn = models.CharField(db_column='SSN', max_length=6)
     firstname = models.CharField(db_column='FirstName', max_length=50)
     lastname = models.CharField(db_column='LastName', max_length=50)
-    sex = models.CharField(db_column='Sex', max_length=50)
+    email = models.CharField(db_column='Email', max_length=50)
+    registrationdate = models.DateTimeField(db_column='RegistrationDate')
+    language = models.CharField(db_column='Language', max_length=2)
     telnum = models.CharField(db_column='TelNum', max_length=22)
+    dateofbirth = models.DateTimeField(db_column='DateOfBirth')
+    ssn = models.CharField(db_column='SSN', max_length=6)
+    sex = models.CharField(db_column='Sex', max_length=50)
 
     class Meta:
         managed = False
