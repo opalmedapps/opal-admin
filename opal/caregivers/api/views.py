@@ -10,7 +10,7 @@ from django.db.models.functions import SHA512
 from django.db.models.manager import Manager
 from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
-from django.utils import timezone
+from django.utils import timezone, translation
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import exceptions
@@ -376,7 +376,7 @@ class RegistrationCompletionView(APIView):
                 utils.insert_security_answers(relationship.caregiver, validated_data['security_answers'])
 
             utils.update_registration_code_status(registration_code)
-            self._send_confirmation_email(email)
+            self._send_confirmation_email(email, caregiver_data['user']['language'])
         except ValidationError as exception:
             transaction.set_rollback(True)
             raise serializers.ValidationError({'detail': str(exception.args)})
@@ -386,16 +386,19 @@ class RegistrationCompletionView(APIView):
     def _send_confirmation_email(
         self,
         email: str,
+        language: str,
     ) -> None:
         """
         Send confirmation email to the user with an template according to the user language.
 
         Args:
             email: the target email
+            language: the language of user
         """
-        email_plain = render_to_string(
-            'email/confirmation_code.txt',
-        )
+        with translation.override(language):
+            email_plain = render_to_string(
+                'email/confirmation_code.txt',
+            )
 
         send_mail(
             _('Thank you for registering for Opal!'),
