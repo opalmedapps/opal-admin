@@ -169,7 +169,7 @@ def test_fetch_population_summary() -> None:  # noqa: WPS213
 
     population_summary = stats_queries.fetch_population_summary()
     assert population_summary == {
-        'user_signed_up': 9,
+        'user_signed_up': 4,
         'incomplete_registration': 2,
         'completed_registration': 7,
         'english': 9,

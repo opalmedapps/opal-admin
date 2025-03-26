@@ -30,7 +30,9 @@ def fetch_population_summary() -> dict[str, Any]:
     ).filter(
         created_at__date=timezone.now().date(),
     ).aggregate(
-        user_signed_up=models.Count('id'),
+        user_signed_up=models.Count(
+            'relationship__caregiver', distinct=True,
+        ),
         incomplete_registration=models.Count(
             'id',
             filter=models.Q(status__in=incomplete_registration_statuses),
