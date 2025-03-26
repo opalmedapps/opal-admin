@@ -27,6 +27,33 @@ from opal.users.models import Caregiver, User
 pytestmark = pytest.mark.django_db(databases=['default'])
 
 
+def test_my_caregiver_list_unauthenticated_unauthorized(
+    api_client: APIClient,
+    user: User,
+    listener_user: User,
+) -> None:
+    """Ensure that the API to create quantity samples requires an authenticated user."""
+    patient = Patient()
+    url = reverse('api:caregivers-list', kwargs={'legacy_id': patient.legacy_id})
+
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+    api_client.force_login(user)
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+    api_client.force_login(listener_user)
+
+    response = api_client.options(url)
+
+    # the CaregiverSelfPermissions permission is reporting the missing header
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert 'Appuserid' in response.content.decode()
+
+
 def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
     """Test the return of the caregivers list for a given patient."""
     api_client.force_login(user=admin_user)
@@ -38,15 +65,15 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: User) -> None:
         patient=patient,
         caregiver=caregiver2,
         status='CON',
-        # Pytest insists on fetching the SELF role type instance using a queryset for some reason, factory doesn't work
         type=patient_models.RelationshipType.objects.self_type(),
     )
-
     api_client.credentials(HTTP_APPUSERID=caregiver2.user.username)
+
     response = api_client.get(reverse(
         'api:caregivers-list',
         kwargs={'legacy_id': patient.legacy_id},
     ))
+
     assert response.status_code == HTTPStatus.OK
     assert response.json()[0] == {
         'caregiver_id': caregiver1.user.id,

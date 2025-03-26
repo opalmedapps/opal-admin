@@ -1,6 +1,5 @@
 """This module provides `APIViews` for the `patients` app REST APIs."""
-
-from typing import Any, Type
+from typing import Any
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 from django.db import transaction
@@ -16,7 +15,12 @@ from rest_framework.views import APIView
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.api import serializers as caregiver_serializers
-from opal.core.drf_permissions import CaregiverSelfPermissions, FullDjangoModelPermissions, UpdateModelPermissions
+from opal.core.drf_permissions import (
+    CaregiverSelfPermissions,
+    FullDjangoModelPermissions,
+    IsListener,
+    UpdateModelPermissions,
+)
 
 from .. import utils
 from ..api.serializers import (
@@ -62,12 +66,12 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView):
             raise PermissionDenied()
         return registration_code
 
-    def get_serializer_class(self, *args: Any, **kwargs: Any) -> Type[serializers.BaseSerializer]:
+    def get_serializer_class(self, *args: Any, **kwargs: Any) -> type[serializers.BaseSerializer]:
         """Override 'get_serializer_class' to switch the serializer based on the GET parameter `detailed`.
 
         Args:
-            args (list): request parameters
-            kwargs (dict): request parameters
+            args: request parameters
+            kwargs: request parameters
 
         Returns:
             The expected serializer according to the request parameter.
@@ -151,7 +155,7 @@ class CaregiverRelationshipView(ListAPIView):
     """REST API `ListAPIView` returning list of caregivers for a given patient."""
 
     serializer_class = CaregiverRelationshipSerializer
-    permission_classes = [IsAuthenticated, CaregiverSelfPermissions]
+    permission_classes = (IsListener, CaregiverSelfPermissions)
 
     def get_queryset(self) -> QuerySet[Relationship]:
         """Query set to retrieve list of caregivers for the input patient.
