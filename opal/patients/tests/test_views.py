@@ -118,32 +118,6 @@ test_patient_multiform_url_template_data: list[Tuple] = [
 
 
 @pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
-def test_patient_wizard_urls_exist(
-    user_client: Client,
-    url_name: str,
-    template: str,
-) -> None:
-    """Ensure that each step pages exists at desired URL address."""
-    url = reverse(url_name)
-    response = user_client.get(url)
-
-    assert response.status_code == HTTPStatus.OK
-
-
-@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
-def test_patient_wizard_urls_use_correct_template(
-    user_client: Client,
-    url_name: str,
-    template: str,
-) -> None:
-    """Ensure that each step pages exist at desired URL address."""
-    url = reverse(url_name)
-    response = user_client.get(url)
-
-    assertTemplateUsed(response, template)
-
-
-@pytest.mark.parametrize(('url_name', 'template'), test_patient_multiform_url_template_data)
 def test_patient_wizard_current_step(
     user_client: Client,
     url_name: str,
