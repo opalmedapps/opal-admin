@@ -200,3 +200,17 @@ class PatientDemographicView(UpdateAPIView):
         self.check_object_permissions(self.request, patient)
 
         return patient
+
+
+class PatientCaregiversView(RetrieveAPIView):
+    """Class handling GET requests for paitent caregivers."""
+
+    queryset = (
+        Patient.objects.prefetch_related(
+            'relationships__caregiver',
+        )
+    )
+    serializer_class = caregiver_serializers.PatientCaregiversSerializer
+
+    lookup_url_kwarg = 'legacy_id'
+    lookup_field = 'legacy_id'

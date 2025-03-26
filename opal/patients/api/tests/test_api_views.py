@@ -15,7 +15,7 @@ from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.test import APIClient
 
-from opal.caregivers.factories import CaregiverProfile, RegistrationCode
+from opal.caregivers.factories import CaregiverProfile, Device, RegistrationCode
 from opal.caregivers.models import RegistrationCodeStatus, SecurityAnswer
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients.factories import HospitalPatient, Patient, Relationship
@@ -705,3 +705,62 @@ class TestPatientDemographicView:
             raw=json.dumps(response.json()),
             expected_data=self.get_valid_input_data(),
         )
+
+
+class TestPatientCaregiversView:
+    """Class wrapper for patient caregivers endpoint tests."""
+
+    def test_get_patient_caregivers_success(self, api_client: APIClient, admin_user: AbstractUser) -> None:
+        """Test get patient caregivers success."""
+        api_client.force_login(user=admin_user)
+
+        legacy_id = 1
+        patient = Patient(legacy_id=legacy_id)
+
+        user1 = User(language='en', phone_number='+11234567890')
+        user2 = User(language='fr', phone_number='+11234567891')
+        caregiver1 = CaregiverProfile(user=user1)
+        caregiver2 = CaregiverProfile(user=user2)
+        Relationship(caregiver=caregiver1, patient=patient)
+        Relationship(caregiver=caregiver2, patient=patient)
+        device1 = Device(caregiver=caregiver1)
+        device2 = Device(caregiver=caregiver2)
+
+        # Build relationships: hospital_patient -> site -> institution
+        institution = Institution()
+        site = Site(institution=institution)
+        hospital_patient = HospitalPatient(patient=patient, site=site)
+
+        response = api_client.get(reverse(
+            'api:patient-caregivers',
+            kwargs={'legacy_id': legacy_id},
+        ))
+        assert response.status_code == HTTPStatus.OK
+        print(response.json())
+        assert response.json() == {
+            'first_name': hospital_patient.patient.first_name,
+            'last_name': hospital_patient.patient.last_name,
+            'institution_code': institution.code,
+            'caregivers': [
+                {
+                    'language': user1.language,
+                    'phone_number': user1.phone_number,
+                    'devices': [
+                        {
+                            'type': device1.type,
+                            'push_token': device1.push_token,
+                        },
+                    ],
+                },
+                {
+                    'language': user2.language,
+                    'phone_number': user2.phone_number,
+                    'devices': [
+                        {
+                            'type': device2.type,
+                            'push_token': device2.push_token,
+                        },
+                    ],
+                },
+            ],
+        }

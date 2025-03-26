@@ -15,6 +15,7 @@ from opal.core.api.serializers import DynamicFieldsSerializer
 from opal.hospital_settings.api.serializers import InstitutionSerializer
 from opal.hospital_settings.models import Institution
 from opal.patients.api.serializers import HospitalPatientSerializer, PatientSerializer
+from opal.patients.models import Patient
 
 
 class EmailVerificationSerializer(DynamicFieldsSerializer):
@@ -121,7 +122,7 @@ class VerifySecurityAnswerSerializer(serializers.ModelSerializer):
         fields = ['answer']
 
 
-class UpdateDeviceSerializer(serializers.ModelSerializer):
+class UpdateDeviceSerializer(DynamicFieldsSerializer):
     """Serializer for devices."""
 
     class Meta:
@@ -142,6 +143,10 @@ class CaregiverSerializer(DynamicFieldsSerializer):
 
     language = serializers.CharField(source='user.language')
     phone_number = serializers.CharField(source='user.phone_number')
+    devices = UpdateDeviceSerializer(
+        fields=('type', 'push_token'),
+        many=True,
+    )
 
     class Meta:
         model = CaregiverProfile
@@ -149,6 +154,7 @@ class CaregiverSerializer(DynamicFieldsSerializer):
             'uuid',
             'language',
             'phone_number',
+            'devices',
         ]
 
 
@@ -177,3 +183,41 @@ class RegistrationRegisterSerializer(DynamicFieldsSerializer):
     class Meta:
         model = RegistrationCode
         fields = ['patient', 'caregiver', 'security_answers']
+
+
+class PatientCaregiversSerializer(DynamicFieldsSerializer):
+    """
+    PatientCaregivers serializer.
+
+    The serializer, which inherits from core.api.serializers.DynamicFieldsSerializer,
+    is used to get patient caregover information according to the 'fields' arguments.
+    """
+
+    caregivers = CaregiverSerializer(
+        fields=('language', 'phone_number', 'devices'),
+        many=True,
+    )
+
+    institution_code = serializers.SerializerMethodField()
+
+    def get_institution_code(self, obj: Patient) -> Dict:  # noqa: WPS615
+        """
+        Get a single institution code.
+
+        Args:
+            obj: Object of Patient.
+
+        Returns:
+            `Institution_code` if exists otherwise emtpy string.
+        """
+        institution = InstitutionSerializer(Institution.objects.get(), fields=('code',)).data
+        return institution['code'] if 'code' in institution else ''
+
+    class Meta:
+        model = Patient
+        fields = [
+            'first_name',
+            'last_name',
+            'institution_code',
+            'caregivers',
+        ]
