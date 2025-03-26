@@ -594,3 +594,100 @@ def test_fetch_logins_summary_by_year() -> None:
             'avg_logins_per_user': 8.0,
         },
     ]
+
+
+def test_empty_users_clicks_summary() -> None:
+    """Ensure fetch_users_clicks_summary() query can return an empty result without errors."""
+    users_clicks_summary = stats_queries.fetch_users_clicks_summary(
+        start_date=timezone.now().today(),
+        end_date=timezone.now().today(),
+    )
+    assert not users_clicks_summary
+
+
+def test_users_clicks_summary_by_date() -> None:
+    """Ensure fetch_users_clicks_summary() query successfully aggregates users' click statistics grouped by date."""
+    marge_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='marge'),
+        legacy_id=1,
+    )
+    homer_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='homer'),
+        legacy_id=2,
+    )
+    bart_caregiver = caregiver_factories.CaregiverProfile(
+        user=caregiver_factories.Caregiver(username='bart'),
+        legacy_id=3,
+    )
+    current_date = dt.datetime.now().date()
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=marge_caregiver.user.username,
+        ),
+        count_logins=3,
+        count_feedback=4,
+        count_update_security_answers=5,
+        count_update_passwords=6,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=homer_caregiver.user.username,
+        ),
+        count_logins=5,
+        count_feedback=6,
+        count_update_security_answers=7,
+        count_update_passwords=8,
+        action_date=current_date - dt.timedelta(days=2),
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=marge_caregiver.user.username,
+        ),
+        count_logins=10,
+        count_feedback=11,
+        count_update_security_answers=12,
+        count_update_passwords=13,
+        action_date=current_date,
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=homer_caregiver.user.username,
+        ),
+        count_logins=3,
+        count_feedback=4,
+        count_update_security_answers=5,
+        count_update_passwords=6,
+        action_date=current_date,
+    )
+    stats_factories.DailyUserAppActivity(
+        action_by_user=caregiver_factories.Caregiver(
+            username=bart_caregiver.user.username,
+        ),
+        count_logins=5,
+        count_feedback=6,
+        count_update_security_answers=7,
+        count_update_passwords=8,
+        action_date=current_date,
+    )
+
+    users_clicks_summary = stats_queries.fetch_users_clicks_summary(
+        start_date=current_date - dt.timedelta(days=2),
+        end_date=current_date,
+    )
+    assert users_clicks_summary == [
+        {
+            'date': current_date,
+            'login_count': 18,
+            'feedback_count': 21,
+            'update_security_answers_count': 24,
+            'update_passwords_count': 27,
+        },
+        {
+            'date': current_date - dt.timedelta(days=2),
+            'login_count': 8,
+            'feedback_count': 10,
+            'update_security_answers_count': 12,
+            'update_passwords_count': 14,
+        },
+    ]
