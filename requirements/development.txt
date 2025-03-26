@@ -25,7 +25,7 @@ wemake-python-styleguide==0.16.0
 darglint==1.8.1  # https://github.com/terrencepreilly/darglint
 flake8-bandit==2.1.2  # https://github.com/tylerwince/flake8-bandit
 flake8-broken-line==0.4.0  # https://github.com/wemake-services/flake8-broken-line
-flake8-bugbear==22.1.11  # https://github.com/PyCQA/flake8-bugbear
+flake8-bugbear==21.11.29  # https://github.com/PyCQA/flake8-bugbear
 flake8-commas==2.1.0  # https://github.com/PyCQA/flake8-commas/
 flake8-comprehensions==3.8.0  # https://github.com/adamchainz/flake8-comprehensions
 flake8-docstrings==1.6.0  # https://github.com/pycqa/flake8-docstrings
