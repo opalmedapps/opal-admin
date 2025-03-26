@@ -141,8 +141,6 @@ class CaregiverSerializer(DynamicFieldsSerializer):
             'phone_number',
             'username',
             'devices',
-            'first_name',
-            'last_name',
             'legacy_id',
         ]
 
