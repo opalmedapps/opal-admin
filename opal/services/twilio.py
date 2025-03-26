@@ -4,15 +4,15 @@ from twilio.rest import Client
 
 
 class TwilioServiceException(TwilioException):
-    """This Exception class for TwilioService."""
+    """An error occurred while sending an SMS via Twilio."""
 
 
 class TwilioService:
-    """This serice send SMS to the users via twilio."""
+    """This service send SMS to the users via twilio."""
 
     def __init__(self, account_sid: str, auth_token: str, sender: str) -> None:
         """
-        Initialize the twilio credential.
+        Initialize the Twilio service with the given credentials.
 
         Args:
             account_sid: twilio account sid

@@ -1,6 +1,8 @@
-from unittest.mock import patch
+from http import HTTPStatus
 
 import pytest
+from pytest_mock import MockerFixture
+from twilio.base.exceptions import TwilioRestException
 from twilio.rest.api import MessageList
 
 from opal.services.twilio import TwilioService, TwilioServiceException
@@ -9,69 +11,36 @@ from opal.services.twilio import TwilioService, TwilioServiceException
 class TestTwilioService:
     """Test class for TwilioService."""
 
-    response = None
+    sender = '15141234567'
+    service = TwilioService('account_sid', 'auth_token', sender)
 
-    def create(self, to: str, from_: str, body: str) -> None:
-        """Mockup Twilio Api MessageList method 'create'.
-
-        Args:  # noqa: RST306
-            to: target phone number
-            from_: sender phone number
-            body: message content
-
-        Raises:
-            TwilioServiceException: if 'to' is invalid
-        """
-        if to == '':
-            raise TwilioServiceException('Sending SMS failed')
-        TestTwilioService.response = {
-            'to': to,
-            'from_': from_,
-            'body': body,
-        }
-
-    @patch.object(MessageList, 'create', create)
-    def test_send_sms_successfully(self) -> None:
+    def test_send_sms_successfully(self, mocker: MockerFixture) -> None:
         """Ensure sending sms successfully."""
-        account_sid = 'ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-        auth_token = str('your_auth_token')
-        from_ = '+15146661234'
+        mock_create = mocker.patch.object(MessageList, 'create')
+
         to = '+15145551234'
         message = 'Test sending SMS'
-        service = TwilioService(
-            account_sid,
-            auth_token,
-            from_,
-        )
 
-        service.send_sms(
+        self.service.send_sms(
             to,
             message,
         )
 
-        assert self.response == {
-            'to': to,
-            'from_': from_,
-            'body': message,
-        }
+        mock_create.assert_called_once_with(to=to, from_=self.sender, body=message)
 
-    @patch.object(MessageList, 'create', create)
-    def test_send_sms_exception(self) -> None:
+    def test_send_sms_exception(self, mocker: MockerFixture) -> None:
         """Ensure we catch and handle the TwilioException correctly."""
-        account_sid = 'ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-        auth_token = str('your_auth_token')
-        from_ = '+15146661234'
+        mock_create = mocker.patch.object(MessageList, 'create')
+        mock_create.side_effect = TwilioRestException(HTTPStatus.FORBIDDEN, 'uri', 'an error occurred')
+
         to = ''
         message = 'Test sending SMS'
-        service = TwilioService(
-            account_sid,
-            auth_token,
-            from_,
-        )
 
-        with pytest.raises(TwilioServiceException) as ex:
-            service.send_sms(
+        with pytest.raises(TwilioServiceException) as exc:
+            self.service.send_sms(
                 to,
                 message,
             )
-        assert str(ex.value) == 'Sending SMS failed'  # noqa: WPS441
+
+        assert str(exc.value) == 'Sending SMS failed'
+        assert exc.value.__cause__.status == HTTPStatus.FORBIDDEN
