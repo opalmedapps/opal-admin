@@ -3,10 +3,12 @@ from django.urls import reverse
 import pytest
 from rest_framework.test import APIClient
 
+from opal.caregivers import factories as caregiver_factories
 from opal.legacy import factories, models
 from opal.legacy_questionnaires import factories as questionnaires_factories
 from opal.legacy_questionnaires import models as questionnaires_models
 from opal.patients import factories as patient_factories
+from opal.users import factories as user_factories
 from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
@@ -96,14 +98,37 @@ class TestChartAppView:
     )
     def test_get_unread_questionnaire_count(self, clear_questionnairedb: None) -> None:
         """Test if function returns number of new clinical questionnaires."""
+        dictionary = questionnaires_factories.LegacyDictionaryFactory(content='Caregiver', language_id=2)
+        respondent = questionnaires_factories.LegacyRespondentFactory(title=dictionary)
         clinical_purpose = questionnaires_factories.LegacyPurposeFactory(id=1)
         research_purpose = questionnaires_factories.LegacyPurposeFactory(id=2)
         consent_purpose = questionnaires_factories.LegacyPurposeFactory(id=4)
-        clinical_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purpose=clinical_purpose)
-        research_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purpose=research_purpose)
-        consent_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(purpose=consent_purpose)
+        clinical_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(
+            purpose=clinical_purpose,
+            respondent=respondent,
+        )
+        research_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(
+            purpose=research_purpose,
+            respondent=respondent,
+        )
+        consent_questionnaire = questionnaires_factories.LegacyQuestionnaireFactory(
+            purpose=consent_purpose,
+            respondent=respondent,
+        )
         patient_one = questionnaires_factories.LegacyPatientFactory()
         patient_two = questionnaires_factories.LegacyPatientFactory(external_id=52)
+
+        user = user_factories.Caregiver()
+        caregiver_profile = caregiver_factories.CaregiverProfile(user=user)
+        patient = patient_factories.Patient(legacy_id=patient_one.external_id)
+        relationship_type = patient_factories.RelationshipType(can_answer_questionnaire=True)
+        relationship = patient_factories.Relationship(
+            caregiver=caregiver_profile,
+            patient=patient,
+            type=relationship_type,
+            status='CON',
+        )
+        relationship.refresh_from_db()
 
         # status=0 by default for new questionnaires
         questionnaires_factories.LegacyAnswerQuestionnaireFactory(
@@ -129,17 +154,20 @@ class TestChartAppView:
             patient=patient_two,
         )
         new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
-            patient_sernum=51,
+            patient_sernum=patient_one.external_id,
+            user_name=user.username,
             purpose_id=1,
         ).count()
         assert new_questionnaires == 1
         new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
-            patient_sernum=51,
+            patient_sernum=patient_one.external_id,
+            user_name=user.username,
             purpose_id=2,
         ).count()
         assert new_questionnaires == 1
         new_questionnaires = questionnaires_models.LegacyQuestionnaire.objects.new_questionnaires(
-            patient_sernum=51,
+            patient_sernum=patient_one.external_id,
+            user_name=user.username,
             purpose_id=4,
         ).count()
         assert new_questionnaires == 1
