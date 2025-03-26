@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.views.generic import FormView
 from django.views.generic.edit import DeleteView
 
-from django_tables2 import SingleTableView
+from django_tables2 import SingleTableMixin, SingleTableView
 
 from opal.core.views import CreateUpdateView
 
@@ -65,10 +65,11 @@ class PendingRelationshipListView(SingleTableView):
     table_class = PendingRelationshipTable
     ordering = ['request_date']
     template_name = 'patients/relationships/pending/list.html'
+    # TODO: use Relationship.objects.none(), currently it returns data for testing purposes
     queryset = Relationship.objects.filter(status=RelationshipStatus.PENDING)
 
 
-class CaregiverAccessView(SingleTableView, FormView):
+class CaregiverAccessView(SingleTableMixin, FormView):
     """This view provides a page that lists all caregivers for a specific patient."""
 
     model = Relationship
@@ -87,5 +88,6 @@ class CaregiverAccessView(SingleTableView, FormView):
             dict containing patient data and caregivers table.
         """
         context = super().get_context_data(**kwargs)
+        # TODO: return patient data only after the search request, currently it returns data for testing purposes
         context['patient'] = Patient.objects.first()
         return context
