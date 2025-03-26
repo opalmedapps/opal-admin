@@ -115,10 +115,8 @@ msgid "Patient"
 msgstr "Patient"
 
 #: opal/patients/models.py
-#, fuzzy
-#| msgid "Start date should be earlier than end date."
 msgid "Date of death should be later than date of birth."
-msgstr "Date de début doit être antérieure à la date de fin."
+msgstr "Date du décès doit être après la date de naissance."
 
 #: opal/patients/models.py
 msgid "Pending"
