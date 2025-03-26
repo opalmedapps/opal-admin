@@ -7,10 +7,9 @@ from django.db import models
 from django.db.models.functions import Coalesce
 
 from . import constants
-from . import models as patient_models
 
 if TYPE_CHECKING:
-    from opal.patients.models import Relationship, RelationshipType
+    from opal.patients.models import Patient, Relationship, RelationshipType
 
 
 class RelationshipManager(models.Manager['Relationship']):
@@ -99,13 +98,13 @@ class RelationshipTypeManager(models.Manager['RelationshipType']):
         ).filter(start_age__lte=patient_age, end_age_number__gt=patient_age)
 
 
-class PatientQueryset(models.QuerySet['patient_models.Patient']):
+class PatientQueryset(models.QuerySet['Patient']):
     """Custom QuerySet class for the `Patient` model."""
 
     def get_patient_by_site_mrn_list(
         self,
         site_mrn_list: list[dict[str, Any]],
-    ) -> 'patient_models.Patient':
+    ) -> 'Patient':
         """
         Query manager to get a `Patient` object filtered by a given list of dictionaries with sites and MRNs.
 
@@ -134,5 +133,5 @@ class PatientQueryset(models.QuerySet['patient_models.Patient']):
         return self.filter(query).distinct().get()
 
 
-class PatientManager(models.Manager['patient_models.Patient']):
+class PatientManager(models.Manager['Patient']):
     """Manager class for the `Patient` model."""
