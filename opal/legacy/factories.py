@@ -37,6 +37,8 @@ class LegacyPatientFactory(DjangoModelFactory):
     registrationdate = timezone.make_aware(datetime(2018, 1, 1))
     language = 'EN'
     email = 'test@test.com'
+    # All
+    accesslevel = '3'
     last_updated = timezone.now()
     patient_aria_ser = Sequence(lambda number: number + 1)
 

@@ -198,10 +198,6 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
     startdate = report_params.get('start')
     enddate = report_params.get('end')
 
-    # to avoid trailing comma for tuples with 1 item
-    sql_pids = ', '.join(map(str, pids))
-    sql_qids = ', '.join(map(str, qids))
-
     if all([qid, pids, qids, startdate, enddate]):
         with connections['questionnaire'].cursor() as conn:
             conn.execute(
@@ -224,10 +220,10 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
                     WHERE
                         Q.ID = %s
                         AND S.questionnaireId = Q.ID
-                        AND qq.ID in (%s)
+                        AND qq.ID in %s
                         AND qs.sectionId = S.ID
                         AND qq.ID = qs.questionId
-                )""", [lang_id, lang_id, qid, sql_qids],
+                )""", [lang_id, lang_id, qid, qids],
             )
             conn.execute(
                 """
@@ -250,7 +246,7 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
                     WHERE
                         AQ.questionnaireId = %s
                         AND AQ.patientId not in (%s)
-                        AND AQ.patientId in (%s)
+                        AND AQ.patientId in %s
                         AND AQ.lastUpdated
                         AND AQ.`status` = 2
                         AND cast(AQ.lastUpdated as date) BETWEEN %s AND %s
@@ -259,7 +255,7 @@ def make_temp_tables(report_params: QueryDict, lang_id: int) -> bool:  # noqa: W
                         AND A.deleted = 0
                         AND A.answered = 1
                         AND A.questionId = Q.ID
-                )""", [lang_id, qid, test_accounts, sql_pids, startdate, enddate],
+                )""", [lang_id, qid, test_accounts, pids, startdate, enddate],
             )
             conn.execute(
                 """
