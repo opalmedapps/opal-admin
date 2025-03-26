@@ -2966,8 +2966,16 @@ def test_fetch_patient_demographic_diagnosis_summary_success() -> None:
     legacy_factories.LegacyPatientHospitalIdentifierFactory(patient=legacy_pat2, hospital__code='MGH', mrn=1234566)
     # Create a dummy patient to ensure it is not included in the report
     legacy_factories.LegacyPatientFactory(patientsernum=53)
-    legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1, description_en='Test Diagnosis1')
-    legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat1, description_en='Test Diagnosis2')
+    legacy_factories.LegacyDiagnosisFactory(
+        patient_ser_num=legacy_pat1,
+        description_en='Test Diagnosis1',
+        creation_date=timezone.now() - dt.timedelta(days=1),
+    )
+    legacy_factories.LegacyDiagnosisFactory(
+        patient_ser_num=legacy_pat1,
+        description_en='Test Diagnosis2',
+        creation_date=timezone.now(),
+    )
     legacy_factories.LegacyDiagnosisFactory(patient_ser_num=legacy_pat2, description_en='Test Diagnosis3')
     demographic_diagnosis_summary = stats_queries.fetch_patient_demographic_diagnosis_summary()
     assert len(demographic_diagnosis_summary) == 2
