@@ -7,47 +7,9 @@ from pytest_django.asserts import assertRaisesMessage
 from opal.patients.factories import Patient
 
 from .. import factories
-from ..models import HealthDataStore, QuantitySample, QuantitySampleType
+from ..models import QuantitySample, QuantitySampleType
 
 pytestmark = pytest.mark.django_db()
-
-
-def test_healthdatastore_factory() -> None:
-    """Ensure the `HealthDataStore` factory creates a valid model."""
-    data_store = factories.HealthDataStore()
-
-    data_store.full_clean()
-
-
-def test_healthdatastore_str() -> None:
-    """Ensure the `__str__` method is defined for the `HealthDataStore` model."""
-    data_store = factories.HealthDataStore.build()
-
-    assert str(data_store) == 'Health Data Store for Bart Simpson'
-
-
-def test_healthdatastore_unique_per_patient() -> None:
-    """Ensure a patient can only have one `HealthDataStore`."""
-    data_store = factories.HealthDataStore()
-    data_store2 = factories.HealthDataStore()
-
-    # the factory gets the existing one by default
-    assert data_store == data_store2
-
-    # pretend this is a new instance
-    data_store2.id = None
-
-    constraint_name = 'health_data_healthdatastore_unique_patient'
-    with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
-        data_store2.save()
-
-
-def test_healthdatastore_created() -> None:
-    """Ensure the HealthDataStore instance is created automatically for a new patient."""
-    patient = Patient()
-
-    assert HealthDataStore.objects.count() == 1
-    assert HealthDataStore.objects.all()[0].patient == patient
 
 
 def test_quantitysample_factory() -> None:
@@ -88,28 +50,28 @@ def test_quantitysampletype_unit_defined(sample_type: str) -> None:
 
 def test_quantitysample_type_constraint() -> None:
     """Ensure the valid choices for the sample's `type` are validated using a constraint."""
-    data_store = factories.HealthDataStore()
-    sample = factories.QuantitySample.build(data_store=data_store, type='INV')
+    patient = Patient()
+    sample = factories.QuantitySample.build(patient=patient, type='INV')
 
     constraint_name = 'health_data_quantitysample_type_valid'
-    with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, constraint_name):
         sample.save()
 
 
 def test_quantitysample_source_constraint() -> None:
     """Ensure the valid choices for the sample's `source` are validated using a constraint."""
-    data_store = factories.HealthDataStore()
-    sample = factories.QuantitySample.build(data_store=data_store, source='I')
+    patient = Patient()
+    sample = factories.QuantitySample.build(patient=patient, source='I')
 
     constraint_name = 'health_data_quantitysample_source_valid'
-    with assertRaisesMessage(IntegrityError, constraint_name):  # type: ignore[arg-type]
+    with assertRaisesMessage(IntegrityError, constraint_name):
         sample.save()
 
 
 def test_quantitysample_new_can_save() -> None:
     """Ensure a new instance can be saved."""
-    data_store = factories.HealthDataStore()
-    sample = factories.QuantitySample.build(data_store=data_store)
+    patient = Patient()
+    sample = factories.QuantitySample.build(patient=patient)
 
     sample.save()
 

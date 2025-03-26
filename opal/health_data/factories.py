@@ -9,20 +9,10 @@ from opal.patients.factories import Patient
 from . import models
 
 
-class HealthDataStore(DjangoModelFactory):
-    """Model factory to create [opal.health_data.models.HealthDataStore][] models."""
-
-    patient = factory.SubFactory(Patient)
-
-    class Meta:
-        model = models.HealthDataStore
-        django_get_or_create = ('patient',)
-
-
 class QuantitySample(DjangoModelFactory):
     """Model factory to create [opal.health_data.models.QuantitySample][] models."""
 
-    data_store = factory.SubFactory(HealthDataStore)
+    patient = factory.SubFactory(Patient)
     start_date = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     device = 'Test Device'
     source = models.SampleSourceType.PATIENT

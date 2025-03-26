@@ -12,50 +12,14 @@ The models in this module are inspired by Apple HealthKit, such as:
     * https://developer.apple.com/documentation/healthkit/hkelectrocardiogram
 """
 from enum import Enum
-from typing import Any, Type
+from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
 from opal.patients.models import Patient
-
-
-class HealthDataStore(models.Model):
-    """A storage for health data for a specific patient.
-
-    The `HealthDataStore` model is the connection between this app and the `patients` app.
-    Each patient can have one health data store.
-    """
-
-    patient = models.ForeignKey(
-        verbose_name=_('Patient'),
-        to=Patient,
-        on_delete=models.CASCADE,
-        related_name='health_data_store',
-    )
-
-    class Meta:
-        verbose_name = _('Health Data Store')
-        verbose_name_plural = _('Health Data Stores')
-        constraints = [
-            models.UniqueConstraint(
-                name='%(app_label)s_%(class)s_unique_patient',
-                fields=['patient'],
-            ),
-        ]
-
-    def __str__(self) -> str:
-        """
-        Return the textual representation of this instance including the patient name.
-
-        Returns:
-            the textual representation of this health data store
-        """
-        return f'Health Data Store for {self.patient}'
 
 
 class SampleSourceType(models.TextChoices):
@@ -154,9 +118,9 @@ class QuantitySample(AbstractSample):
     https://developer.apple.com/documentation/healthkit/hkquantitysample
     """
 
-    data_store = models.ForeignKey(
-        verbose_name=_('Health Data Store'),
-        to=HealthDataStore,
+    patient = models.OneToOneField(
+        verbose_name=_('Patient'),
+        to=Patient,
         on_delete=models.CASCADE,
         related_name='quantity_samples',
     )
@@ -193,28 +157,16 @@ class QuantitySample(AbstractSample):
         Returns:
             the textual representation of this instance
         """
+        # converting the type to QuantitySampleType can cause an issue for new instances with an undefined type
+        # for example, on the shell
         if self.type:
             sample_type = QuantitySampleType(self.type)
             unit_text = sample_type.label.split('(')[1][:-1]
+            # fails if the unit is not defined
+            # this is caught early by a corresponding test
+            # see: `test_quantitysampletype_unit_defined` in test_models.py
             unit = Unit(unit_text)
 
             return f'{self.value} {unit.value}'
 
         return super().__str__()
-
-
-@receiver(post_save, sender=Patient)
-def patient_saved(sender: Type[Patient], instance: Patient, created: bool, **kwargs: Any) -> None:
-    """
-    Post save signal to create a `HealthDataStore` for a patient when the `Patient` is created.
-
-    See: https://docs.djangoproject.com/en/dev/ref/signals/#post-save
-
-    Args:
-        sender: the model class
-        instance: the actual instance being saved
-        created: whether a new record was created
-        kwargs: additional keyword arguments
-    """
-    if created:
-        HealthDataStore.objects.create(patient=instance)
