@@ -6,7 +6,7 @@ from typing import Any
 from django.core.exceptions import ValidationError
 
 from opal.core.validators import validate_ramq
-from opal.utils.base64_util import Base64Util
+from opal.utils import base64_utils
 
 from .hospital_data import SourceSystemReportExportData
 
@@ -37,7 +37,7 @@ class SourceSystemValidator:  # noqa: WPS214
             # check if site is not empty
             and bool(report_data.site.strip())
             # check if report content is base64
-            and Base64Util().is_base64(report_data.base64_content)
+            and base64_utils.is_base64(report_data.base64_content)
             # check if document type format is valid
             and bool(reg_exp.match(report_data.document_number))
         )
