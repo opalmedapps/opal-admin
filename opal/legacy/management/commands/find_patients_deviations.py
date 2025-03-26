@@ -1,4 +1,4 @@
-"""Command for detecting deviations between MariaDB and Django `Patient` model tables."""
+"""Command for detecting deviations between legacy (MariaDB) and new (Django) tables/models."""
 from typing import Any, List, Optional, Tuple
 
 from django.core.management.base import BaseCommand
@@ -33,7 +33,9 @@ LEGACY_PATIENT_QUERY = """
             ELSE "UNDEFINED"
         END
         ) As AccessLevel
-    FROM Patient;
+    FROM Patient P
+    LEFT JOIN Users U ON P.PatientSerNum = U.UserTypeSerNum
+    WHERE U.UserType = "Patient";
 """  # noqa: WPS323
 
 LEGACY_HOSPITAL_PATIENT_QUERY = """
@@ -45,6 +47,21 @@ LEGACY_HOSPITAL_PATIENT_QUERY = """
     FROM Patient_Hospital_Identifier;
 """
 
+LEGACY_CAREGIVER_QUERY = """
+    SELECT
+        PatientSerNum AS LegacyID,
+        FirstName AS FirstName,
+        LastName AS LastName,
+        CONVERT(TelNum, CHAR) AS Phone,
+        LOWER(Email) AS Email,
+        LOWER(Language) AS Language
+    FROM Patient P
+    LEFT JOIN Users U ON P.PatientSerNum = U.UserTypeSerNum
+    WHERE U.UserType = "Caregiver";
+"""  # noqa: WPS323
+
+# TODO: confirm with Matthias the JOIN and conditions for this query.
+# Matthias was mentioning there might be cases when a patient does not have a `Relationship` record
 DJANGO_PATIENT_QUERY = """
     SELECT
         PP.legacy_id AS LegacyID,
@@ -58,8 +75,8 @@ DJANGO_PATIENT_QUERY = """
         LOWER(UU.language) AS Language,
         PP.data_access As AccessLevel
     FROM patients_patient PP
-    LEFT JOIN caregivers_caregiverprofile CC ON PP.legacy_id = CC.legacy_id
-    LEFT JOIN users_user UU ON CC.user_id = UU.id;
+    LEFT JOIN users_user UU ON UU.last_name = PP.last_name
+    WHERE PP.first_name = UU.first_name;
 """  # noqa: WPS323
 
 DJANGO_HOSPITAL_PATIENT_QUERY = """
@@ -73,25 +90,41 @@ DJANGO_HOSPITAL_PATIENT_QUERY = """
     LEFT JOIN hospital_settings_site HSS ON PHP.site_id = HSS.id;
 """
 
+DJANGO_CAREGIVER_QUERY = """
+    SELECT
+        CC.legacy_id AS LegacyID,
+        UU.first_name AS FirstName,
+        UU.last_name AS LastName,
+        UU.phone_number AS Phone,
+        LOWER(UU.email) AS Email,
+        LOWER(UU.language) AS Language
+    FROM caregivers_caregiverprofile CC
+    LEFT JOIN users_user UU ON CC.user_id = UU.id;
+"""  # noqa: WPS323
+
 
 class Command(BaseCommand):
-    """Command to find differences in data between legacy database and new back end database for the `Patient` model.
+    """Command to find differences in data between legacy and new (Django) databases.
 
     The command compares:
 
-        - `OpalDB.Patient` table against `opal.patients_patient` table
+        - `OpalDB.Patient` table against `opal.patients_patient` table (patients' records)
         - `OpalDB.Patient_Hospital_Identifier` table against `opal.patients_hospitalpatient` table
+        - `OpalDB.Patient` table against `opal.caregivers_caregiverprofile` table (caregivers' records)
 
     by using Django's models.
     """
 
-    help = 'Check the legacy and new back end databases for the data deviations in the `Patient` tables.'  # noqa: A003
+    help = """
+        Check the legacy and new back end databases
+        for the data deviations in the `Patient` and `Caregiver` tables.
+    """  # noqa: A003
     requires_migrations_checks = True
 
     @transaction.atomic
     def handle(self, *args: Any, **kwargs: Any) -> None:  # noqa: WPS210
         """
-        Handle deviation check for the `Patient` model tables.
+        Handle deviation check for the `Patient` and `Caregiver` models/tables.
 
         The implementation was inspired by the following articles:
 
@@ -110,101 +143,107 @@ class Command(BaseCommand):
             django_patients = django_db.fetchall()
             django_db.execute(DJANGO_HOSPITAL_PATIENT_QUERY)
             django_hospital_patients = django_db.fetchall()
+            django_db.execute(DJANGO_CAREGIVER_QUERY)
+            django_caregivers = django_db.fetchall()
 
         with connections['legacy'].cursor() as legacy_db:
             legacy_db.execute(LEGACY_PATIENT_QUERY)
             legacy_patients = legacy_db.fetchall()
             legacy_db.execute(LEGACY_HOSPITAL_PATIENT_QUERY)
             legacy_hospital_patients = legacy_db.fetchall()
+            legacy_db.execute(LEGACY_CAREGIVER_QUERY)
+            legacy_caregivers = legacy_db.fetchall()
 
-        patients_err_str = self._get_patient_deviations_err(
+        patients_err_str = self._get_deviations_err(
             django_patients,
-            django_hospital_patients,
             legacy_patients,
-            legacy_hospital_patients,
+            'opal.patients_patient',
+            'OpalDB.Patient(UserType="Patient")',
         )
 
-        if patients_err_str:
+        hospital_patients_err_str = self._get_deviations_err(
+            django_hospital_patients,
+            legacy_hospital_patients,
+            'opal.patients_hospitalpatient',
+            'OpalDB.Patient_Hospital_Identifier',
+        )
+
+        caregivers_err_str = self._get_deviations_err(
+            django_caregivers,
+            legacy_caregivers,
+            'opal.caregivers_caregiverprofile',
+            'OpalDB.Patient(UserType="Caregiver")',
+        )
+
+        err = ''.join(
+            filter(None, [patients_err_str, hospital_patients_err_str, caregivers_err_str]),
+        )
+
+        if err:
             self.stderr.write(
-                patients_err_str,
+                err,
             )
         else:
-            self.stdout.write('No deviations have been found in the "Patient" tables/models.')
+            self.stdout.write('No deviations have been found in the "Patient and Caregiver" tables/models.')
 
-    def _get_patient_deviations_err(  # noqa: WPS210
+    def _get_deviations_err(
         self,
-        django_patients: List[Tuple],
-        django_hospital_patients: List[Tuple],
-        legacy_patients: List[Tuple],
-        legacy_hospital_patients: List[Tuple],
+        django_model_records: List[Tuple],
+        legacy_table_records: List[Tuple],
+        django_model_name: str,
+        legacy_table_name: str,
     ) -> Optional[str]:
-        """Build error string based on the `Patient` table/model records deviations.
+        """Build error string based on the model/table records deviations.
 
         Args:
-            django_patients: Django `Patient` model records
-            django_hospital_patients: `HospitalPatient` model records
-            legacy_patients: legacy `Patient` table records
-            legacy_hospital_patients: legacy `Patient_Hospital_Identifier` table records
+            django_model_records: Django model's records
+            legacy_table_records: legacy table records
+            django_model_name: name of the Django's model that is being compared against legacy table records
+            legacy_table_name: name of the legacy table that is being compared against Django model's records
 
         Returns:
-            str: error with the `Patient` tables/models deviations if there are any, empty string otherwise
+            str: error with the model/table records' deviations if there are any, empty string otherwise
         """
         # Please see the details about the `symmetric_difference` method in the links below:
         # https://www.geeksforgeeks.org/python-set-symmetric_difference-2/
         # https://www.w3schools.com/python/ref_set_symmetric_difference.asp
-        django_patients_set = set(django_patients)
-        django_hospital_patients_set = set(django_hospital_patients)
-        unmatched_patients = django_patients_set.symmetric_difference(legacy_patients)
-        unmatched_hospital_patients = django_hospital_patients_set.symmetric_difference(legacy_hospital_patients)
+        django_records_set = set(django_model_records)
+        unmatched_records = django_records_set.symmetric_difference(legacy_table_records)
 
-        django_patients_len = len(django_patients_set)
-        legacy_patients_len = len(legacy_patients)
-        django_hospital_patients_len = len(django_hospital_patients_set)
-        legacy_hospital_patients_len = len(legacy_hospital_patients)
+        django_records_len = len(django_records_set)
+        legacy_records_len = len(legacy_table_records)
 
-        # return `None` if there are no unmatched patients
+        # return `None` if there are no unmatched records
         # and the number of the data records is the same
         if (
-            not unmatched_patients
-            and not unmatched_hospital_patients
-            and django_patients_len == legacy_patients_len
-            and django_hospital_patients_len == legacy_hospital_patients_len
+            not unmatched_records
+            and django_records_len == legacy_records_len
         ):
             return None
 
-        err_str = '\n{0}: found deviations in the "Patient" tables/models!!!'.format(timezone.now())
-
-        # Add an error to the error string if the number of the "Patient" records does not match
-        if django_patients_len != legacy_patients_len:
-            err_str += '\n\n{0}\n"opal.patients_patient": {1}\n"OpalDB.Patient": {2}'.format(
-                'The number of records in "opal.patients_patient" and "OpalDB.Patient" tables does not match!',
-                django_patients_len,
-                legacy_patients_len,
-            )
-
-        # Add an error to the error string if the number of the "HospitalPatient" records does not match
-        if django_hospital_patients_len != legacy_hospital_patients_len:
-            err_msg = 'The number of records in "opal.patients_hospitalpatient" {0}'.format(
-                'and "OpalDB.Patient_Hospital_Identifier" tables does not match!',
-            )
-            err_str += '\n\n{0}\n{1}: {2}\n{3}: {4}'.format(
-                err_msg,
-                'opal.patients_hospitalpatient',
-                django_hospital_patients_len,
-                'OpalDB.Patient_Hospital_Identifier',
-                legacy_hospital_patients_len,
-            )
-
-        # Add a list of unmatched "Patients" to the error string
-        err_str += self._get_unmatched_records_str(
-            unmatched_patients,
-            'OpalDB.Patient  <===>  opal.patients_patient',
+        err_str = '\n{0}: found deviations between {1} Django model and {2} legacy table!!!'.format(
+            timezone.now(),
+            django_model_name,
+            legacy_table_name,
         )
 
-        # Add a list of unmatched "HospitalPatients" to the error string
+        # Add an error to the error string if the number of the table/model records does not match
+        if django_records_len != legacy_records_len:
+            err_str += '\n\nThe number of records in "{0}" and "{1}" tables does not match!'.format(
+                django_model_name,
+                legacy_table_name,
+            )
+            err_str += '\n{0}: {1}\n{2}: {3}'.format(
+                django_model_name,
+                django_records_len,
+                legacy_table_name,
+                legacy_records_len,
+            )
+
+        # Add a list of unmatched records to the error string
         err_str += self._get_unmatched_records_str(
-            unmatched_hospital_patients,
-            'OpalDB.Patient_Hospital_Identifier  <===>  opal.patients_hospitalpatient',
+            unmatched_records,
+            '{0}  <===>  {1}'.format(django_model_name, legacy_table_name),
         )
 
         return '{0}\n\n\n'.format(err_str)
