@@ -416,8 +416,12 @@ class RegistrationCompletionView(APIView):
         )
 
 
-class RetrieveCaregiverUsernameView(RetrieveAPIView[User]):
-    """Caregiver `RetrieveAPIView` class for verify the existence of the caregiver for the given username."""
+class RetrieveCaregiverView(RetrieveAPIView[User]):
+    """
+    View that looks up a caregiver by its username.
+
+    This view can be used to check whether caregiver exists.
+    """
 
     permission_classes = (IsRegistrationListener,)
     queryset = Caregiver.objects.all()
