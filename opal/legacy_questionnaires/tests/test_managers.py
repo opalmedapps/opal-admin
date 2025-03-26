@@ -7,7 +7,7 @@ from opal.caregivers import factories as caregiver_factories
 from opal.patients import factories as patient_factories
 
 from .. import factories
-from ..models import LegacyAnswerQuestionnaire, LegacyQuestionnaire
+from ..models import LegacyAnswerQuestionnaire, LegacyDictionary, LegacyQuestionnaire
 
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 
@@ -136,11 +136,12 @@ def test_new_questionnaires_patient_caregiver() -> None:
     assert not new_questionnaires
 
 
-def test_new_questionnaires_return_empty_without_rependont_matching() -> None:
+def test_new_questionnaires_return_empty_without_respondent_matching() -> None:
     """Ensure LegacyQuestionnaireManager function 'new_questionnaires' is working.
 
-    Get empty questionnaires with unexpected respendonts
+    Get empty questionnaires with unexpected respondents
     """
+    print(LegacyDictionary.objects.all())
     caregiver = caregiver_factories.Caregiver(username='test_new_questionnaires')
     caregiver_profile = caregiver_factories.CaregiverProfile(user=caregiver)
     legacy_patient = factories.LegacyQuestionnairePatientFactory()
@@ -154,6 +155,8 @@ def test_new_questionnaires_return_empty_without_rependont_matching() -> None:
         caregiver=caregiver_profile,
         patient=patient,
     )
+
+    print(LegacyDictionary.objects.all())
 
     # legacy factory instances
     legacy_dictionary = factories.LegacyDictionaryFactory(

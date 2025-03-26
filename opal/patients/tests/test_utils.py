@@ -866,6 +866,9 @@ def test_create_access_request_new_patient_and_databank_consent(
     databank_consent_questionnaire_data: tuple[qdb_LegacyQuestionnaire, LegacyEducationalMaterialControl],
 ) -> None:
     """A new relationship and new patient with databank consent records are created."""
+    consent_form = databank_consent_questionnaire_data[0]
+    info_sheet = databank_consent_questionnaire_data[1]
+    print(f'{consent_form.title=}')
     caregiver_profile = CaregiverProfile()
     self_type = RelationshipType.objects.self_type()
     Institution()
@@ -875,6 +878,8 @@ def test_create_access_request_new_patient_and_databank_consent(
         caregiver_profile,
         self_type,
     )
+
+    print(f'{consent_form.title=}')
 
     assert registration_code is None
     patient = Patient.objects.get()
@@ -887,12 +892,14 @@ def test_create_access_request_new_patient_and_databank_consent(
     assert patient.ramq == 'SIMM86600199'
     assert patient.date_of_death is None
     assert HospitalPatient.objects.count() == 0
-    consent_form = databank_consent_questionnaire_data[0]
-    info_sheet = databank_consent_questionnaire_data[1]
+
     # Search for the expected databank records
-    qdb_patient = LegacyQuestionnairePatient.objects.get(  # type: ignore[misc]
+    qdb_patient = LegacyQuestionnairePatient.objects.get(
         external_id=patient.legacy_id,
     )
+    print(f'{qdb_patient.id=}')
+    print(f'{consent_form.id=}')
+    print(LegacyAnswerQuestionnaire.objects.all())
     inserted_answer_questionnaire = LegacyAnswerQuestionnaire.objects.get(
         questionnaire_id=consent_form.id,
         patient_id=qdb_patient.id,

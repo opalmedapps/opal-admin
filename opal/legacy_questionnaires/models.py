@@ -38,7 +38,7 @@ class LegacyDictionary(models.Model):
     Note that contentId is NOT actually a unique field in QuestionnaireDB.
     Django forces us to add this constraint because contentId is referenced by many tables
     as a ForeignKey, and we cannot create a UniqueConstraint on this unmanaged model.
-    This is okay as long as we only need to perform read operations on this table.
+    TODO: This is okay as long as we only need to perform read operations on this table.
     """
 
     id = models.AutoField(db_column='ID', primary_key=True)
@@ -174,7 +174,7 @@ class LegacyQuestionnairePatient(models.Model):
 
     id = models.AutoField(db_column='ID', primary_key=True)
     hospital_id = models.IntegerField(db_column='hospitalId')
-    external_id = models.IntegerField(db_column='externalId')
+    external_id = models.IntegerField(db_column='externalId', unique=True)
     deleted = models.SmallIntegerField(db_column='deleted', default=0)
     creation_date = models.DateTimeField(db_column='creationDate')
     deleted_by = models.CharField(db_column='deletedBy', max_length=255, blank=True)

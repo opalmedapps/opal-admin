@@ -299,7 +299,7 @@ def is_legacy_model(model: type[Model]) -> bool:
     Returns:
         `True`, if it is a legacy model, `False` otherwise
     """
-    return model._meta.app_label == 'legacy' and not model._meta.managed  # noqa: WPS437
+    return model._meta.app_label in ['legacy', 'legacy_questionnaires'] and not model._meta.managed  # noqa: WPS437
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -342,30 +342,41 @@ def django_db_setup(django_db_setup: None, django_db_blocker: DjangoDbBlocker) -
         django_db_setup: pytest django's original DB setup fixture
         django_db_blocker: pytest fixture to allow database access here only
     """
-    with Path('opal/tests/sql/questionnairedb_schema.sql').open(encoding='ISO-8859-1') as handle:
+    with Path('opal/tests/sql/questionnairedb_functions.sql').open(encoding='ISO-8859-1') as handle:
         sql_content = handle.read()
 
     with django_db_blocker.unblock():
         with connections['questionnaire'].cursor() as conn:
             conn.execute(sql_content)
 
-
-@pytest.fixture
-def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004
-    """
-    Initialize the QuestionnaireDB with data.
-
-    Existing data will be deleted.
-
-    Args:
-        django_db_blocker: pytest fixture to allow database access here only
-    """
-    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='ISO-8859-1') as handle:
-        sql_data = handle.read()
-
     with django_db_blocker.unblock():
         with connections['questionnaire'].cursor() as conn:
-            conn.execute(sql_data)
+            conn.execute('SELECT COUNT(*) FROM questionnaire')
+            raise Exception(conn.fetchall())
+
+# @pytest.fixture(autouse=True)
+# def check_data(db):
+#     print(LegacyQuestionnaire._meta.managed)
+#     print(LegacyQuestionnaire.objects.count())
+    # assert False
+
+
+# @pytest.fixture
+# def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> None:  # noqa: PT004
+#     """
+#     Initialize the QuestionnaireDB with data.
+
+#     Existing data will be deleted.
+
+#     Args:
+#         django_db_blocker: pytest fixture to allow database access here only
+#     """
+#     with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='ISO-8859-1') as handle:
+#         sql_data = handle.read()
+
+#     with django_db_blocker.unblock():
+#         with connections['questionnaire'].cursor() as conn:
+#             conn.execute(sql_data)
 
 
 @pytest.fixture
@@ -378,31 +389,42 @@ def databank_consent_questionnaire_and_response(  # noqa: WPS210
     """
     # Legacy patient record
     consenting_patient = factories.LegacyQuestionnairePatientFactory(external_id=LEGACY_TEST_PATIENT_ID)
+    consenting_patient.full_clean()
     # Questionnaire content, content ids must be non overlapping with existing test_QuestionnaireDB SQL
     middle_name_content = factories.LegacyDictionaryFactory(
         content_id=LEGACY_DICTIONARY_CONTENT_ID,
         content='Middle name',
         language_id=2,
     )
+    middle_name_content.full_clean()
     middle_name_question = factories.LegacyQuestionFactory(display=middle_name_content)
+    middle_name_question.full_clean()
     cob_content = factories.LegacyDictionaryFactory(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 1,
         content='City of birth',
         language_id=2,
     )
+    cob_content.full_clean()
     cob_question = factories.LegacyQuestionFactory(display=cob_content)
+    cob_question.full_clean()
     consent_purpose_content = factories.LegacyDictionaryFactory(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 2,
         content='Consent',
         language_id=2,
     )
+    consent_purpose_content.full_clean()
     consent_purpose = factories.LegacyPurposeFactory(title=consent_purpose_content)
+    consent_purpose.full_clean()
+    # Questionnaire
     questionnaire_title = factories.LegacyDictionaryFactory(
         content_id=LEGACY_DICTIONARY_CONTENT_ID + 3,
         content='Databank Consent Questionnaire',
         language_id=2,
     )
+    questionnaire_title.full_clean()
     consent_questionnaire = factories.LegacyQuestionnaireFactory(purpose=consent_purpose, title=questionnaire_title)
+    consent_questionnaire.full_clean()
+    # Questionnaire sections
     section = factories.LegacySectionFactory(questionnaire=consent_questionnaire)
     factories.LegacyQuestionSectionFactory(question=middle_name_question, section=section)
     factories.LegacyQuestionSectionFactory(question=cob_question, section=section)
@@ -411,6 +433,7 @@ def databank_consent_questionnaire_and_response(  # noqa: WPS210
         questionnaire=consent_questionnaire,
         patient=consenting_patient,
     )
+    answer_questionnaire.full_clean()
     answer_section = factories.LegacyAnswerSectionFactory(answer_questionnaire=answer_questionnaire, section=section)
     cob_answer = factories.LegacyAnswerFactory(
         question=cob_question,
@@ -437,6 +460,8 @@ def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEd
     Returns:
         Consent questionnaire
     """
+    from opal.legacy_questionnaires.models import LegacyQuestionnaire
+    print(LegacyQuestionnaire.objects.all())
     # Questionnaire content, content ids must be non overlapping with existing test_QuestionnaireDB SQL
     middle_name_content = factories.LegacyDictionaryFactory(
         content_id=LEGACY_DICTIONARY_CONTENT_ID,
@@ -461,21 +486,28 @@ def databank_consent_questionnaire_data() -> tuple[LegacyQuestionnaire, LegacyEd
         content='QSCC Databank Information',
         language_id=2,
     )
+    print(questionnaire_title)
     consent_questionnaire = factories.LegacyQuestionnaireFactory(purpose=consent_purpose, title=questionnaire_title)
+    print(consent_questionnaire.title)
     section = factories.LegacySectionFactory(questionnaire=consent_questionnaire)
+    print(consent_questionnaire.title)
     factories.LegacyQuestionSectionFactory(question=middle_name_question, section=section)
+    print(consent_questionnaire.title)
     factories.LegacyQuestionSectionFactory(question=cob_question, section=section)
+    print(consent_questionnaire.title)
     legacy_factories.LegacyQuestionnaireControlFactory(
         questionnaire_name_en='QSCC Databank Information',
         questionnaire_db_ser_num=consent_questionnaire.id,
         publish_flag=1,
     )
+    print(consent_questionnaire.title)
     info_sheet = legacy_factories.LegacyEducationalMaterialControlFactory(
         educational_material_type_en='Factsheet',
         educational_material_type_fr='Fiche Descriptive',
         name_en='Information and Consent Factsheet - QSCC Databank',
         name_fr="Fiche d'information sur l'information et le consentement - Banque de données du CQSI",
     )
+    print(consent_questionnaire.title)
     return (consent_questionnaire, info_sheet)
 
 

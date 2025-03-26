@@ -140,6 +140,7 @@ def test_legacy_answertextbox_factory() -> None:
 def test_legacy_answertime_factory() -> None:
     """Test whether the factory creates a valid LegacyAnswerTimeFactory model instance."""
     test_answertime = factories.LegacyAnswerTimeFactory()
+    print(test_answertime.__dict__)
     test_answertime.full_clean()
 
 

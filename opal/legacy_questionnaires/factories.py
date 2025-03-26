@@ -25,7 +25,7 @@ class LegacyDictionaryFactory(DjangoModelFactory):
         model = models.LegacyDictionary
 
     content = 'Edmonton Symptom Assessment Survey'
-    content_id = 999999999
+    content_id = Sequence(lambda number: number + 1)
     table = SubFactory(LegacyDefinitionTableFactory)
     language_id = 1
     creation_date = timezone.make_aware(datetime(2022, 9, 27))
@@ -305,7 +305,7 @@ class LegacyAnswerTimeFactory(DjangoModelFactory):
         model = models.LegacyAnswerTime
 
     answer = SubFactory(LegacyAnswerFactory)
-    value = Faker('time')
+    value = Faker('datetime')
 
 
 class LegacyAnswerLabelFactory(DjangoModelFactory):
