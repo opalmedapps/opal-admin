@@ -38,8 +38,6 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # Swagger web-based API UI
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    # ReDoc web-based API UI
-    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
     # apps
     path('hospital-settings/', include('opal.hospital_settings.urls')),
