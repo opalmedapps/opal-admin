@@ -151,6 +151,7 @@ class TestApiRetrieveRegistrationDetails:
         assert response.status_code == HTTPStatus.OK
         assert response.json() == {
             'patient': {
+                'legacy_id': patient.legacy_id,
                 'first_name': patient.first_name,
                 'last_name': patient.last_name,
                 'date_of_birth': datetime.strftime(patient.date_of_birth, '%Y-%m-%d'),
@@ -177,6 +178,7 @@ class TestApiRegistrationCompletion:
         'caregiver': {
             'language': 'fr',
             'phone_number': '+15141112222',
+            'username': 'test-username',
         },
         'security_answers': [
             {

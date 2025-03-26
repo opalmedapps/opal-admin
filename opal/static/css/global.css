@@ -16,9 +16,6 @@
   --sidebar-accent-bg-color: #f0e9ff;
   --sidebar-active-bg-color: var(--opal-purple);
   --table-accent-bg-color: var(--bs-table-accent-bg);
-  /* form input colors, fields, input text, select, checkbox */
-  --field-background: ghostwhite;
-  --field-border-color: black;
 }
 
 /*
@@ -33,10 +30,6 @@ html {
 body {
   height: 100vh;
   min-height: -webkit-fill-available;
-}
-
-body h5 {
-  font-weight: bold;
 }
 
 /* if there is not enough space for the sidebar, scroll it individually */

@@ -25,6 +25,7 @@
     <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css" />
     <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css" />
     <link href="{% static 'fontawesomefree/css/regular.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'thirdparty/unpoly/css/unpoly.min.css' %}" rel="stylesheet" type="text/css" />
     <link href="{% static 'thirdparty/unpoly/css/unpoly-bootstrap5.min.css' %}" rel="stylesheet" type="text/css" />
 
     {% block stylesheets %}{% endblock %}
@@ -48,7 +49,8 @@
     {% endcomment %}
     <script defer src="{% static 'thirdparty/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     <script defer src="{% static 'thirdparty/unpoly/js/unpoly.min.js' %}"></script>
-    <script defer src="{% static 'thirdparty/unpoly/js/unpoly-bootstrap5.min.js' %}"></script>
+    {# disabled unpoly bootstrap because it removes the active class from the menu items in the sidebar on child pages #}
+    {# <script defer src="{% static 'thirdparty/unpoly/js/unpoly-bootstrap5.min.js' %}"></script> #}
     {% block javascript %}{% endblock %}
   </head>
   <body>
@@ -64,12 +66,12 @@
             </ol>
           </nav>
           <h1 class="mb-3">{{ page_heading }}</h1>
-            <div class="content px-3 py-3 mb-3 border border-secondary rounded-1">
+            <div class="content px-3 py-3 mb-3 border rounded-1">
               {% block content %}empty block <code>content</code>{% endblock %}
             </div>
         </div>
         <footer class="py-2 pt-3 mt-2 border-top">
-          <p class="text-center text-muted mb-2"><small>&copy; {% translate "Opal Health Informatics Group" %}</small></p>
+          <p class="text-center text-body-secondary mb-2"><small>&copy; {% translate "Opal Health Informatics Group" %}</small></p>
         </footer>
       </main>
     </div>

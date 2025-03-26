@@ -231,14 +231,14 @@ class NewAccessRequestView(TemplateResponseMixin, ContextMixin, View):  # noqa: 
 
         if relationship_form:
             existing_user = relationship_form.existing_user
-            table_data = [existing_user] if existing_user else []
+            table_data = [existing_user.user] if existing_user else []
             context_data['user_table'] = tables.ExistingUserTable(table_data)
 
         if current_step == 'confirm' or next_step == 'confirm':
             # populate relationship type (in case it is just the ID)
             relationship_form.full_clean()
 
-            if relationship_form.existing_user_selected(relationship_form.cleaned_data):
+            if relationship_form.is_existing_user_selected(relationship_form.cleaned_data):
                 context_data['next_button_text'] = 'Submit Access Request'
 
         # TODO: might not be needed anymore

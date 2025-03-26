@@ -43,7 +43,7 @@ class Patient(DjangoModelFactory):
         model = models.Patient
         django_get_or_create = ('ramq',)
 
-    first_name = 'Bart'
+    first_name = 'Marge'
     last_name = 'Simpson'
     date_of_birth = datetime.date(1999, 1, 1)
     sex = models.Patient.SexType.MALE

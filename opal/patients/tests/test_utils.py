@@ -96,17 +96,21 @@ def test_update_caregiver_success() -> None:
     phone_number2 = '+15141112223'
     language1 = 'en'
     language2 = 'fr'
-    user = User(phone_number=phone_number1, language=language1)
+    username1 = 'username-1'
+    username2 = 'username-2'
+    user = User(phone_number=phone_number1, language=language1, username=username1)
     info: dict = {
         'user': {
             'language': language2,
             'phone_number': phone_number2,
+            'username': username2,
         },
     }
     utils.update_caregiver(user, info)
     user.refresh_from_db()
     assert user.language == language2
     assert user.phone_number == phone_number2
+    assert user.username == username2
 
 
 def test_update_caregiver_failure() -> None:
@@ -115,11 +119,14 @@ def test_update_caregiver_failure() -> None:
     phone_number2 = '11111112223'
     language1 = 'en'
     language2 = 'fr'
-    user = User(phone_number=phone_number1, language=language1)
+    username1 = 'username-1'
+    username2 = 'username-2'
+    user = User(phone_number=phone_number1, language=language1, username=username1)
     info: dict = {
         'user': {
             'language': language2,
             'phone_number': phone_number2,
+            'username': username2,
         },
     }
     expected_message = "{'phone_number': ['Enter a valid value.']}"
@@ -447,7 +454,7 @@ def test_create_access_request_existing() -> None:
 
     relationship, registration_code = utils.create_access_request(
         patient,
-        caregiver_profile.user,
+        caregiver_profile,
         self_type,
     )
 
@@ -469,7 +476,7 @@ def test_create_access_request_non_self() -> None:
 
     relationship, registration_code = utils.create_access_request(
         patient,
-        caregiver_profile.user,
+        caregiver_profile,
         parent_type,
     )
 
@@ -488,7 +495,7 @@ def test_create_access_request_new_patient() -> None:
 
     relationship, registration_code = utils.create_access_request(
         PATIENT_DATA,
-        caregiver_profile.user,
+        caregiver_profile,
         self_type,
     )
 
@@ -516,7 +523,7 @@ def test_create_access_request_new_patient_mrns_missing_site() -> None:
     with pytest.raises(hospital_models.Site.DoesNotExist):
         utils.create_access_request(
             OIEPatientData(**patient_data),
-            caregiver_profile.user,
+            caregiver_profile,
             self_type,
         )
 
@@ -537,7 +544,7 @@ def test_create_access_request_new_patient_mrns() -> None:
 
     relationship, _ = utils.create_access_request(
         OIEPatientData(**patient_data),
-        caregiver_profile.user,
+        caregiver_profile,
         self_type,
     )
 
@@ -606,7 +613,7 @@ def test_create_access_request_self_relationship_already_exists() -> None:
     with pytest.raises(ValidationError, match='The patient already has a self-relationship'):
         utils.create_access_request(
             existing_relationship.patient,
-            existing_relationship.caregiver.user,
+            existing_relationship.caregiver,
             self_type,
         )
 

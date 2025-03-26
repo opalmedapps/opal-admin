@@ -402,9 +402,12 @@ LOGGING = {
 # See https://docs.djangoproject.com/en/dev/topics/email/
 # See https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-if DEBUG:
+
+# override during debug
+if DEBUG:  # pragma: no cover
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+# still allow users to customize as an environment variable
 EMAIL_BACKEND = env('EMAIL_BACKEND', default=EMAIL_BACKEND)
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-host
 EMAIL_HOST = env('EMAIL_HOST')

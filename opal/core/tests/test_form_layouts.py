@@ -59,6 +59,15 @@ def test_inlinesubmit() -> None:
     assert 'value="bar"' in html
 
 
+def test_inlinesubmit_extra_css() -> None:
+    """Ensure the InlineSubmit supports adding extra CSS classes."""
+    form = SampleForm(layouts.InlineSubmit('', extra_css='btn-secondary'))
+
+    html = render_crispy_form(form)
+
+    assert f'class="btn btn-primary {layouts.InlineSubmit.default_css_class} btn-secondary"' in html
+
+
 def test_inlinesubmit_kwargs() -> None:
     """Ensure the InlineSubmit can handle additional arguments."""
     form = SampleForm(layouts.InlineSubmit('bar', 'foo', data_extra='test'))
@@ -66,6 +75,16 @@ def test_inlinesubmit_kwargs() -> None:
     html = render_crispy_form(form)
 
     assert 'data-extra="test"' in html
+
+
+def test_inlinesubmit_no_name() -> None:
+    """Ensure the InlineSubmit can handle an empty name argument."""
+    form = SampleForm(layouts.InlineSubmit(''))
+
+    html = render_crispy_form(form)
+
+    assert '<input type="submit"' in html
+    assert 'name=""' in html
 
 
 def test_inlinereset_url() -> None:
@@ -106,6 +125,15 @@ def test_inlinereset_kwargs() -> None:
     html = render_crispy_form(form)
 
     assert ' up-validate>Reset' in html
+
+
+def test_inlinereset_extra_css() -> None:
+    """Ensure the InlineReset supports adding extra CSS classes."""
+    form = SampleForm(layouts.InlineReset(extra_css='btn-primary'))
+
+    html = render_crispy_form(form)
+
+    assert f'class="{layouts.InlineReset.default_css_class} btn-primary"' in html
 
 
 def test_formactions() -> None:
