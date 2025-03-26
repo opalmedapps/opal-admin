@@ -16,6 +16,7 @@ from pytest_mock import MockerFixture
 from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APIClient
 
+from opal.caregivers import constants
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers import models as caregiver_models
 from opal.patients import factories as patient_factories
@@ -618,6 +619,30 @@ class TestVerifyEmailCodeView:
             ),
         }
 
+    def test_code_expired(self, api_client: APIClient, admin_user: User) -> None:
+        """Test that an expired code returns a not found error."""
+        api_client.force_login(user=admin_user)
+        registration_code = caregiver_factories.RegistrationCode()
+        # pretend that the the verification was requested 10 minutes ago
+        email_verification = caregiver_factories.EmailVerification(
+            caregiver=registration_code.relationship.caregiver,
+            email='foo@bar.com',
+            sent_at=timezone.now() - dt.timedelta(minutes=constants.EMAIL_VERIFICATION_TIMEOUT),
+            code='123456',
+        )
+
+        response = api_client.post(
+            reverse(
+                'api:verify-email-code',
+                kwargs={'code': registration_code.code},
+            ),
+            data={'code': email_verification.code, 'email': email_verification.email},
+        )
+
+        assert response.status_code == HTTPStatus.NOT_FOUND
+        email_verification.refresh_from_db()
+        assert not email_verification.is_verified
+
     def test_registration_code_invalid(self, api_client: APIClient, admin_user: User) -> None:
         """Test that an invalid registration code returns a not found error."""
         api_client.force_login(user=admin_user)
@@ -756,7 +781,7 @@ class TestVerifyEmailView:
         registration_code = caregiver_factories.RegistrationCode()
         email_verification = caregiver_factories.EmailVerification(
             caregiver=registration_code.relationship.caregiver,
-            sent_at=timezone.now() - dt.timedelta(seconds=10),
+            sent_at=timezone.now() - dt.timedelta(seconds=constants.CODE_RESEND_TIME_DELAY),
         )
         current_code = email_verification.code
 

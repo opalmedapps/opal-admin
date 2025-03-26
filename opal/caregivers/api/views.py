@@ -1,4 +1,5 @@
 """This module is an API view that returns the encryption value required to handle listener's registration requests."""
+import datetime as dt
 from typing import Any
 
 from django.conf import settings
@@ -218,7 +219,7 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
         else:
             # in case there is an error sent_at is None, but wont happen in fact
             time_delta = timezone.now() - timezone.localtime(email_verification.sent_at)
-            if time_delta.total_seconds() > constants.TIME_DELAY:
+            if time_delta.total_seconds() > constants.CODE_RESEND_TIME_DELAY:
                 input_serializer.update(
                     email_verification,
                     {
@@ -304,6 +305,7 @@ class VerifyEmailCodeView(RetrieveRegistrationCodeMixin, APIView):
             code=verification_code,
             email=email,
             is_verified=False,
+            sent_at__gte=timezone.now() - dt.timedelta(minutes=constants.EMAIL_VERIFICATION_TIMEOUT),
         )
 
         email_verification.is_verified = True
