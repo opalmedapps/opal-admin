@@ -62,7 +62,6 @@ class RelationshipType(models.Model):
         default=False,
         help_text=_('The caregiver can answer questionnaires on behalf of the patient.'),
     )
-
     role_type = models.CharField(
         verbose_name=_('Relationship Role Type'),
         choices=RoleType.choices,
@@ -73,9 +72,11 @@ class RelationshipType(models.Model):
             + ' A "Self" role type indicates a patient who owns the data that is being accessed.',
         ),
     )
-    objects = RelationshipTypeManager()
+
+    objects = RelationshipTypeManager()  # type: ignore[django-manager-missing]
 
     class Meta:
+        permissions = (('can_manage_relationshiptypes', _('Can manage relationship types')),)
         ordering = ['name']
         verbose_name = _('Caregiver Relationship Type')
         verbose_name_plural = _('Caregiver Relationship Types')
@@ -376,6 +377,33 @@ class Relationship(models.Model):
             if self.status in RelationshipStatus.REVOKED or self.status in RelationshipStatus.DENIED:
                 raise ValidationError({'reason': _('Reason is mandatory when status is denied or revoked.')})
 
+    @classmethod
+    def valid_statuses(cls, current: RelationshipStatus) -> list[RelationshipStatus]:
+        """
+        Return the list of statuses the provided status can be transitioned to.
+
+        Args:
+            current: the selected value of the status
+
+        Returns:
+            list of valid statuses
+        """
+        statuses = [current]
+        if current == RelationshipStatus.PENDING:
+            statuses += [RelationshipStatus.DENIED, RelationshipStatus.CONFIRMED]
+        elif current == RelationshipStatus.CONFIRMED:
+            statuses += [
+                RelationshipStatus.PENDING,
+                RelationshipStatus.DENIED,
+                RelationshipStatus.REVOKED,
+            ]
+        elif current == RelationshipStatus.DENIED:
+            statuses += [RelationshipStatus.CONFIRMED, RelationshipStatus.PENDING]
+        elif current == RelationshipStatus.REVOKED:
+            statuses += [RelationshipStatus.CONFIRMED]
+
+        return statuses
+
 
 class HospitalPatient(models.Model):
     """Hospital Patient model."""
@@ -405,7 +433,7 @@ class HospitalPatient(models.Model):
     class Meta:
         verbose_name = _('Hospital Patient')
         verbose_name_plural = _('Hospital Patients')
-        unique_together = (('site', 'mrn'),)
+        unique_together = (('site', 'mrn'), ('patient', 'site'))
 
     def __str__(self) -> str:
         """Return the Patient Hospital Identifier of the Patient.

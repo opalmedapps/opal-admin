@@ -1,6 +1,7 @@
 """Table definitions for models of the patient app."""
 from typing import Any
 
+from django.db.models import QuerySet
 from django.template import Context
 from django.utils.translation import gettext_lazy as _
 
@@ -9,7 +10,7 @@ from django_tables2.columns import BoundColumn
 
 from opal.users.models import User
 
-from .models import Patient, Relationship, RelationshipType, RoleType
+from .models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
 
 
 # Adjusting context depending on record content:
@@ -32,7 +33,7 @@ class RelationshipTypeTemplateColumn(tables.TemplateColumn):
             table: The RelationshipTypeTable instance
             value: value from `record` that corresponds to the current column
             bound_column: The column being rendered
-            kwargs: Any number of key-word arguements
+            kwargs: Any number of key-word arguments
 
         Returns:
             TemplateColumn: the renderable content for the column
@@ -94,13 +95,18 @@ class RelationshipTypeTable(tables.Table):
 
 
 class PatientTable(tables.Table):
-    """A table for patient types."""
+    """A table for displaying patients' personal information."""
 
     date_of_birth = tables.DateColumn(verbose_name=_('Date of Birth'), short=False)
 
+    mrn = tables.Column(
+        verbose_name=_('MRN'),
+        accessor='hospital_patients',
+    )
+
     class Meta:
         model = Patient
-        fields = ['first_name', 'last_name', 'date_of_birth', 'ramq']
+        fields = ['first_name', 'last_name', 'date_of_birth', 'mrn', 'ramq']
         empty_text = _('No patient could be found.')
         orderable = False
         attrs = {
@@ -109,6 +115,27 @@ class PatientTable(tables.Table):
                 'class': 'thead-light',
             },
         }
+
+    def render_mrn(self, value: QuerySet[HospitalPatient]) -> str:
+        """Render MRN column.
+
+        Concat list of MRN/site pairs into one string.
+
+        E.g., "RVH: 12345, MGH: 54321"
+
+        Args:
+            value: `HospitalPatient` queryset for the MRN cell retrieved from the table data
+
+        Returns:
+            Concatenated MRN/site pairs for a given patient
+        """
+        # For more details:
+        # https://django-tables2.readthedocs.io/en/latest/pages/custom-data.html#table-render-foo-methods
+        mrn_site_list = [
+            f'{hospital_patient.site.code}: {hospital_patient.mrn}' for hospital_patient in value.all()
+        ]
+
+        return ', '.join(str(mnr_value) for mnr_value in mrn_site_list)
 
 
 class ExistingUserTable(tables.Table):
@@ -161,41 +188,6 @@ class PendingRelationshipTable(tables.Table):
         }
 
 
-class RelationshipPatientTable(tables.Table):
-    """A table for displaying patients' personal information."""
-
-    first_name = tables.Column(
-        verbose_name=_('First Name'),
-        accessor='patient__first_name',
-    )
-
-    last_name = tables.Column(
-        verbose_name=_('Last Name'),
-        accessor='patient__last_name',
-    )
-
-    date_of_birth = tables.DateColumn(
-        verbose_name=_('Date of Birth'),
-        accessor='patient__date_of_birth',
-    )
-
-    ramq = tables.Column(
-        verbose_name=_('RAMQ'),
-        accessor='patient__ramq',
-    )
-
-    class Meta:
-        model = Relationship
-        fields = ['first_name', 'last_name', 'date_of_birth', 'ramq']
-        empty_text = _('No patient found.')
-        attrs = {
-            'class': 'table table-bordered table-hover',
-            'thead': {
-                'class': 'thead-light',
-            },
-        }
-
-
 class RelationshipCaregiverTable(tables.Table):
     """A table for displaying caregivers' personal information."""
 
@@ -211,6 +203,7 @@ class RelationshipCaregiverTable(tables.Table):
 
     relationship_type = tables.Column(
         verbose_name=_('Relationship'),
+        accessor='type',
     )
 
     start_date = tables.DateColumn(
@@ -223,17 +216,38 @@ class RelationshipCaregiverTable(tables.Table):
 
     status = tables.Column(
         verbose_name=_('Status'),
+        attrs={
+            'th': {'align': 'center'},
+        },
     )
 
-    actions = tables.Column(
+    actions = tables.TemplateColumn(
         verbose_name=_('Actions'),
+        # TODO: use action_column.html template once the update/delete pages are implemented
+        template_name='tables/edit_pencil_icon.html',
+        attrs={
+            'td': {'align': 'center'},
+        },
         orderable=False,
+        extra_context={
+            # TODO: update urlname_delete and urlname_update values once the corresponding pages are implemented
+            'urlname_delete': '',
+            'urlname_update': '',
+        },
     )
 
     class Meta:
         model = Relationship
-        fields = ['first_name', 'last_name', 'relationship_type', 'start_date', 'end_date', 'status', 'actions']
-        empty_text = _('No caregivers.')
+        fields = [
+            'first_name',
+            'last_name',
+            'relationship_type',
+            'start_date',
+            'end_date',
+            'status',
+            'actions',
+        ]
+        empty_text = _('No caregiver could be found.')
         attrs = {
             'class': 'table table-bordered table-hover',
             'thead': {

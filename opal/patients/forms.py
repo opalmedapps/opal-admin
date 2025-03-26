@@ -1,24 +1,24 @@
-"""This module provides forms for Patients."""
+"""This module provides forms for the `patients` app."""
 from datetime import date
-from typing import Any, Dict, Optional, Set, Union
+from typing import Any, Dict, Optional, Union
 
 from django import forms
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import ButtonHolder, Column, Layout, Row, Submit
 
-from opal.core import validators
-from opal.core.form_layouts import CancelButton
-from opal.services.hospital.hospital import OIEService
-from opal.users.models import Caregiver, User
-
+from ..core import validators
+from ..core.form_layouts import CancelButton
+from ..services.hospital.hospital import OIEService
+from ..users.models import Caregiver, User
 from . import constants
-from .models import Patient, Relationship, RelationshipType, Site
+from .models import Patient, Relationship, RelationshipStatus, RelationshipType, Site
 
 
 class SelectSiteForm(forms.Form):
@@ -126,7 +126,7 @@ class SearchForm(forms.Form):
             self.add_error('medical_number', response['data']['message'])
         # save patient data to the JSONfield
         elif response and response['status'] == 'success':
-            self.cleaned_data['patient_record'] = response['data']  # type: ignore[index]
+            self.cleaned_data['patient_record'] = response['data']
 
 
 class ConfirmPatientForm(forms.Form):
@@ -199,10 +199,10 @@ class AvailableRadioSelect(forms.RadioSelect):
         name: str,
         value: Any,
         label: Union[int, str],
-        selected: Union[Set[str], bool],
+        selected: bool,
         index: int,
         subindex: Optional[int] = None,
-        attrs: Optional[Dict[str, Any]] = None,
+        attrs: Optional[dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Initialize the '_available_choices'.
@@ -358,7 +358,7 @@ class ExistingUserForm(forms.Form):
         super().clean()
         user_email_field = self.cleaned_data.get('user_email')
         user_phone_field = self.cleaned_data.get('user_phone')
-        error_message = _(
+        error_message = gettext(
             'Opal user was not found in your database. '
             + 'This may be an out-of-hospital account. '
             + 'Please proceed to generate a new QR code. '
@@ -411,7 +411,7 @@ class ExistingUserForm(forms.Form):
         except Caregiver.DoesNotExist:
             raise ValidationError(error_message)
 
-        self.cleaned_data['user_record'] = {  # type: ignore[index]
+        self.cleaned_data['user_record'] = {
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
@@ -525,51 +525,6 @@ class ConfirmPasswordForm(forms.Form):
             self.add_error('confirm_password', _('The password you entered is incorrect. Please try again.'))
 
 
-class ManageCaregiverAccessForm(forms.Form):
-    """This `ManageCaregiverAccessForm` provides the layout for the corresponding `Manage Caregiver Access` page.
-
-    The form contains fields for the medical card type (MRN or RAMQ), sites' codes, and medical number.
-    """
-
-    medical_card_type = forms.ChoiceField(
-        widget=forms.Select(),
-        choices=constants.MEDICAL_CARDS,
-        label=_('Card Type'),
-    )
-
-    sites = forms.ModelChoiceField(
-        queryset=Site.objects.all(),
-        widget=forms.Select,
-        label=_('Site code'),
-    )
-
-    medical_number = forms.CharField(
-        widget=forms.TextInput(),
-        label=_('Card Number'),
-    )
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """
-        Initialize the layout for the search area of the manage caregiver access page.
-
-        Args:
-            args: additional arguments
-            kwargs: additional keyword arguments
-        """
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-
-        self.helper.layout = Layout(
-            Row(
-                Column('medical_card_type', css_class='form-group col-md-3 mb-0'),
-                Column('sites', css_class='form-group col-md-3 mb-0'),
-                Column('medical_number', css_class='form-group col-md-3 mb-0'),
-                Submit('search', _('Search'), css_class='form-group col-md-3 mb-4 mt-4 btn btn-primary'),
-                css_class='form-row',
-            ),
-        )
-
-
 class RelationshipPendingAccessForm(forms.ModelForm):
     """Form for updating an `Pending Relationship Access` object."""
 
@@ -580,6 +535,11 @@ class RelationshipPendingAccessForm(forms.ModelForm):
     end_date = forms.DateField(
         widget=forms.widgets.DateInput(attrs={'type': 'date'}),
         label=Relationship._meta.get_field('end_date').verbose_name,  # noqa: WPS437
+    )
+    reason = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': '2'}),
+        label=Relationship._meta.get_field('reason').verbose_name,  # noqa: WPS437
+        required=False,
     )
 
     class Meta:
@@ -600,12 +560,21 @@ class RelationshipPendingAccessForm(forms.ModelForm):
             kwargs: varied amount of keyworded arguments
         """
         super().__init__(*args, **kwargs)
+        self.fields['status'].choices = [  # type: ignore[attr-defined]
+            (choice.value, choice.label) for choice in Relationship.valid_statuses(
+                RelationshipStatus(self.instance.status),
+            )
+        ]
         self.helper = FormHelper(self)
         self.helper.layout = Layout(
             'start_date',
             'end_date',
             'status',
             'reason',
+            FormActions(
+                Submit('submit', _('Save'), css_class='btn btn-primary'),
+                CancelButton(reverse_lazy('hospital-settings:institution-list')),
+            ),
         )
 
 

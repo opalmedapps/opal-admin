@@ -30,10 +30,6 @@
                         {% csrf_token %}
 
                         {% crispy form %}
-                        <a class="btn btn-secondary mr-2" href="{% url 'patients:relationships-pending-list' %}">
-                          {% translate "Cancel" %}
-                        </a>
-                        <input type="submit" class="btn btn-primary" value="{% translate "Save" %}">
                       </form>
                     </div>
                     {% comment %} /.card-body {% endcomment %}

@@ -15,6 +15,7 @@ from opal.caregivers.factories import CaregiverProfile, RegistrationCode
 from opal.caregivers.models import RegistrationCodeStatus, SecurityAnswer
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients.factories import HospitalPatient, Patient, Relationship
+from opal.patients.models import RelationshipType, RoleType
 from opal.users.factories import User
 
 pytestmark = pytest.mark.django_db
@@ -27,7 +28,14 @@ def test_my_caregiver_list(api_client: APIClient, admin_user: AbstractUser) -> N
     caregiver1 = CaregiverProfile()
     caregiver2 = CaregiverProfile()
     relationship1 = Relationship(patient=patient, caregiver=caregiver1)
-    relationship2 = Relationship(patient=patient, caregiver=caregiver2, status='CON')
+    relationship2 = Relationship(
+        patient=patient,
+        caregiver=caregiver2,
+        status='CON',
+        # Pytest insists on fetching the SELF role type instance using a queryset for some reason, factory doesnt work
+        type=RelationshipType.objects.filter(role_type=RoleType.SELF).first(),
+    )
+
     api_client.credentials(HTTP_APPUSERID=caregiver2.user.username)
     response = api_client.get(reverse(
         'api:caregivers-list',

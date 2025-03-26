@@ -1,4 +1,4 @@
-image: python:3.9.16-slim-bullseye
+image: python:3.10.9-slim-bullseye
 
 # set up
 # see: https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
@@ -81,9 +81,7 @@ flake8:
     # install plugin to produce code climate report
     - pip install flake8-gl-codeclimate
     # don't fail if there are errors so the result can also be printed to the console for logs
-    # fix relative file paths so GitLab is happy and shows the violations properly
-    # see: https://github.com/awelzel/flake8-gl-codeclimate/issues/14
-    - flake8 --format gl-codeclimate | python -c "import sys; import json; lines = [line.replace('./', '') for line in sys.stdin]; print(json.dumps(json.loads('\n'.join(lines)), indent='\t'));" > gl-code-quality-report.json || true
+    - flake8 --format gl-codeclimate --output-file gl-code-quality-report.json || true
     # fail if JSON file does not contain empty array
     - cat gl-code-quality-report.json | grep -q "\[\]"
   artifacts:
@@ -110,7 +108,7 @@ mypy:
 markdownlint:
   stage: Static Analysis
   image:
-    name: davidanson/markdownlint-cli2:next
+    name: davidanson/markdownlint-cli2:v0.6.0
     # overwrite default entrypoint (which is a call to markdownlint-cli2)
     entrypoint: [""]
   # this is not a Python script so we don't need to do all this extra stuff

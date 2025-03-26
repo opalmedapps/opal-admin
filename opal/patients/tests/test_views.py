@@ -1,5 +1,6 @@
 import io
 import re
+import urllib
 from datetime import date, datetime
 from http import HTTPStatus
 from typing import Any, Tuple
@@ -25,8 +26,11 @@ from opal.users.factories import Caregiver
 
 from ...users.models import User
 from .. import constants, factories, forms, models, tables
+from ..filters import ManageCaregiverAccessFilter
 # Add any future GET-requestable patients app pages here for faster test writing
-from ..views import AccessRequestView, PendingRelationshipListView
+from ..views import AccessRequestView, CaregiverAccessView, PendingRelationshipListView
+
+pytestmark = pytest.mark.django_db
 
 CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
     date_of_birth=datetime.strptime('1984-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
@@ -34,6 +38,8 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
     last_name='Simpson',
     sex='F',
     alias='',
+    deceased=True,
+    death_date_time=datetime.strptime('2054-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
     ramq='MARG99991313',
     ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
     mrns=[
@@ -56,7 +62,7 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
 )
 
 test_url_template_data: list[Tuple] = [
-    (reverse('patients:relationships-search'), 'patients/relationships-search/form.html'),
+    (reverse('patients:relationships-search'), 'patients/relationships-search/relationship_filter.html'),
 ]
 
 
@@ -78,18 +84,18 @@ def test_views_use_correct_template(user_client: Client, admin_user: AbstractUse
     assertTemplateUsed(response, template)
 
 
-def test_relationshiptypes_list_table(user_client: Client) -> None:
+def test_relationshiptypes_list_table(relationshiptype_user: Client) -> None:
     """Relationship types list uses the corresponding table."""
-    response = user_client.get(reverse('patients:relationshiptype-list'))
+    response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
 
     assert response.context['table'].__class__ == tables.RelationshipTypeTable
 
 
-def test_relationshiptypes_list(user_client: Client) -> None:
+def test_relationshiptypes_list(relationshiptype_user: Client) -> None:
     """Relationship types are listed."""
     types = [factories.RelationshipType(), factories.RelationshipType(name='Second')]
 
-    response = user_client.get(reverse('patients:relationshiptype-list'))
+    response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
     response.content.decode('utf-8')
 
     assertQuerysetEqual(
@@ -101,9 +107,9 @@ def test_relationshiptypes_list(user_client: Client) -> None:
         assertContains(response, f'<td >{relationship_type.name}</td>')
 
 
-def test_relationshiptype_create_get(user_client: Client) -> None:
+def test_relationshiptype_create_get(relationshiptype_user: Client) -> None:
     """A new relationship type can be created in a form."""
-    response = user_client.get(reverse('patients:relationshiptype-create'))
+    response = relationshiptype_user.get(reverse('patients:relationshiptype-create'))
 
     assertContains(response, 'Create Relationship Type')
 
@@ -120,10 +126,10 @@ def test_relationshiptype_create(user_client: Client) -> None:
     assert models.RelationshipType.objects.get(name='Testname').name == relationship_type.name
 
 
-def test_relationshiptype_update_get(user_client: Client) -> None:
+def test_relationshiptype_update_get(relationshiptype_user: Client) -> None:
     """An existing relationship type can be edited."""
     relationship_type = factories.RelationshipType()
-    response = user_client.get(
+    response = relationshiptype_user.get(
         reverse('patients:relationshiptype-update', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
@@ -131,13 +137,13 @@ def test_relationshiptype_update_get(user_client: Client) -> None:
     assertContains(response, 'value="Caregiver"')
 
 
-def test_relationshiptype_update_post(user_client: Client) -> None:
+def test_relationshiptype_update_post(relationshiptype_user: Client) -> None:
     """An existing relationship type can be updated."""
     relationship_type = factories.RelationshipType()
 
     relationship_type.end_age = 100
 
-    user_client.post(
+    relationshiptype_user.post(
         reverse('patients:relationshiptype-update', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id']),
     )
@@ -145,22 +151,22 @@ def test_relationshiptype_update_post(user_client: Client) -> None:
     assert models.RelationshipType.objects.get(pk=relationship_type.pk).end_age == 100
 
 
-def test_relationshiptype_delete_get(user_client: Client) -> None:
+def test_relationshiptype_delete_get(relationshiptype_user: Client) -> None:
     """Deleting a relationship type needs to be confirmed."""
     relationship_type = factories.RelationshipType()
 
-    response = user_client.get(
+    response = relationshiptype_user.get(
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
         data=model_to_dict(relationship_type, exclude=['id', 'end_age']),
     )
     assertContains(response, 'Are you sure you want to delete the following relationship type: Caregiver?')
 
 
-def test_relationshiptype_delete(user_client: Client) -> None:
+def test_relationshiptype_delete(relationshiptype_user: Client) -> None:
     """An existing relationship type can be deleted."""
     relationship_type = factories.RelationshipType()
 
-    user_client.delete(
+    relationshiptype_user.delete(
         reverse('patients:relationshiptype-delete', kwargs={'pk': relationship_type.pk}),
     )
 
@@ -353,6 +359,8 @@ def test_form_error_in_template(
                 last_name='Simpson',
                 sex='F',
                 alias='',
+                deceased=True,
+                death_date_time=datetime.strptime('2054-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
                 ramq='MARG99991313',
                 ramq_expiration=datetime.strptime('2024-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
                 mrns=[
@@ -914,6 +922,8 @@ def test_create_new_relationship() -> None:
         last_name='Simpson',
         sex='F',
         alias='',
+        deceased=True,
+        death_date_time=datetime.strptime('2084-05-09 09:20:30', '%Y-%m-%d %H:%M:%S'),
         ramq='LISA99991313',
         ramq_expiration=datetime.strptime('2044-01-31 23:59:59', '%Y-%m-%d %H:%M:%S'),
         mrns=[
@@ -1027,6 +1037,8 @@ def test_some_mrns_have_same_site_code() -> None:
         last_name=patient_data.last_name,
         sex=patient_data.sex,
         alias=patient_data.alias,
+        deceased=patient_data.deceased,
+        death_date_time=patient_data.death_date_time,
         ramq=patient_data.ramq,
         ramq_expiration=patient_data.ramq_expiration,
         mrns=[
@@ -1059,6 +1071,8 @@ def test_all_mrns_have_same_site_code() -> None:
         last_name=patient_data.last_name,
         sex=patient_data.sex,
         alias=patient_data.alias,
+        deceased=patient_data.deceased,
+        death_date_time=patient_data.death_date_time,
         ramq=patient_data.ramq,
         ramq_expiration=patient_data.ramq_expiration,
         mrns=[
@@ -1091,6 +1105,8 @@ def test_no_mrns_have_same_site_code() -> None:
         last_name=patient_data.last_name,
         sex=patient_data.sex,
         alias=patient_data.alias,
+        deceased=patient_data.deceased,
+        death_date_time=patient_data.death_date_time,
         ramq=patient_data.ramq,
         ramq_expiration=patient_data.ramq_expiration,
         mrns=[
@@ -1123,6 +1139,8 @@ def test_error_message_mrn_with_same_site_code() -> None:
         last_name=patient_data.last_name,
         sex=patient_data.sex,
         alias=patient_data.alias,
+        deceased=patient_data.deceased,
+        death_date_time=patient_data.death_date_time,
         ramq=patient_data.ramq,
         ramq_expiration=patient_data.ramq_expiration,
         mrns=[
@@ -1149,23 +1167,23 @@ def test_error_message_mrn_with_same_site_code() -> None:
     )['error_message'] == 'Please note multiple MRNs need to be merged by medical records.'
 
 
-def test_relationships_list_table(user_client: Client) -> None:
+def test_relationships_list_table(relationship_user: Client) -> None:
     """Ensures Relationships list uses the corresponding table."""
-    response = user_client.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-pending-list'))
 
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
 
 
-def test_relationships_list_empty(user_client: Client) -> None:
+def test_relationships_list_empty(relationship_user: Client) -> None:
     """Ensures Relationships list shows message when no types are defined."""
-    response = user_client.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-pending-list'))
 
     assert response.status_code == HTTPStatus.OK
 
     assertContains(response, 'No caregiver pending access requests.')
 
 
-def test_relationships_pending_list(user_client: Client) -> None:
+def test_relationships_pending_list(relationship_user: Client) -> None:
     """Ensures Relationships with pending status are listed."""
     caregivertype2 = factories.RelationshipType(name='caregiver_2')
     caregivertype3 = factories.RelationshipType(name='caregiver_3')
@@ -1174,7 +1192,7 @@ def test_relationships_pending_list(user_client: Client) -> None:
         factories.Relationship(type=caregivertype3),
     ]
 
-    response = user_client.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-pending-list'))
     response.content.decode('utf-8')
 
     assertQuerysetEqual(list(response.context['relationship_list']), relationships)
@@ -1183,7 +1201,7 @@ def test_relationships_pending_list(user_client: Client) -> None:
         assertContains(response, f'<td >{relationship.type.name}</td>')  # noqa: WPS237
 
 
-def test_relationships_not_pending_not_list(user_client: Client) -> None:
+def test_relationships_not_pending_not_list(relationship_user: Client) -> None:
     """Ensures that only Relationships with pending status are listed."""
     caregivertype1 = factories.RelationshipType(name='caregiver_1')
     caregivertype2 = factories.RelationshipType(name='caregiver_2')
@@ -1192,21 +1210,21 @@ def test_relationships_not_pending_not_list(user_client: Client) -> None:
     factories.Relationship(type=caregivertype2)
     factories.Relationship(type=caregivertype3)
 
-    response = user_client.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-pending-list'))
 
     assert len(response.context['relationship_list']) == 2
 
 
-def test_relationships_pending_list_table(user_client: Client) -> None:
+def test_relationships_pending_list_table(relationship_user: Client) -> None:
     """Ensures that pending relationships list uses the corresponding table."""
-    response = user_client.get(reverse('patients:relationships-pending-list'))
+    response = relationship_user.get(reverse('patients:relationships-pending-list'))
 
     assert response.context['table'].__class__ == tables.PendingRelationshipTable
 
 
-def test_relationshiptype_list_delete_unavailable(user_client: Client) -> None:
+def test_relationshiptype_list_delete_unavailable(relationshiptype_user: Client) -> None:
     """Ensure the delete button does not appear, but update does, in the special rendering for restricted role types."""
-    response = user_client.get(reverse('patients:relationshiptype-list'))
+    response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
 
     soup = BeautifulSoup(response.content, 'html.parser')
     delete_button_data = soup.find_all('a', href=re.compile('delete'))
@@ -1217,15 +1235,15 @@ def test_relationshiptype_list_delete_unavailable(user_client: Client) -> None:
     assert update_button_data
 
 
-def test_relationshiptype_list_delete_available(user_client: Client) -> None:
+def test_relationshiptype_list_delete_available(relationshiptype_user: Client) -> None:
     """Ensure the delete and update buttons do appear for regular relationship types."""
     new_relationship_type = factories.RelationshipType()
-    user_client.post(
+    relationshiptype_user.post(
         reverse('patients:relationshiptype-create'),
         data=model_to_dict(new_relationship_type, exclude=['id', 'end_age']),
     )
 
-    response = user_client.get(reverse('patients:relationshiptype-list'))
+    response = relationshiptype_user.get(reverse('patients:relationshiptype-list'))
 
     soup = BeautifulSoup(response.content, 'html.parser')
     delete_button_data = soup.find_all('a', href=re.compile('delete'))
@@ -1236,32 +1254,32 @@ def test_relationshiptype_list_delete_available(user_client: Client) -> None:
     assert update_button_data
 
 
-def test_relationships_pending_form(user_client: Client) -> None:
+def test_relationships_pending_form(relationship_user: Client) -> None:
     """Ensures that pending relationships edit uses the right form."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     factories.Relationship(pk=1, type=relationshiptype)
-    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
 
     assert response.context['form'].__class__ == forms.RelationshipPendingAccessForm
 
 
-def test_relationships_pending_form_content(user_client: Client) -> None:
+def test_relationships_pending_form_content(relationship_user: Client) -> None:
     """Ensures that pending relationships passed info is correct."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver)
-    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
 
     assert response.context['relationship'] == relationship
 
 
-def test_relationships_pending_form_response(user_client: Client) -> None:
+def test_relationships_pending_form_response(relationship_user: Client) -> None:
     """Ensures that pending relationships displayed info is correct."""
     relationshiptype = factories.RelationshipType(name='relationshiptype')
     caregiver = factories.CaregiverProfile()
     patient = factories.Patient()
     relationship = factories.Relationship(pk=1, type=relationshiptype, caregiver=caregiver, patient=patient)
-    response = user_client.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
+    response = relationship_user.get(reverse('patients:relationships-pending-update', kwargs={'pk': 1}))
     response.content.decode('utf-8')
 
     assertContains(response, patient)
@@ -1326,3 +1344,242 @@ def test_relationships_pending_response_no_menu(user_client: Client, django_user
     response = user_client.get('/hospital-settings/')
 
     assertNotContains(response, 'Pending Requests')
+
+
+# can manage relationshiptype permissions
+
+
+@pytest.mark.parametrize(
+    'url_name', [
+        reverse('patients:relationshiptype-list'),
+        reverse('patients:relationshiptype-create'),
+        reverse('patients:relationshiptype-update', args=(11,)),
+        reverse('patients:relationshiptype-delete', args=(11,)),
+    ],
+)
+def test_relationshiptype_perm_required_fail(user_client: Client, django_user_model: User, url_name: str) -> None:
+    """Ensure that `RelationshipType` permission denied error is raised when not having privilege."""
+    user = django_user_model.objects.create(username='test_relationshiptype_user')
+    factories.RelationshipType(pk=11)
+    user_client.force_login(user)
+
+    response = user_client.get(url_name)
+    request = RequestFactory().get(response)  # type: ignore[arg-type]
+
+    request.user = user
+    with pytest.raises(PermissionDenied):
+        PendingRelationshipListView.as_view()(request)
+
+
+@pytest.mark.parametrize(
+    'url_name', [
+        reverse('patients:relationshiptype-list'),
+        reverse('patients:relationshiptype-create'),
+        reverse('patients:relationshiptype-update', args=(11,)),
+        reverse('patients:relationshiptype-delete', args=(11,)),
+    ],
+)
+def test_relationshiptype_perm_required_success(
+    relationshiptype_user: Client,
+    django_user_model: User,
+    url_name: str,
+) -> None:
+    """Ensure that `RelationshipType` can be accessed with the required permission."""
+    factories.RelationshipType(pk=11)
+
+    response = relationshiptype_user.get(url_name)
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_relationshiptype_response_contains_menu(relationshiptype_user: Client, django_user_model: User) -> None:
+    """Ensures that pending relationshiptypes is displayed for users with permission."""
+    response = relationshiptype_user.get('/hospital-settings/')
+
+    assertContains(response, 'Relationship Types')
+
+
+def test_relationshiptype_response_no_menu(user_client: Client, django_user_model: User) -> None:
+    """Ensures that pending relationshiptypes is not displayed for users without permission."""
+    user = django_user_model.objects.create(username='test_relationshiptype_user')
+    user_client.force_login(user)
+
+    response = user_client.get('/hospital-settings/')
+
+    assertNotContains(response, 'Relationship Types')
+
+
+# Search Patient Access tests
+
+def test_caregiver_access_tables(user_client: Client, django_user_model: User) -> None:
+    """Ensure `CaregiverAccessView` uses the `RelationshipPatientTable` and `RelationshipCaregiverTable` tables."""
+    user = django_user_model.objects.create(username='test_caregiver_access_user')
+    user_client.force_login(user)
+
+    response = user_client.get(reverse('patients:relationships-search'))
+
+    assert response.context['tables'][0].__class__ == tables.PatientTable
+    assert response.context['tables'][1].__class__ == tables.RelationshipCaregiverTable
+
+
+def test_caregiver_access_filter(user_client: Client, django_user_model: User) -> None:
+    """Ensure `CaregiverAccessView` uses the `ManageCaregiverAccessFilter`."""
+    user = django_user_model.objects.create(username='test_caregiver_access_user')
+    user_client.force_login(user)
+
+    response = user_client.get(reverse('patients:relationships-search'))
+
+    assert response.context['filter'].__class__ == ManageCaregiverAccessFilter
+
+
+def test_caregiver_access_empty_tables_displayed(user_client: Client, django_user_model: User) -> None:
+    """Ensure that `Search Patient Access` template displays empty `Patient Details` and `Caregiver Details` tables."""
+    user = django_user_model.objects.create(username='test_caregiver_access_user')
+    user_client.force_login(user)
+
+    factories.Relationship(type=factories.RelationshipType(role_type=models.RoleType.SELF))
+    factories.Relationship(type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER))
+    factories.Relationship(type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER))
+
+    request = RequestFactory().get(reverse('patients:relationships-search'))
+    request.user = user
+
+    response = CaregiverAccessView.as_view()(request)
+
+    assert response.status_code == HTTPStatus.OK
+    assertContains(response, '<td colspan="5">No patient could be found.</td>')
+    assertContains(response, '<td colspan="7">No caregiver could be found.</td>')
+
+
+def test_caregiver_access_tables_displayed_by_mrn(user_client: Client, django_user_model: User) -> None:
+    """
+    Ensure that `Search Patient Access` template displays `Patient Details` table and `Caregiver Details` table.
+
+    The search is performed by using MRN number.
+    """
+    user = django_user_model.objects.create(username='test_caregiver_access_user')
+    user_client.force_login(user)
+
+    hospital_patient = factories.HospitalPatient()
+    factories.Relationship(
+        patient=hospital_patient.patient,
+        type=factories.RelationshipType(role_type=models.RoleType.SELF),
+    )
+    factories.Relationship(
+        patient=hospital_patient.patient,
+        type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER),
+    )
+    factories.Relationship(
+        patient=hospital_patient.patient,
+        type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER),
+    )
+    factories.Relationship(
+        patient=factories.Patient(ramq='TEST123'),
+        type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER),
+    )
+
+    form_data = {
+        'medical_card_type': 'mrn',
+        'site': hospital_patient.site.id,
+        'medical_number': hospital_patient.mrn,
+        'search': 'Search',
+    }
+    query_string = urllib.parse.urlencode(form_data)
+    response = user_client.get(
+        path=reverse('patients:relationships-search'),
+        QUERY_STRING=query_string,
+    )
+    response.content.decode('utf-8')
+    assert response.status_code == HTTPStatus.OK
+
+    # Check 'medical_number' field name
+    mrn_filter = response.context['filter']
+    assert mrn_filter.filters['medical_number'].field_name == 'hospital_patients__mrn'
+
+    # Check filter's queryset
+    assertQuerysetEqual(
+        mrn_filter.qs,
+        models.Patient.objects.filter(hospital_patients__mrn=hospital_patient.mrn),
+        ordered=False,
+    )
+
+    # Check number of tables
+    soup = BeautifulSoup(response.content, 'html.parser')
+    search_tables = soup.find_all('tbody')
+    assert len(search_tables) == 2
+
+    # Check how many patients are displayed
+    patients = search_tables[0].find_all('tr')
+    assert len(patients) == 1
+
+    # Check how many caregivers are displayed
+    caregivers = search_tables[1].find_all('tr')
+    assert len(caregivers) == 3
+
+
+def test_caregiver_access_tables_displayed_by_ramq(user_client: Client, django_user_model: User) -> None:
+    """
+    Ensure that `Search Patient Access` template displays `Patient Details` table and `Caregiver Details` table.
+
+    The search is performed by using RAMQ number.
+    """
+    user = django_user_model.objects.create(username='test_caregiver_access_user')
+    user_client.force_login(user)
+
+    hospital_patient = factories.HospitalPatient(
+        patient=factories.Patient(ramq='OTES01161973'),
+    )
+    factories.Relationship(
+        patient=hospital_patient.patient,
+        type=factories.RelationshipType(name=models.RoleType.SELF),
+    )
+    factories.Relationship(
+        patient=hospital_patient.patient,
+        type=factories.RelationshipType(name=models.RoleType.CAREGIVER),
+    )
+    factories.Relationship(
+        patient=hospital_patient.patient,
+        type=factories.RelationshipType(name=models.RoleType.CAREGIVER),
+    )
+    factories.Relationship(
+        patient=factories.Patient(ramq='TEST123'),
+        type=factories.RelationshipType(role_type=models.RoleType.CAREGIVER),
+    )
+
+    form_data = {
+        'medical_card_type': 'ramq',
+        'site': '',
+        'medical_number': hospital_patient.patient.ramq,
+        'search': 'Search',
+    }
+    query_string = urllib.parse.urlencode(form_data)
+    response = user_client.get(
+        path=reverse('patients:relationships-search'),
+        QUERY_STRING=query_string,
+    )
+    response.content.decode('utf-8')
+    assert response.status_code == HTTPStatus.OK
+
+    # Check 'medical_number' field name
+    ramq_filter = response.context['filter']
+    assert ramq_filter.filters['medical_number'].field_name == 'ramq'
+
+    # Check filter's queryset
+    assertQuerysetEqual(
+        ramq_filter.qs,
+        models.Patient.objects.filter(ramq=hospital_patient.patient.ramq),
+        ordered=False,
+    )
+
+    # Check number of tables
+    soup = BeautifulSoup(response.content, 'html.parser')
+    search_tables = soup.find_all('tbody')
+    assert len(search_tables) == 2
+
+    # Check how many patients are displayed
+    patients = search_tables[0].find_all('tr')
+    assert len(patients) == 1
+
+    # Check how many caregivers are displayed
+    caregivers = search_tables[1].find_all('tr')
+    assert len(caregivers) == 3

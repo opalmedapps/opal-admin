@@ -8,7 +8,6 @@ from django.db import connections
 from django.utils import timezone
 
 import pytest
-from django_test_migrations.migrator import Migrator
 from pytest_django.plugin import _DatabaseBlocker  # noqa: WPS450
 
 from opal.caregivers import factories as caregiver_factories
@@ -16,8 +15,10 @@ from opal.caregivers.models import SecurityAnswer, SecurityQuestion
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
-from opal.patients.models import Patient, RelationshipStatus, RoleType
+from opal.patients.models import Patient, RelationshipStatus, RelationshipType, RoleType
 from opal.users import factories as user_factories
+
+from ..management.commands import migrate_users
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
@@ -70,7 +71,8 @@ class TestSecurityQuestionsMigration(CommandTestMixin):
         message, error = self._call_command('migrate_securityquestions')
         question = SecurityQuestion.objects.all()
         assert len(question) == 1
-        assert question[0].title_en == 'What is the name of your first pet?'
+        assert question[0].title_en == 'What is the name of your first pet?'  # type: ignore[attr-defined]  # noqa: E501
+        assert question[0].title_fr == 'Quel est le nom de votre premier animal de compagnie?'  # type: ignore[attr-defined]  # noqa: E501
         assert message == (
             'Imported security question, sernum: 1, title: What is the name of your first pet?\n'
         )
@@ -275,8 +277,8 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         assert 'Patient identifier legacy_id: 99, mrn:9999996 already exists, skipping\n' in message
         assert 'Number of imported patients is: 0\n' in message
 
-    def test_import_pass_multiple_patientidentifiers(self) -> None:
-        """Test import fail for patient and pass multiple patient identifier."""
+    def test_import_failure_multiple_mrns_at_same_site(self) -> None:
+        """Test import fail for patient with multiple MRNs at the same site."""
         legacy_patient = legacy_factories.LegacyPatientFactory(patientsernum=10)
         patient_factories.Patient(legacy_id=10)
         code = legacy_factories.LegacyHospitalIdentifierTypeFactory(code='TEST')
@@ -293,34 +295,34 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         hospital_settings_factories.Site(code='TEST')
 
         message, error = self._call_command('migrate_patients')
+
         assert 'Patient with legacy_id: 10 already exists, skipping\n' in message
         assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999996\n' in message
-        assert 'Imported patient_identifier, legacy_id: 10, mrn: 9999997\n' in message
         assert 'Number of imported patients is: 0\n' in message
+        assert error == (
+            'Cannot import patient hospital identifier for patient (ID: 10, MRN: 9999997),'
+            + ' already has an MRN at the same site (TEST)\n'
+        )
 
 
 class TestUsersCaregiversMigration(CommandTestMixin):
     """Test class for users and caregivers migrations from legacy DB."""
 
-    def test_import_user_no_self_relationshiptype(self, migrator: Migrator) -> None:
+    def test_import_user_no_self_relationshiptype(self) -> None:
         """Test import fails if no self relationship type exists."""
-        # Must revert to state before prepopulation to test command error
-        migrator.apply_initial_migration(('patients', '0013_relationshiptype_role'))  # noqa: WPS204
+        RelationshipType.objects.filter(role_type=RoleType.SELF).delete()
 
         with pytest.raises(CommandError, match="RelationshipType for 'Self' not found"):
             self._call_command('migrate_users')
 
     def test_import_user_caregiver_no_legacy_users(self) -> None:
         """Test import fails no legacy users exist."""
-        patient_factories.RelationshipType(role_type=RoleType.SELF)
-
         message, error = self._call_command('migrate_users')
 
         assert 'Number of imported users is: 0' in message
 
     def test_import_user_caregiver_no_patient_exist(self) -> None:
         """Test import fails, a corresponding patient in new backend does not exist."""
-        patient_factories.RelationshipType(role_type=RoleType.SELF)
         legacy_factories.LegacyUserFactory(usertypesernum=99)
 
         message, error = self._call_command('migrate_users')
@@ -331,7 +333,6 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         """Test import fails, caregiver profile has already been migrated."""
         legacy_user = legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
-        patient_factories.RelationshipType(role_type=RoleType.SELF)
         patient_factories.CaregiverProfile(legacy_id=legacy_user.usersernum)
 
         message, error = self._call_command('migrate_users')
@@ -343,12 +344,12 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         """Test import relation fails, relation already exists."""
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient = patient_factories.Patient(legacy_id=99)
-        relationshiptype = patient_factories.RelationshipType(role_type=RoleType.SELF)
+        relationship_type = RelationshipType.objects.get(role_type=RoleType.SELF)
         caregiver = patient_factories.CaregiverProfile(legacy_id=55)
         patient_factories.Relationship(
             patient=patient,
             caregiver=caregiver,
-            type=relationshiptype,
+            type=relationship_type,
             status=RelationshipStatus.CONFIRMED,
         )
 
@@ -362,7 +363,6 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         """Test import pass for relationship for already migrated caregiver."""
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
-        patient_factories.RelationshipType(role_type=RoleType.SELF)
         patient_factories.CaregiverProfile(legacy_id=55)
 
         message, error = self._call_command('migrate_users')
@@ -376,7 +376,6 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         legacy_factories.LegacyPatientFactory(patientsernum=99)
         legacy_factories.LegacyUserFactory(usersernum=55, usertypesernum=99)
         patient_factories.Patient(legacy_id=99)
-        patient_factories.RelationshipType(role_type=RoleType.SELF)
         message, error = self._call_command('migrate_users')
 
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
@@ -391,7 +390,6 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         legacy_factories.LegacyUserFactory(usersernum=56, usertypesernum=100, usertype='Patient', username='test2')
         patient_factories.Patient(legacy_id=99, first_name='Test_1', ramq='RAMQ12345678')
         patient_factories.Patient(legacy_id=100, first_name='Test_2')
-        patient_factories.RelationshipType(role_type=RoleType.SELF)
         message, error = self._call_command('migrate_users')
 
         assert 'Legacy user with sernum: 55 has been migrated\n' in message
@@ -399,6 +397,26 @@ class TestUsersCaregiversMigration(CommandTestMixin):
         assert 'Self relationship for patient with legacy_id: 99 has been created.\n' in message
         assert 'Self relationship for patient with legacy_id: 100 has been created.\n' in message
         assert 'Number of imported users is: 2\n' in message
+
+    def test_import_new_user_phone_number_converted(self) -> None:
+        """Ensure that the phone number is correctly converted to a string and prefixed with the country code."""
+        legacy_patient = legacy_factories.LegacyPatientFactory(telnum=514123456789)
+        legacy_user = legacy_factories.LegacyUserFactory()
+
+        command = migrate_users.Command()
+        profile = command._create_caregiver_and_profile(legacy_patient, legacy_user)
+
+        assert profile.user.phone_number == '+1514123456789'
+
+    def test_import_new_user_phone_number_missing(self) -> None:
+        """Ensure that a legacy patient without a phone number is correctly migrated."""
+        legacy_patient = legacy_factories.LegacyPatientFactory(telnum=None)
+        legacy_user = legacy_factories.LegacyUserFactory()
+
+        command = migrate_users.Command()
+        profile = command._create_caregiver_and_profile(legacy_patient, legacy_user)
+
+        assert profile.user.phone_number == ''
 
 
 class TestPatientsDeviationsCommand(CommandTestMixin):
@@ -432,7 +450,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         ) in error
 
         assert 'OpalDB.Patient  <===>  opal.patients_patient:' in error
-        assert "(1, '', 'Patient First Name', 'Patient Last Name', '1999-01-01', 'M', None, None, None)" in error
+        assert "(1, '', 'Bart', 'Simpson', '1999-01-01', 'M', None, None, None)" in error
         assert "(51, '123456', 'TEST', 'LEGACY', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en')" in error
         assert '{0}\n\n\n'.format(120 * '-')
 

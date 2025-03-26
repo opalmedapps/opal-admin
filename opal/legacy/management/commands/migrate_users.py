@@ -25,15 +25,15 @@ class Command(BaseCommand):
             args: input arguments.
             kwargs: input arguments.
         """
-        legacy_users = LegacyUsers.objects.filter(usertype='Patient')
-        relationshiptype = RelationshipType.objects.filter(role_type=RoleType.SELF).first()
+        relationship_type = RelationshipType.objects.filter(role_type=RoleType.SELF).first()
 
         # force failure if the relationship type does not exist
-        if relationshiptype is None:
+        if relationship_type is None:
             raise CommandError("RelationshipType for 'Self' not found")
 
         migrated_users_count = 0
-        for legacy_user in legacy_users:
+
+        for legacy_user in LegacyUsers.objects.filter(usertype='Patient'):
             patient = Patient.objects.filter(legacy_id=legacy_user.usertypesernum).first()
             if patient:
                 caregiver_profile = CaregiverProfile.objects.filter(legacy_id=legacy_user.usersernum).first()
@@ -45,28 +45,11 @@ class Command(BaseCommand):
                     )
                 else:
                     legacy_patient = LegacyPatient.objects.get(patientsernum=legacy_user.usertypesernum)
-                    caregiver_user = Caregiver.objects.create(
-                        username=legacy_user.username,
-                        first_name=legacy_patient.firstname,
-                        last_name=legacy_patient.lastname,
-                        email=legacy_patient.email,
-                        date_joined=legacy_patient.registrationdate,
-                        language=legacy_patient.language.lower(),
-                        phone_number=legacy_patient.telnum,
-                    )
-                    caregiver_profile = CaregiverProfile.objects.create(
-                        user=caregiver_user,
-                        legacy_id=legacy_user.usersernum,
-                    )
-                    self.stdout.write(
-                        'Legacy user with sernum: {legacy_id} has been migrated'.format(
-                            legacy_id=legacy_user.usersernum,
-                        ),
-                    )
+                    caregiver_profile = self._create_caregiver_and_profile(legacy_patient, legacy_user)
                     # count number of migrated users
                     migrated_users_count += 1
 
-                self._create_relationship(patient, caregiver_profile, relationshiptype)
+                self._create_relationship(patient, caregiver_profile, relationship_type)
             else:
                 self.stderr.write(
                     'Patient with sernum: {legacy_id}, does not exist, skipping.'.format(
@@ -77,25 +60,71 @@ class Command(BaseCommand):
             f'Number of imported users is: {migrated_users_count}',
         )
 
+    def _create_caregiver_and_profile(
+        self,
+        legacy_patient: LegacyPatient,
+        legacy_user: LegacyUsers,
+    ) -> CaregiverProfile:
+        """
+        Create `Caregiver` and corresponding `CaregiverProfile` instances for the given legacy patient and user.
+
+        Returns the created `CaregiverProfile` instance.
+
+        Args:
+            legacy_patient: the legacy patient
+            legacy_user: the legacy user corresponding to the patient
+
+        Returns:
+            CaregiverProfile: the created `CaregiverProfile` instance
+        """
+        # convert phone number in int to str
+        phone_number = '+1{0}'.format(legacy_patient.telnum) if legacy_patient.telnum else ''
+        caregiver_user = Caregiver(
+            username=legacy_user.username,
+            first_name=legacy_patient.firstname,
+            last_name=legacy_patient.lastname,
+            email=legacy_patient.email,
+            date_joined=legacy_patient.registrationdate,
+            language=legacy_patient.language.lower(),
+            phone_number=phone_number,
+        )
+        caregiver_user.full_clean(exclude=['password'])
+        caregiver_user.save()
+
+        caregiver_profile = CaregiverProfile(
+            user=caregiver_user,
+            legacy_id=legacy_user.usersernum,
+        )
+        caregiver_profile.full_clean()
+        caregiver_profile.save()
+
+        self.stdout.write(
+            'Legacy user with sernum: {legacy_id} has been migrated'.format(
+                legacy_id=legacy_user.usersernum,
+            ),
+        )
+
+        return caregiver_profile
+
     def _create_relationship(
         self,
         patient: Patient,
         caregiver_profile: CaregiverProfile,
-        relationshiptype: RelationshipType,
+        relationship_type: RelationshipType,
     ) -> None:
         """
             Check the self relationship between caregiver and patient and migrated if it does not exist.
 
         Args:
-            patient: instance of Patinet model.
+            patient: instance of Patient model.
             caregiver_profile: instance of CaregiverProfile model.
-            relationshiptype: instance of RelationshipType model.
+            relationship_type: the `RelationshipType` instance for Self.
 
         """
         relationship = Relationship.objects.filter(
             patient=patient,
             caregiver=caregiver_profile,
-            type=relationshiptype,
+            type=relationship_type,
         ).first()
         if relationship:
             self.stdout.write(
@@ -104,15 +133,18 @@ class Command(BaseCommand):
                 ),
             )
         else:
-            Relationship.objects.create(
+            relationship = Relationship(
                 patient=patient,
                 caregiver=caregiver_profile,
-                type=relationshiptype,
+                type=relationship_type,
                 status=RelationshipStatus.CONFIRMED,
                 request_date=caregiver_profile.user.date_joined,
                 start_date=caregiver_profile.user.date_joined,
                 reason='',
             )
+            relationship.full_clean()
+            relationship.save()
+
             self.stdout.write(
                 'Self relationship for patient with legacy_id: {legacy_id} has been created.'.format(
                     legacy_id=patient.legacy_id,
