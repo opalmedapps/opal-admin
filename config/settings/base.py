@@ -466,6 +466,7 @@ REST_FRAMEWORK = {
 }
 
 # DRF Spectacular API documentation (OpenAPI 3.0 Specification)
+# See https://drf-spectacular.readthedocs.io/en/latest/index.html
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Opal Backend',
     'DESCRIPTION': 'This python django-based backend provides API endpoints for other opal applications and a user interface for administrative functionality.',
