@@ -76,7 +76,6 @@ class Command(BaseCommand):
                 )
                 continue
 
-            # Add patient to the skipped_patients list if the response status code is not success
             if response.status_code != HTTPStatus.OK:
                 skipped_patients.append(
                     (patient, f'response not OK ({response.status_code}: {response.content.decode()})'),
