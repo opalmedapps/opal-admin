@@ -18,14 +18,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: opal/caregivers/api/views.py
-msgid "Registration code is invalid."
-msgstr ""
-
-#: opal/caregivers/api/views.py
-msgid "Verification code is invalid."
-msgstr ""
-
 #: opal/caregivers/api/viewsets.py
 msgid "The provided answer is not correct"
 msgstr "La réponse fournie n'est pas correcte"
