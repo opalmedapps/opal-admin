@@ -42,6 +42,7 @@ class LegacyPatientFactory(DjangoModelFactory):
     access_level = '3'
     last_updated = timezone.now()
     patient_aria_ser = Sequence(lambda number: number + 1)
+    death_date = timezone.make_aware(datetime(2018, 1, 2))
 
 
 class LegacyNotificationFactory(DjangoModelFactory):

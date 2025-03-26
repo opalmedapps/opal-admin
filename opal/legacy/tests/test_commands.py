@@ -481,9 +481,9 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         ) in error
 
         assert 'opal.patients_patient  <===>  OpalDB.Patient(UserType="Patient"):' in error
-        assert "(51, '', 'Marge', 'Simpson', '1999-01-01', 'M', '', 'test@opal.com', 'en', 'ALL')" in error
+        assert "(51, '', 'Marge', 'Simpson', '1999-01-01', 'M', 'ALL', datetime.datetime(2018, 1, 2, 5, 0))" in error
         assert (
-            "(51, 'SIMM18510198', 'Marge', 'Simpson', '2018-01-01', 'M', '5149995555', 'test@test.com', 'en', 'ALL')"
+            "(51, 'SIMM18510198', 'Marge', 'Simpson', '2018-01-01', 'M', 'ALL', datetime.datetime(2018, 1, 2, 5, 0))"
         ) in error
         assert '{0}\n\n\n'.format(120 * '-')
 
@@ -783,7 +783,6 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         )
 
         message, error = self._call_command('find_deviations')
-        print(error)
         assert 'No deviations have been found in the "Patient and Caregiver" tables/models.' in message
 
 

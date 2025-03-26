@@ -9,6 +9,8 @@ reference from:
 
 import datetime
 
+from django.utils import timezone
+
 from dateutil.relativedelta import relativedelta
 from factory import Sequence, SubFactory, lazy_attribute
 from factory.django import DjangoModelFactory
@@ -48,6 +50,7 @@ class Patient(DjangoModelFactory):
     sex = models.Patient.SexType.MALE
     ramq = ''
     legacy_id = Sequence(lambda number: number + 1)
+    date_of_death = timezone.make_aware(datetime.datetime(2018, 1, 2))
 
 
 class Relationship(DjangoModelFactory):

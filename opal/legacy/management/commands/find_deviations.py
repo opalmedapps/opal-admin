@@ -9,33 +9,32 @@ SPLIT_LENGTH = 120
 
 LEGACY_PATIENT_QUERY = """
     SELECT
-        PatientSerNum AS LegacyID,
-        SSN AS RAMQ,
-        FirstName AS FirstName,
-        LastName AS LastName,
-        DATE_FORMAT(DateOfBirth, "%Y-%m-%d") AS BirthDate,
+        P.PatientSerNum AS LegacyID,
+        P.SSN AS RAMQ,
+        P.FirstName AS FirstName,
+        P.LastName AS LastName,
+        DATE_FORMAT(P.DateOfBirth, "%Y-%m-%d") AS BirthDate,
         (
         CASE
-            WHEN UPPER(Sex) = "M" THEN "M"
-            WHEN UPPER(Sex) = "MALE" THEN "M"
-            WHEN UPPER(Sex) = "F" THEN "F"
-            WHEN UPPER(Sex) = "FEMALE" THEN "F"
-            WHEN UPPER(Sex) = "OTHER" THEN "O"
-            WHEN UPPER(Sex) = "O" THEN "O"
+            WHEN UPPER(P.Sex) = "M" THEN "M"
+            WHEN UPPER(P.Sex) = "MALE" THEN "M"
+            WHEN UPPER(P.Sex) = "F" THEN "F"
+            WHEN UPPER(P.Sex) = "FEMALE" THEN "F"
+            WHEN UPPER(P.Sex) = "OTHER" THEN "O"
+            WHEN UPPER(P.Sex) = "O" THEN "O"
             ELSE "UNDEFINED"
         END
         ) AS Sex,
-        CONVERT(TelNum, CHAR) AS Phone,
-        LOWER(Email) AS Email,
-        LOWER(Language) AS Language,
         (
         CASE
-            WHEN AccessLevel = "1" THEN "NTK"
-            WHEN AccessLevel = "3" THEN "ALL"
+            WHEN P.AccessLevel = "1" THEN "NTK"
+            WHEN P.AccessLevel = "3" THEN "ALL"
             ELSE "UNDEFINED"
         END
-        ) As AccessLevel
-    FROM Patient P
+        ) As AccessLevel,
+        P.DeathDate as DeathDate
+    FROM PatientControl PC
+    LEFT JOIN Patient P ON PC.PatientSerNum = P.PatientSerNum
     LEFT JOIN Users U ON P.PatientSerNum = U.UserTypeSerNum
     WHERE U.UserType = "Patient";
 """  # noqa: WPS323
@@ -56,9 +55,10 @@ LEGACY_CAREGIVER_QUERY = """
         LastName AS LastName,
         CONVERT(TelNum, CHAR) AS Phone,
         LOWER(Email) AS Email,
-        LOWER(Language) AS Language
-    FROM Patient P
-    LEFT JOIN Users U ON P.PatientSerNum = U.UserTypeSerNum
+        LOWER(Language) AS Language,
+        U.Username as Username
+    FROM Users U
+    LEFT JOIN Patient P ON P.PatientSerNum = U.UserTypeSerNum
     WHERE U.UserType = "Caregiver";
 """  # noqa: WPS323
 
@@ -70,13 +70,10 @@ DJANGO_PATIENT_QUERY = """
         PP.last_name AS LastName,
         DATE_FORMAT(PP.date_of_birth, "%Y-%m-%d") AS BirthDate,
         UPPER(PP.sex) AS Sex,
-        UU.phone_number AS Phone,
-        LOWER(UU.email) AS Email,
-        LOWER(UU.language) AS Language,
-        PP.data_access As AccessLevel
+        PP.data_access As AccessLevel,
+        PP.date_of_death as DeathDate
     FROM patients_patient PP
-    LEFT JOIN users_user UU ON UU.last_name = PP.last_name
-    WHERE PP.first_name = UU.first_name;
+    WHERE PP.legacy_id <> '' AND PP.legacy_id IS NOT NULL;
 """  # noqa: WPS323
 
 DJANGO_HOSPITAL_PATIENT_QUERY = """
@@ -97,9 +94,13 @@ DJANGO_CAREGIVER_QUERY = """
         UU.last_name AS LastName,
         UU.phone_number AS Phone,
         LOWER(UU.email) AS Email,
-        LOWER(UU.language) AS Language
+        LOWER(UU.language) AS Language,
+        UU.username as Username
     FROM caregivers_caregiverprofile CC
-    LEFT JOIN users_user UU ON CC.user_id = UU.id;
+    LEFT JOIN patients_relationship PR ON CC.id = PR.caregiver_id
+    LEFT JOIN users_user UU ON CC.user_id = UU.id
+    WHERE PR.type_id <> 1 AND CC.legacy_id <> '' AND CC.legacy_id IS NOT NULL
+    GROUP BY CC.legacy_id;
 """  # noqa: WPS323
 
 
@@ -113,6 +114,26 @@ class Command(BaseCommand):
         - `OpalDB.Patient` table against `opal.caregivers_caregiverprofile` table (caregivers' records)
 
     by using Django's models.
+
+    NOTE!!! For the `patients` and `caregivers`, the comparison is performed only for fully inserted
+    records (e.g., `patients` and `caregivers` that completed registration). This is to avoid/eliminate
+    the following scenarios:
+
+        - after access request in Django: new patient (does not exist in the legacy DB --> no legacy_id) &
+          new caregiver (does not exist in the legacy DB --> caregiver profile has no legacy_id and
+          Caregiver instance has is_active = False)
+        - after completion registration: if it is a caregiver who is not a patient themselves,
+          there will be a dummy patient in the legacy Patient table.
+
+    To ensure that the queried Patients are fully inserted in the both databases, the following conditions are used:
+
+        - Django: patients where legacy_id is not None
+        - legacy: patients where a corresponding entry in PatientControl exists.
+
+    To ensure that the queried Caregivers are fully inserted in the both databases, the following conditions are used:
+
+        - Django: caregiver where is_active is True (or caregiver profile legacy_id is not None)
+        - legacy: ensure there is a row in Users table
     """
 
     help = """
