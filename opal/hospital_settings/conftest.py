@@ -135,12 +135,6 @@ def institution_form_no_delay_fields(institution_form_files: dict) -> Institutio
     instit = factories.Institution.build()
     form_data = model_to_dict(instit, exclude=[
         'id',
-        'logo',
-        'logo_en',
-        'logo_fr',
-        'terms_of_use',
-        'terms_of_use_en',
-        'terms_of_use_fr',
         'adulthood_age',
         'non_interpretable_lab_result_delay',
         'interpretable_lab_result_delay',

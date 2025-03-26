@@ -5,7 +5,7 @@ import pytest
 from .. import factories
 from ..forms import InstitutionForm
 from ..models import Institution
-from ..views import SiteCreateUpdateView
+from ..views import InstitutionCreateUpdateView, SiteCreateUpdateView
 
 pytestmark = pytest.mark.django_db
 
@@ -48,6 +48,20 @@ def test_institution_update_with_missing_delay_fields(institution_form_no_delay_
     except ValueError:
         assert not institution_form_no_delay_fields.is_valid()
 
+    assert Institution.objects.count() == 0
+
+
+def test_institution_update_with_nonnumeric_delay_fields(institution_form: InstitutionForm) -> None:
+    """Ensure that the form captures non-numeric entries for delay fields when creating/updating an institution."""
+    form_data = dict(institution_form.data)
+    form_data['adulthood_age'] = '18a'
+    form_data['non_interpretable_lab_result_delay'] = '0b'
+    form_data['interpretable_lab_result_delay'] = '0c'
+
+    view = InstitutionCreateUpdateView()
+    form = view.get_form_class()(data=form_data)
+
+    assert not form.is_valid()
     assert Institution.objects.count() == 0
 
 
