@@ -450,10 +450,10 @@ class LegacyOARoleFactory(DjangoModelFactory):
 
     name_en = Faker('name')
     name_fr = Faker('name')
-    deletedby = Faker('name')
-    creationdate = timezone.make_aware(datetime(2018, 1, 1))
-    createdby = Faker('name')
-    updatedby = Faker('name')
+    deleted_by = Faker('name')
+    creation_date = timezone.make_aware(datetime(2018, 1, 1))
+    created_by = Faker('name')
+    updated_by = Faker('name')
 
 
 class LegacyOAUserFactory(DjangoModelFactory):
@@ -464,7 +464,7 @@ class LegacyOAUserFactory(DjangoModelFactory):
 
     username = Faker('user_name')
     password = Faker('password')
-    oaroleid = SubFactory(LegacyOARoleFactory)
+    oa_role = SubFactory(LegacyOARoleFactory)
     date_added = timezone.make_aware(datetime(2018, 1, 1))
 
 
@@ -483,6 +483,7 @@ class LegacyModuleFactory(DjangoModelFactory):
 
     class Meta:
         model = models.LegacyModule
+        django_get_or_create = ('name_en',)
 
     name_en = Faker('name')
     name_fr = Faker('name')
@@ -507,5 +508,5 @@ class LegacyOARoleModuleFactory(DjangoModelFactory):
     class Meta:
         model = models.LegacyOARoleModule
 
-    moduleid = SubFactory(LegacyModuleFactory)
-    oaroleid = SubFactory(LegacyOARoleFactory)
+    module = SubFactory(LegacyModuleFactory)
+    oa_role = SubFactory(LegacyOARoleFactory)
