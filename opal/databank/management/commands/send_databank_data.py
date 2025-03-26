@@ -256,8 +256,8 @@ class Command(BaseCommand):  # noqa: WPS214
         response = None
         try:
             response = requests.post(
-                url=f'{settings.OIE_HOST}/databank/post',
-                auth=HTTPBasicAuth(settings.OIE_USER, settings.OIE_PASSWORD),
+                url=f'{settings.SOURCE_SYSTEM_HOST}/databank/post',
+                auth=HTTPBasicAuth(settings.SOURCE_SYSTEM_USER, settings.SOURCE_SYSTEM_PASSWORD),
                 data=json.dumps(data, default=str),
                 headers={'Content-Type': 'application/json'},
                 timeout=oie_timeout,

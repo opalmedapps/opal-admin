@@ -23,7 +23,7 @@ from ..tables import ExistingUserTable
 
 pytestmark = pytest.mark.django_db
 
-OIE_PATIENT_DATA = OIEPatientData(
+SOURCE_SYSTEM_PATIENT_DATA = OIEPatientData(
     date_of_birth=date(1986, 10, 1),
     first_name='Marge',
     last_name='Simpson',
@@ -626,7 +626,7 @@ def test_accessrequestsearchform_search_patient_missing_info(mocker: MockerFixtu
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
             'status': 'success',
-            'data': OIE_PATIENT_DATA,
+            'data': SOURCE_SYSTEM_PATIENT_DATA,
         },
     )
     form_data = {
@@ -685,7 +685,7 @@ def test_accessrequestsearchform_mrn_success_oie(mocker: MockerFixture) -> None:
         'opal.services.hospital.hospital.OIEService.find_patient_by_mrn',
         return_value={
             'status': 'success',
-            'data': OIE_PATIENT_DATA,
+            'data': SOURCE_SYSTEM_PATIENT_DATA,
         },
     )
 
@@ -702,7 +702,7 @@ def test_accessrequestsearchform_mrn_success_oie(mocker: MockerFixture) -> None:
 
     assert form.is_valid()
     # assert that data come from OIE in case patient is not found in Patient model
-    assert form.patient == OIE_PATIENT_DATA
+    assert form.patient == SOURCE_SYSTEM_PATIENT_DATA
 
 
 def test_accessrequestsearchform_ramq_found_patient_model() -> None:
@@ -757,7 +757,7 @@ def test_accessrequestsearchform_ramq_success_oie(mocker: MockerFixture) -> None
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
             'status': 'success',
-            'data': OIE_PATIENT_DATA,
+            'data': SOURCE_SYSTEM_PATIENT_DATA,
         },
     )
 
@@ -770,7 +770,7 @@ def test_accessrequestsearchform_ramq_success_oie(mocker: MockerFixture) -> None
 
     assert form.is_valid()
     # assert that data come from OIE in case patient is not found in Patient model
-    assert form.patient == OIE_PATIENT_DATA
+    assert form.patient == SOURCE_SYSTEM_PATIENT_DATA
 
 
 def test_accessrequestsearchform_no_patient_found(mocker: MockerFixture) -> None:
@@ -1014,14 +1014,14 @@ def test_accessrequestsearchform_invalid_mrn(mocker: MockerFixture) -> None:
 
 def test_accessrequestconfirmpatientform_init() -> None:
     """Ensure that the form is bound for early evaluation."""
-    form = forms.AccessRequestConfirmPatientForm(patient=OIE_PATIENT_DATA)
+    form = forms.AccessRequestConfirmPatientForm(patient=SOURCE_SYSTEM_PATIENT_DATA)
 
     assert form.is_bound
 
 
 def test_accessrequestconfirmpatientform_is_deceased_oie() -> None:
     """Ensure that proper error message is added to form error list when oie patient is deceased."""
-    oie_patient = OIE_PATIENT_DATA._replace(deceased=True)
+    oie_patient = SOURCE_SYSTEM_PATIENT_DATA._replace(deceased=True)
     form = forms.AccessRequestConfirmPatientForm(patient=oie_patient)
     err_msg = 'Unable to complete action with this patient. Please contact Medical Records.'
 
@@ -1044,7 +1044,7 @@ def test_accessrequestconfirmpatientform_is_deceased_patient_model() -> None:
 
 def test_accessrequestconfirmpatientform_has_multiple_mrns_oie() -> None:
     """Ensure that proper error message is added to form error list when oie patient has more than one `MRN`."""
-    oie_patient = OIE_PATIENT_DATA._replace(
+    oie_patient = SOURCE_SYSTEM_PATIENT_DATA._replace(
         mrns=[
             OIEMRNData(
                 site='MCH',
@@ -1073,7 +1073,7 @@ def test_accessrequestconfirmpatientform_has_multiple_mrns_oie() -> None:
 
 def test_accessrequestrequestorform_form_filled_default() -> None:
     """Ensure the form_filled dynamic field can handle an empty value to initialize."""
-    form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA)
+    form = forms.AccessRequestRequestorForm(patient=SOURCE_SYSTEM_PATIENT_DATA)
 
     assert form._form_required()
     assert form.fields['form_filled'].required
@@ -1085,7 +1085,7 @@ def test_accessrequestrequestorform_form_filled_required_type(role_type: RoleTyp
     relationship_type = RelationshipType.objects.get(role_type=role_type)
 
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={
             'relationship_type': relationship_type.pk,
         },
@@ -1108,7 +1108,7 @@ def test_accessrequestrequestorform_relationship_type(age: int, enabled_options:
         ).values_list('name', flat=True).reverse(),
     )
 
-    patient = OIE_PATIENT_DATA._asdict()
+    patient = SOURCE_SYSTEM_PATIENT_DATA._asdict()
     patient['date_of_birth'] = date.today() - relativedelta(years=age)
     form = forms.AccessRequestRequestorForm(
         patient=OIEPatientData(**patient),
@@ -1186,7 +1186,7 @@ def test_accessrequestrequestorform_is_existing_user_selected(user_type: str | N
     if user_type:
         data = {'user_type': user_type}
 
-    form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA, data=data)
+    form = forms.AccessRequestRequestorForm(patient=SOURCE_SYSTEM_PATIENT_DATA, data=data)
 
     expected_type = user_type or constants.UserType.NEW.name
     is_existing_user_selected = user_type == constants.UserType.EXISTING.name
@@ -1214,8 +1214,8 @@ def test_accessrequestrequestorform_validate_user_types(user_type: constants.Use
 
     if user_type == constants.UserType.NEW:
         data.update({
-            'first_name': OIE_PATIENT_DATA.first_name,
-            'last_name': OIE_PATIENT_DATA.last_name,
+            'first_name': SOURCE_SYSTEM_PATIENT_DATA.first_name,
+            'last_name': SOURCE_SYSTEM_PATIENT_DATA.last_name,
         })
 
     if user_type == constants.UserType.EXISTING:
@@ -1224,7 +1224,7 @@ def test_accessrequestrequestorform_validate_user_types(user_type: constants.Use
             'user_phone': caregiver.user.phone_number,
         })
 
-    form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA, data=data)
+    form = forms.AccessRequestRequestorForm(patient=SOURCE_SYSTEM_PATIENT_DATA, data=data)
 
     assert form.is_valid()
 
@@ -1243,7 +1243,7 @@ def test_accessrequestrequestorform_clean_existing_user_no_type() -> None:
         'user_phone': caregiver.user.phone_number,
     }
 
-    form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA, data=data)
+    form = forms.AccessRequestRequestorForm(patient=SOURCE_SYSTEM_PATIENT_DATA, data=data)
 
     assert not form.is_valid()
 
@@ -1254,7 +1254,7 @@ def test_accessrequestrequestorform_clean_existing_user_no_data() -> None:
         'user_type': constants.UserType.EXISTING.name,
     }
 
-    form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA, data=data)
+    form = forms.AccessRequestRequestorForm(patient=SOURCE_SYSTEM_PATIENT_DATA, data=data)
 
     assert not form.is_valid()
 
@@ -1262,7 +1262,7 @@ def test_accessrequestrequestorform_clean_existing_user_no_data() -> None:
 def test_accessrequestrequestorform_is_existing_user_selected_cleaned_data() -> None:
     """Ensure the existing user is not selected by default."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={'user_type': constants.UserType.EXISTING.name},
     )
     form.full_clean()
@@ -1273,7 +1273,7 @@ def test_accessrequestrequestorform_is_existing_user_selected_cleaned_data() -> 
 def test_accessrequestrequestorform_new_user_required_fields() -> None:
     """Ensure the new user fields are required."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
     )
 
     assert form.fields['first_name'].required
@@ -1285,7 +1285,7 @@ def test_accessrequestrequestorform_new_user_required_fields() -> None:
 def test_accessrequestrequestorform_new_user_layout() -> None:
     """Ensure the new user fields are shown."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
     )
 
     html = render_crispy_form(form)
@@ -1298,7 +1298,7 @@ def test_accessrequestrequestorform_new_user_layout() -> None:
 def test_accessrequestrequestorform_existing_user_required_fields() -> None:
     """Ensure the existing user fields are required."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={'user_type': constants.UserType.EXISTING.name},
     )
 
@@ -1311,7 +1311,7 @@ def test_accessrequestrequestorform_existing_user_required_fields() -> None:
 def test_accessrequestrequestorform_existing_user_layout() -> None:
     """Ensure the new user fields are shown."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={'user_type': constants.UserType.EXISTING.name},
     )
 
@@ -1328,7 +1328,7 @@ def test_accessrequestrequestorform_existing_user_layout() -> None:
 def test_accessrequestrequestorform_existing_user_search_not_found() -> None:
     """Ensure an error is shown when no existing user is found."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={
             'user_type': constants.UserType.EXISTING.name,
             'relationship_type': RelationshipType.objects.self_type(),
@@ -1345,7 +1345,7 @@ def test_accessrequestrequestorform_existing_user_search_not_found() -> None:
 def test_accessrequestrequestorform_existing_user_no_data() -> None:
     """Ensure `clean()` can handle non-existent user email and phone fields."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={
             'user_type': constants.UserType.EXISTING.name,
             'relationship_type': RelationshipType.objects.self_type(),
@@ -1359,7 +1359,7 @@ def test_accessrequestrequestorform_existing_user_no_data() -> None:
 def test_accessrequestrequestorform_existing_user_empty_data() -> None:
     """Ensure `clean()` can handle empty user email and phone fields."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={
             'user_type': constants.UserType.EXISTING.name,
             'relationship_type': RelationshipType.objects.self_type(),
@@ -1382,7 +1382,7 @@ def test_accessrequestrequestorform_existing_user_found() -> None:
     )
 
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={
             'user_type': constants.UserType.EXISTING.name,
             'relationship_type': RelationshipType.objects.mandatary(),
@@ -1407,7 +1407,7 @@ def test_accessrequestrequestorform_existing_user_validate_self() -> None:
     )
 
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={
             'user_type': constants.UserType.EXISTING.name,
             'relationship_type': RelationshipType.objects.self_type(),
@@ -1447,7 +1447,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch() 
 def test_accessrequestrequestorform_new_user_validate_self_name_mismatch() -> None:
     """Ensure the form will ignore provided names for a self relationship."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={
             'user_type': constants.UserType.NEW.name,
             'relationship_type': RelationshipType.objects.self_type(),
@@ -1458,8 +1458,8 @@ def test_accessrequestrequestorform_new_user_validate_self_name_mismatch() -> No
     )
 
     assert form.is_valid()
-    assert form.cleaned_data['first_name'] == OIE_PATIENT_DATA.first_name
-    assert form.cleaned_data['last_name'] == OIE_PATIENT_DATA.last_name
+    assert form.cleaned_data['first_name'] == SOURCE_SYSTEM_PATIENT_DATA.first_name
+    assert form.cleaned_data['last_name'] == SOURCE_SYSTEM_PATIENT_DATA.last_name
 
 
 def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch_new_patient() -> None:
@@ -1478,7 +1478,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_name_mismatch_ne
         'user_phone': caregiver.user.phone_number,
     }
 
-    form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA, data=data)
+    form = forms.AccessRequestRequestorForm(patient=SOURCE_SYSTEM_PATIENT_DATA, data=data)
 
     assert form.is_valid()
 
@@ -1531,7 +1531,7 @@ def test_accessrequestrequestorform_existing_user_validate_self_caregiver_exists
     )
 
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={
             'user_type': constants.UserType.EXISTING.name,
             'relationship_type': RelationshipType.objects.self_type(),
@@ -1582,7 +1582,7 @@ def test_accessrequestrequestorform_existing_user_relationship_exists() -> None:
 def test_accessrequestrequestorform_first_last_name_not_disabled() -> None:
     """Ensure that the first and last name are not disabled for no selection."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
     )
 
     assert not form.fields['first_name'].disabled
@@ -1592,7 +1592,7 @@ def test_accessrequestrequestorform_first_last_name_not_disabled() -> None:
 def test_accessrequestrequestorform_first_last_name_not_disabled_selection() -> None:
     """Ensure that the first and last name are not disabled for a non-self relationship type selection."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={'relationship_type': RelationshipType.objects.mandatary().pk},
     )
 
@@ -1603,7 +1603,7 @@ def test_accessrequestrequestorform_first_last_name_not_disabled_selection() -> 
 def test_accessrequestrequestorform_first_last_name_disabled() -> None:
     """Ensure that the first and last name are disabled when self is selected."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={'relationship_type': RelationshipType.objects.self_type().pk},
     )
 
@@ -1614,35 +1614,35 @@ def test_accessrequestrequestorform_first_last_name_disabled() -> None:
 def test_accessrequestrequestorform_self_names_prefilled() -> None:
     """Ensure the first and last name are pre-filled with the patient's name if self is selected."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={'relationship_type': RelationshipType.objects.self_type().pk},
     )
 
-    assert form.fields['first_name'].initial == OIE_PATIENT_DATA.first_name
-    assert form['first_name'].value() == OIE_PATIENT_DATA.first_name
-    assert form.fields['last_name'].initial == OIE_PATIENT_DATA.last_name
-    assert form['last_name'].value() == OIE_PATIENT_DATA.last_name
+    assert form.fields['first_name'].initial == SOURCE_SYSTEM_PATIENT_DATA.first_name
+    assert form['first_name'].value() == SOURCE_SYSTEM_PATIENT_DATA.first_name
+    assert form.fields['last_name'].initial == SOURCE_SYSTEM_PATIENT_DATA.last_name
+    assert form['last_name'].value() == SOURCE_SYSTEM_PATIENT_DATA.last_name
 
 
 def test_accessrequestrequestorform_self_names_prefilled_empty_initial() -> None:
     """Ensure the name fields are filled with the patient's name even if the initial data contains empty strings."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={'relationship_type': RelationshipType.objects.self_type().pk},
         # this happens when switching to self due to the up-validate request handling
         initial={'first_name': '', 'last_name': ''},
     )
 
-    assert form.fields['first_name'].initial == OIE_PATIENT_DATA.first_name
-    assert form['first_name'].value() == OIE_PATIENT_DATA.first_name
-    assert form.fields['last_name'].initial == OIE_PATIENT_DATA.last_name
-    assert form['last_name'].value() == OIE_PATIENT_DATA.last_name
+    assert form.fields['first_name'].initial == SOURCE_SYSTEM_PATIENT_DATA.first_name
+    assert form['first_name'].value() == SOURCE_SYSTEM_PATIENT_DATA.first_name
+    assert form.fields['last_name'].initial == SOURCE_SYSTEM_PATIENT_DATA.last_name
+    assert form['last_name'].value() == SOURCE_SYSTEM_PATIENT_DATA.last_name
 
 
 def test_accessrequestrequestorform_self_names_prefilled_other_initial() -> None:
     """Ensure the name fields are filled with the patient's name even if the initial data contains data."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         # this happens when switching to self due to the up-validate request handling
         initial={
             'relationship_type': str(RelationshipType.objects.self_type().pk),
@@ -1651,22 +1651,22 @@ def test_accessrequestrequestorform_self_names_prefilled_other_initial() -> None
         },
     )
 
-    assert form.fields['first_name'].initial == OIE_PATIENT_DATA.first_name
-    assert form['first_name'].value() == OIE_PATIENT_DATA.first_name
-    assert form.fields['last_name'].initial == OIE_PATIENT_DATA.last_name
-    assert form['last_name'].value() == OIE_PATIENT_DATA.last_name
+    assert form.fields['first_name'].initial == SOURCE_SYSTEM_PATIENT_DATA.first_name
+    assert form['first_name'].value() == SOURCE_SYSTEM_PATIENT_DATA.first_name
+    assert form.fields['last_name'].initial == SOURCE_SYSTEM_PATIENT_DATA.last_name
+    assert form['last_name'].value() == SOURCE_SYSTEM_PATIENT_DATA.last_name
 
 
 def test_accessrequestrequestorform_non_self_names_prefilled_other_initial() -> None:
     """Ensure the name fields are not filled with any value when it's not self anymore."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={},
         # this happens when switching from self due to the up-validate request handling
         initial={
             'relationship_type': str(RelationshipType.objects.guardian_caregiver().pk),
-            'first_name': OIE_PATIENT_DATA.first_name,
-            'last_name': OIE_PATIENT_DATA.last_name,
+            'first_name': SOURCE_SYSTEM_PATIENT_DATA.first_name,
+            'last_name': SOURCE_SYSTEM_PATIENT_DATA.last_name,
         },
     )
 
@@ -1678,7 +1678,7 @@ def test_accessrequestrequestorform_non_self_names_prefilled_other_initial() -> 
 
 def test_accessrequestrequestorform_disable_fields() -> None:
     """Ensure the `disable_fields` disables all fields in a form."""
-    form = forms.AccessRequestRequestorForm(patient=OIE_PATIENT_DATA)
+    form = forms.AccessRequestRequestorForm(patient=SOURCE_SYSTEM_PATIENT_DATA)
 
     # disable all fields for the form
     form.disable_fields()
@@ -1736,7 +1736,7 @@ def test_accessrequestrequestorform_existing_relationship_diff_patients() -> Non
     patient = factories.Patient(
         first_name='Test',
         last_name='Simpson',
-        ramq=OIE_PATIENT_DATA.ramq,
+        ramq=SOURCE_SYSTEM_PATIENT_DATA.ramq,
     )
 
     form = forms.AccessRequestRequestorForm(
@@ -1762,7 +1762,7 @@ def test_validate_existing_relationship_missing_first_name() -> None:
     patient = factories.Patient(
         first_name='Test',
         last_name='Simpson',
-        ramq=OIE_PATIENT_DATA.ramq,
+        ramq=SOURCE_SYSTEM_PATIENT_DATA.ramq,
     )
 
     form = forms.AccessRequestRequestorForm(
@@ -1781,7 +1781,7 @@ def test_validate_existing_relationship_missing_first_name() -> None:
 def test_accessrequestrequestorform_existing_relationship_no_data() -> None:
     """Ensure the `clean()` can handle non-existent user first and last name fields."""
     form = forms.AccessRequestRequestorForm(
-        patient=OIE_PATIENT_DATA,
+        patient=SOURCE_SYSTEM_PATIENT_DATA,
         data={
             'user_type': constants.UserType.NEW.name,
             'relationship_type': RelationshipType.objects.mandatary(),

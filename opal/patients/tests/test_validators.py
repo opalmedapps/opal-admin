@@ -8,7 +8,7 @@ from opal.services.hospital.hospital_data import OIEMRNData, OIEPatientData
 
 from .. import factories, validators
 
-CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
+CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA = OIEPatientData(
     date_of_birth=date.fromisoformat('1984-05-09'),
     first_name='Marge',
     last_name='Simpson',
@@ -40,7 +40,7 @@ CUSTOMIZED_OIE_PATIENT_DATA = OIEPatientData(
 
 def test_some_mrns_have_same_site_code() -> None:
     """Test some MRN records have the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
+    patient_data = CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA._replace(
         mrns=[
             OIEMRNData(
                 site='MGH',
@@ -64,7 +64,7 @@ def test_some_mrns_have_same_site_code() -> None:
 
 def test_all_mrns_have_same_site_code() -> None:
     """Test all MRN records have the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
+    patient_data = CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA._replace(
         mrns=[
             OIEMRNData(
                 site='MGH',
@@ -88,7 +88,7 @@ def test_all_mrns_have_same_site_code() -> None:
 
 def test_no_mrns_have_same_site_code() -> None:
     """Test No MRN records have the same site code."""
-    patient_data = CUSTOMIZED_OIE_PATIENT_DATA._replace(
+    patient_data = CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA._replace(
         mrns=[
             OIEMRNData(
                 site='MGH',
@@ -112,14 +112,14 @@ def test_no_mrns_have_same_site_code() -> None:
 
 def test_patient_validator_not_deceased_oie_patient() -> None:
     """Ensure `is_deceased` returns False when patients are not deceased for OIE patients."""
-    oie_patient = CUSTOMIZED_OIE_PATIENT_DATA
+    oie_patient = CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA
 
     assert validators.is_deceased(oie_patient) is False
 
 
 def test_patient_validator_is_deceased_oie_patient() -> None:
     """Ensure deceased patients are caught in the validator for oie patients."""
-    oie_patient = CUSTOMIZED_OIE_PATIENT_DATA._replace(deceased=True)
+    oie_patient = CUSTOMIZED_SOURCE_SYSTEM_PATIENT_DATA._replace(deceased=True)
 
     assert validators.is_deceased(oie_patient) is True
 

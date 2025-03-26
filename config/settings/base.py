@@ -407,9 +407,9 @@ OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
 LEGACY_QUESTIONNAIRES_REPORT_URL = env.url('LEGACY_QUESTIONNAIRES_REPORT_URL').geturl()
 
 # Opal Integration Engine (OIE)
-OIE_HOST = env.url('OIE_HOST').geturl()
-OIE_USER = env('OIE_USER')
-OIE_PASSWORD = env('OIE_PASSWORD')
+SOURCE_SYSTEM_HOST = env.url('SOURCE_SYSTEM_HOST').geturl()
+SOURCE_SYSTEM_USER = env('SOURCE_SYSTEM_USER')
+SOURCE_SYSTEM_PASSWORD = env('SOURCE_SYSTEM_PASSWORD')
 
 # Registration
 # Opal User Registration URL

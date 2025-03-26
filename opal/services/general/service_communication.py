@@ -13,7 +13,7 @@ from .service_error import ServiceErrorHandler
 logger = logging.getLogger(__name__)
 
 # hard-coded OIE timeout
-OIE_TIMEOUT = 15
+SOURCE_SYSTEM_TIMEOUT = 15
 
 
 class ServiceHTTPCommunicationManager:
@@ -84,7 +84,7 @@ class ServiceHTTPCommunicationManager:
                 auth=HTTPBasicAuth(self.user, self.password),
                 headers=metadata,
                 json=json.dumps(payload) if self.dump_json_payload else payload,
-                timeout=OIE_TIMEOUT,
+                timeout=SOURCE_SYSTEM_TIMEOUT,
             ).json()
         except requests.exceptions.RequestException as req_exp:
             # log external component errors
@@ -125,7 +125,7 @@ class ServiceHTTPCommunicationManager:
                 auth=HTTPBasicAuth(self.user, self.password),
                 headers=metadata,
                 params=params,
-                timeout=OIE_TIMEOUT,
+                timeout=SOURCE_SYSTEM_TIMEOUT,
             ).json()
         except requests.exceptions.RequestException as req_exp:
             return self.error_handler.generate_error({'message': str(req_exp)})

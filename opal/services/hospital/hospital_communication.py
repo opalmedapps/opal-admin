@@ -16,9 +16,9 @@ class OIEHTTPCommunicationManager(ServiceHTTPCommunicationManager):
     def __init__(self) -> None:
         """Initialize an OIE-specific ServiceHTTPCommunicationManager."""
         super().__init__(
-            base_url=settings.OIE_HOST,
+            base_url=settings.SOURCE_SYSTEM_HOST,
             display_name='OIE',
-            user=settings.OIE_USER,
-            password=settings.OIE_PASSWORD,
+            user=settings.SOURCE_SYSTEM_USER,
+            password=settings.SOURCE_SYSTEM_PASSWORD,
             dump_json_payload=True,
         )

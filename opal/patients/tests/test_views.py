@@ -29,7 +29,7 @@ from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCare
 
 pytestmark = pytest.mark.django_db
 
-OIE_PATIENT_DATA = OIEPatientData(
+SOURCE_SYSTEM_PATIENT_DATA = OIEPatientData(
     date_of_birth=date.fromisoformat('1984-05-09'),
     first_name='Marge',
     last_name='Simpson',
@@ -1224,7 +1224,7 @@ def test_access_request_search_new_patient(client: Client, registration_user: Us
         'opal.services.hospital.hospital.OIEService.find_patient_by_ramq',
         return_value={
             'status': 'success',
-            'data': OIE_PATIENT_DATA,
+            'data': SOURCE_SYSTEM_PATIENT_DATA,
         },
     )
 
@@ -1249,16 +1249,16 @@ def test_access_request_search_new_patient(client: Client, registration_user: Us
     assert len(table.data.data) == 1
     patient = table.data.data[0]
     # spot check only since some dates are datetimes others are strings
-    assert patient.first_name == OIE_PATIENT_DATA.first_name
-    assert patient.last_name == OIE_PATIENT_DATA.last_name
-    assert patient.ramq == OIE_PATIENT_DATA.ramq
-    assert patient.date_of_birth == OIE_PATIENT_DATA.date_of_birth
-    assert patient.mrns == OIE_PATIENT_DATA.mrns
+    assert patient.first_name == SOURCE_SYSTEM_PATIENT_DATA.first_name
+    assert patient.last_name == SOURCE_SYSTEM_PATIENT_DATA.last_name
+    assert patient.ramq == SOURCE_SYSTEM_PATIENT_DATA.ramq
+    assert patient.date_of_birth == SOURCE_SYSTEM_PATIENT_DATA.date_of_birth
+    assert patient.mrns == SOURCE_SYSTEM_PATIENT_DATA.mrns
 
     # the form's data was saved and models were converted to their pk only
     session = client.session[AccessRequestView.session_key_name]
 
-    patient_data = OIE_PATIENT_DATA._asdict()
+    patient_data = SOURCE_SYSTEM_PATIENT_DATA._asdict()
     patient_data['mrns'] = [mrn._asdict() for mrn in patient_data['mrns']]
     patient_json = json.dumps(patient_data, cls=DjangoJSONEncoder)
 

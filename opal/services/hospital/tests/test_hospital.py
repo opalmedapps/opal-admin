@@ -25,11 +25,11 @@ RAMQ_VALID = 'ABCD12345678'
 RAMQ_INVALID = 'ABC123456789'
 MRN = '9999996'
 SITE_CODE = 'MUHC'
-OIE_CREDENTIALS_USER = 'questionnaire'
-OIE_CREDENTIALS = '12345Opal!!'
-OIE_HOST = 'https://localhost'
+SOURCE_SYSTEM_CREDENTIALS_USER = 'questionnaire'
+SOURCE_SYSTEM_CREDENTIALS = '12345Opal!!'
+SOURCE_SYSTEM_HOST = 'https://localhost'
 
-OIE_PATIENT_DATA = MappingProxyType({
+SOURCE_SYSTEM_PATIENT_DATA = MappingProxyType({
     'dateOfBirth': '1953-01-01',
     'firstName': 'SANDRA',
     'lastName': 'TESTMUSEMGHPROD',
@@ -68,9 +68,9 @@ def _create_oie_service_mock_settings() -> OIEService:
     """
     # Create a communication manager with mock settings
     oie_communication_mock = OIEHTTPCommunicationManager()
-    oie_communication_mock.base_url = OIE_HOST
-    oie_communication_mock.user = OIE_CREDENTIALS_USER
-    oie_communication_mock.password = OIE_CREDENTIALS
+    oie_communication_mock.base_url = SOURCE_SYSTEM_HOST
+    oie_communication_mock.user = SOURCE_SYSTEM_CREDENTIALS_USER
+    oie_communication_mock.password = SOURCE_SYSTEM_CREDENTIALS
 
     # Assign the communication manager to a new oie_service
     oie_service_mock = OIEService()
@@ -233,8 +233,8 @@ def test_export_pdf_report_uses_settings(mocker: MockerFixture, settings: Settin
     # parameters as in the `export_pdf_report` post request.
     # Arguments: *args, **kwargs
     mock_post.assert_called_once_with(
-        url=f'{OIE_HOST}/report/post',
-        auth=requests.auth.HTTPBasicAuth(OIE_CREDENTIALS_USER, OIE_CREDENTIALS),
+        url=f'{SOURCE_SYSTEM_HOST}/report/post',
+        auth=requests.auth.HTTPBasicAuth(SOURCE_SYSTEM_CREDENTIALS_USER, SOURCE_SYSTEM_CREDENTIALS),
         headers=None,
         json=payload,
         timeout=15,
@@ -337,7 +337,7 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
         mocker,
         {
             'status': 'success',
-            'data': dict(OIE_PATIENT_DATA),
+            'data': dict(SOURCE_SYSTEM_PATIENT_DATA),
         },
     )
 
@@ -345,21 +345,21 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
     assert response['status'] == 'success'
     assert response['data'] == OIEPatientData(
         date_of_birth=datetime.strptime(
-            str(OIE_PATIENT_DATA['dateOfBirth']),
+            str(SOURCE_SYSTEM_PATIENT_DATA['dateOfBirth']),
             '%Y-%m-%d',
         ).date(),
-        first_name=str(OIE_PATIENT_DATA['firstName']),
-        last_name=str(OIE_PATIENT_DATA['lastName']),
-        sex=str(OIE_PATIENT_DATA['sex']),
-        alias=str(OIE_PATIENT_DATA['alias']),
-        deceased=bool(OIE_PATIENT_DATA['deceased']),
+        first_name=str(SOURCE_SYSTEM_PATIENT_DATA['firstName']),
+        last_name=str(SOURCE_SYSTEM_PATIENT_DATA['lastName']),
+        sex=str(SOURCE_SYSTEM_PATIENT_DATA['sex']),
+        alias=str(SOURCE_SYSTEM_PATIENT_DATA['alias']),
+        deceased=bool(SOURCE_SYSTEM_PATIENT_DATA['deceased']),
         death_date_time=datetime.strptime(
-            str(OIE_PATIENT_DATA['deathDateTime']),
+            str(SOURCE_SYSTEM_PATIENT_DATA['deathDateTime']),
             '%Y-%m-%d %H:%M:%S',
         ),
-        ramq=str(OIE_PATIENT_DATA['ramq']),
+        ramq=str(SOURCE_SYSTEM_PATIENT_DATA['ramq']),
         ramq_expiration=datetime.strptime(
-            str(OIE_PATIENT_DATA['ramqExpiration']),
+            str(SOURCE_SYSTEM_PATIENT_DATA['ramqExpiration']),
             '%Y%m',
         ),
         mrns=[
@@ -374,7 +374,7 @@ def test_find_patient_by_mrn_success(mocker: MockerFixture) -> None:
 
 def test_find_by_mrn_empty_value_in_response(mocker: MockerFixture) -> None:
     """Ensure that None value in response returned from find_patient_by_mrn."""
-    oie_patient_data_copy = OIE_PATIENT_DATA.copy()
+    oie_patient_data_copy = SOURCE_SYSTEM_PATIENT_DATA.copy()
     oie_patient_data_copy.update(deathDateTime='', ramqExpiration='')
     # mock find_patient_by_mrn and pretend it was successful
     RequestMockerTest.mock_requests_post(
@@ -389,16 +389,16 @@ def test_find_by_mrn_empty_value_in_response(mocker: MockerFixture) -> None:
     assert response['status'] == 'success'
     assert response['data'] == OIEPatientData(
         date_of_birth=datetime.strptime(
-            str(OIE_PATIENT_DATA['dateOfBirth']),
+            str(SOURCE_SYSTEM_PATIENT_DATA['dateOfBirth']),
             '%Y-%m-%d',
         ).date(),
-        first_name=str(OIE_PATIENT_DATA['firstName']),
-        last_name=str(OIE_PATIENT_DATA['lastName']),
-        sex=str(OIE_PATIENT_DATA['sex']),
-        alias=str(OIE_PATIENT_DATA['alias']),
-        deceased=bool(OIE_PATIENT_DATA['deceased']),
+        first_name=str(SOURCE_SYSTEM_PATIENT_DATA['firstName']),
+        last_name=str(SOURCE_SYSTEM_PATIENT_DATA['lastName']),
+        sex=str(SOURCE_SYSTEM_PATIENT_DATA['sex']),
+        alias=str(SOURCE_SYSTEM_PATIENT_DATA['alias']),
+        deceased=bool(SOURCE_SYSTEM_PATIENT_DATA['deceased']),
         death_date_time=None,
-        ramq=str(OIE_PATIENT_DATA['ramq']),
+        ramq=str(SOURCE_SYSTEM_PATIENT_DATA['ramq']),
         ramq_expiration=None,
         mrns=[
             OIEMRNData(
@@ -508,7 +508,7 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
         mocker,
         {
             'status': 'success',
-            'data': dict(OIE_PATIENT_DATA),
+            'data': dict(SOURCE_SYSTEM_PATIENT_DATA),
         },
     )
 
@@ -516,21 +516,21 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
     assert response['status'] == 'success'
     assert response['data'] == OIEPatientData(
         date_of_birth=datetime.strptime(
-            str(OIE_PATIENT_DATA['dateOfBirth']),
+            str(SOURCE_SYSTEM_PATIENT_DATA['dateOfBirth']),
             '%Y-%m-%d',
         ).date(),
-        first_name=str(OIE_PATIENT_DATA['firstName']),
-        last_name=str(OIE_PATIENT_DATA['lastName']),
-        sex=str(OIE_PATIENT_DATA['sex']),
-        alias=str(OIE_PATIENT_DATA['alias']),
-        deceased=bool(OIE_PATIENT_DATA['deceased']),
+        first_name=str(SOURCE_SYSTEM_PATIENT_DATA['firstName']),
+        last_name=str(SOURCE_SYSTEM_PATIENT_DATA['lastName']),
+        sex=str(SOURCE_SYSTEM_PATIENT_DATA['sex']),
+        alias=str(SOURCE_SYSTEM_PATIENT_DATA['alias']),
+        deceased=bool(SOURCE_SYSTEM_PATIENT_DATA['deceased']),
         death_date_time=datetime.strptime(
-            str(OIE_PATIENT_DATA['deathDateTime']),
+            str(SOURCE_SYSTEM_PATIENT_DATA['deathDateTime']),
             '%Y-%m-%d %H:%M:%S',
         ),
-        ramq=str(OIE_PATIENT_DATA['ramq']),
+        ramq=str(SOURCE_SYSTEM_PATIENT_DATA['ramq']),
         ramq_expiration=datetime.strptime(
-            str(OIE_PATIENT_DATA['ramqExpiration']),
+            str(SOURCE_SYSTEM_PATIENT_DATA['ramqExpiration']),
             '%Y%m',
         ),
         mrns=[
@@ -545,7 +545,7 @@ def test_find_patient_by_ramq_success(mocker: MockerFixture) -> None:
 
 def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
     """Ensure that None value in response returned from find_patient_by_ramq."""
-    oie_patient_data_copy = OIE_PATIENT_DATA.copy()
+    oie_patient_data_copy = SOURCE_SYSTEM_PATIENT_DATA.copy()
     oie_patient_data_copy.update(deathDateTime='', ramqExpiration='')
     # mock find_patient_by_ramq and pretend it was successful
     RequestMockerTest.mock_requests_post(
@@ -560,16 +560,16 @@ def test_empty_value_in_response_by_ramq(mocker: MockerFixture) -> None:
     assert response['status'] == 'success'
     assert response['data'] == OIEPatientData(
         date_of_birth=datetime.strptime(
-            str(OIE_PATIENT_DATA['dateOfBirth']),
+            str(SOURCE_SYSTEM_PATIENT_DATA['dateOfBirth']),
             '%Y-%m-%d',
         ).date(),
-        first_name=str(OIE_PATIENT_DATA['firstName']),
-        last_name=str(OIE_PATIENT_DATA['lastName']),
-        sex=str(OIE_PATIENT_DATA['sex']),
-        alias=str(OIE_PATIENT_DATA['alias']),
-        deceased=bool(OIE_PATIENT_DATA['deceased']),
+        first_name=str(SOURCE_SYSTEM_PATIENT_DATA['firstName']),
+        last_name=str(SOURCE_SYSTEM_PATIENT_DATA['lastName']),
+        sex=str(SOURCE_SYSTEM_PATIENT_DATA['sex']),
+        alias=str(SOURCE_SYSTEM_PATIENT_DATA['alias']),
+        deceased=bool(SOURCE_SYSTEM_PATIENT_DATA['deceased']),
         death_date_time=None,
-        ramq=str(OIE_PATIENT_DATA['ramq']),
+        ramq=str(SOURCE_SYSTEM_PATIENT_DATA['ramq']),
         ramq_expiration=None,
         mrns=[
             OIEMRNData(
