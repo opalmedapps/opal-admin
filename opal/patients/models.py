@@ -72,7 +72,7 @@ class SexType(models.TextChoices):
     FEMALE = 'F', _('Female')
     MALE = 'M', _('Male')
     OTHER = 'O', _('Other')
-    UNKNOWN = 'U', _('Unknown')     
+    UNKNOWN = 'U', _('Unknown')
 
 
 class Patient(models.Model):
@@ -220,7 +220,8 @@ class Relationship(models.Model):
                 check=models.Q(start_date__lt=models.F('end_date')),
             ),
             models.UniqueConstraint(
-                fields=['patient', 'caregiver', 'type', 'status'], name='unique_relationship',
+                name='%(app_label)s_%(class)s_unique_constraint',  # noqa: WPS323
+                fields=['patient', 'caregiver', 'type', 'status'],
             ),
         ]
 
