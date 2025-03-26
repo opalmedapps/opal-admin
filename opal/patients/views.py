@@ -23,6 +23,7 @@ from opal.patients import forms
 from opal.services.hospital.hospital_data import OIEPatientData
 from opal.users.models import Caregiver
 
+from . import constants
 from .models import CaregiverProfile, Patient, Relationship, RelationshipStatus, RelationshipType, Site
 from .tables import ExistingUserTable, PatientTable, PendingRelationshipTable, RelationshipTypeTable
 
@@ -173,7 +174,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             user_type = self.get_cleaned_data_for_step('account')['user_type']
             # If new user is selected, the current form will be replaced by `NewUserForm`.
             # The last step `finished` will be ignored.
-            if user_type == '0':
+            if user_type == constants.NEW_USER:
                 form_class = forms.NewUserForm
                 form = form_class(data)
                 self.condition_dict = {'finished': False}
@@ -261,7 +262,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             the start date
         """
         # Get the date 1 years ago from now
-        reference_date = date.today() - relativedelta(years=1)
+        reference_date = date.today() - relativedelta(years=constants.RELATIVE_YEAR_VALUE)
         # Calculate patient age based on reference date
         age = Patient.calculate_age(
             date_of_birth=date_of_birth,
@@ -285,7 +286,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
         Returns:
             caregiver user nad caregiver profile instance dictionary
         """
-        if form_data['user_type'] == '1':
+        if form_data['user_type'] == constants.EXISTING_USER:
             # Get the Caregiver user if it exists
             caregiver_user = Caregiver.objects.get(
                 email=form_data['user_email'],
@@ -363,12 +364,9 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
             patient_record.ramq,
         )
 
-        # The default value for status is PENDING
-        status = RelationshipStatus.PENDING
         # TODO: we'll need to change the 'Self' once ticket QSCCD-645 is done
         # For `Self` relationship, the status is CONFIRMED
-        if not relationships and str(relationship_type) == 'Self':
-            status = RelationshipStatus.CONFIRMED
+        status = RelationshipStatus.CONFIRMED if str(relationship_type) == 'Self' else RelationshipStatus.PENDING
         if not relationships:
             Relationship.objects.create(
                 patient=patient,
@@ -385,7 +383,7 @@ class AccessRequestView(SessionWizardView):  # noqa: WPS214
 
     def _generate_access_request(self, new_form_data: dict) -> None:
         # Create caregiver user and caregiver profile if not exists
-        caregiver_dict = self._create_caregiver_profile(new_form_data, random_username_length=30)   # noqa: WPS432
+        caregiver_dict = self._create_caregiver_profile(new_form_data, random_username_length=constants.USERNAME_LENGTH)
 
         # Create patient instance if not exists
         patient = self._create_patient(new_form_data)
