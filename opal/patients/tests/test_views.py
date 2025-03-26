@@ -341,6 +341,18 @@ class _TestAccessRequestView(views.AccessRequestView):
         response = super().dispatch(request, *args, **kwargs)
         return response, self
 
+    def dummy_get_response(self, request: HttpRequest) -> None:  # noqa: WPS324
+        """
+        Pass `None` for the middleware get_response argument.
+
+        Args:
+            request: a `HttpRequest` instance
+
+        Returns:
+            None
+        """
+        return None  # noqa: WPS324
+
 
 def _init_session() -> HttpRequest:
     """
@@ -351,7 +363,7 @@ def _init_session() -> HttpRequest:
     """
     request = RequestFactory().get('/')
     # adding session
-    middleware = SessionMiddleware(lambda request: None)  # type: ignore[arg-type]
+    middleware = SessionMiddleware(_TestAccessRequestView.dummy_get_response)  # type: ignore[arg-type]
     middleware.process_request(request)
     request.session.save()
     return request
