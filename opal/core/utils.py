@@ -4,6 +4,7 @@ import random
 import secrets
 import string
 import uuid
+import zipfile
 
 import qrcode
 from qrcode.image import svg
@@ -78,3 +79,28 @@ def qr_code(text: str) -> bytes:
     image.save(stream)
 
     return stream.getvalue()
+
+
+def create_zip_from_bytesio(file_list: list[tuple[str, io.BytesIO]]) -> io.BytesIO:
+    """Create a ZIP file from a list of (filename, BytesIO object) pairs.
+
+    The ZIP file is returned in a BytesIO object format.
+
+    Args:
+        file_list: list of tuples containing filenames and BytesIO objects
+
+    Returns:
+        BytesIO object containing the ZIP file
+    """
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for filename, file_io in file_list:
+            # Ensure the BytesIO object is at the start
+            file_io.seek(0)
+            # Read the content from BytesIO
+            file_data = file_io.read()
+            # Write the file data to the zip file
+            zip_file.writestr(filename, file_data)
+    # Reset the buffer's position to the beginning
+    zip_buffer.seek(0)
+    return zip_buffer
