@@ -315,12 +315,8 @@ LOGGING = {
     'root': {'level': 'INFO', 'handlers': ['console']},
 }
 
-# Legacy OpalAdmin related settings
-#
-# base URL to old OpalAdmin (no trailing slash)
-OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
-
 # Set email SMTP server
+# See https://docs.djangoproject.com/en/4.0/topics/email/
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:  # pragma: no cover
@@ -331,6 +327,11 @@ EMAIL_USE_SSL = env.bool('EMAIL_USE_SSL')
 EMAIL_PORT = env.int('EMAIL_PORT')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+
+# Legacy OpalAdmin related settings
+#
+# base URL to old OpalAdmin (no trailing slash)
+OPAL_ADMIN_URL = env.url('OPAL_ADMIN_URL').geturl()
 
 # Redirect after logout to legacy OpalAdmin's logout page
 # https://docs.djangoproject.com/en/dev/ref/settings/#logout-redirect-url
