@@ -265,7 +265,7 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
 
         else:
             data_dict = self.patient
-            if data_dict.get('deceased') == True:
+            if data_dict.get('deceased') is True:
                 errors['deceased'] = True
 
             mrns_list = data_dict.get('mrns')
@@ -273,17 +273,23 @@ class AccessRequestConfirmPatientForm(DisableFieldsMixin, forms.Form):
             # loop over dicts and break and report an error whenever a site is repeated for different mrn
             for dict_mrn in mrns_list:
                 if site_dict.get('site'):
-                    if dict_mrn.get('active') == True:
+                    if dict_mrn.get('active') is True:
                         errors['multiple_mrns'] = True
                         break
 
                 if dict_mrn.get('active'):
                     site_dict['site'] = dict_mrn.get('site')
 
-        if errors.get('deceased') == True:
-            self.add_error(NON_FIELD_ERRORS, 'Cannot proceed, please visit medical records')
-        if errors.get('multiple_mrns') == True:
-            self.add_error(NON_FIELD_ERRORS, 'Patient has more than one active MRN, please visit medical records')
+        if errors.get('deceased') is True:
+            self.add_error(
+                NON_FIELD_ERRORS,
+                'Unable to complete action with this patient. Please contact Medical Records.',
+            )
+        if errors.get('multiple_mrns') is True:
+            self.add_error(
+                NON_FIELD_ERRORS,
+                'Patient has more than one active MRN, please visit medical records',
+            )
 
         return cleaned_data
 
