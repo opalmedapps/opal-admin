@@ -541,7 +541,7 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, Fil
     filterset_class = ManageCaregiverAccessFilter
     ordering = ['request_date']
 
-    def get_filterset_kwargs(self, filterset_class: ManageCaregiverAccessFilter) -> dict[str, Any]:
+    def get_filterset_kwargs(self, filterset_class: ManageCaregiverAccessFilter) -> Any:
         """
         Apply the filter arguments on the set of data.
 
@@ -574,7 +574,7 @@ class PendingRelationshipListView(PermissionRequiredMixin, SingleTableMixin, Fil
 
         return filterset_kwargs
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> Any:
         """
         Return the template context for `PendingRelationshipListView` update view.
 
