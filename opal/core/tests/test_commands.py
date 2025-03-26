@@ -174,8 +174,8 @@ class TestInitializeData(CommandTestMixin):
         stdout, _stderr = self._call_command('initialize_data')
 
         assert Group.objects.count() == 7
-        assert User.objects.count() == 4
-        assert Token.objects.count() == 4
+        assert User.objects.count() == 5
+        assert Token.objects.count() == 5
         assert SecurityQuestion.objects.count() == 6
 
         for group in Group.objects.all():
@@ -191,12 +191,14 @@ class TestInitializeData(CommandTestMixin):
         registration_listener_token = Token.objects.get(user__username='listener-registration')
         interface_engine_token = Token.objects.get(user__username='interface-engine')
         legacy_backend_token = Token.objects.get(user__username='opaladmin-backend-legacy')
+        orms_token = Token.objects.get(user__username='orms')
 
         assert 'Data successfully created\n' in stdout
         assert f'listener token: {listener_token.key}' in stdout
         assert f'listener-registration token: {registration_listener_token.key}' in stdout
         assert f'interface-engine token: {interface_engine_token.key}' in stdout
-        assert f'opaladmin-backend-legacy token: {legacy_backend_token}' in stdout
+        assert f'opaladmin-backend-legacy token: {legacy_backend_token.key}' in stdout
+        assert f'orms token: {orms_token.key}' in stdout
 
     def test_insert_tokens(self) -> None:
         """Ensure that initial data is inserted with existing system users and their existing tokens are returned."""
@@ -204,30 +206,36 @@ class TestInitializeData(CommandTestMixin):
         registration_listener = User.objects.create(username='listener-registration')
         interface_engine = User.objects.create(username='interface-engine')
         legacy_backend = User.objects.create(username='opaladmin-backend-legacy')
+        orms = User.objects.create(username='orms')
 
         token_listener = Token.objects.create(user=listener)
         token_registration_listener = Token.objects.create(user=registration_listener)
         token_interface_engine = Token.objects.create(user=interface_engine)
         token_legacy_backend = Token.objects.create(user=legacy_backend)
+        token_orms = Token.objects.create(user=orms)
 
         stdout, _stderr = self._call_command('initialize_data')
 
-        assert Token.objects.count() == 4
+        assert Token.objects.count() == 5
 
         listener_token = Token.objects.get(user__username='listener')
         registration_listener_token = Token.objects.get(user__username='listener-registration')
         interface_engine_token = Token.objects.get(user__username='interface-engine')
         legacy_backend_token = Token.objects.get(user__username='opaladmin-backend-legacy')
+        orms_token = Token.objects.get(user__username='orms')
 
         assert 'Data successfully created\n' in stdout
         assert token_listener == listener_token
         assert token_registration_listener == registration_listener_token
         assert token_interface_engine == interface_engine_token
         assert token_legacy_backend == legacy_backend_token
+        assert token_orms == orms_token
+
         assert f'listener token: {listener_token.key}' in stdout
         assert f'listener-registration token: {registration_listener_token.key}' in stdout
         assert f'interface-engine token: {interface_engine_token.key}' in stdout
-        assert f'opaladmin-backend-legacy token: {legacy_backend_token}' in stdout
+        assert f'opaladmin-backend-legacy token: {legacy_backend_token.key}' in stdout
+        assert f'orms token: {orms_token.key}' in stdout
 
     def test_insert_existing_data_group(self) -> None:
         """An error is shown if a group already exists."""
@@ -256,17 +264,19 @@ class TestInitializeData(CommandTestMixin):
         registration_listener = User.objects.get(username='listener-registration')
         interface_engine = User.objects.get(username='interface-engine')
         legacy_backend = User.objects.get(username='opaladmin-backend-legacy')
+        orms = User.objects.get(username='orms')
 
         token_listener = Token.objects.get(user=listener)
         token_registration_listener = Token.objects.get(user=registration_listener)
         token_interface_engine = Token.objects.get(user=interface_engine)
         token_legacy_backend = Token.objects.get(user=legacy_backend)
+        token_orms = Token.objects.get(user=orms)
 
         stdout, stderr = self._call_command('initialize_data', '--force-delete')
 
         assert Group.objects.count() == 7
-        assert User.objects.count() == 4
-        assert Token.objects.count() == 4
+        assert User.objects.count() == 5
+        assert Token.objects.count() == 5
         assert SecurityQuestion.objects.count() == 6
 
         assert 'Deleting existing data\n' in stdout
@@ -277,6 +287,7 @@ class TestInitializeData(CommandTestMixin):
         token_registration_listener.refresh_from_db()
         token_interface_engine.refresh_from_db()
         token_legacy_backend.refresh_from_db()
+        token_orms.refresh_from_db()
 
     def test_delete_clinicalstaff_only(self) -> None:
         """Only existing clinical staff users are deleted, not caregivers."""

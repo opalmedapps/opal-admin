@@ -207,11 +207,34 @@ class TestUpdateAppointmentCheckinView:
 
         assert response.status_code == HTTPStatus.FORBIDDEN
 
-    def test_update_checkin_success(self, api_client: APIClient, listener_user: User) -> None:
+    def test_update_checkin_success_listener(self, api_client: APIClient, listener_user: User) -> None:
         """Test a successful update of the checkin field."""
         user = factories.LegacyUserFactory()
         api_client.force_login(user=listener_user)
         api_client.credentials(HTTP_APPUSERID=user.username)
+        medivisit = factories.LegacySourceDatabaseFactory()
+        appointment = factories.LegacyAppointmentFactory(
+            source_system_id='2024A21342134',
+            source_database=medivisit,
+            checkin=0,
+        )
+
+        response = api_client.post(
+            reverse('api:patients-legacy-appointment-checkin'),
+            data={
+                'source_system_id': '2024A21342134',
+                'source_database': medivisit.source_database,
+                'checkin': 1,
+            },
+        )
+        appointment.refresh_from_db()
+        assert response.status_code == HTTPStatus.OK
+        assert response.data
+        assert appointment.checkin == 1
+
+    def test_update_checkin_success_orms(self, api_client: APIClient, orms_system_user: User) -> None:
+        """Test a successful update of the checkin field."""
+        api_client.force_login(user=orms_system_user)
         medivisit = factories.LegacySourceDatabaseFactory()
         appointment = factories.LegacyAppointmentFactory(
             source_system_id='2024A21342134',
