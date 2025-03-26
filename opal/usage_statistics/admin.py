@@ -42,7 +42,7 @@ class DailyPatientDataReceivedAdmin(admin.ModelAdmin[DailyPatientDataReceived]):
         'appointments_received',
         'last_document_received',
         'documents_received',
-        'last_educational_materials_received',
+        'last_educational_material_received',
         'educational_materials_received',
         'last_questionnaire_received',
         'questionnaires_received',

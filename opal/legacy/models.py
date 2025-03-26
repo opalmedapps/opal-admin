@@ -843,7 +843,7 @@ class LegacyPatientActivityLog(models.Model):
     DeviceId = models.CharField(max_length=255, null=False)
     SessionId = models.TextField(default='')
     DateTime = models.DateTimeField(null=False, db_index=True)
-    LastUpdated = models.DateTimeField(null=False)
+    LastUpdated = models.DateTimeField(null=False, default=timezone.now)
     AppVersion = models.CharField(max_length=50, null=False, db_index=True)
 
     class Meta:
