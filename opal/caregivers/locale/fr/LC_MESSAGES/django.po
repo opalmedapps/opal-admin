@@ -20,7 +20,7 @@ msgstr ""
 
 #: opal/caregivers/api/views.py
 msgid "The email is already registered."
-msgstr "L'e-mail est déjà enregistré"
+msgstr "Le courriel est déjà enregistré"
 
 #: opal/caregivers/api/views.py
 msgid "Please wait 10 seconds before requesting a new verification code."
