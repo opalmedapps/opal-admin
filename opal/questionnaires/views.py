@@ -7,7 +7,7 @@ from typing import Any
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.utils.encoding import smart_str
 from django.views.generic.base import TemplateView
 
@@ -57,11 +57,11 @@ class QuestionnaireReportFilterTemplateView(PermissionRequiredMixin, TemplateVie
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
-    def post(self, request: Any) -> Any:
+    def post(self, request: Any) -> HttpResponse:
         """Override class method and fetch query parameters for the requested questionnaire.
 
         Args:
-            request: post request data.
+            request: post request data. (Specified Anytype because get_questionnaire_detail explicitly expects an int)
 
         Returns:
             template rendered with updated context or HttpError
@@ -89,7 +89,7 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
-    def post(self, request: Any) -> Any:
+    def post(self, request: HttpRequest) -> HttpResponse:
         """Override class method and fetch report for the requested questionnaire.
 
         Args:
@@ -109,11 +109,15 @@ class QuestionnaireReportDetailTemplateView(PermissionRequiredMixin, TemplateVie
         report = get_tempC()  # after verifying parameters were complete, retrieve the prepared data
 
         report_table = ReportTable(report)
-        context.update({'questionnaireID': request.POST.get('questionnaireid')})
-        context.update({'reporttable': report_table})
-        context.update({'questionnaireName': request.POST.get('questionnairename')})
-        context.update({'start': request.POST.get('start')})
-        context.update({'end': request.POST.get('end')})
+        context.update(
+            {
+                'questionnaireID': request.POST.get('questionnaireid'),
+                'reporttable': report_table,
+                'questionnaireName': request.POST.get('questionnairename'),
+                'start': request.POST.get('start'),
+                'end': request.POST.get('end'),
+            },
+        )
 
         return super().render_to_response(context)  # noqa: WPS613
 
@@ -128,7 +132,7 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
-    def post(self, request: Any) -> Any:  # noqa: WPS210
+    def post(self, request: HttpRequest) -> HttpResponse:  # noqa: WPS210
         """Grab existing backend report and convert to csv.
 
         This code first generates the desired csv by writing it to media folder within
@@ -151,8 +155,10 @@ class QuestionnaireReportDownloadCSVTemplateView(PermissionRequiredMixin, Templa
         df = pd.DataFrame.from_dict(report_dict)
 
         df.to_csv(filename_long, index=False, header=True)
+        with open(filename_long, 'rb') as handle:
+            file_content = handle.read()
         return HttpResponse(
-            open(filename_long, 'rb').read(),  # noqa: WPS515
+            file_content,
             content_type='text/csv',
             headers={'Content-Disposition': f'attachment; filename = {filename}'},
         )
@@ -168,7 +174,7 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
     logger = logging.getLogger(__name__)
     http_method_names = ['post']
 
-    def post(self, request: Any) -> Any:  # noqa: WPS210
+    def post(self, request: HttpRequest) -> HttpResponse:  # noqa: WPS210
         """Grab existing backend report and convert to xlsx.
 
         This code first generates the desired xlsx by writing it to media folder within
@@ -211,8 +217,11 @@ class QuestionnaireReportDownloadXLSXTemplateView(PermissionRequiredMixin, Templ
         else:
             df.to_excel(filename_long, sheet_name='Sheet1', index=False, header=True)
 
+        with open(filename_long, 'rb') as handle:
+            file_content = handle.read()
+
         return HttpResponse(
-            open(filename_long, 'rb').read(),  # noqa: WPS515
+            file_content,
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             headers={'Content-Disposition': f'attachment; filename = {filename}'},
         )

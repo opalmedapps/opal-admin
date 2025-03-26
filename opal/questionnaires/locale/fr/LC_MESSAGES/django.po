@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-17 10:17-0400\n"
+"POT-Creation-Date: 2022-10-21 11:44-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,31 +18,172 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: opal/questionnaires/apps.py
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-list.html
+#: opal/questionnaires/apps.py:11
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html:22
 msgid "Questionnaires"
 msgstr "Questionnaires"
 
-#: opal/questionnaires/models.py
+#: opal/questionnaires/models.py:17
 #, fuzzy
 #| msgid "Export Reports"
 msgid "Export Report"
 msgstr "Exportation de Rapports"
 
-#: opal/questionnaires/models.py
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-list.html
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-viewreport.html
+#: opal/questionnaires/models.py:18
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html:6
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:6
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html:6
 msgid "Export Reports"
 msgstr "Exportation de Rapports"
 
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-list.html
+#: opal/questionnaires/tables.py:10
+#, fuzzy
+#| msgid "Patients"
+msgid "Patient ID"
+msgstr "Les patients"
+
+#: opal/questionnaires/tables.py:11
+#, fuzzy
+#| msgid "Questionnaires"
+msgid "Question ID"
+msgstr "Des questions"
+
+#: opal/questionnaires/tables.py:12
+#, fuzzy
+#| msgid "Questionnaires"
+msgid "Question Text"
+msgstr "Des questions"
+
+#: opal/questionnaires/tables.py:13
+msgid "Answer Text"
+msgstr "Texte de réponse"
+
+#: opal/questionnaires/tables.py:14
+#, fuzzy
+#| msgid "Date range"
+msgid "Date Created"
+msgstr "Plage de dates"
+
+#: opal/questionnaires/tables.py:15
+#, fuzzy
+#| msgid "Date range"
+msgid "Date Updated"
+msgstr "Plage de dates"
+
+#: opal/questionnaires/tables.py:18
+msgid "No responses found."
+msgstr "Aucune réponse trouvée."
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html:12
+#, fuzzy
+#| msgid "Export Reports"
+msgid "Report:"
+msgstr "Exportation de Rapports"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html:12
+msgid "between"
+msgstr "entre"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html:12
+#, fuzzy
+#| msgid "End"
+msgid "and"
+msgstr "Fin"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html:21
+msgid "Back"
+msgstr "Retour"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html:23
+msgid "Download Excel"
+msgstr "Télécharger Excel"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html:32
+msgid "Please select how to organize the tabs:"
+msgstr "Veuillez sélectionner comment organiser les onglets :"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html:34
+msgid "By patients"
+msgstr "Par les patients"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html:36
+#, fuzzy
+#| msgid "Questionnaires"
+msgid "By questions"
+msgstr "Par questions"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html:38
+msgid "None (single tab)"
+msgstr "Aucun (onglet unique)"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html:41
+msgid "Cancel"
+msgstr "Annuler"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:13
+#, fuzzy
+#| msgid "Questionnaires"
+msgid "Questionnaire"
+msgstr "Questionnaires"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:15
+msgid "Description"
+msgstr "La description"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:18
+msgid "Select options for the report"
+msgstr "Sélectionnez les options pour le rapport"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:29
+msgid "Date range"
+msgstr "Plage de dates"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:31
+msgid "Start"
+msgstr "Commencer"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:34
+msgid "The start date for the query."
+msgstr "Date de début de la requête."
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:39
+msgid "End"
+msgstr "Fin"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:42
+msgid "The end date for the query."
+msgstr "Date de fin de la requête."
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:48
+msgid "Patients"
+msgstr "Les patients"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:50
+msgid "IDs"
+msgstr "identifiants"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:59
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:76
+msgid "Select All"
+msgstr "Tout sélectionner"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:73
+#, fuzzy
+#| msgid "Questionnaires"
+msgid "Questions"
+msgstr "Des questions"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html:99
+msgid "View Report"
+msgstr "Voir le rapport"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html:13
 #, fuzzy
 #| msgid "Questionnaires"
 msgid "Select questionnaire"
 msgstr "Sélectionnez le questionnaire"
 
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-list.html
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html:14
 msgid ""
 "Use the dropdown menu on the right to select the questionnaire you want to "
 "query, then press select."
@@ -50,102 +191,10 @@ msgstr ""
 "Utilisez le menu déroulant à droite pour sélectionner le questionnaire que "
 "vous souhaitez interroger, puis appuyez sur sélectionner."
 
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-list.html
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html:30
 msgid "ID - Name"
 msgstr "Identifiant - Nom"
 
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-list.html
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html:35
 msgid "Select"
 msgstr "Sélectionner"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-#, fuzzy
-#| msgid "Questionnaires"
-msgid "Questionnaire"
-msgstr "Questionnaires"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-msgid "Description"
-msgstr "La description"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-msgid "Select options for the report"
-msgstr "Sélectionnez les options pour le rapport"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-msgid "Date range"
-msgstr "Plage de dates"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-msgid "Start"
-msgstr "Commencer"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-msgid "The start date for the query."
-msgstr "Date de début de la requête."
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-msgid "End"
-msgstr "Fin"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-msgid "The end date for the query."
-msgstr "Date de fin de la requête."
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-msgid "Patients"
-msgstr "Les patients"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-msgid "IDs"
-msgstr "identifiants"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-msgid "Select All"
-msgstr "Tout sélectionner"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-#, fuzzy
-#| msgid "Questionnaires"
-msgid "Questions"
-msgstr "Des questions"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-query.html
-msgid "View Report"
-msgstr "Voir le rapport"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-viewreport.html
-#, fuzzy
-#| msgid "Export Reports"
-msgid "Report"
-msgstr "Exportation de Rapports"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-viewreport.html
-msgid "Back"
-msgstr "Retour"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-viewreport.html
-msgid "Download Excel"
-msgstr "Télécharger Excel"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-viewreport.html
-msgid "Please select how to organize the tabs:"
-msgstr "Veuillez sélectionner comment organiser les onglets :"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-viewreport.html
-msgid "By patients"
-msgstr "Par les patients"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-viewreport.html
-#, fuzzy
-#| msgid "Questionnaires"
-msgid "By questions"
-msgstr "Par questions"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-viewreport.html
-msgid "None (single tab)"
-msgstr "Aucun (onglet unique)"
-
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports-viewreport.html
-msgid "Cancel"
-msgstr "Annuler"
