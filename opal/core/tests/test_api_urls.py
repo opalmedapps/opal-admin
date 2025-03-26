@@ -148,11 +148,41 @@ def test_retrieve_registration_register(settings: SettingsWrapper) -> None:
 
 
 def test_retrieve_caregiver_list(settings: SettingsWrapper) -> None:
-    """Ensure `patients/legacy/<int:legacy_patient_id>/caregivers/` is defined."""
+    """Ensure `patients/legacy/<int:legacy_id>/caregivers/` is defined."""
     patient_id = 52
-    url_path = '/{api_root}/patients/legacy/{legacy_patient_id}/caregivers/'.format(
+    url_path = '/{api_root}/patients/legacy/{legacy_id}/caregivers/'.format(
         api_root=settings.API_ROOT,
-        legacy_patient_id=patient_id,
+        legacy_id=patient_id,
     )
-    assert reverse('api:caregivers-list', kwargs={'legacy_patient_id': patient_id}) == url_path
+    assert reverse('api:caregivers-list', kwargs={'legacy_id': patient_id}) == url_path
     assert resolve(url_path).view_name == 'api:caregivers-list'
+
+
+def test_verify_email(settings: SettingsWrapper) -> None:
+    """Ensure `registration/<str:code>/verify-email/` is defined."""
+    registration_code = 'CODE12345678'
+    url_path = '/{api_root}/registration/{code}/verify-email/'.format(
+        api_root=settings.API_ROOT,
+        code=registration_code,
+    )
+    assert reverse('api:verify-email', kwargs={'code': registration_code}) == url_path
+    assert resolve(url_path).view_name == 'api:verify-email'
+
+
+def test_verify_email_code(settings: SettingsWrapper) -> None:
+    """Ensure `registration/<str:code>/verify-email-code/` is defined."""
+    registration_code = 'CODE12345678'
+    url_path = '/{api_root}/registration/{code}/verify-email-code/'.format(
+        api_root=settings.API_ROOT,
+        code=registration_code,
+    )
+    assert reverse('api:verify-email-code', kwargs={'code': registration_code}) == url_path
+    assert resolve(url_path).view_name == 'api:verify-email-code'
+
+
+def test_retrieve_device_update(settings: SettingsWrapper) -> None:
+    """Ensure `caregivers/devices/<str:device_id>/` endpoint is defined."""
+    device_id = 'TJLNf6yqHdfc3yR3C2bW6546ZPl1'
+    url_path = f'/{settings.API_ROOT}/caregivers/devices/{device_id}/'
+    assert reverse('api:devices-update-or-create', kwargs={'device_id': device_id}) == url_path
+    assert resolve(url_path).view_name == 'api:devices-update-or-create'

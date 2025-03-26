@@ -111,5 +111,22 @@ class LegacyQuestionnaireManager(models.Manager):
         return self.filter(patientsernum=patient_sernum, completedflag=0)
 
 
-class LegacyAnnouncementManager(UnreadQuerySetMixin, models.Manager):
+class LegacyAnnouncementManager(models.Manager):
     """legacy announcement manager."""
+
+    def get_unread_queryset(self, patient_sernum_list: list[int]) -> int:
+        """
+        Get the count of unread announcement(s) for a given user and their relationship(s).
+
+        Args:
+            patient_sernum_list: List of legacy patient sernum to fetch the annoucements for.
+
+        Returns:
+            Count of unread annoucement(s) records.
+        """
+        return self.filter(
+            patientsernum__in=patient_sernum_list,
+            readstatus=0,
+        ).values(
+            'postcontrolsernum',
+        ).distinct().count() or 0

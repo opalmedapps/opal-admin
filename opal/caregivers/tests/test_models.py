@@ -3,6 +3,7 @@ import datetime
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models.deletion import ProtectedError
+from django.db.utils import DataError
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
@@ -93,6 +94,24 @@ def test_caregiverprofile_legacy_id() -> None:
 
     profile.legacy_id = 1
     profile.full_clean()
+
+
+def test_caregiverprofile_legacy_id_unique() -> None:
+    """Ensure that creating a second `CaregiverProfile` with an existing `legacy_id` raises an `IntegrityError`."""
+    factories.CaregiverProfile(legacy_id=1)
+
+    message = "Duplicate entry '1' for key"
+
+    with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
+        factories.CaregiverProfile(legacy_id=1)
+
+
+def test_caregiverprofile_non_existing_legacy_id() -> None:
+    """Ensure that multiple `CaregiverProfiles` with a non-existing legacy_id does not raise a `ValidationError`."""
+    factories.CaregiverProfile(legacy_id=None)
+    factories.CaregiverProfile(legacy_id=None)
+
+    assert CaregiverProfile.objects.count() == 2
 
 
 def test_security_question_str() -> None:
@@ -194,6 +213,22 @@ def test_device_same_caregiver_diff_devices() -> None:
     caregiver = factories.CaregiverProfile()
     factories.Device(caregiver=caregiver, device_id='1a2b3c')
     factories.Device(caregiver=caregiver, device_id='a1b2c3')
+
+
+def test_device_push_token_length() -> None:
+    """Ensure a device push token can't be greater than 256 characters long."""
+    caregiver = factories.CaregiverProfile(id=1)
+    device = factories.Device(caregiver=caregiver)
+    device.push_token = ''.join('a' for _ in range(260))
+    with assertRaisesMessage(DataError, "Data too long for column 'push_token' at row 1"):  # type: ignore[arg-type]
+        device.save()
+
+
+def test_device_modified_datatype() -> None:
+    """Ensure the device modified field is automatically generated and is of the correct type."""
+    caregiver = factories.CaregiverProfile(id=1)
+    device = factories.Device(caregiver=caregiver, device_id='1a2b3c')
+    assert isinstance(device.modified, datetime.datetime)
 
 
 def test_registrationcode_str() -> None:  # pylint: disable-msg=too-many-locals

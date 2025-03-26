@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Add hospital service for communication with the OIE (!173)
 * Add REST API endpoint for the questionnaire report generation
 * Add REST API endpoint for the patient's caregiver(s) relationship(s) (!222)
+* feat: Add can_answer_questionnaire field to RelationshipType model (!689)
+* Add unique constraint to Relationship model (!655)
+* Add date_of_death field to Patients model (!714)
+* Generate a random uuid for the caregiver username(!267)
 
 ### Documentation
 
@@ -51,3 +55,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * chore: Add vscode extension recommendations (!40)
 * build: Fix broken documentation build (!52)
 * i18n: Add French translations for the hospital settings app (!46)
+* fix: Add permission class to caregiver list end point (!240)

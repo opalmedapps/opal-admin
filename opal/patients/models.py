@@ -46,6 +46,11 @@ class RelationshipType(models.Model):
         default=True,
         help_text=_('Whether the hospital form is required to be completed by the caregiver'),
     )
+    can_answer_questionnaire = models.BooleanField(
+        verbose_name=_('Right to answer questionnaire'),
+        default=False,
+        help_text=_('The caregiver can answer questionnaires on behalf of the patient.'),
+    )
 
     class Meta:
         ordering = ['name']
@@ -94,6 +99,11 @@ class Patient(models.Model):
     date_of_birth = models.DateField(
         verbose_name=_('Date of Birth'),
     )
+    date_of_death = models.DateTimeField(
+        verbose_name=_('Date and Time of Death'),
+        null=True,
+        blank=True,
+    )
     sex = models.CharField(
         verbose_name=_('Sex'),
         max_length=1,
@@ -119,6 +129,7 @@ class Patient(models.Model):
     legacy_id = models.PositiveIntegerField(
         verbose_name=_('Legacy ID'),
         validators=[MinValueValidator(1)],
+        unique=True,
         null=True,
         blank=True,
     )
@@ -131,6 +142,10 @@ class Patient(models.Model):
                 name='%(app_label)s_%(class)s_sex_valid',  # noqa: WPS323
                 check=models.Q(sex__in=SexType.values),
             ),
+            models.CheckConstraint(
+                name='%(app_label)s_%(class)s_date_valid',  # noqa: WPS323
+                check=models.Q(date_of_birth__lte=models.F('date_of_death')),
+            ),
         ]
 
     def __str__(self) -> str:
@@ -141,6 +156,15 @@ class Patient(models.Model):
             the name of the associated patient
         """
         return '{first} {last}'.format(first=self.first_name, last=self.last_name)
+
+    def clean(self) -> None:
+        """Validate date fields.
+
+        Raises:
+            ValidationError: If the date of death is earlier than the date of birth.
+        """
+        if self.date_of_death is not None and self.date_of_birth > self.date_of_death.date():
+            raise ValidationError({'date_of_death': _('Date of death cannot be earlier than date of birth.')})
 
 
 class RelationshipStatus(models.TextChoices):
@@ -218,6 +242,10 @@ class Relationship(models.Model):
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_date_valid',  # noqa: WPS323
                 check=models.Q(start_date__lt=models.F('end_date')),
+            ),
+            models.UniqueConstraint(
+                name='%(app_label)s_%(class)s_unique_constraint',  # noqa: WPS323
+                fields=['patient', 'caregiver', 'type', 'status'],
             ),
         ]
 

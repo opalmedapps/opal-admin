@@ -15,6 +15,7 @@ When inspecting an existing database table using `inspectdb`, make sure of the f
 * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 * Don't rename db_table or db_column values
 """
+
 from django.db import models
 
 from . import managers
@@ -37,6 +38,15 @@ class LegacyPatient(models.Model):
     """Patient model from the legacy database."""
 
     patientsernum = models.AutoField(db_column='PatientSerNum', primary_key=True)
+    firstname = models.CharField(db_column='FirstName', max_length=50)
+    lastname = models.CharField(db_column='LastName', max_length=50)
+    email = models.CharField(db_column='Email', max_length=50)
+    registrationdate = models.DateTimeField(db_column='RegistrationDate')
+    language = models.CharField(db_column='Language', max_length=2)
+    telnum = models.BigIntegerField(db_column='TelNum', blank=True, null=True)
+    dateofbirth = models.DateTimeField(db_column='DateOfBirth')
+    ssn = models.CharField(db_column='SSN', max_length=16)
+    sex = models.CharField(db_column='Sex', max_length=25)
 
     class Meta:
         managed = False
@@ -104,7 +114,7 @@ class LegacyAlias(models.Model):
 
 
 class LegacyAppointmentcheckin(models.Model):
-    """Legacy appointment checkin mapping appointmentcheckin table from the legacu database."""
+    """Legacy appointment checkin mapping appointment checkin table from the legacy database."""
 
     aliassernum = models.OneToOneField(
         'LegacyAlias',
@@ -176,6 +186,7 @@ class LegacyAnnouncement(models.Model):
     """Announcement model from the legacy database OpalDB."""
 
     announcementsernum = models.AutoField(db_column='AnnouncementSerNum', primary_key=True)
+    postcontrolsernum = models.ForeignKey('LegacyPostcontrol', models.DO_NOTHING, db_column='PostControlSerNum')
     patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
     readstatus = models.IntegerField(db_column='ReadStatus')
     objects: managers.LegacyAnnouncementManager = managers.LegacyAnnouncementManager()
@@ -183,6 +194,16 @@ class LegacyAnnouncement(models.Model):
     class Meta:
         managed = False
         db_table = 'Announcement'
+
+
+class LegacyPostcontrol(models.Model):
+    """PostControl model from the legacy database OpalDB."""
+
+    postcontrolsernum = models.AutoField(db_column='PostControlSerNum', primary_key=True)
+
+    class Meta:
+        managed = False
+        db_table = 'PostControl'
 
 
 class LegacySecurityQuestion(models.Model):
@@ -218,3 +239,34 @@ class LegacySecurityAnswer(models.Model):
         managed = False
         db_table = 'SecurityAnswer'
         unique_together = (('securityquestionsernum', 'patientsernum'),)
+
+
+class LegacyHospitalIdentifierType(models.Model):
+    """Hospital_Identifier_Type model from the legacy database OpalDB."""
+
+    hospitalidentifiertypeid = models.AutoField(db_column='Hospital_Identifier_Type_Id', primary_key=True)
+    code = models.CharField(db_column='Code', max_length=20, unique=True)
+
+    class Meta:
+        managed = False
+        db_table = 'Hospital_Identifier_Type'
+
+
+class LegacyPatientHospitalIdentifier(models.Model):
+    """Patient_Hospital_Identifier model from the legacy database OpalDB."""
+
+    patienthospitalidentifierid = models.AutoField(db_column='Patient_Hospital_Identifier_Id', primary_key=True)
+    patientsernum = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
+    hospitalidentifiertypecode = models.ForeignKey(
+        'LegacyHospitalIdentifierType',
+        models.DO_NOTHING,
+        db_column='Hospital_Identifier_Type_Code',
+        to_field='code',
+    )
+    mrn = models.CharField(db_column='MRN', max_length=20)
+    isactive = models.BooleanField(db_column='is_Active')
+
+    class Meta:
+        managed = False
+        db_table = 'Patient_Hospital_Identifier'
+        unique_together = (('patientsernum', 'hospitalidentifiertypecode', 'mrn'),)

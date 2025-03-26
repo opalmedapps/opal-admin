@@ -2,6 +2,7 @@ import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.utils import timezone
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
@@ -181,6 +182,23 @@ def test_patient_ramq_default_value() -> None:
     assert patient.ramq is None
 
 
+def test_patient_legacy_id_unique() -> None:
+    """Ensure that creating a second `Patient` with an existing `legacy_id` raises an `IntegrityError`."""
+    factories.Patient(ramq=None, legacy_id=1)
+    message = "Duplicate entry '1' for key"
+
+    with assertRaisesMessage(IntegrityError, message):  # type: ignore[arg-type]
+        factories.Patient(ramq='somevalue', legacy_id=1)
+
+
+def test_patient_non_existing_legacy_id() -> None:
+    """Ensure that creating a second `Patient` with a non-existing legacy_id does not raise a `ValidationError`."""
+    factories.Patient(ramq=None, legacy_id=None)
+    factories.Patient(ramq='somevalue', legacy_id=None)
+
+    assert Patient.objects.count() == 2
+
+
 def test_relationship_str() -> None:
     """Ensure the `__str__` method is defined for the `Relationship` model."""
     patient = factories.Patient(first_name='Kobe', last_name='Briant')
@@ -316,6 +334,12 @@ def test_hospitalpatient_many_patients_one_site() -> None:
         HospitalPatient.objects.create(patient=patient2, site=site, mrn='9999996')
 
 
+def test_can_answer_questionnaire_default() -> None:
+    """Ensure default can_answer_questionnaire field is false."""
+    relationtype = factories.RelationshipType()
+    assert not relationtype.can_answer_questionnaire
+
+
 # tests for reason field constraints and validations
 def test_relationship_no_reason_invalid_revoked() -> None:
     """Ensure that error is thrown when reason is empty and status is revoked."""
@@ -383,3 +407,96 @@ def test_relationship_saved_reason_valid_revoked() -> None:
 
     relationship.clean()
     assert relationship.reason == 'Reason 1'
+
+
+def test_relationship_same_combination() -> None:
+    """Ensure that a relationship with same patient-caregiver-type-status combo is unique."""
+    patient = factories.Patient(first_name='Kobe', last_name='Briant')
+    caregiver = user_factories.Caregiver(first_name='John', last_name='Wayne')
+    profile = factories.CaregiverProfile(user=caregiver)
+    factories.Relationship(patient=patient, caregiver=profile)
+    with assertRaisesMessage(IntegrityError, 'Duplicate entry'):  # type: ignore[arg-type]
+        factories.Relationship(patient=patient, caregiver=profile)
+
+
+def test_relationship_diff_relation_same_status() -> None:
+    """Ensure that two unique patient-caregiver relationship doesn't prevent from sharing same status."""
+    patient1 = factories.Patient(first_name='John', last_name='Smith')
+    caregiver1 = user_factories.Caregiver(first_name='Betty', last_name='White')
+    profile1 = factories.CaregiverProfile(user=caregiver1)
+    factories.Relationship(patient=patient1, caregiver=profile1, status=RelationshipStatus.CONFIRMED)
+
+    patient2 = factories.Patient(first_name='Will', last_name='Smith')
+    caregiver2 = user_factories.Caregiver(first_name='Emma', last_name='Stone')
+    profile2 = factories.CaregiverProfile(user=caregiver2)
+    factories.Relationship(patient=patient2, caregiver=profile2, status=RelationshipStatus.CONFIRMED)
+
+
+def test_relationship_diff_relation_same_type() -> None:
+    """Ensure that two unique patient-caregiver relationship doesn't prevent from sharing same type."""
+    patient1 = factories.Patient(first_name='John', last_name='Smith')
+    caregiver1 = user_factories.Caregiver(first_name='Betty', last_name='White')
+    profile1 = factories.CaregiverProfile(user=caregiver1)
+    relationship1 = factories.Relationship.build(patient=patient1, caregiver=profile1)
+
+    patient2 = factories.Patient(first_name='Will', last_name='Smith')
+    caregiver2 = user_factories.Caregiver(first_name='Emma', last_name='Stone')
+    profile2 = factories.CaregiverProfile(user=caregiver2)
+    relationship2 = factories.Relationship.build(patient=patient2, caregiver=profile2)
+
+    relationship1.type = factories.RelationshipType()
+    relationship2.type = relationship1.type
+
+    relationship1.full_clean()
+    relationship2.full_clean()
+
+
+def test_relationship_same_relation_diff_status() -> None:
+    """Ensure that the unique patient-caregiver relationship doesn't prevent from having multiple statuses."""
+    patient = factories.Patient(first_name='Will', last_name='Smith')
+    caregiver = user_factories.Caregiver(first_name='Emma', last_name='Stone')
+    profile = factories.CaregiverProfile(user=caregiver)
+    factories.Relationship(patient=patient, caregiver=profile, status=RelationshipStatus.CONFIRMED)
+    factories.Relationship(patient=patient, caregiver=profile, status=RelationshipStatus.PENDING)
+
+
+def test_relationship_same_relation_diff_type() -> None:
+    """Ensure that the unique patient-caregiver relationship doesn't prevent from having multiple types."""
+    patient = factories.Patient(first_name='Will', last_name='Smith')
+    caregiver = user_factories.Caregiver(first_name='Emma', last_name='Stone')
+    profile = factories.CaregiverProfile(user=caregiver)
+
+    type1 = factories.RelationshipType(name='Friend')
+    type2 = factories.RelationshipType(name='Mentor')
+
+    factories.Relationship(patient=patient, caregiver=profile, type=type1)
+    factories.Relationship(patient=patient, caregiver=profile, type=type2)
+
+
+def test_invalid_date_of_death() -> None:
+    """Ensure that the date of death is invalid if date of birth is later."""
+    patient = factories.Patient()
+    patient.date_of_birth = datetime.date(2022, 11, 20)
+    patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 10, 20))
+
+    expected_message = 'Date of death cannot be earlier than date of birth.'
+    with assertRaisesMessage(ValidationError, expected_message):  # type: ignore[arg-type]
+        patient.clean()
+
+
+def test_valid_date_of_death() -> None:
+    """Ensure that the date of death is entered and valid."""
+    patient = factories.Patient()
+    patient.date_of_birth = datetime.date(2022, 10, 20)
+    patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 11, 20))
+
+    patient.clean()
+
+
+def test_same_birth_and_death_date() -> None:
+    """Ensure that the date of death is valid if same as date of birth."""
+    patient = factories.Patient()
+    patient.date_of_birth = datetime.date(2022, 1, 23)
+    patient.date_of_death = timezone.make_aware(datetime.datetime(2022, 1, 23))
+
+    patient.clean()

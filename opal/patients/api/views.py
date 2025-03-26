@@ -17,6 +17,7 @@ from rest_framework.views import APIView
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.api import serializers as caregiver_serializers
+from opal.core.drf_permissions import CaregiverPatientPermissions
 from opal.patients.api.serializers import CaregiverRelationshipSerializer
 from opal.users.models import User
 
@@ -192,6 +193,7 @@ class CaregiverRelationshipView(ListAPIView):
 
     serializer_class = CaregiverRelationshipSerializer
     pagination_class = None
+    permission_classes = [IsAuthenticated, CaregiverPatientPermissions]
 
     def get_queryset(self) -> QuerySet[Relationship]:
         """Query set to retrieve list of caregivers for the input patient.
@@ -202,5 +204,5 @@ class CaregiverRelationshipView(ListAPIView):
         return Relationship.objects.select_related(
             'caregiver__user',
         ).filter(
-            patient__legacy_id=self.kwargs['legacy_patient_id'],
+            patient__legacy_id=self.kwargs['legacy_id'],
         )

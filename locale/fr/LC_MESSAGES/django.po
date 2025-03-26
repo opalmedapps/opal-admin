@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-16 10:17-0400\n"
+"POT-Creation-Date: 2022-11-29 14:22-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,6 +39,58 @@ msgstr "Anglais"
 msgid "French"
 msgstr "Français"
 
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
+msgid "Dear"
+msgstr "Bonjour"
+
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
+msgid "Welcome to Opal"
+msgstr "Bienvenue dans le groupe Opal"
+
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
+msgid "Thank you for deciding to create an account with us"
+msgstr "Merci d'avoir choisi de créer un compte avec nous"
+
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
+msgid ""
+"If you are not trying to create an Opal account using this email address, "
+"you can safely disregard this email"
+msgstr ""
+"Si vous n'avez pas effectué de demande de création de compte Opal en "
+"utilisant cette adresse courriel, veuillez ne pas tenir compte de ce message"
+
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
+msgid ""
+"To verify your email address, please enter the code below on the "
+"verification page"
+msgstr ""
+"Pour effectuer la vérification de votre adresse courriel, veuillez entrer le "
+"code ci-dessous sur la page de vérification "
+
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
+msgid ""
+"This code will expire in 10 minutes. Once the code has expired, you will "
+"need to request a new verification code to continue the registration process"
+msgstr ""
+"Ce code expirera dans 10 minutes. Une fois le code expiré, vous devrez "
+"demander un nouveau code pour procéder avec votre inscription"
+
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
+msgid "Yours"
+msgstr "Cordialement"
+
+#: opal/templates/email/verification_code.html
+#: opal/templates/email/verification_code.txt
+msgid "The Opal team"
+msgstr "L’Équipe Opal"
+
 #: opal/templates/layouts/base.html
 msgid "opal ADMIN"
 msgstr "opal ADMIN"
@@ -62,6 +114,10 @@ msgstr "Patients"
 #: opal/templates/layouts/base.html
 msgid "Relationship Types"
 msgstr "Types de Relations"
+
+#: opal/templates/layouts/base.html
+msgid "Pending Requests"
+msgstr "Requête en attente"
 
 #: opal/templates/layouts/base.html
 msgid "Questionnaires"
