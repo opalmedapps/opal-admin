@@ -190,11 +190,11 @@ msgstr ""
 
 #: opal/templates/sidebar.html
 msgid "New Access Request"
-msgstr "Nouveau demande d'accès"
+msgstr "Nouvelle demande d'accès"
 
 #: opal/templates/sidebar.html
 msgid "Pending Access Requests"
-msgstr "Requête d'accès en attente"
+msgstr "Requêtes d'accès en attente"
 
 #: opal/templates/sidebar.html
 msgid "Manage Caregiver Access"
