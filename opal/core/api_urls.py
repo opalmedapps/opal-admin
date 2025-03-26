@@ -18,7 +18,7 @@ from opal.legacy.api.views.app_general import AppGeneralView
 from opal.legacy.api.views.app_home import AppHomeView
 from opal.legacy.api.views.caregiver_permissions import CaregiverPermissionsView
 from opal.legacy.api.views.questionnaires_report import QuestionnairesReportView
-from opal.patients.api.views import RetrieveRegistrationDetailsView
+from opal.patients.api.views import CaregiverRelationshipView, RetrieveRegistrationDetailsView
 
 # show APIRootView only in debug mode
 # add trailing_slash=False if the trailing slash should not be enforced
@@ -47,6 +47,11 @@ urlpatterns = [
         CaregiverPermissionsView.as_view(),
         name='caregiver-permissions',
     ),
+    path(
+        'patients/legacy/<int:legacy_patient_id>/caregivers/',
+        CaregiverRelationshipView.as_view(),
+        name='caregivers-list',
+    ),
     path('registration/by-hash/<str:hash>/', GetRegistrationEncryptionInfoView.as_view(), name='registration-by-hash'),
     path('questionnaires/reviewed/', QuestionnairesReportView.as_view(), name='questionnaires-reviewed'),
     path('app/general/', AppGeneralView.as_view(), name='app-general'),
@@ -70,6 +75,11 @@ urlpatterns = [
         'caregivers/<uuid:uuid>/security-questions/<int:pk>/verify/',
         SecurityAnswerViewSet.as_view({'post': 'verify_answer'}),
         name='caregivers-securityquestions-verify',
+    ),
+    path(
+        'institutions/<int:pk>/terms-of-use/',
+        settings_views.InstitutionViewSet.as_view({'get': 'retrieve_terms_of_use'}),
+        name='institutions-terms-of-use',
     ),
     path('', include(router.urls)),
 ]

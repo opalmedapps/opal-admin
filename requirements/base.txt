@@ -1,9 +1,9 @@
 # Django
 #
-django==3.2.15
+django==3.2.16
 django-environ==0.9.0  # https://github.com/joke2k/django-environ
 django-extensions==3.2.1  # https://github.com/django-extensions/django-extensions
-django-modeltranslation==0.18.4  # https://django-modeltranslation.readthedocs.io/en/latest/
+django-modeltranslation==0.18.5  # https://django-modeltranslation.readthedocs.io/en/latest/
 djangorestframework==3.14.0  # https://www.django-rest-framework.org/
 dj-rest-auth==2.2.5  # https://github.com/iMerica/dj-rest-auth
 django-filter==22.1  # https://github.com/carltongibson/django-filter

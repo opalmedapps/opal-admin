@@ -1,7 +1,6 @@
 """Module providing an utility for base64 encoding operations."""
 
 import base64
-import imghdr
 from pathlib import Path
 from typing import Optional
 
@@ -9,22 +8,19 @@ from typing import Optional
 class Base64Util:
     """Util that provides functionality for handling base64 encoding strings."""
 
-    def encode_image_to_base64(self, logo_path: Path) -> Optional[str]:
-        """Create base64 string of a given image.
+    def encode_to_base64(self, path: Path) -> Optional[str]:
+        """Create base64 string of a given file.
 
         Args:
-            logo_path (Path): file path of the logo image
+            path (Path): file path
 
         Returns:
-            str: encoded base64 string of the logo image if the `logo_path` is a valid image file, `None` otherwise
+            str: encoded base64 string of the input file if the `path` is a valid file path, `None` otherwise
         """
         try:
             # Return a `None` if a given file is not an image
-            if imghdr.what(logo_path) is not None:
-                with logo_path.open(mode='rb') as image_file:
-                    data = base64.b64encode(image_file.read())
-            else:
-                return None
+            with path.open(mode='rb') as file:
+                data = base64.b64encode(file.read())
         except OSError:
             return None
 
