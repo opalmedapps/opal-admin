@@ -399,51 +399,51 @@ def test_relationship_diff_relation_same_status() -> None:
     """Ensure that two unique patient-caregiver relationship doesn't prevent from sharing same status."""
     patient1 = factories.Patient(first_name='John', last_name='Smith')
     caregiver1 = user_factories.Caregiver(first_name='Betty', last_name='White')
-    profile1 = CaregiverProfile(user=caregiver1)
-    relationship1 = factories.Relationship.build(patient=patient1, caregiver=profile1)
+    profile1 = factories.CaregiverProfile(user=caregiver1)
+    factories.Relationship(patient=patient1, caregiver=profile1, status=RelationshipStatus.CONFIRMED)
 
     patient2 = factories.Patient(first_name='Will', last_name='Smith')
     caregiver2 = user_factories.Caregiver(first_name='Emma', last_name='Stone')
-    profile2 = CaregiverProfile(user=caregiver2)
-    relationship2 = factories.Relationship.build(patient=patient2, caregiver=profile2)
-
-    relationship1.status = RelationshipStatus.CONFIRMED
-    relationship2.status = RelationshipStatus.CONFIRMED
+    profile2 = factories.CaregiverProfile(user=caregiver2)
+    factories.Relationship(patient=patient2, caregiver=profile2, status=RelationshipStatus.CONFIRMED)
 
 
 def test_relationship_diff_relation_same_type() -> None:
     """Ensure that two unique patient-caregiver relationship doesn't prevent from sharing same type."""
     patient1 = factories.Patient(first_name='John', last_name='Smith')
     caregiver1 = user_factories.Caregiver(first_name='Betty', last_name='White')
-    profile1 = CaregiverProfile(user=caregiver1)
+    profile1 = factories.CaregiverProfile(user=caregiver1)
     relationship1 = factories.Relationship.build(patient=patient1, caregiver=profile1)
 
     patient2 = factories.Patient(first_name='Will', last_name='Smith')
     caregiver2 = user_factories.Caregiver(first_name='Emma', last_name='Stone')
-    profile2 = CaregiverProfile(user=caregiver2)
+    profile2 = factories.CaregiverProfile(user=caregiver2)
     relationship2 = factories.Relationship.build(patient=patient2, caregiver=profile2)
 
-    relationship1.type = factories.RelationshipType(name='Friend')
-    relationship2.status = factories.RelationshipType(name='Friend')
+    relationship1.type = factories.RelationshipType()
+    relationship2.type = relationship1.type
+
+    relationship1.full_clean()
+    relationship2.full_clean()
 
 
 def test_relationship_same_relation_diff_status() -> None:
     """Ensure that the unique patient-caregiver relationship doesn't prevent from having multiple statuses."""
     patient = factories.Patient(first_name='Will', last_name='Smith')
     caregiver = user_factories.Caregiver(first_name='Emma', last_name='Stone')
-    profile = CaregiverProfile(user=caregiver)
-    factories.Relationship.build(patient=patient, caregiver=profile, status=RelationshipStatus.CONFIRMED)
-    factories.Relationship.build(patient=patient, caregiver=profile, status=RelationshipStatus.PENDING)
+    profile = factories.CaregiverProfile(user=caregiver)
+    factories.Relationship(patient=patient, caregiver=profile, status=RelationshipStatus.CONFIRMED)
+    factories.Relationship(patient=patient, caregiver=profile, status=RelationshipStatus.PENDING)
 
 
 def test_relationship_same_relation_diff_type() -> None:
     """Ensure that the unique patient-caregiver relationship doesn't prevent from having multiple types."""
     patient = factories.Patient(first_name='Will', last_name='Smith')
     caregiver = user_factories.Caregiver(first_name='Emma', last_name='Stone')
-    profile = CaregiverProfile(user=caregiver)
+    profile = factories.CaregiverProfile(user=caregiver)
 
-    type1 = RelationshipType('Friend')
-    type2 = RelationshipType('Mentor')
+    type1 = factories.RelationshipType(name='Friend')
+    type2 = factories.RelationshipType(name='Mentor')
 
-    factories.Relationship.build(patient=patient, caregiver=profile, type=type1)
-    factories.Relationship.build(patient=patient, caregiver=profile, type=type2)
+    factories.Relationship(patient=patient, caregiver=profile, type=type1)
+    factories.Relationship(patient=patient, caregiver=profile, type=type2)
