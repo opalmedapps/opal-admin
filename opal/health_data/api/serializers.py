@@ -3,6 +3,8 @@ from typing import Any
 
 from rest_framework import serializers
 
+from opal.patients.models import Patient
+
 from ..models import QuantitySample
 
 
@@ -39,3 +41,34 @@ class QuantitySampleSerializer(serializers.ModelSerializer[QuantitySample]):
         fields = ('type', 'value', 'start_date', 'device', 'source')
         # See: https://www.django-rest-framework.org/api-guide/serializers/#customizing-multiple-create
         list_serializer_class = QuantitySampleListSerializer
+
+
+class PatientUnviewedQuantitySampleSerializer(serializers.ModelSerializer[Patient]):
+    """Serializer for patient's `QuantitySample` instances that were not marked as viewed."""
+
+    # Patient's UUID for whom unviewed `QuantitySample` instances are being checked
+    uuid = serializers.UUIDField(required=True, allow_null=False)
+
+    class Meta:
+        model = Patient
+        fields = ('uuid',)
+
+    def validate_uuid(self, value: str) -> str:
+        """Check that given `patient_uuid` exists in the database.
+
+        Args:
+            value: patient's UUID
+
+        Returns:
+            validated patient's UUID value
+
+        Raises:
+            ValidationError: if provided patient's UUID does not exist in the database
+        """
+        if not Patient.objects.filter(
+            uuid=value,
+        ).exists():
+            raise serializers.ValidationError(
+                '{0}{1}{2}'.format('Provided "', value, '" patient UUID does not exist.'),
+            )
+        return value

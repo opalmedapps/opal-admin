@@ -1,14 +1,16 @@
 """Module providing API views for the `health_data` app."""
 from typing import Any
 
-from rest_framework import generics, permissions, serializers
+from django.db import models
+
+from rest_framework import generics, permissions, serializers, status
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from opal.patients.models import Patient
 
 from ..models import QuantitySample
-from .serializers import QuantitySampleSerializer
+from .serializers import PatientUnviewedQuantitySampleSerializer, QuantitySampleSerializer
 
 
 class CreateQuantitySampleView(generics.CreateAPIView):
@@ -71,3 +73,50 @@ class CreateQuantitySampleView(generics.CreateAPIView):
             serializer: the serializer instance to use
         """
         serializer.save(patient=self.patient)
+
+
+class UnviewedQuantitySampleView(generics.GenericAPIView):
+    """`GenericAPIView` for retrieving a list of patients' unviewed `QuantitySample` records."""
+
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = PatientUnviewedQuantitySampleSerializer
+    queryset = QuantitySample.objects.none()
+
+    def post(self, request: Request) -> Response:
+        """Retrieve a list of patient's unviewed `QuantitySample` records.
+
+        The method returns the counts (a.k.a. badges) of unviewed quantities for each patient.
+
+        Args:
+            request: HTTP request
+
+        Returns:
+            Response: list of unviewed `QuantitySample` counts for each patient
+        """
+        serializer = self.get_serializer(
+            many=True,
+            allow_empty=False,
+            required=True,
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        # Use `order_by` to count distinct patient UUIDs
+        # https://docs.djangoproject.com/en/4.2/topics/db/aggregation/#interaction-with-order-by
+        unviewed_counts = QuantitySample.objects.filter(
+            patient__uuid__in=[patient['uuid'] for patient in serializer.validated_data],
+        ).exclude(
+            viewed_at__isnull=True,
+            viewed_by__exact='',
+        ).values(
+            'patient__uuid',
+        ).annotate(
+            patient_uuid=models.F('patient__uuid'),
+            count=models.Count('patient'),
+        ).order_by().values(
+            'patient_uuid',
+            'count',
+        )
+
+        # Return patients' unviewed counts of the QuantitySamples
+        return Response(data=unviewed_counts, status=status.HTTP_200_OK)

@@ -162,6 +162,11 @@ urlpatterns = [
         CreateDatabankConsentView.as_view(),
         name='databank-consent-create',
     ),
+    path(
+        'patients/health-data/unviewed/',
+        data_views.UnviewedQuantitySampleView.as_view(),
+        name='unviewed-health-data-patient-list',
+    ),
 
 
     # QUESTIONNAIRES ENDPOINTS
