@@ -1,4 +1,5 @@
 import datetime as dt
+import os
 from typing import Any
 
 from django.db import models
@@ -6,11 +7,14 @@ from django.utils import timezone
 
 import pytest
 from django_stubs_ext.aliases import ValuesQuerySet
+from pytest_django.asserts import assertRaisesMessage
 
 from opal.caregivers import factories as caregiver_factories
 from opal.legacy import factories as legacy_factories
 from opal.patients import factories as patient_factories
 from opal.patients import models as patient_models
+from opal.usage_statistics import factories as stats_factories
+from opal.usage_statistics import models as stats_models
 from opal.usage_statistics import utils as stats_utils
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
@@ -958,3 +962,39 @@ def _fetch_annotated_relationships() -> ValuesQuerySet[patient_models.Relationsh
     ).annotate(
         end_date=models.Max('end_date'),
     )
+
+
+def test_export_data_csv() -> None:
+    """Ensure the export function generate csv file with model queryset."""
+    stats_factories.DailyUserPatientActivity(
+        action_by_user=caregiver_factories.Caregiver(username='marge'),
+    )
+    assert not os.path.isfile('test.csv')
+    stats_utils.export_data(stats_models.DailyUserPatientActivity.objects.all(), 'test.csv')
+    assert os.path.isfile('test.csv')
+    os.remove('test.csv')
+
+
+def test_export_data_xlsx() -> None:
+    """Ensure the export_data generate excel file with model queryset."""
+    stats_factories.DailyUserPatientActivity(
+        action_by_user=caregiver_factories.Caregiver(username='marge'),
+    )
+    assert not os.path.isfile('test.xlsx')
+    stats_utils.export_data(stats_models.DailyUserPatientActivity.objects.all(), 'test.xlsx')
+    assert os.path.isfile('test.xlsx')
+    os.remove('test.xlsx')
+
+
+def test_export_data_invalid_file_name() -> None:
+    """Ensure the export_data handle the invalid file format."""
+    stats_factories.DailyUserPatientActivity(
+        action_by_user=caregiver_factories.Caregiver(username='marge'),
+    )
+
+    expected_message = 'Invalid file format, please use either csv or xlsx'
+    with assertRaisesMessage(
+        ValueError,
+        expected_message,
+    ):
+        stats_utils.export_data(stats_models.DailyUserPatientActivity.objects.all(), 'test.random')

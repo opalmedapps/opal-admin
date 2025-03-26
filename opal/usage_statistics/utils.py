@@ -6,6 +6,7 @@ from typing import Any
 
 from django.db import models
 
+import pandas as pd
 from django_stubs_ext.aliases import ValuesQuerySet
 
 from opal.legacy import models as legacy_models
@@ -257,3 +258,32 @@ def get_aggregated_patient_received_data(
         'patient',
         *annotation_subqueries,
     )
+
+
+def export_data(query: models.QuerySet[Any], file_name: str = 'data.csv') -> None:
+    """Export the data into a csv/xlsx file to facilitate the use of the new usage stats queries.
+
+    The function currently only support for csv and xlsx format, a value error will be raised for other cases.
+
+    Args:
+        query: the beginning of the time period of app activities being extracted
+        file_name: the end of the time period of app activities being extracted
+
+    Raises:
+        ValueError: If the file_name format is not supported
+    """
+    # Generate dataframe from the queryset given
+    model_name = query.model
+    model_fields = [field.name for field in model_name._meta.get_fields()]    # noqa: WPS437
+    dataset = query.values(*model_fields)
+    dataframe = pd.DataFrame.from_records(dataset, columns=model_fields)
+    # Generate the file in the required path and format
+    match file_name.split('.')[-1]:
+        case 'csv':
+            print(format)
+            dataframe.to_csv(file_name, index=False)
+        case 'xlsx':
+            print(format)
+            dataframe.to_excel(file_name, index=False)
+        case _:
+            raise ValueError('Invalid file format, please use either csv or xlsx')
