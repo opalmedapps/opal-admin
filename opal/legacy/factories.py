@@ -201,6 +201,8 @@ class LegacyQuestionnaireFactory(DjangoModelFactory):
 class LegacyPostcontrolFactory(DjangoModelFactory):
     """Post Controle factory for announcement from the legacy database."""
 
+    posttype = 'Announcement'
+
     class Meta:
         model = models.LegacyPostcontrol
 
@@ -212,7 +214,7 @@ class LegacyAnnouncementFactory(DjangoModelFactory):
         model = models.LegacyAnnouncement
 
     patientsernum = SubFactory(LegacyPatientFactory)
-    postcontrolsernum = SubFactory(LegacyPostcontrolFactory(posttype='Announcement'))
+    postcontrolsernum = SubFactory(LegacyPostcontrolFactory)
     readstatus = 0
     readby = '[]'
 
