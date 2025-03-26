@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-22 11:49-0400\n"
+"POT-Creation-Date: 2022-11-21 13:34-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,18 +19,202 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: opal/questionnaires/apps.py
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html
 msgid "Questionnaires"
 msgstr "Questionnaires"
 
 #: opal/questionnaires/models.py
 msgid "Export Report"
-msgstr "Exportation de Rapport"
+msgstr "Exportation du rapport"
 
 #: opal/questionnaires/models.py
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports.html
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html
 msgid "Export Reports"
 msgstr "Exportation de Rapports"
 
-#: opal/questionnaires/templates/questionnaires/export_reports/exportreports.html
-msgid "ePRO Data Extractions"
-msgstr "Extractions de Données ePRO"
+#: opal/questionnaires/models.py
+msgid "User"
+msgstr ""
+
+#: opal/questionnaires/models.py
+msgid "Questionnaire List"
+msgstr ""
+
+#: opal/questionnaires/models.py
+msgid "Questionnaire Profile"
+msgstr ""
+
+#: opal/questionnaires/models.py
+msgid "Questionnaire Profiles"
+msgstr ""
+
+#: opal/questionnaires/tables.py
+msgid "Patient ID"
+msgstr "ID du patient"
+
+#: opal/questionnaires/tables.py
+msgid "Question ID"
+msgstr "Question ID"
+
+#: opal/questionnaires/tables.py
+msgid "Question Text"
+msgstr "Texte de la question"
+
+#: opal/questionnaires/tables.py
+msgid "Answer Text"
+msgstr "Texte de réponse"
+
+#: opal/questionnaires/tables.py
+msgid "Date Created"
+msgstr "Date de création"
+
+#: opal/questionnaires/tables.py
+msgid "Date Updated"
+msgstr "Date de mise à jour"
+
+#: opal/questionnaires/tables.py
+msgid "No responses found."
+msgstr "Aucune réponse trouvée."
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+msgid "My questionnaires"
+msgstr "Questionnaires"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+msgid "Questionnaire ID"
+msgstr "Questionnaires"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+msgid "Title"
+msgstr ""
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+msgid "Last viewed"
+msgstr ""
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+msgid "You are not following any questionnaires"
+msgstr ""
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-dashboard.html
+msgid "View all questionnaires"
+msgstr "Sélectionnez le questionnaire"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
+msgid "Report:"
+msgstr "Rapport :"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
+msgid "between"
+msgstr "entre"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
+msgid "and"
+msgstr "et"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
+msgid "Back"
+msgstr "Retour"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
+msgid "Download Excel"
+msgstr "Télécharger Excel"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
+msgid "Please select how to organize the tabs:"
+msgstr "Veuillez sélectionner comment organiser les onglets :"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
+msgid "By patients"
+msgstr "Par les patients"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
+msgid "By questions"
+msgstr "Par des questions"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
+msgid "None (single tab)"
+msgstr "Aucun (onglet unique)"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-detail.html
+msgid "Cancel"
+msgstr "Annuler"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "Questionnaire"
+msgstr "Questionnaire"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "Follow in my dashboard"
+msgstr ""
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "Description"
+msgstr "La description"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "Select options for the report"
+msgstr "Sélectionnez les options pour le rapport"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "Date range"
+msgstr "Plage de dates"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "Start"
+msgstr "Commencer"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "The start date for the query."
+msgstr "Date de début de la requête."
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "End"
+msgstr "Fin"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "The end date for the query."
+msgstr "Date de fin de la requête."
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "Patients"
+msgstr "Les patients"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "IDs"
+msgstr "identifiants"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "Select All"
+msgstr "Tout sélectionner"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "Questions"
+msgstr "Des questions"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-filter.html
+msgid "View Report"
+msgstr "Voir le rapport"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html
+msgid "Select questionnaire"
+msgstr "Sélectionnez le questionnaire"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html
+msgid ""
+"Use the dropdown menu on the right to select the questionnaire you want to "
+"query, then press select."
+msgstr ""
+"Utilisez le menu déroulant à droite pour sélectionner le questionnaire que "
+"vous souhaitez interroger, puis appuyez sur sélectionner."
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html
+msgid "ID - Name"
+msgstr "Identifiant - Nom"
+
+#: opal/questionnaires/templates/questionnaires/export_reports/reports-list.html
+msgid "Select"
+msgstr "Sélectionner"
