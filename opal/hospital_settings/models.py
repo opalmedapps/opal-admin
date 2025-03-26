@@ -11,8 +11,7 @@ class Location(models.Model):
 
     class Meta:
         abstract = True
-
-    def __str__(self) -> str:
+    def __str__(self):
         """Return the name of the location."""
         return self.name
 
