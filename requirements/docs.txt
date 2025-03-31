@@ -1,9 +1,0 @@
-# SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
-#
-# SPDX-License-Identifier: AGPL-3.0-or-later
-
-mkdocs-material==9.6.9  # https://github.com/squidfunk/mkdocs-material
-mkdocstrings[python-legacy]==0.27.0  # https://github.com/mkdocstrings/mkdocstrings/
-mkdocs-autorefs==1.4.1  # https://github.com/mkdocstrings/autorefs
-mkdocs-gen-files==0.5.0  # https://github.com/oprypin/mkdocs-gen-files
-mkdocs-literate-nav==0.6.1  # https://github.com/oprypin/mkdocs-literate-nav

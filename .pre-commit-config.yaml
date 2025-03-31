@@ -27,6 +27,17 @@ repos:
   - id: double-quote-string-fixer
   - id: end-of-file-fixer
   - id: trailing-whitespace
+
+- repo: https://github.com/abravalheri/validate-pyproject
+  rev: v0.23
+  hooks:
+    - id: validate-pyproject
+
+- repo: https://github.com/astral-sh/uv-pre-commit
+  rev: 0.6.11
+  hooks:
+    - id: uv-lock
+
 # https://docs.astral.sh/ruff/integrations/#pre-commit
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.9.10
@@ -34,24 +45,20 @@ repos:
     # Run the linter with fixes
     - id: ruff
       args: [--fix]
-#     # Run the formatter
+    # Run the formatter
     - id: ruff-format
+
 - repo: https://github.com/DavidAnson/markdownlint-cli2
   rev: v0.17.2
   hooks:
   - id: markdownlint-cli2
-- repo: https://github.com/asottile/pyupgrade
-  rev: v3.19.1
-  hooks:
-  - id: pyupgrade
-    # desired Python version needs to be set explicitly
-    # see: https://github.com/asottile/pyupgrade/issues/768
-    args: ['--py311-plus']
+
 - repo: https://github.com/adamchainz/django-upgrade
   rev: 1.23.1
   hooks:
   - id: django-upgrade
     args: [--target-version, "4.2"]
+
 # use local virtual env for flake8 and mypy to reuse the same configuration (and dependencies)
 - repo: local
   hooks:

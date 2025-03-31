@@ -1,0 +1,82 @@
+[project]
+name = "admin"
+version = "0"
+description = "New administrative web application used to configure Opal and its content"
+readme = "README.md"
+requires-python = "==3.12.9"
+dependencies = [
+    "argon2-cffi==23.1.0",
+    # pinned to last working version due to issue: https://github.com/plotly/choreographer/issues/218
+    # once resolved, remove this dependency since it is a transitive dependency (via kaleido)
+    "choreographer==0.99.7",
+    "crispy-bootstrap5==2024.10",
+    "dj-rest-auth==7.0.1",
+    "django==4.2.19",
+    "django-auditlog==3.0.0",
+    "django-cors-headers==4.7.0",
+    "django-crispy-forms==2.3",
+    "django-environ==0.12.0",
+    "django-extensions==3.2.3",
+    "django-filter==25.1",
+    "django-forms-dynamic==1.0.0",
+    "django-modeltranslation==0.19.12",
+    "django-phonenumber-field[phonenumberslite]==8.0.0",
+    "django-structlog==9.0.1",
+    # required as a runtime dependency due to the need to monkeypatch at runtime for generics
+    # see: https://github.com/typeddjango/django-stubs/tree/master/ext
+    "django-stubs-ext==5.1.3",
+    "django-tables2==2.7.5",
+    "djangorestframework==3.15.2",
+    "drf-spectacular==0.28.0",
+    "fpdf2==2.8.2",
+    "hl7apy==1.3.5",
+    "kaleido==1.0.0rc0",
+    "mysqlclient==2.2.7",
+    "openpyxl==3.1.5",
+    "pandas==2.2.3",
+    # required for ImageFields
+    "pillow==11.1.0",
+    "plotly==6.0.1",
+    "pydantic==2.10.6",
+    "qrcode==8.0",
+    "requests==2.32.3",
+    "slippers==0.6.2",
+    "twilio==9.5.1",
+    "unidecode==1.3.8",
+    "whitenoise[brotli]==6.8.2",
+]
+
+[dependency-groups]
+dev = [
+    "beautifulsoup4==4.12.3",
+    "coverage==7.6.12",
+    "django-coverage-plugin==3.1.0",
+    "django-stubs==5.1.3",
+    "django-test-migrations==1.4.0",
+    "djangorestframework-stubs==3.15.3",
+    "factory-boy==3.3.3",
+    "mypy[faster-cache]==1.15.0",
+    "pandas-stubs==2.2.3.241126",
+    "pre-commit==4.1.0",
+    "pytest==8.3.4",
+    "pytest-django==4.10.0",
+    "pytest-mock==3.14.0",
+    "pytest-randomly==3.16.0",
+    "pytest-socket==0.7.0",
+    "pytest-sugar==1.0.0",
+    "ruff==0.9.10",
+    "types-beautifulsoup4==4.12.0.20250204",
+    "types-fpdf2==2.8.2.20241223",
+    "types-python-dateutil==2.9.0.20241206",
+    "types-requests==2.32.0.20241016",
+]
+docs = [
+    "mkdocs-autorefs==1.4.1",
+    "mkdocs-gen-files==0.5.0",
+    "mkdocs-literate-nav==0.6.1",
+    "mkdocs-material==9.6.9",
+    "mkdocstrings[python-legacy]==0.27.0",
+]
+production = [
+    "gunicorn==23.0.0",
+]
