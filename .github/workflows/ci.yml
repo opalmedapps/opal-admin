@@ -70,7 +70,7 @@ jobs:
         env:
           MARIADB_ROOT_PASSWORD: ${{ env.DB_ROOT_PASSWORD }}
           # ensure that user has permissions for test DB to be used by pytest
-          MARIADB_DATABASE: opal
+          MARIADB_DATABASE: test_opal
           MARIADB_USER: ${{ env.DB_USER }}
           MARIADB_PASSWORD: ${{ env.DB_PASSWORD }}
 
@@ -109,7 +109,7 @@ jobs:
         run: |
           uv run pytest --version
           # -m "" runs all tests, even the ones marked as slow
-          uv run pytest -m "" -v --junitxml=test-report.xml --tb=auto
+          uv run pytest -m "" -x -v --junitxml=test-report.xml --tb=auto
       # see: https://github.com/dorny/test-reporter/issues/244
       # - name: Publish Test Results
       #   uses: dorny/test-reporter@v1.9.1
