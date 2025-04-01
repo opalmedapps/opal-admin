@@ -25,8 +25,6 @@ jobs:
       - uses: actions/checkout@v4.2.2
         with:
           persist-credentials: false
-          # LFS files required for REUSE
-          lfs: true
       - uses: astral-sh/setup-uv@v5.3.1
         id: setup-uv
         with:
@@ -53,7 +51,7 @@ jobs:
       - uses: mschoettle/pre-commit-action@v4.2.1
         if: '!cancelled()'
         env:
-          SKIP: ruff,ruff-format,markdownlint-cli2
+          SKIP: ruff,ruff-format,markdownlint-cli2,reuse-lint-file
       - name: Fail if any previous steps failed
         if: failure()
         run: exit 1
@@ -134,6 +132,9 @@ jobs:
     permissions:
       contents: read
     uses: opalmedapps/.github/.github/workflows/markdownlint.yaml@main
+
+  run-reuse-workflow:
+    uses: opalmedapps/.github/.github/workflows/reuse.yaml@main
 
   build-image:
     needs:
