@@ -23,14 +23,18 @@ services:
         # install development dependencies in the local image
         - ENV=development
     command: python manage.py runserver 0:8000
+    env_file:
+      - .env
     environment:
       # overwrite for container to allow both container and local venv
       # for linux users, you can replace the host.docker.internal by 172.17.0.1 which is the
       # default docker address, because host.docker.internal does not work in linux - docker-compose
       - DATABASE_HOST=db
       - LEGACY_DATABASE_HOST=host.docker.internal
-    volumes:
-      - .:/app
+    # volumes:
+      # - ./opal:/app/opal
+      # - ./config:/app/config
+      # - ./locale:/app/locale
     ports:
       - 8000:8000
     depends_on:

@@ -66,8 +66,8 @@ docker compose up app
 To connect to the app container or run specific commands, run
 
 ```shell
-# bash shell inside the container
-docker compose exec app bash
+# shell inside the container
+docker compose exec app sh
 # Django management commands
 docker compose exec app python manage.py
 ```
@@ -402,7 +402,7 @@ If a dev chooses they can also run Django backend using SSL/TLS mode to encrypt 
 7. Finally, copy the docker compose SSL override file so that it automatically applies when running compose commands:
 
     ```shell
-    cp docker-compose.ssl.yml docker-compose.override.yml
+    cp compose.ssl.yaml compose.override.yaml
     ```
 
     You can verify that it is applied by running `docker compose config`.
