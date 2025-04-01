@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Collection of api views used to display the Opal's home view."""
+
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework import fields
 from rest_framework.request import Request

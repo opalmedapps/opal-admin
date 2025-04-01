@@ -34,16 +34,31 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='generaltest',
             name='patient',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='general_tests', to='patients.patient', verbose_name='Patient'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='general_tests',
+                to='patients.patient',
+                verbose_name='Patient',
+            ),
         ),
         migrations.AlterField(
             model_name='note',
             name='general_test',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notes', to='test_results.generaltest', verbose_name='General Test'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='notes',
+                to='test_results.generaltest',
+                verbose_name='General Test',
+            ),
         ),
         migrations.AlterField(
             model_name='observation',
             name='general_test',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='observations', to='test_results.generaltest', verbose_name='General Test'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='observations',
+                to='test_results.generaltest',
+                verbose_name='General Test',
+            ),
         ),
     ]

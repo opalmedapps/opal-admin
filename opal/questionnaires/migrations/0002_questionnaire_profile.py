@@ -23,7 +23,12 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('questionnaire_list', models.JSONField(blank=True, default=dict, verbose_name='Questionnaire List')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL, verbose_name='User')),
+                (
+                    'user',
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL, verbose_name='User'
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Questionnaire Profile',

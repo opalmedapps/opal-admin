@@ -11,6 +11,7 @@ Import them into your template with:
 {% load extra_filters %}
 ```
 """
+
 from django import template
 from django.template.defaultfilters import stringfilter
 
@@ -80,8 +81,4 @@ def striplines(text: str) -> str:
     """
     # skip empty elements
     # see: https://stackoverflow.com/a/8626817
-    return ' '.join(
-        line.strip()
-        for line in text.splitlines()
-        if line.strip()
-    )
+    return ' '.join(line.strip() for line in text.splitlines() if line.strip())

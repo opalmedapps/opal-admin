@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides Django REST framework serializers for hospital-specific settings models."""
+
 from rest_framework import serializers
 
 from opal.core.api.serializers import DynamicFieldsSerializer

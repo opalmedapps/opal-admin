@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """List of constants for the patients app."""
+
 from enum import Enum
 from typing import Final
 

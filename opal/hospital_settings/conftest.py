@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module is used to provide configuration, fixtures, and plugins for pytest within hospital-settings app."""
+
 from pathlib import Path
 
 from django.contrib.auth.models import Permission
@@ -113,11 +114,14 @@ def institution_form(institution_form_files: dict[str, SimpleUploadedFile]) -> I
         InstitutionForm object
     """
     instit = factories.Institution.build()
-    form_data = model_to_dict(instit, exclude=[
-        'id',
-        'logo',
-        'terms_of_use',
-    ])
+    form_data = model_to_dict(
+        instit,
+        exclude=[
+            'id',
+            'logo',
+            'terms_of_use',
+        ],
+    )
 
     return InstitutionForm(
         data=form_data,
@@ -140,16 +144,19 @@ def incomplete_institution_form(
         incomplete InstitutionForm object
     """
     instit = factories.Institution.build()
-    form_data = model_to_dict(instit, exclude=[
-        'id',
-        'logo',
-        'logo_en',
-        'logo_fr',
-        'acronym',
-        'terms_of_use',
-        'terms_of_use_en',
-        'terms_of_use_fr',
-    ])
+    form_data = model_to_dict(
+        instit,
+        exclude=[
+            'id',
+            'logo',
+            'logo_en',
+            'logo_fr',
+            'acronym',
+            'terms_of_use',
+            'terms_of_use_en',
+            'terms_of_use_fr',
+        ],
+    )
 
     return InstitutionForm(
         data=form_data,
@@ -172,12 +179,15 @@ def institution_form_no_delay_fields(
         InstitutionForm object without delay fields
     """
     instit = factories.Institution.build()
-    form_data = model_to_dict(instit, exclude=[
-        'id',
-        'adulthood_age',
-        'non_interpretable_lab_result_delay',
-        'interpretable_lab_result_delay',
-    ])
+    form_data = model_to_dict(
+        instit,
+        exclude=[
+            'id',
+            'adulthood_age',
+            'non_interpretable_lab_result_delay',
+            'interpretable_lab_result_delay',
+        ],
+    )
 
     return InstitutionForm(
         data=form_data,

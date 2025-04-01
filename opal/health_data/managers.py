@@ -55,22 +55,29 @@ class QuantitySampleManager(models.Manager['QuantitySample']):
         # [{'systolic': '80.00', 'diastolic': '120.00', 'measured_at': 2023-08-01 19:54:23.000000}, ...]
 
         # Add .order_by() to remove ORDER BY statement that is added by default
-        diastolic_measurements = self.filter(
-            patient=patient,
-            type=quantity_sample_models.QuantitySampleType.BLOOD_PRESSURE_DIASTOLIC,
-            start_date=models.OuterRef('start_date'),
-            device=models.OuterRef('device'),
-            source=models.OuterRef('source'),
-        ).order_by().values('value')
+        diastolic_measurements = (
+            self.filter(
+                patient=patient,
+                type=quantity_sample_models.QuantitySampleType.BLOOD_PRESSURE_DIASTOLIC,
+                start_date=models.OuterRef('start_date'),
+                device=models.OuterRef('device'),
+                source=models.OuterRef('source'),
+            )
+            .order_by()
+            .values('value')
+        )
 
         # list() forces QuerySet evaluation that makes call to the database
         return list(
             self.filter(
                 patient=patient,
                 type=quantity_sample_models.QuantitySampleType.BLOOD_PRESSURE_SYSTOLIC,
-            ).annotate(
+            )
+            .annotate(
                 systolic=models.F('value'),
                 diastolic=diastolic_measurements,
                 measured_at=models.F('start_date'),
-            ).order_by('measured_at').values('systolic', 'diastolic', 'device', 'measured_at'),
+            )
+            .order_by('measured_at')
+            .values('systolic', 'diastolic', 'device', 'measured_at'),
         )

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module is used to provide configuration, fixtures, and plugins for pytest."""
+
 from django.contrib.auth.models import Permission
 
 import pytest

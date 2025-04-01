@@ -23,8 +23,24 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('mrn', models.CharField(max_length=10, verbose_name='Medical Record Number')),
                 ('is_active', models.BooleanField(default=True, verbose_name='Active')),
-                ('patient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='hospital_patients', to='patients.patient', verbose_name='Patient')),
-                ('site', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='hospital_patients', to='hospital_settings.site', verbose_name='Site')),
+                (
+                    'patient',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='hospital_patients',
+                        to='patients.patient',
+                        verbose_name='Patient',
+                    ),
+                ),
+                (
+                    'site',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='hospital_patients',
+                        to='hospital_settings.site',
+                        verbose_name='Site',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Hospital Patient',

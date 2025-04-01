@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing API views for the `pharmacy` app."""
+
 from typing import Any
 
 from django.db import transaction
@@ -79,18 +80,18 @@ class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):
             'entered_at': order_data['entered_at'],
             'entered_by': (
                 order_data['entered_by_given_name']
-                + f"_{order_data['entered_by_family_name']}"
-                + f"_{order_data['entered_by_id']}"
+                + f'_{order_data["entered_by_family_name"]}'
+                + f'_{order_data["entered_by_id"]}'
             ),
             'verified_by': (
                 order_data['verified_by_given_name']
-                + f"_{order_data['verified_by_family_name']}"
-                + f"_{order_data['verified_by_id']}"
+                + f'_{order_data["verified_by_family_name"]}'
+                + f'_{order_data["verified_by_id"]}'
             ),
             'ordered_by': (
                 order_data['order_by_given_name']
-                + f"_{order_data['order_by_family_name']}"
-                + f"_{order_data['ordered_by_id']}"
+                + f'_{order_data["order_by_family_name"]}'
+                + f'_{order_data["ordered_by_id"]}'
             ),
             'effective_at': order_data['effective_at'],
             'pharmacy_encoded_order': {
@@ -156,7 +157,8 @@ class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):
                         'component_units': component['component_units'],
                         'component_type': component['component_type'],
                         'component_amount': component['component_amount'],
-                    } for component in components
+                    }
+                    for component in components
                 ],
             },
         }

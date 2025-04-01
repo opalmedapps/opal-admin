@@ -19,16 +19,31 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='institution',
             name='adulthood_age',
-            field=models.PositiveIntegerField(default=18, help_text='Age setting used to control pediatric functionality which delays sharing of lab results.', validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(99)], verbose_name='Adulthood Age'),
+            field=models.PositiveIntegerField(
+                default=18,
+                help_text='Age setting used to control pediatric functionality which delays sharing of lab results.',
+                validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(99)],
+                verbose_name='Adulthood Age',
+            ),
         ),
         migrations.AddField(
             model_name='institution',
             name='interpretable_lab_result_delay',
-            field=models.PositiveIntegerField(default=0, help_text='Lab result delay for pediatric patients when clinician interpretation is not specified in lab setting.', validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(99)], verbose_name='Interpretable Lab Result Delay'),
+            field=models.PositiveIntegerField(
+                default=0,
+                help_text='Lab result delay for pediatric patients when clinician interpretation is not specified in lab setting.',
+                validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(99)],
+                verbose_name='Interpretable Lab Result Delay',
+            ),
         ),
         migrations.AddField(
             model_name='institution',
             name='non_interpretable_lab_result_delay',
-            field=models.PositiveIntegerField(default=0, help_text='Lab result delay for pediatric patients when clinician interpretation is recommended in lab setting.', validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(99)], verbose_name='Non-Interpretable Lab Result Delay'),
+            field=models.PositiveIntegerField(
+                default=0,
+                help_text='Lab result delay for pediatric patients when clinician interpretation is recommended in lab setting.',
+                validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(99)],
+                verbose_name='Non-Interpretable Lab Result Delay',
+            ),
         ),
     ]

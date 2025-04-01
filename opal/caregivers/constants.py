@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """List of constants for the caregivers app."""
+
 from typing import Final
 
 #: Maximum length verification code for an email_verification.

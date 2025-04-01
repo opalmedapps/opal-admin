@@ -259,7 +259,9 @@ class TestHL7Parser:
         parsed_data = self.parser.parse(stream)
         provider_administration_instruction = parsed_data['RXE'][0]['provider_administration_instruction']
         assert '\\E\\.br\\E\\' not in provider_administration_instruction
-        assert provider_administration_instruction.count('\n') == 2, "There should be two line breaks in marge's RXE provider_administration_instruction"
+        assert provider_administration_instruction.count('\n') == 2, (
+            "There should be two line breaks in marge's RXE provider_administration_instruction"
+        )
 
     def _assert_segment_data(
         self,
@@ -271,7 +273,9 @@ class TestHL7Parser:
         # Assert correct values for each key in the segment, which also implicitly checks for their presence
         for key, expected_value in expected_values.items():
             actual_value = segment_data.get(key, None)
-            assert str(actual_value) == expected_value, f"Expected {segment_name} segment's {key} to be {expected_value}, got {actual_value}"
+            assert str(actual_value) == expected_value, (
+                f"Expected {segment_name} segment's {key} to be {expected_value}, got {actual_value}"
+            )
 
         # Check for any unexpected keys in the segment data
         unexpected_keys = set(segment_data.keys()) - set(expected_values.keys())

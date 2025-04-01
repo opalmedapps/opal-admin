@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing business logic for generating charts using plotly library."""
+
 import logging
 from types import MappingProxyType
 from typing import Final, NamedTuple

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Table definitions for models of the hospital settings app."""
+
 from django.utils.translation import gettext_lazy as _
 
 import django_tables2 as tables

@@ -22,10 +22,25 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='quantitysample',
             name='type',
-            field=models.CharField(choices=[('BM', 'Body Mass (kg)'), ('TMP', 'Body Temperature (°C)'), ('HR', 'Heart Rate (bpm)'), ('HRV', 'Heart Rate Variability (ms)'), ('SPO2', 'Oxygen Saturation (%)'), ('BPS', 'Blood Pressure Systolic (mmHg)'), ('BPD', 'Blood Pressure Diastolic (mmHg)')], max_length=4, verbose_name='Type'),
+            field=models.CharField(
+                choices=[
+                    ('BM', 'Body Mass (kg)'),
+                    ('TMP', 'Body Temperature (°C)'),
+                    ('HR', 'Heart Rate (bpm)'),
+                    ('HRV', 'Heart Rate Variability (ms)'),
+                    ('SPO2', 'Oxygen Saturation (%)'),
+                    ('BPS', 'Blood Pressure Systolic (mmHg)'),
+                    ('BPD', 'Blood Pressure Diastolic (mmHg)'),
+                ],
+                max_length=4,
+                verbose_name='Type',
+            ),
         ),
         migrations.AddConstraint(
             model_name='quantitysample',
-            constraint=models.CheckConstraint(check=models.Q(('type__in', ['BM', 'TMP', 'HR', 'HRV', 'SPO2', 'BPS', 'BPD'])), name='health_data_quantitysample_type_valid'),
+            constraint=models.CheckConstraint(
+                check=models.Q(('type__in', ['BM', 'TMP', 'HR', 'HRV', 'SPO2', 'BPS', 'BPD'])),
+                name='health_data_quantitysample_type_valid',
+            ),
         ),
     ]

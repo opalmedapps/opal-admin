@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides custom context processors for this project."""
+
 from typing import Any
 
 from django.apps import apps

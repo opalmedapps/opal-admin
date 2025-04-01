@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides `UpdateAPIViews` for the `users` app REST APIs."""
+
 from django.contrib.auth.models import Group
 
 from rest_framework import generics
