@@ -580,3 +580,17 @@ def set_databank_enabled(settings: LazySettings) -> None:
         settings: the fixture providing access to the Django settings
     """
     settings.DATABANK_ENABLED = True
+
+
+@pytest.fixture
+def use_twilio(settings: LazySettings) -> None:
+    """
+    Fixture that sets up Twilio settings.
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.SMS_ENABLED = True
+    settings.TWILIO_ACCOUNT_SID = 'account-sid'
+    settings.TWILIO_AUTH_TOKEN = 'twilio-auth-token'  # noqa: S105
+    settings.SMS_FROM = '+11234567890'

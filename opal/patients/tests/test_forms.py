@@ -1704,6 +1704,7 @@ def test_accessrequestsendsmsform_send_error(mocker: MockerFixture) -> None:
     mock_send.assert_called_once_with('+15005550001', mocker.ANY)
 
 
+@pytest.mark.usefixtures('use_twilio')
 def test_accessrequestsendsmsform_send_request_error(mocker: MockerFixture) -> None:
     """Ensure that the form shows an error if the connection to Twilio fails."""
     hospital_factories.Institution.create()

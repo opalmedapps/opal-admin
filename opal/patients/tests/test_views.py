@@ -1806,6 +1806,7 @@ def test_access_request_confirmation_post_no_data(client: Client, registration_u
     assert client.session[AccessRequestView.session_key_name] == data
 
 
+@pytest.mark.usefixtures('use_twilio')
 def test_access_request_confirmation_post_success(
     client: Client,
     registration_user: User,

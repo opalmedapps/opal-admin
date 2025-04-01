@@ -22,6 +22,13 @@ ENCODING = 'utf-8'
 auth_backend = FedAuthBackend()
 
 
+@pytest.fixture(autouse=True)
+def _enable_fedauth_backend(settings: SettingsWrapper) -> None:
+    settings.AUTHENTICATION_BACKENDS += ['opal.core.auth.FedAuthBackend']
+    settings.FEDAUTH_API_ENDPOINT = 'http://localhost/api/login'
+    settings.FEDAUTH_INSTITUTION = '99-fake-institution'
+
+
 def _create_auth_data(success: str) -> dict[str, str]:
     return {
         'authenticate': success,
