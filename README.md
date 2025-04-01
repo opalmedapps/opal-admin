@@ -43,7 +43,7 @@ These configuration parameters are read by `docker compose` and by the settings 
 
 > [!NOTE]
 > The legacy database is currently provided by the [`db-docker`](https://github.com/opalmedapps/opal-db-management/).
-> For information on the legacy database connections, please see the [Legacy DB Connection](docs/database/legacy_db.md) page.
+> For information on the legacy database connections, please see the [Legacy DB Connection](database/legacy_db.md) page.
 > Make sure the configuration of the legacy database connection in your `.env` file matches the values of the one in your `db-management` setup.
 
 ### Docker
