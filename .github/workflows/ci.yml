@@ -25,6 +25,8 @@ jobs:
       - uses: actions/checkout@v4.2.2
         with:
           persist-credentials: false
+          # LFS files required for REUSE
+          lfs: true
       - uses: astral-sh/setup-uv@v5.3.1
         id: setup-uv
         with:
