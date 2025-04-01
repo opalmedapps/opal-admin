@@ -151,7 +151,7 @@ class TestORMSValidateView:
     """Class wrapper for ORMS auth/validate session tests."""
 
     def test_unauthenticated(self, api_client: APIClient) -> None:
-        """Ensure that unauthenticated requests don't succeeed."""
+        """Ensure that unauthenticated requests don't succeed."""
         response = api_client.get(reverse('api:orms-validate'))
 
         assert response.status_code == status.HTTP_403_FORBIDDEN

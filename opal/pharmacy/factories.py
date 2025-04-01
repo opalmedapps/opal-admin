@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-"""Module prividing model factories for pharmacy models."""
+"""Module providing model factories for pharmacy models."""
 
 from django.utils import timezone
 
@@ -37,7 +37,7 @@ class PhysicianPrescriptionOrderFactory(DjangoModelFactory[models.PhysicianPresc
     unit = 'mg'
     interval_pattern = 'PRN'  # Take as needed
     interval_duration = ''
-    duration = 'INDEF'  # Indefinately
+    duration = 'INDEF'  # Indefinitely
     service_start = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     service_end = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     priority = 'PRN'  # As needed

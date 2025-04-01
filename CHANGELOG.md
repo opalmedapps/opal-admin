@@ -47,7 +47,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Generate a random uuid for the caregiver username (!267)
 * feat: Add ePRO questionnaire reporting tool with custom access permission (!275)
 * feat: Build QR code new UI (!148)
-* feat: Add wearables UI accesible from ORMS (!359)
+* feat: Add wearables UI accessible from ORMS (!359)
 * feat: add patient demographics API endpoint (!309)
 * feat: unified Manage Caregivers module/page to manage the access to caregivers of patients (!492)
 * feat: Add TwilioService and twilio modules (!520)

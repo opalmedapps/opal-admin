@@ -804,7 +804,7 @@ class ManageCaregiverAccessUpdateView(PermissionRequiredMixin, UpdateView[Relati
             kwargs: additional keyword arguments
 
         Returns:
-            regular response for continuing get functionlity for `ManageCaregiverAccessUpdateView`
+            regular response for continuing get functionality for `ManageCaregiverAccessUpdateView`
         """
         relationship_record = self.get_object()
         http_referrer = self.request.headers.get('referer')

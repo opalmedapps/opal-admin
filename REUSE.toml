@@ -1,5 +1,13 @@
 version = 1
 
+# generated files
+[[annotations]]
+path = [
+    "uv.lock",
+]
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "CC0-1.0"
+
 [[annotations]]
 path = [
     "opal/core/tests/fixtures/homer_pharmacy.hl7v2",
@@ -40,6 +48,7 @@ SPDX-License-Identifier = "AGPL-3.0-or-later"
 path = [
     ".vscode/launch.json",
     ".vscode/settings.json",
+    # avoid users copying copyright headers when copying the .env.sample to .env
     ".env.sample",
 ]
 precedence = "override"

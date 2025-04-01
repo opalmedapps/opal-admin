@@ -257,7 +257,7 @@ def orms_user(django_user_model: User, settings: LazySettings) -> User:
 @pytest.fixture
 def orms_system_user(django_user_model: User) -> User:
     """
-    Fixture providing a `User` instance representing the ORMS sytem.
+    Fixture providing a `User` instance representing the ORMS system.
 
     Args:
         django_user_model: the `User` model used in this project
@@ -394,7 +394,7 @@ def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, No
     """
     Initialize the QuestionnaireDB with data.
 
-    Data inserted includes the creation of questionnaires with related questions and dictionary entires.
+    Data inserted includes the creation of questionnaires with related questions and dictionary entries.
     Additionally, instances of questionnaire answers:
 
     * Completed ESAS questionnaires for patientId 1, 2; in progress for patientId 3
@@ -580,3 +580,17 @@ def set_databank_enabled(settings: LazySettings) -> None:
         settings: the fixture providing access to the Django settings
     """
     settings.DATABANK_ENABLED = True
+
+
+@pytest.fixture
+def use_twilio(settings: LazySettings) -> None:
+    """
+    Fixture that sets up Twilio settings.
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.SMS_ENABLED = True
+    settings.TWILIO_ACCOUNT_SID = 'account-sid'
+    settings.TWILIO_AUTH_TOKEN = 'twilio-auth-token'  # noqa: S105
+    settings.SMS_FROM = '+11234567890'

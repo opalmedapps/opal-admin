@@ -151,7 +151,7 @@ class LegacySourceDatabase(models.Model):
 
 
 class LegacyAppointment(models.Model):
-    """Class to get appointement informations from the legacy database."""
+    """Class to get appointment information from the legacy database."""
 
     appointmentsernum = models.AutoField(db_column='AppointmentSerNum', primary_key=True)
     aliasexpressionsernum = models.ForeignKey(

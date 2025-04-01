@@ -24,7 +24,7 @@ class Command(BaseCommand):
         Return 'None'.
 
         Args:
-            args: non-keyward input arguments.
+            args: non-keyword input arguments.
             kwargs:  variable keyword input arguments.
         """
         legacy_questions = LegacySecurityQuestion.objects.all()

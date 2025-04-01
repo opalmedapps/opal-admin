@@ -155,8 +155,8 @@ test_patient_names_data: list[tuple[str, str]] = [
 
 
 @pytest.mark.parametrize(('first_name', 'last_name'), test_patient_names_data)
-def test_long_patient_names_not_splitted(first_name: str, last_name: str) -> None:
-    """Ensure long patient names are formatted and no words splitted."""
+def test_long_patient_names_not_split(first_name: str, last_name: str) -> None:
+    """Ensure long patient names are formatted and no words split."""
     pathology_data = PATHOLOGY_REPORT_DATA_WITH_NO_PAGE_BREAK
 
     institution_data = INSTITUTION_REPORT_DATA_WITH_NO_PAGE_BREAK

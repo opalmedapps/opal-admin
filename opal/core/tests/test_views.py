@@ -97,12 +97,8 @@ def test_loginview_success(client: Client, django_user_model: User, settings: Se
 
 def test_loginview_error(client: Client, settings: SettingsWrapper, mocker: MockerFixture) -> None:
     """Ensure that submitting the login form with incorrect credentials fails authenticating the user."""
-    # assume that the FedAuthBackend is enabled and remove it (to avoid making outgoing requests during tests)
-    # if it is not enabled in the future, remove these lines
-    assert 'opal.core.auth.FedAuthBackend' in settings.AUTHENTICATION_BACKENDS
-    # mock authentication and pretend it was unsuccessful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend.authenticate')
-    mock_authenticate.return_value = None
+    # assume that the FedAuthBackend is not enabled
+    assert 'opal.core.auth.FedAuthBackend' not in settings.AUTHENTICATION_BACKENDS
 
     credentials = {
         'username': 'testuser',

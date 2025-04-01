@@ -176,7 +176,7 @@ def test_api_security_question_random_defined(settings: SettingsWrapper) -> None
     assert resolve(question_path).view_name == 'api:caregivers-securityquestions-random'
 
 
-def test_api_verify_secruity_answer_defined(settings: SettingsWrapper) -> None:
+def test_api_verify_security_answer_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API carigiver security questions verify endpoints are defined."""
     question_path = 'caregivers/username/security-questions/123/verify/'
     question_path = f'/{settings.API_ROOT}/{question_path}'

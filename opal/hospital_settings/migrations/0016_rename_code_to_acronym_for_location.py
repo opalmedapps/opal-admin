@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     """
     Rename the field `code`  to `acronym` for the `location` model.
 
-    Add the field tranlations.
+    Add the field translations.
     """
 
     dependencies = [

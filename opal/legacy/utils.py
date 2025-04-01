@@ -548,7 +548,7 @@ def _parse_query_result(
         TypeError: if the JSON data cannot be deserialized
 
     Returns:
-        structured list of dictonaries representing the query
+        structured list of dictionaries representing the query
     """
     data_list = []
     for parsed_data in query_result:

@@ -68,7 +68,7 @@ def generate_random_registration_code(institution_code: str, length: int) -> str
     Returns:
         return a random alphanumeric string
     """
-    # getting systemRandom instance out of random class to prevent flake8 S311 vioaltion
+    # getting systemRandom instance out of random class to prevent flake8 S311 violation
     # and generate cryptographically secure random.
     system_random = random.SystemRandom()
     return institution_code + ''.join(
