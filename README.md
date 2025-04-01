@@ -72,7 +72,7 @@ docker compose exec app sh
 docker compose exec app python manage.py
 ```
 
-Instead of running the `app` container you can also run the Django development server directoy using `uv`.
+Instead of running the `app` container you can also run the Django development server directory using `uv`.
 See below for details.
 
 ### Python virtual environment
@@ -119,7 +119,7 @@ powershell Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 #### Install dependencies
 
-`uv` already created the virtual environment and installed the dependencies (including development depenendencies) for you by executing `uv sync`.
+`uv` already created the virtual environment and installed the dependencies (including development dependencies) for you by executing `uv sync`.
 
 > [!TIP] Installing `mysqlclient` fails
 > In case installing the `mysqlclient` package does not provide a binary for your platform it needs to be built.

@@ -285,7 +285,7 @@ class Command(BaseCommand):
             response_data: dict[str, Any] = response.json()
             return response_data
 
-        # Specific error occured between Django, Nginx, and/or source system communications
+        # Specific error occurred between Django, Nginx, and/or source system communications
         self.stderr.write(
             f'{response.status_code} source system response error: ' + response.content.decode(),
         )

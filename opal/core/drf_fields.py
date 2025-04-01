@@ -19,7 +19,7 @@ from ..utils import base64_utils
 
 
 class Base64FileField(serializers.Field[FieldFile, FieldFile, str | None, Any]):
-    """This class is a reuseable field for encoding the file and return the base64 encoded file contents."""
+    """This class is a reusable field for encoding the file and return the base64 encoded file contents."""
 
     def to_representation(self, file: FieldFile) -> str | None:
         """

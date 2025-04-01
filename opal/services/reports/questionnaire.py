@@ -547,7 +547,7 @@ class QuestionnairePDF(FPDF):
 
         Args:
             text: text to insert
-            align: desired alignement of the paragraph
+            align: desired alignment of the paragraph
         """
         self.multi_cell(
             w=self.epw,

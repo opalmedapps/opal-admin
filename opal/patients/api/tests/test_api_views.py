@@ -290,7 +290,7 @@ class TestPatientDemographicView:
         api_client.force_login(interface_engine_user)
         data = self._get_valid_input_data()
         data['mrns'] = [
-            {'site': 'RVH', 'mrn_error': '9999996', 'is_active_erorr': True},
+            {'site': 'RVH', 'mrn_error': '9999996', 'is_active_error': True},
         ]
 
         response = api_client.put(

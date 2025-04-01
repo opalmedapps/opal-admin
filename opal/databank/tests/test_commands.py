@@ -692,7 +692,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         assert shared_data_count == 0
 
     def test_update_databank_patient_shared_data_call(self, mocker: MockerFixture) -> None:
-        """Test correct calling of the metatdata update."""
+        """Test correct calling of the metadata update."""
         response_data = self._create_custom_source_system_response(databank_models.DataModuleType.DEMOGRAPHICS)
         django_pat1 = patient_factories.Patient.create(ramq='SIMM12345678', legacy_id=51)
         legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id)
@@ -1111,7 +1111,7 @@ class TestSendDatabankDataMigration(CommandTestMixin):
         )
 
         command = send_databank_data.Command()
-        # Manually intialize the success tracker for this patient
+        # Manually initialize the success tracker for this patient
         command.patient_data_success_tracker[databank_patient1.guid] = dict.fromkeys(
             databank_models.DataModuleType, True
         )

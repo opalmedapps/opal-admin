@@ -380,7 +380,7 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         diagnosis codes in both OpalDB.Diagnosis and OpalDB.DiagnosisCode. It's possible to make this join directly
         in MySQL which doesn't throw errors when duplicate keys get returned, but it isn't possible to do in Django ORM.
         Using the `unique_together` trick also won't work because the Legacy models are unmanaged.
-        For now, we can only return Diagnosis data directly accesible from LegacyDiagnosis.
+        For now, we can only return Diagnosis data directly accessible from LegacyDiagnosis.
 
         Args:
             patient_ser_num: Legacy OpalDB patient ser num

@@ -62,7 +62,7 @@ class _NestedCodedElementSerializer(CodedElementSerializer):
     """
     `CodedElement` serializer that supports nested updates.
 
-    The uniqueness constraint on identifer, text, coding_system gets
+    The uniqueness constraint on identifier, text, coding_system gets
     evaluated before we can call get_or_create in the parent serializer(s).
 
     Here we disable this validation manually, knowing that we will handle

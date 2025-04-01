@@ -32,7 +32,7 @@ class FedAuthBackend(BaseBackend):
     """
     Authentication backend which authenticates against the provincial auth web service.
 
-    The "Service d'authentification fédéré ENA" internally authenticates against an institution's ADFS.
+    The "Service d'authentication fédéré ENA" internally authenticates against an institution's ADFS.
 
     See: https://docs.djangoproject.com/en/4.0/topics/auth/customizing/#writing-an-authentication-backend
     """

@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: Copyright (C) 2025 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+[default.extend-words]
+muhc = "muhc"
+mch = "mch"
+ned = "ned"
+# legacy models
+# part of SerNum
+ser = "ser"
+readby = "readby"
+# HL7
+oru = "oru"
+bui = "bui"
+# French
+sur = "sur"
+fille = "fille"
+# names in THIRDPART.md
+curren = "curren"
+yiu = "yiu"
+
+[default]
+extend-ignore-identifiers-re = [
+    # auto-generated index name
+    "[a-z_]+_[a-f0-9]{6}_idx"
+]
+
+[files]
+extend-exclude = [
+    "opal/tests/sql/*.sql",
+    "**/locale/fr/**/*.po",
+]
+
+[type.po]
+extend-glob = ["*.po"]
+check-file = false
