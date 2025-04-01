@@ -46,12 +46,9 @@ In order to add permissions, and allow its use in the Django Admin Site, follow 
 
     ???+ note
 
-        a. `permissions = (('new_perm','New Custom Permission'),)`
+        a. `permissions = (('new_perm','New Custom Permission'),)`. The first argument is called codename, the second argument is called name.
 
-            the first argument is called codename, the second argument is called name.
-
-        b. In order to know what is the codename of a permission(s) for a specific model run the following command after running
-                `python manage.py shell_plus`
+        b. In order to know what is the codename of a permission(s) for a specific model run the following command after running `python manage.py shell_plus`.
 
         ```python
         for perm in Permission.objects.filter(content_type=ContentType.objects.get_for_model(Site)):
@@ -91,7 +88,7 @@ Use the template tag [`{{ perms }}`](https://docs.djangoproject.com/en/dev/topic
 
 ???+ note
 
-      `{{ perms }}` can be used in the HTML templates without adding `PermissionRequiredMixin`.
+    `{{ perms }}` can be used in the HTML templates without adding `PermissionRequiredMixin`.
 
 ## Testing the permissions
 
@@ -130,6 +127,6 @@ def test_site_permission_required_success(user_client: Client, django_user_model
 
 ### References
 
-1. [How To Test - PermissionRequiredMixin]( https://splunktool.com/test-permissionrequiredmixin-raises-permissiondenied-instead-of-403)
-2. [How To raise 403 instead of PermissionDenied]( https://stackoverflow.com/questions/42284168/test-permissionrequiredmixin-raises-permissiondenied-instead-of-403)
+1. [How To Test - PermissionRequiredMixin](https://splunktool.com/test-permissionrequiredmixin-raises-permissiondenied-instead-of-403)
+2. [How To raise 403 instead of PermissionDenied](https://stackoverflow.com/questions/42284168/test-permissionrequiredmixin-raises-permissiondenied-instead-of-403)
 3. [PermissionDenied Exception](https://docs.djangoproject.com/en/dev/topics/testing/tools/#exceptions)

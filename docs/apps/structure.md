@@ -40,6 +40,7 @@ opal/hospital_settings/
 ```
 
 !!! note
+
     The app-specific static and template files are used alongside the ones from the root project folder (`opal/`).
 
 For more details please refer to *Two Scoops of Django* Section 4.4.
@@ -55,13 +56,13 @@ python manage.py startapp foo "opal/foo/"
 
 For new apps ensure to do the following things:
 
-* define the proper name and verbose_name in `apps.py`
-    * the name should be prefixed with `opal.` (for our example it would be `opal.foo`)
-    * if the plural of the `verbose_name` is not that name suffixed with `s`, define `verbose_name_plural` as well
-* add the app name to the urls module in `urls.py` (e.g., `app_name = 'hospital_settings'`) to ensure that it can be included in the root URL configuration and has a proper namespace
-* add the app to the `LOCAL_APPS` list in `opal/settings.py`
-* delete the `tests.py` file and create a `tests` directory with an empty `__init__.py` file
-* create a `locale` sub-directory where translation files should be generated to
+- define the proper name and verbose_name in `apps.py`
+    - the name should be prefixed with `opal.` (for our example it would be `opal.foo`)
+    - if the plural of the `verbose_name` is not that name suffixed with `s`, define `verbose_name_plural` as well
+- add the app name to the urls module in `urls.py` (e.g., `app_name = 'hospital_settings'`) to ensure that it can be included in the root URL configuration and has a proper namespace
+- add the app to the `LOCAL_APPS` list in `opal/settings.py`
+- delete the `tests.py` file and create a `tests` directory with an empty `__init__.py` file
+- create a `locale` sub-directory where translation files should be generated to
 
 ## API
 
@@ -71,4 +72,4 @@ API URLs are defined in a module in the core app (`core/api_urls.py`).
 
 ## Best Practices
 
-* favour fat models and skinny views, i.e., logic should go into the model, model manager or utility modules instead of the view for reusability. See more information in Two Scoops of Django's preface "Core Concepts: Fat Models, Utility Modules, Thin Views, Stupid Templates".
+- favour fat models and skinny views, i.e., logic should go into the model, model manager or utility modules instead of the view for reusability. See more information in Two Scoops of Django's preface "Core Concepts: Fat Models, Utility Modules, Thin Views, Stupid Templates".

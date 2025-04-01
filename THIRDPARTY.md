@@ -13,9 +13,9 @@ Note: The list of dependencies does not include transitive dependencies (depende
 
 ## @fortawesome/fontawesome-free
 
-* Homepage: https://fontawesome.com
-* Repository: https://github.com/FortAwesome/Font-Awesome
-* License: `(CC-BY-4.0 AND OFL-1.1 AND MIT)`
+- Homepage: https://fontawesome.com
+- Repository: https://github.com/FortAwesome/Font-Awesome
+- License: `(CC-BY-4.0 AND OFL-1.1 AND MIT)`
 
 ```text
 Fonticons, Inc. (https://fontawesome.com)
@@ -187,9 +187,9 @@ to represent the company, product, or service to which they refer.**
 
 ## argon2-cffi
 
-* Homepage: https://argon2-cffi.readthedocs.io/
-* Repository: https://github.com/hynek/argon2-cffi
-* License: `MIT`
+- Homepage: https://argon2-cffi.readthedocs.io/
+- Repository: https://github.com/hynek/argon2-cffi
+- License: `MIT`
 
 ```text
 The MIT License (MIT)
@@ -217,9 +217,9 @@ SOFTWARE.
 
 ## bootstrap
 
-* Homepage: https://getbootstrap.com/
-* Repository: https://github.com/twbs/bootstrap
-* License: `MIT`
+- Homepage: https://getbootstrap.com/
+- Repository: https://github.com/twbs/bootstrap
+- License: `MIT`
 
 ```text
 The MIT License (MIT)
@@ -247,9 +247,9 @@ THE SOFTWARE.
 
 ## choreographer
 
-* Homepage: https://github.com/plotly/choreographer
-* Repository: https://github.com/plotly/choreographer
-* License: `MIT`
+- Homepage: https://github.com/plotly/choreographer
+- Repository: https://github.com/plotly/choreographer
+- License: `MIT`
 
 ```text
 Copyright (c) Plotly, Inc.
@@ -278,9 +278,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 ## crispy-bootstrap5
 
-* Homepage: https://github.com/django-crispy-forms/crispy-bootstrap5
-* Repository: https://github.com/django-crispy-forms/crispy-bootstrap5
-* License: `MIT`
+- Homepage: https://github.com/django-crispy-forms/crispy-bootstrap5
+- Repository: https://github.com/django-crispy-forms/crispy-bootstrap5
+- License: `MIT`
 
 ```text
 Copyright (c) 2020 David Smith and contributors.
@@ -309,9 +309,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 ## dj-rest-auth
 
-* Homepage: https://github.com/iMerica/dj-rest-auth
-* Repository: https://github.com/iMerica/dj-rest-auth
-* License: `MIT`
+- Homepage: https://github.com/iMerica/dj-rest-auth
+- Repository: https://github.com/iMerica/dj-rest-auth
+- License: `MIT`
 
 ```text
 The MIT License (MIT)
@@ -339,9 +339,9 @@ SOFTWARE.
 
 ## django
 
-* Homepage: https://www.djangoproject.com/
-* Repository: https://github.com/django/django
-* License: `BSD-3-Clause`
+- Homepage: https://www.djangoproject.com/
+- Repository: https://github.com/django/django
+- License: `BSD-3-Clause`
 
 ```text
 Copyright (c) Django Software Foundation and individual contributors.
@@ -375,9 +375,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## django-auditlog
 
-* Homepage: https://github.com/jazzband/django-auditlog
-* Repository: https://github.com/jazzband/django-auditlog
-* License: `MIT`
+- Homepage: https://github.com/jazzband/django-auditlog
+- Repository: https://github.com/jazzband/django-auditlog
+- License: `MIT`
 
 ```text
 The MIT License (MIT)
@@ -404,9 +404,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## django-cors-headers
 
-* Homepage: https://github.com/adamchainz/django-cors-headers
-* Repository: https://github.com/adamchainz/django-cors-headers
-* License: `MIT`
+- Homepage: https://github.com/adamchainz/django-cors-headers
+- Repository: https://github.com/adamchainz/django-cors-headers
+- License: `MIT`
 
 ```text
 MIT License
@@ -434,9 +434,9 @@ SOFTWARE.
 
 ## django-crispy-forms
 
-* Homepage: https://github.com/django-crispy-forms/django-crispy-forms
-* Repository: https://github.com/django-crispy-forms/django-crispy-forms
-* License: `MIT`
+- Homepage: https://github.com/django-crispy-forms/django-crispy-forms
+- Repository: https://github.com/django-crispy-forms/django-crispy-forms
+- License: `MIT`
 
 ```text
 Copyright (c) 2009-2021 Miguel Araujo, Daniel Feldroy and contributors.
@@ -465,9 +465,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 ## django-environ
 
-* Homepage: https://django-environ.readthedocs.org
-* Repository: https://github.com/joke2k/django-environ
-* License: `MIT`
+- Homepage: https://django-environ.readthedocs.org
+- Repository: https://github.com/joke2k/django-environ
+- License: `MIT`
 
 ```text
 Copyright (c) 2021, Serghei Iakovlev <egrep@protonmail.ch>
@@ -494,9 +494,9 @@ THE SOFTWARE.
 
 ## django-extensions
 
-* Homepage: https://github.com/django-extensions/django-extensions
-* Repository: https://github.com/django-extensions/django-extensions
-* License: `MIT`
+- Homepage: https://github.com/django-extensions/django-extensions
+- Repository: https://github.com/django-extensions/django-extensions
+- License: `MIT`
 
 ```text
 Copyright (c) 2007 Michael Trier
@@ -522,9 +522,9 @@ THE SOFTWARE.
 
 ## django-filter
 
-* Homepage: https://django-filter.readthedocs.io/en/main/
-* Repository: https://github.com/carltongibson/django-filter
-* License: `BSD-3-Clause`
+- Homepage: https://django-filter.readthedocs.io/en/main/
+- Repository: https://github.com/carltongibson/django-filter
+- License: `BSD-3-Clause`
 
 ```text
 Copyright (c) Alex Gaynor and individual contributors.
@@ -555,9 +555,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## django-forms-dynamic
 
-* Homepage: https://github.com/dabapps/django-forms-dynamic
-* Repository: https://github.com/dabapps/django-forms-dynamic
-* License: `BSD-2-Clause`
+- Homepage: https://github.com/dabapps/django-forms-dynamic
+- Repository: https://github.com/dabapps/django-forms-dynamic
+- License: `BSD-2-Clause`
 
 ```text
 Copyright (c) 2020, DabApps
@@ -587,9 +587,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## django-modeltranslation
 
-* Homepage: https://github.com/deschler/django-modeltranslation
-* Repository: https://github.com/deschler/django-modeltranslation
-* License: `BSD-3-Clause`
+- Homepage: https://github.com/deschler/django-modeltranslation
+- Repository: https://github.com/deschler/django-modeltranslation
+- License: `BSD-3-Clause`
 
 ```text
 Copyright (c) 2012, 2011, 2010, 2009, Peter Eschler, Dirk Eschler
@@ -621,9 +621,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## django-stubs-ext
 
-* Homepage: https://github.com/typeddjango/django-stubs
-* Repository: https://github.com/typeddjango/django-stubs
-* License: `MIT`
+- Homepage: https://github.com/typeddjango/django-stubs
+- Repository: https://github.com/typeddjango/django-stubs
+- License: `MIT`
 
 ```text
 Copyright (c) Maxim Kurnikov.
@@ -638,9 +638,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## django-tables2
 
-* Homepage: https://github.com/jieter/django-tables2/
-* Repository: https://github.com/jieter/django-tables2/
-* License: `BSD-2-Clause`
+- Homepage: https://github.com/jieter/django-tables2/
+- Repository: https://github.com/jieter/django-tables2/
+- License: `BSD-2-Clause`
 
 ```text
 All changes made to django-tables2 since forking from django-tables
@@ -683,9 +683,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 ## djangorestframework
 
-* Homepage: https://www.django-rest-framework.org/
-* Repository: https://github.com/encode/django-rest-framework
-* License: `BSD-3-Clause`
+- Homepage: https://www.django-rest-framework.org/
+- Repository: https://github.com/encode/django-rest-framework
+- License: `BSD-3-Clause`
 
 ```text
 # License
@@ -721,9 +721,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## drf-spectacular
 
-* Homepage: https://github.com/tfranzel/drf-spectacular
-* Repository: https://github.com/tfranzel/drf-spectacular
-* License: `BSD-3-Clause`
+- Homepage: https://github.com/tfranzel/drf-spectacular
+- Repository: https://github.com/tfranzel/drf-spectacular
+- License: `BSD-3-Clause`
 
 ```text
 Copyright © 2011-present, Encode OSS Ltd.
@@ -760,9 +760,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## django-structlog
 
-* Homepage: https://github.com/jrobichaud/django-structlog
-* Repository: https://github.com/jrobichaud/django-structlog
-* License: `MIT`
+- Homepage: https://github.com/jrobichaud/django-structlog
+- Repository: https://github.com/jrobichaud/django-structlog
+- License: `MIT`
 
 ```text
 MIT License
@@ -790,9 +790,9 @@ SOFTWARE.
 
 ## fpdf2
 
-* Homepage: https://py-pdf.github.io/fpdf2/
-* Repository: https://github.com/py-pdf/fpdf2
-* License: `LGPL-3.0-or-later`
+- Homepage: https://py-pdf.github.io/fpdf2/
+- Repository: https://github.com/py-pdf/fpdf2
+- License: `LGPL-3.0-or-later`
 
 ```text
 GNU LESSER GENERAL PUBLIC LICENSE
@@ -964,9 +964,9 @@ Library.
 
 ## gunicorn
 
-* Homepage: http://www.gunicorn.org/
-* Repository: https://github.com/benoitc/gunicorn
-* License: `MIT`
+- Homepage: http://www.gunicorn.org/
+- Repository: https://github.com/benoitc/gunicorn
+- License: `MIT`
 
 ```text
 2009-2024 (c) Benoît Chesneau <benoitc@gunicorn.org>
@@ -996,9 +996,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 ## hl7apy
 
-* Homepage: https://crs4.github.io/hl7apy/
-* Repository: https://github.com/crs4/hl7apy
-* License: `MIT`
+- Homepage: https://crs4.github.io/hl7apy/
+- Repository: https://github.com/crs4/hl7apy
+- License: `MIT`
 
 ```text
 Copyright (c) 2012-2018, CRS4
@@ -1023,9 +1023,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## kaleido
 
-* Homepage:  https://plotly.com/python/static-image-export/
-* Repository: https://github.com/plotly/Kaleido
-* Licence: `(MIT OR AFL-2.1)`
+- Homepage: https://plotly.com/python/static-image-export/
+- Repository: https://github.com/plotly/Kaleido
+- Licence: `(MIT OR AFL-2.1)`
 
 ```text
 The MIT License (MIT)
@@ -1053,9 +1053,9 @@ THE SOFTWARE.
 
 ## mysqlclient
 
-* Homepage: https://mysqlclient.readthedocs.io/
-* Repository: https://github.com/PyMySQL/mysqlclient
-* License: `GPL-2.0-or-later`
+- Homepage: https://mysqlclient.readthedocs.io/
+- Repository: https://github.com/PyMySQL/mysqlclient
+- License: `GPL-2.0-or-later`
 
 ```text
                     GNU GENERAL PUBLIC LICENSE
@@ -1401,9 +1401,9 @@ Public License instead of this License.
 
 ## openpyxl
 
-* Homepage: https://openpyxl.readthedocs.io
-* Repository: https://foss.heptapod.net/openpyxl/openpyxl
-* License: `MIT`
+- Homepage: https://openpyxl.readthedocs.io
+- Repository: https://foss.heptapod.net/openpyxl/openpyxl
+- License: `MIT`
 
 ```text
 This software is under the MIT Licence
@@ -1433,9 +1433,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## pandas
 
-* Homepage: https://pandas.pydata.org
-* Repository: https://github.com/pandas-dev/pandas
-* License: `BSD-3-Clause`
+- Homepage: https://pandas.pydata.org
+- Repository: https://github.com/pandas-dev/pandas
+- License: `BSD-3-Clause`
 
 ```text
 BSD 3-Clause License
@@ -1473,9 +1473,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## django-phonenumber-field
 
-* Homepage: https://django-phonenumber-field.readthedocs.io/
-* Repository: https://github.com/stefanfoulis/django-phonenumber-field
-* License: `MIT`
+- Homepage: https://django-phonenumber-field.readthedocs.io/
+- Repository: https://github.com/stefanfoulis/django-phonenumber-field
+- License: `MIT`
 
 ```text
 Copyright (c) 2011 Stefan Foulis and contributors.
@@ -1504,9 +1504,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 ## pillow
 
-* Homepage: https://python-pillow.org/
-* Repository: https://github.com/python-pillow/Pillow
-* License: `MIT-CMU`
+- Homepage: https://python-pillow.org/
+- Repository: https://github.com/python-pillow/Pillow
+- License: `MIT-CMU`
 
 ```text
 The Python Imaging Library (PIL) is
@@ -1543,9 +1543,9 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ## plotly
 
-* Homepage: https://plotly.com/python/
-* Repository: https://github.com/plotly/plotly.py
-* License: `MIT`
+- Homepage: https://plotly.com/python/
+- Repository: https://github.com/plotly/plotly.py
+- License: `MIT`
 
 ```text
 The MIT License (MIT)
@@ -1573,9 +1573,9 @@ THE SOFTWARE.
 
 ## pydantic
 
-* Homepage: https://docs.pydantic.dev/
-* Repository: https://github.com/pydantic/pydantic
-* License: `MIT`
+- Homepage: https://docs.pydantic.dev/
+- Repository: https://github.com/pydantic/pydantic
+- License: `MIT`
 
 ```text
 The MIT License (MIT)
@@ -1603,9 +1603,9 @@ SOFTWARE.
 
 ## qrcode
 
-* Homepage: https://github.com/lincolnloop/python-qrcode
-* Repository: https://github.com/lincolnloop/python-qrcode
-* License: `BSD-3-Clause`
+- Homepage: https://github.com/lincolnloop/python-qrcode
+- Repository: https://github.com/lincolnloop/python-qrcode
+- License: `BSD-3-Clause`
 
 ```text
 Copyright (c) 2011, Lincoln Loop
@@ -1660,9 +1660,9 @@ from (http://code.google.com/p/pyqrnative):
 
 ## requests
 
-* Homepage: https://requests.readthedocs.io
-* Repository: https://github.com/psf/requests
-* License: `Apache-2.0`
+- Homepage: https://requests.readthedocs.io
+- Repository: https://github.com/psf/requests
+- License: `Apache-2.0`
 
 ```text
 
@@ -1844,9 +1844,9 @@ from (http://code.google.com/p/pyqrnative):
 
 ## slippers
 
-* Homepage: https://github.com/mixxorz/slippers
-* Repository: https://github.com/mixxorz/slippers
-* License: `MIT`
+- Homepage: https://github.com/mixxorz/slippers
+- Repository: https://github.com/mixxorz/slippers
+- License: `MIT`
 
 ```text
 MIT License
@@ -1874,9 +1874,9 @@ SOFTWARE.
 
 ## twilio
 
-* Homepage: https://github.com/twilio/twilio-python/
-* Repository: https://github.com/twilio/twilio-python/
-* License: `MIT`
+- Homepage: https://github.com/twilio/twilio-python/
+- Repository: https://github.com/twilio/twilio-python/
+- License: `MIT`
 
 ```text
 MIT License
@@ -1904,9 +1904,9 @@ SOFTWARE.
 
 ## unidecode
 
-* Homepage: https://github.com/avian2/unidecode
-* Repository: https://github.com/avian2/unidecode
-* License: `GPL-2.0-or-later`
+- Homepage: https://github.com/avian2/unidecode
+- Repository: https://github.com/avian2/unidecode
+- License: `GPL-2.0-or-later`
 
 ```text
                     GNU GENERAL PUBLIC LICENSE
@@ -2252,9 +2252,9 @@ Public License instead of this License.
 
 ## unpoly
 
-* Homepage: https://unpoly.com
-* Repository: https://github.com/unpoly/unpoly
-* License: `MIT`
+- Homepage: https://unpoly.com
+- Repository: https://github.com/unpoly/unpoly
+- License: `MIT`
 
 ```text
 Copyright (c) 2014-2021 Henning Koch
@@ -2283,9 +2283,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## whitenoise
 
-* Homepage: https://whitenoise.readthedocs.io/
-* Repository: https://github.com/evansd/whitenoise
-* License: `MIT`
+- Homepage: https://whitenoise.readthedocs.io/
+- Repository: https://github.com/evansd/whitenoise
+- License: `MIT`
 
 ```text
 The MIT License (MIT)

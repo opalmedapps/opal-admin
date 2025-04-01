@@ -32,7 +32,6 @@ nav:
       - Authentication: authentication.md
   - Custom Permissions: standard_and_custom_permissions.md
   - Translation: translation.md
-  - Changelog: changelog.md
   - Code Reference: reference/
 
 # Configuration
