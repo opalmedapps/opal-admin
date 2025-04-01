@@ -4,6 +4,8 @@
 
 FROM python:3.12.9-alpine3.20 AS build
 
+COPY --from=ghcr.io/astral-sh/uv:0.6.11 /uv /uvx /bin/
+
 # dependencies for building Python packages
 RUN apk add --no-cache build-base \
   # install git in case dependencies are installed from version control
@@ -16,10 +18,13 @@ RUN apk add --no-cache build-base \
 # for which environment the build is done: development or production
 ARG ENV=production
 
-# Install pip requirements
-COPY ./requirements /tmp/
-RUN python -m pip install --no-cache-dir --upgrade pip \
-  && python -m pip install --no-cache-dir -r /tmp/${ENV}.txt
+WORKDIR /app
+
+# Install dependencies
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-editable --no-dev --compile-bytecode
 
 
 FROM python:3.12.9-alpine3.20
@@ -32,12 +37,15 @@ RUN apk upgrade --no-cache \
   # kaleido dependencies
   && apk add --no-cache chromium
 
+# add venv to search path
+ENV PATH=/app/.venv/bin:$PATH
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
 
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
+
 
 EXPOSE 8000
 WORKDIR /app
@@ -46,18 +54,20 @@ RUN addgroup --system appuser \
   && adduser --system --ingroup appuser appuser \
   && chown -R appuser:appuser /app
 
-# get Python packages lib and bin
-COPY --from=build /usr/local/bin /usr/local/bin
-COPY --from=build /usr/local/lib /usr/local/lib
+# get venv from build stage
+COPY --from=build /app/.venv /app/.venv
 COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
 
 # copy only the required files
 COPY ./config/ ./config
 COPY ./opal/ ./opal
 COPY ./locale/ ./locale
+COPY ./LICENSES ./LICENSES
 COPY manage.py .
 COPY .env.sample .
 COPY docker/start.sh ./start.sh
+COPY LICENSE .
+COPY REUSE.toml .
 
 # Compile messages so translations are baked into the image
 RUN cp .env.sample .env \

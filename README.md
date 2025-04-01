@@ -4,17 +4,22 @@ SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the 
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
-# Opal Backend
+# Opal Admin
 
-[![pipeline status](https://gitlab.com/opalmedapps/backend/badges/main/pipeline.svg)](https://gitlab.com/opalmedapps/backend/-/commits/main) [![coverage report](https://gitlab.com/opalmedapps/backend/badges/main/coverage.svg)](https://gitlab.com/opalmedapps/backend/-/commits/main) [![wemake-python-styleguide](https://img.shields.io/badge/code%20style-wemake-000000.svg)](https://github.com/wemake-services/wemake-python-styleguide) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Docs](https://img.shields.io/badge/documentation-available-brightgreen.svg)](https://opalmedapps.gitlab.io/backend)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![ci](https://github.com/opalmedapps/opal-admin/actions/workflows/ci.yml/badge.svg)](https://github.com/opalmedapps/opal-admin/actions/workflows/ci.yml)
+[![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 ## Requirements
 
 This project has the following requirements to be available on your system:
 
+* [uv](https://docs.astral.sh/uv/) for Python project management
 * [Docker Desktop](https://docs.docker.com/desktop/) (or Docker Engine on Linux)
-* Python 3.12
 * [Git LFS](https://git-lfs.com/)
+* Legacy Databases set up and its DB server running: https://github.com/opalmedapps/opal-db-management
+* macOS/Linux only: Have `mysql-client` and `pkg-config` installed to build the `mysqlclient` package: https://github.com/PyMySQL/mysqlclient#install
 
 ## Getting Started
 
@@ -22,158 +27,130 @@ After cloning this repo, follow the below steps to get started.
 
 ### Configuration
 
-All configuration is stored within the `.env` file to follow the [12factor app methodology](https://12factor.net/config) on storing config in the environment. This means that any setting that depends on the environment the app is run in should be exposed via the `.env`.
+All configuration is stored within the `.env` file to follow the [12factor app methodology](https://12factor.net/config) on storing config in the environment.
+This means that any setting that depends on the environment the app is run in should be exposed via the `.env`.
 
-Copy the `.env.sample` to `.env` and adjust the values as necessary. You need to at least modify `DATABASE_PASSWORD` and `SECRET_KEY`.
+Copy the `.env.sample` to `.env` and adjust the values as necessary.
 
-These configuration parameters are read by `docker compose` and by `settings.py` (via [`django-environ`](https://github.com/joke2k/django-environ)).
+```shell
+cp .env.sample .env
+```
 
-!!! note
-    The legacy database is currently provided by the [`db-docker`](https://gitlab.com/opalmedapps/db-docker/). For information on the legacy database, please see the [Legacy DB Connection](database/legacy_db.md) page.
-    Make sure the configuration of the legacy database in your `.env` file matches the value of the one in your `db-docker` setup.
+You need to at least generate and add `SECRET_KEY`.
+However, we also recommend to change the `DATABASE_PASSWORD`.
+
+These configuration parameters are read by `docker compose` and by the settings in `config/settings/`, such as `base.py` (via [`django-environ`](https://github.com/joke2k/django-environ)).
+
+> [!NOTE]
+> The legacy database is currently provided by the [`db-docker`](https://github.com/opalmedapps/opal-db-management/).
+> For information on the legacy database connections, please see the [Legacy DB Connection](docs/database/legacy_db.md) page.
+> Make sure the configuration of the legacy database connection in your `.env` file matches the values of the one in your `db-management` setup.
 
 ### Docker
 
-This project comes with a `docker-compose.yml` file providing you with a database and the app in their respective containers.
+This project comes with a `compose.yaml` file providing you with a MariaDB and the app in their respective containers.
 The Django app is built with a custom image (defined in `Dockerfile`).
 
-Execute the following command to start up the containers: `docker compose up`
+First, start up the DB container:
 
-If you need to rebuild the app, you can either run `docker compose build` before starting the container or `docker compose up --build` to force a rebuild.
+```shell
+docker compose up -d db
+```
 
-To connect to the app container, run `docker compose exec app bash` (or any specific command instead of `bash`).
+You can run the app in the foreground:
+
+```shell
+docker compose up app
+```
+
+To connect to the app container or run specific commands, run
+
+```shell
+# shell inside the container
+docker compose exec app sh
+# Django management commands
+docker compose exec app python manage.py
+```
+
+Instead of running the `app` container you can also run the Django development server directoy using `uv`.
+See below for details.
 
 ### Python virtual environment
 
-??? question "Why a virtual environment when there is already a Docker container?"
-
-    While this is not ideal, it makes it easier to run `pre-commit` with the same setup/dependencies for `flake8` and `mypy`. In addition, `vscode` can make use of the virtual environment to call `flake8` and `mypy` and provide the results directly in the editor. Alternatively, the [Remote Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) could be used to develop fully within the container. If you figure out a proper configuration to have linting, typechecking and `pre-commit` running in there, please provide a merge request.
-
-In order for linting, type checking, unit testing etc. to be available in your IDE, and for `pre-commit` to use the same configuration, we recommend to set up a local virtual environment. This also makes it possible to execute management commands directly from the virtual environment without having to execute them within the container. Otherwise, everything has to be run from inside the container (e.g., by calling `docker compose exec app <command>`).
+In order for linting, type checking, unit testing etc. to be available in your IDE, and for `pre-commit` to use the same configuration, we recommend to set up a local virtual environment.
+This also makes it possible to execute management commands directly from the virtual environment without having to execute them within the container.
+Otherwise, everything has to be run from inside the container (e.g., by calling `docker compose exec app <command>`).
 
 #### Set up the virtual environment
 
-=== "macOS/Linux"
+```shell
+uv sync
+```
 
-    ```sh
-    python3.12 -m venv --prompt 'opal' .venv
-    source .venv/bin/activate
-    ```
+<details>
+<summary>Note for Windows Users</summary>
 
-=== "Windows"
+If activate fails with a security error, run this command to allow local scripts to execute (see [this Stack Overflow discussion](https://stackoverflow.com/q/4037939) for more information):
 
-    ```sh
-    python -m venv --prompt 'opal' .venv
-    .\.venv\Scripts\activate
-    ```
+```powershell
+powershell Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
 
-    **Note:**  If activate fails with a security error, run this command to allow local scripts to execute (see [this Stack Overflow discussion](https://stackoverflow.com/q/4037939) for more information): `powershell Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`
+</details>
 
-??? note "IDE: auto-activate the virtual environment"
-
-    Your IDE can be configured to automatically activate the virtual environment when launching a new terminal.
-
-    === "VSCode"
-
-        VSCode has already been configured with this feature in its project settings.
-        This was done by adding the following line to `.vscode/settings.json`:
-
-        ```json
-        "python.terminal.activateEnvironment": true,
-        ```
-
-    === "PyCharm"
-
-        Navigate to `File > Settings/Preferences > Tools > Terminal` and replace `Shell path` with the following:
-
-        === "Windows"
-            ```sh
-            powershell -NoExit -File ".\.venv\Scripts\Activate.ps1"
-            ```
-
-        If you later encounter any issues with your virtual environment that are causing the terminal to crash on launch,
-        simply reset the above field to its default value, fix your virtual environment, and then reset the field back to the value above.
-
-#### Configure your IDE's Python Interpreter
-
-Your IDE should be set up to use the Python interpreter in your virtual environment. This will ensure that your code
-is interpreted correctly while developing. The following instructions will help you to check whether your interpreter is
-correctly set, and if not, to set it to the correct path.
-
-The steps below refer to an interpreter path, which is the following (depending on your OS):
-
-=== "macOS/Linux"
-
-    ```
-    .venv/bin/python
-    ```
-
-=== "Windows"
-
-    ```
-    .venv\Scripts\python.exe
-    ```
-
----
-
-=== "VSCode"
-
-    1. Make sure that your project folder is open, and open any `.py` file.
-    2. In the bottom-right corner of the screen, next to `Python`, you should see your Python version,
-       followed by .venv, for example: `3.10.9 ('.venv':venv)`.
-    3. If you don't see this, click on the version number or empty field next to `Python`.
-    4. Select or browse to the interpreter path above.
-
-=== "PyCharm"
-
-    1. Go to `File > Settings/Preferences > Project: name > Project Interpreter`.
-    2. Check whether the value for `Python interpreter` is already set to the interpreter from your virtual environment (`.venv`).
-    3. If it isn't, click on the gear icon, click "Add", select the option for adding an existing Virtualenv environment,
-       and in the interpreter box, browse to the interpreter path above.
+> [!NOTE] IDE: auto-activate the virtual environment
+> Your IDE can be configured to automatically activate the virtual environment when launching a new terminal.
+>
+> **VSCode** has already been configured with this feature in its project settings.
+> This was done by adding the following line to `.vscode/settings.json`:
+>
+> ```json
+> "python.terminal.activateEnvironment": true,
+> ```
+>
+> **PyCharm**: Navigate to `File > Settings/Preferences > Tools > Terminal` and replace `Shell path` with the following:
+>
+> ```powershell
+> powershell -NoExit -File ".\.venv\Scripts\Activate.ps1"
+> ```
+>
+> If you later encounter any issues with your virtual environment that are causing the terminal to crash on launch,
+> simply reset the above field to its default value, fix your virtual environment, and then reset the field back to the value above.
 
 #### Install dependencies
 
-Run the following commands within the virtual environment:
+`uv` already created the virtual environment and installed the dependencies (including development depenendencies) for you by executing `uv sync`.
 
-```sh
-python -m pip install --upgrade pip
-python -m pip install -r requirements/development.txt
-```
-
-??? tip "Installing `mysqlclient` fails"
-
-    In case installing the `mysqlclient` package does not provide a binary for your platform it needs to be built. To do so, the mysql client library needs to be installed on the system.
-
-    === "macOS"
-        The easiest is to install it via Homebrew:
-
-        ```sh
-        brew install mysql-client
-        brew install pkg-config
-        # export PATH and PKG_CONFIG_PATH according to output from installing mysql-client
-        # install dependencies via pip install
-        ```
-
-        Use the output from installing `mysql-client` to update the `PATH` and set the `PKG_CONFIG_PATH` environment variables.
-        If you've already installed `mysql-client` you can get this information by executing `brew info mysql-client`.
-
-    === "Windows"
-        No detailed steps known. Try to follow the [instructions](https://github.com/PyMySQL/mysqlclient#windows) provided by the `mysqlclient` package.
+> [!TIP] Installing `mysqlclient` fails
+> In case installing the `mysqlclient` package does not provide a binary for your platform it needs to be built.
+> To do so, the mysql client library needs to be installed on the system.
+>
+> **macOS:** The easiest is to install it via Homebrew:
+>
+> ```shell
+> brew install mysql-client pkg-config
+> brew install pkg-config
+> # export PATH and PKG_CONFIG_PATH according to output from installing mysql-client
+> # install dependencies
+> ```
+>
+> Use the output from installing `mysql-client` to update the `PATH` and set the `PKG_CONFIG_PATH` environment variables.
+> If you've already installed `mysql-client` you can get this information by executing `brew info mysql-client`.
 
 ### Migrate Database and Create Superuser
 
-Before you can start, you need to migrate the database and create a superuser. Ensure at least the database container is running. Execute the following commands either in the virtual environment or in the `app` container.
+Before you can start, you need to migrate the database and create a superuser.
+Ensure at least the database container is running.
+Execute the following commands either in the virtual environment or in the `app` container.
 
-```sh
+```shell
 python manage.py migrate
 python manage.py createsuperuser
 ```
 
-!!! note
-
-The superuser is an admin user you'll create and can use during local development to have access to every part of the backend on your machine. We don't have access to this type of account in production environments, for security, but on your local machine it's fine to have easy access to everything. Whenever you reset the data in your database, the superuser will be reset also, and you'll need to recreate it.
-
-Once this is done, you can go to [http://localhost:8000](http://localhost:8000) to access the frontend. Go to [http://localhost:8000/admin](http://localhost:8000/admin) to log in to the Django admin site with the superuser you created. [http://localhost:8000/api](http://localhost:8000/api) shows the available REST API endpoints to you.
+Once this is done, you can go to [http://localhost:8000](http://localhost:8000) to access the frontend.
+Go to [http://localhost:8000/admin](http://localhost:8000/admin) to log in to the Django admin site with the superuser you created.
+[http://localhost:8000/api](http://localhost:8000/api) shows the available REST API endpoints to you.
 
 ### Initializing data
 
@@ -190,69 +167,51 @@ See the command's help for more information.
 
 This project contains a configuration for [`pre-commit`](https://pre-commit.com/) (see `.pre-commit-config.yaml`).
 
-Install the `pre-commit` hooks via `pre-commit install`.
+Install the `pre-commit` hooks via
 
-??? note "Using pre-commit with a git GUI"
+```shell
+uv run pre-commit install
+```
 
-    If you are using a git GUI tool (such as Sourcetree) the path might not be set up correctly and pre-commit might not be able to find `flake8` and `mypy`.
+<details>
+<summary>Using pre-commit with a git GUI</summary>
 
-    The current known workaround is to specify the required `PATH` for the `pre-commit` hook. Add the following line at the top of `.git/hooks/pre-commit` (after the first line with the bash interpreter):
+If you are using a git GUI tool (such as Sourcetree) the path might not be set up correctly and pre-commit might not be able to find `flake8` and `mypy`.
 
-    ```export PATH=$PATH:"/C/Users/path/to/.venv/Scripts/"```
+The current known workaround is to specify the required `PATH` for the `pre-commit` hook. Add the following line at the top of `.git/hooks/pre-commit` (after the first line with the bash interpreter):
+
+```shell
+export PATH=$PATH:"/C/Users/path/to/.venv/Scripts/"
+```
+
+</details>
 
 ### Recommended IDE Extensions
 
-=== "VSCode"
-
-    This project contains recommendations for vscode extensions (see `.vscode/extensions.json`). You should get a popup about this when you open the project. These extensions are also highlighted in the extensions list.
-
-    The following extensions are required or strongly recommended:
-
-    * [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) and [PyLance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance)
-    * [Django](https://marketplace.visualstudio.com/items?itemName=batisteo.vscode-django)
-    * [EditorConfig for VSCode](https://marketplace.visualstudio.com/items?itemName=editorconfig.editorconfig)
-    * [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)
-    * [Docker](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
-    * [GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)
-    * [ShellCheck](https://marketplace.visualstudio.com/items?itemName=timonwong.shellcheck)
-    * [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
-
-    ??? note "shellcheck on Apple Silicon"
-
-        Currently the *shellcheck* extension does not come with a binary for `arm64`.
-        Install `shellcheck` via `brew install shellcheck`.
-
-=== "PyCharm"
-
-    This project recommends the installation of some PyCharm extensions. These can be installed under `File > Settings/Preferences > Plugins`.
-
-    The following extensions are required or strongly recommended:
-
+* **VSCode:** This project contains recommendations for vscode extensions (see `.vscode/extensions.json`).
+  You should get a popup about this when you open the project.
+  These extensions are also highlighted in the extensions list.
+    * Note: `shellcheck` on Apple Silicon:
+      Currently, the *shellcheck* extension does not come with a binary for `arm64`.
+      Install `shellcheck` via `brew install shellcheck`.
+* **PyCharm:** We recommend the installation of some PyCharm extensions.
+  These can be installed under `File > Settings/Preferences > Plugins`.
+  The following extensions are required or strongly recommended:
     * [EditorConfig by JetBrains s.r.o.](https://plugins.jetbrains.com/plugin/7294-editorconfig) (should come pre-bundled with PyCharm)
     * [Docker by Jetbrains s.r.o.](https://plugins.jetbrains.com/plugin/7724-docker)
     * [Markdown by Jetbrains s.r.o.](https://plugins.jetbrains.com/plugin/7793-markdown)
 
 ## Documentation
 
-The documentation is deployed to [https://opalmedapps.gitlab.io/backend](https://opalmedapps.gitlab.io/backend). It is deployed automatically when commits are pushed to `main`.
+The documentation is located in `docs/`.
+It is currently not deployed automatically.
 
 To view the documentation during development, run the following commands in your virtual environment:
 
-=== "macOS/Linux"
-
-    ```sh
-    pip install -r requirements/docs.txt
-    mkdocs serve -a localhost:8001
-    ```
-
-=== "Windows"
-
-    ```sh
-    pip install -r requirements/docs.txt
-    python -m mkdocs serve -a localhost:8001
-    ```
-
-    For more details on why the command on Windows is prefixed with `python -m`, see the [mkdocs installation notes](https://www.mkdocs.org/user-guide/installation/).
+```shell
+uv sync --group docs
+uv run mkdocs serve -a localhost:8001
+```
 
 Then open http://localhost:8001 to view the generated documentation site.
 
@@ -260,31 +219,57 @@ Then open http://localhost:8001 to view the generated documentation site.
 
 ### Dependencies
 
-See the `requirements/` folder for the requirement files depending on the environment.
+See `pyproject.toml` for the dependencies of this project.
 
 #### Update dependencies
 
-The dependencies are kept up-to-date by using [Renovate Bot](https://www.whitesourcesoftware.com/free-developer-tools/renovate/). See the file `renovate.json5` for its configuration.
+The dependencies are kept up-to-date by using [Renovate Bot](https://docs.renovatebot.com).
+See the file `renovate.json5` for its configuration.
 
-However, you can also manually update dependencies:
-
-1. Install [`pip-upgrader`](https://github.com/simion/pip-upgrader): `pip install pip-upgrader`
-2. Run `pip-upgrade` to see new available versions and update the desired dependencies
-3. Run linting, type checking and tests with coverage (see below) to ensure that everything still works as expected
-4. Commit the updates to the requirements file(s)
+However, you can also manually update dependencies using `uv` (see its [documentation](https://docs.astral.sh/uv/guides/projects/#managing-dependencies)).
 
 ### Linting, Testing, Coverage
 
-The configuration (such as which files to exclude) is located in `setup.cfg` and `pytest.ini`. The following commands can all be executed from the project root.
+The configuration (such as which files to exclude) is located in `ruff.toml`, `mypy.ini`, and `pytest.ini`.
+The following commands can all be executed from the project root.
 
-1. Linting with `flake8`: Execute `flake8`
-1. Static type checking with `mypy`: Execute `mypy`
-1. Execute tests with `pytest`: Execute `pytest`
-1. Execute coverage with `coverage`:
-    1. Execute tests with coverage: `coverage run -m pytest`
-    1. Reporting: `coverage report`
-    1. Get HTML report (optional): `coverage html`, then `open htmlcov/index.html` to open the report in the browser
-    1. Erase old coverage data: `coverage erase`
+1. Linting with `ruff`: https://docs.astral.sh/ruff/linter/#ruff-check
+
+    ```shell
+    uv run ruff check
+    ```
+
+2. Formatting with `ruff`: https://docs.astral.sh/ruff/formatter/
+
+    ```shell
+    uv run ruff format
+    ```
+
+3. Static type checking with `mypy`:
+
+    ```shell
+    uv run mypy opal/
+    ```
+
+4. Execute tests with `pytest`:
+
+    ```shell
+    uv run pytest
+    ```
+
+5. Execute coverage with `coverage`:
+
+    ```shell
+    # run tests with coverage
+    uv run coverage run -m pytest
+    # get the coverage report
+    uv run coverage report
+    # or get the html report
+    uv run coverage html
+    open htmlcov/index.html
+    # erase old coverage data
+    uv run coverage erase
+    ```
 
 `vscode` should pick up the virtual environment and run `flake8` and `mypy` while writing code.
 
@@ -417,7 +402,7 @@ If a dev chooses they can also run Django backend using SSL/TLS mode to encrypt 
 7. Finally, copy the docker compose SSL override file so that it automatically applies when running compose commands:
 
     ```shell
-    cp docker-compose.ssl.yml docker-compose.override.yml
+    cp compose.ssl.yaml compose.override.yaml
     ```
 
     You can verify that it is applied by running `docker compose config`.

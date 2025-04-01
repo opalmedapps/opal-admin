@@ -1,7 +1,0 @@
-# SPDX-FileCopyrightText: Copyright (C) 2021 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
-#
-# SPDX-License-Identifier: AGPL-3.0-or-later
-
--r base.txt
-
-gunicorn==23.0.0  # https://docs.gunicorn.org/en/stable/index.html

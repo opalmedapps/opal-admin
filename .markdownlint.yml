@@ -10,6 +10,9 @@ ul-indent:
 # Allow bare URLs since we use magiclink to convert bare URLs automatically to links
 MD034: false
 
+# to use collapsible sections
+no-inline-html: false
+
 # Need to disable in order to support PyMdown Tabbed extension
 # See: https://facelessuser.github.io/pymdown-extensions/extensions/tabbed/
 MD046: false

@@ -13,12 +13,10 @@
     // https://docs.renovatebot.com/modules/manager/pre-commit/
     // https://docs.renovatebot.com/presets-default/#enableprecommit
     ":enablePreCommit",
-    "gitlab>opalmedapps/renovate-bot//presets/docker-alpine.json5",
+    "github>mschoettle/renovate-presets//presets/docker-alpine.json5",
+    "github>mschoettle/renovate-presets//presets/actions-dependency-version.json5",
+    "github>mschoettle/renovate-presets//presets/requires-python.json5",
   ],
-  // https://docs.renovatebot.com/python/#alternative-file-names
-  "pip_requirements": {
-    "fileMatch": ["^requirements/.*\\.txt$"]
-  },
   // https://docs.renovatebot.com/configuration-options/#assignees
   "assignees": ["mschoettle"],
   // https://docs.renovatebot.com/configuration-options/#labels
@@ -38,28 +36,33 @@
     },
     // Combine mkdocs-material updates for Python and Docker
     {
-      "matchPackagePatterns": ["mkdocs-material"],
+      "matchPackageNames": ["mkdocs-material"],
       "groupName": "mkdocs-material"
     },
     // Group all mypy stub updates together
     {
-      "matchPackagePatterns": ["-stubs$", "^types-"],
+      "matchPackageNames": ["/-stubs$/", "/^types-/"],
       "groupName": "mypy type stubs"
     },
     // Group django stubs together
     {
-      "matchPackagePatterns": ["django-stubs", "django-stubs-ext"],
+      "matchPackageNames": ["django-stubs", "django-stubs-ext"],
       "groupName": "django-stubs"
     },
     // Group all pytest package updates together
     {
-      "matchPackagePatterns": ["pytest"],
+      "matchPackageNames": ["/pytest/"],
       "groupName": "pytest packages"
     },
     // Combine ruff and ruff-pre-commit
     {
-      "matchPackagePatterns": "ruff-pre-commit|ruff$",
+      "matchPackageNames": ["/ruff-pre-commit|ruff$/"],
       "groupName": "ruff",
+    },
+    // Combine uv package, uv image, and uv-pre-commit
+    {
+      "matchPackageNames": ["/uv-pre-commit|uv$/"],
+      "groupName": "uv",
     },
   ],
 }

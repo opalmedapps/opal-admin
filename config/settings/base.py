@@ -212,20 +212,23 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'opal.core.auth.FedAuthBackend',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
 LOGIN_REDIRECT_URL = 'start'
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = 'login'
 # routes ignored by LoginRequiredMiddleware
-AUTH_EXEMPT_ROUTES = env.tuple('AUTH_EXEMPT_ROUTES')
+AUTH_EXEMPT_ROUTES = ['login', 'admin:login', 'admin:index', 'favicon.ico']
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 # also: https://docs.djangoproject.com/en/dev/topics/auth/customizing/#substituting-a-custom-user-model
 AUTH_USER_MODEL = 'users.User'
+
 # fedauth webservice API
-FEDAUTH_API_ENDPOINT = env.url('FEDAUTH_API_ENDPOINT').geturl()
-FEDAUTH_INSTITUTION = env.str('FEDAUTH_INSTITUTION')
+if env.get_value('FEDAUTH_API_ENDPOINT', default=None):
+    FEDAUTH_API_ENDPOINT = env.url('FEDAUTH_API_ENDPOINT').geturl()
+    FEDAUTH_INSTITUTION = env.str('FEDAUTH_INSTITUTION')
+
+    AUTHENTICATION_BACKENDS.append('opal.users.backends.FedAuthBackend')
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
@@ -484,7 +487,7 @@ REPORT_DOCUMENT_NUMBER = env.str('REPORT_DOCUMENT_NUMBER')
 # Name of the group for the ORMS users
 # Please see: https://docs.djangoproject.com/en/dev/topics/auth/default/#groups
 ORMS_GROUP_NAME = 'ORMS Users'
-ORMS_ENABLED = env.bool('ORMS_ENABLED')
+ORMS_ENABLED = env.bool('ORMS_ENABLED', default=False)
 
 if ORMS_ENABLED:
     # base URL to ORMS (no trailing slash)
@@ -496,9 +499,13 @@ USER_MANAGER_GROUP_NAME = 'User Managers'
 REGISTRANTS_GROUP_NAME = 'Registrants'
 
 # Sending SMS message settings
-TWILIO_ACCOUNT_SID = env.str('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = env.str('TWILIO_AUTH_TOKEN')
-SMS_FROM = env.str('SMS_FROM')
+
+SMS_ENABLED = env.bool('SMS_ENABLED')
+
+if SMS_ENABLED:
+    TWILIO_ACCOUNT_SID = env.str('TWILIO_ACCOUNT_SID')
+    TWILIO_AUTH_TOKEN = env.str('TWILIO_AUTH_TOKEN')
+    SMS_FROM = env.str('SMS_FROM')
 
 # PATHOLOGY REPORTS SETTINGS
 # Path to the pathology reports folder
