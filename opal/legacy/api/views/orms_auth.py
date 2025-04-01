@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Collection of API views used to handle ORMS authentication."""
+
 from typing import TYPE_CHECKING
 
 from django.conf import settings
@@ -43,9 +44,12 @@ class ORMSLoginView(LoginView):
         """
         user = self.serializer.validated_data['user']
 
-        if user.is_superuser or user.groups.filter(
-            name=settings.ORMS_GROUP_NAME,
-        ).exists():
+        if (
+            user.is_superuser
+            or user.groups.filter(
+                name=settings.ORMS_GROUP_NAME,
+            ).exists()
+        ):
             super().login()
         else:
             raise PermissionDenied()

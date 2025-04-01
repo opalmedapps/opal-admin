@@ -17,6 +17,11 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='institution',
-            options={'ordering': ['name'], 'permissions': (('can_manage_institutions', 'Can manage institutions'),), 'verbose_name': 'Institution', 'verbose_name_plural': 'Institutions'},
+            options={
+                'ordering': ['name'],
+                'permissions': (('can_manage_institutions', 'Can manage institutions'),),
+                'verbose_name': 'Institution',
+                'verbose_name_plural': 'Institutions',
+            },
         ),
     ]

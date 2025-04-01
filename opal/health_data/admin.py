@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides admin options for health data models."""
+
 from django.contrib import admin
 from django.contrib.admin.options import BaseModelAdmin
 from django.http import HttpRequest

@@ -31,10 +31,13 @@ def _create_auth_data(success: str) -> dict[str, str]:
     }
 
 
-@pytest.mark.parametrize(('success', 'expected'), [
-    (AUTHENTICATION_FAILURE, None),
-    (AUTHENTICATION_SUCCESS, ('user@example.com', 'First', 'Last')),
-])
+@pytest.mark.parametrize(
+    ('success', 'expected'),
+    [
+        (AUTHENTICATION_FAILURE, None),
+        (AUTHENTICATION_SUCCESS, ('user@example.com', 'First', 'Last')),
+    ],
+)
 def test_parse_response(success: str, expected: UserData | None, mocker: MockerFixture) -> None:
     """Ensure JSON response is parsed correctly."""
     mock_logger = mocker.patch('logging.Logger.error')
@@ -147,11 +150,14 @@ def test_authenticate_wrong_credentials(mocker: MockerFixture) -> None:
 @pytest.mark.django_db
 def test_create_user() -> None:
     """Ensure the create_user function creates a new user."""
-    user = auth_backend._create_user('johnwayne', UserData(
-        'john.wayne@example.com',
-        'John',
-        'Wayne',
-    ))
+    user = auth_backend._create_user(
+        'johnwayne',
+        UserData(
+            'john.wayne@example.com',
+            'John',
+            'Wayne',
+        ),
+    )
 
     assert UserModel.objects.count() == 1
     db_user = UserModel.objects.get()

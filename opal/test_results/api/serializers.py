@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides Django REST framework serializers related to the `test_results` app's models."""
+
 from typing import Any
 
 from django.db import transaction
@@ -118,8 +119,6 @@ class PathologySerializer(GeneralTestSerializer):
         PathologyObservation.objects.bulk_create(
             PathologyObservation(**data, general_test=general_test) for data in validated_observations
         )
-        Note.objects.bulk_create(
-            Note(**data, general_test=general_test) for data in validated_notes
-        )
+        Note.objects.bulk_create(Note(**data, general_test=general_test) for data in validated_notes)
 
         return general_test

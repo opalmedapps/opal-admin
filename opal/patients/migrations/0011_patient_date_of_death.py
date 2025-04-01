@@ -23,6 +23,9 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='patient',
-            constraint=models.CheckConstraint(check=models.Q(('date_of_birth__lte', django.db.models.expressions.F('date_of_death'))), name='patients_patient_date_valid'),
+            constraint=models.CheckConstraint(
+                check=models.Q(('date_of_birth__lte', django.db.models.expressions.F('date_of_death'))),
+                name='patients_patient_date_valid',
+            ),
         ),
     ]

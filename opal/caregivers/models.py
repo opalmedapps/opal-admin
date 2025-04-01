@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing models for the caregivers app."""
+
 from uuid import uuid4
 
 from django.core.validators import MinLengthValidator, MinValueValidator

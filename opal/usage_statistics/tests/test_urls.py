@@ -17,7 +17,8 @@ testdata: list[TestData] = [
     (views.GroupUsageStatisticsView, 'usage-statistics:reports-group-export', '/usage-statistics/reports/group/'),
     (
         views.IndividualUsageStatisticsView,
-        'usage-statistics:reports-individual-export', '/usage-statistics/reports/individual/',
+        'usage-statistics:reports-individual-export',
+        '/usage-statistics/reports/individual/',
     ),
 ]
 

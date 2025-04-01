@@ -19,6 +19,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='caregiverprofile',
             name='legacy_id',
-            field=models.PositiveIntegerField(blank=True, null=True, unique=True, validators=[django.core.validators.MinValueValidator(1)], verbose_name='Legacy ID'),
+            field=models.PositiveIntegerField(
+                blank=True,
+                null=True,
+                unique=True,
+                validators=[django.core.validators.MinValueValidator(1)],
+                verbose_name='Legacy ID',
+            ),
         ),
     ]

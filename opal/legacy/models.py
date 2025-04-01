@@ -19,6 +19,7 @@ When inspecting an existing database table using `inspectdb`, make sure of the f
 * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 * Don't rename db_table or db_column values
 """
+
 import datetime as dt
 
 from django.db import models

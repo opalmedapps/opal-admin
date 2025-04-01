@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides translation options for caregiver models."""
+
 from modeltranslation.translator import TranslationOptions, register
 
 from .models import SecurityQuestion

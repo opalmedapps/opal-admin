@@ -17,7 +17,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='generaltest',
             name='case_number',
-            field=models.CharField(blank=True, help_text='HL7 Filler Field 1 identifier', max_length=60, verbose_name='Case Number'),
+            field=models.CharField(
+                blank=True, help_text='HL7 Filler Field 1 identifier', max_length=60, verbose_name='Case Number'
+            ),
         ),
         migrations.AddField(
             model_name='generaltest',
@@ -29,6 +31,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='observation',
             name='value_abnormal',
-            field=models.CharField(choices=[('L', 'Low'), ('N', 'Normal'), ('H', 'High')], default='N', max_length=1, verbose_name='Abnormal Flag'),
+            field=models.CharField(
+                choices=[('L', 'Low'), ('N', 'Normal'), ('H', 'High')],
+                default='N',
+                max_length=1,
+                verbose_name='Abnormal Flag',
+            ),
         ),
     ]

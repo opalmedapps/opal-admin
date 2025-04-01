@@ -28,6 +28,7 @@ def _create_response_data() -> dict[str, str]:
 
 # __init__
 
+
 def test_init() -> None:
     """Ensure init function creates error handler (a.k.a., error helper service)."""
     assert isinstance(communication_manager.error_handler, ServiceErrorHandler)
@@ -35,6 +36,7 @@ def test_init() -> None:
 
 
 # submit
+
 
 def test_submit_success(mocker: MockerFixture) -> None:
     """Ensure successful submit request returns json response with successful HTTP status."""
@@ -156,6 +158,7 @@ def test_submit_json_decode_error(mocker: MockerFixture) -> None:
 
 
 # fetch
+
 
 def test_fetch_success(mocker: MockerFixture) -> None:
     """Ensure successful fetch request returns json response with successful HTTP status."""

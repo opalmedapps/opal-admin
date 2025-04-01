@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing custom crispy layout objects."""
+
 from typing import Any
 
 from django.utils.translation import gettext_lazy as _

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides `ViewSets` for the hospital-specific settings REST API."""
+
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 

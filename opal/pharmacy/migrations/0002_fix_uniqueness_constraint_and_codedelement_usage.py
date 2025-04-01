@@ -58,7 +58,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='pharmacycomponent',
             name='pharmacy_encoded_order',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pharmacy_components', to='pharmacy.pharmacyencodedorder'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='pharmacy_components',
+                to='pharmacy.pharmacyencodedorder',
+            ),
         ),
         migrations.AlterField(
             model_name='pharmacyencodedorder',
@@ -75,7 +79,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='pharmacyencodedorder',
             name='physician_prescription_order',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='pharmacy_encoded_order', to='pharmacy.physicianprescriptionorder'),
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='pharmacy_encoded_order',
+                to='pharmacy.physicianprescriptionorder',
+            ),
         ),
         migrations.AlterField(
             model_name='pharmacyencodedorder',
@@ -92,7 +100,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='pharmacyroute',
             name='pharmacy_encoded_order',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pharmacy_route', to='pharmacy.pharmacyencodedorder'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='pharmacy_route',
+                to='pharmacy.pharmacyencodedorder',
+            ),
         ),
         migrations.AlterField(
             model_name='pharmacyroute',

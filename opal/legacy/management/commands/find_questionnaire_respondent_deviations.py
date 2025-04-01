@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Command for detecting deviations in the questionnaire respondent/caregiver between MariaDB and Django databases."""
+
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError

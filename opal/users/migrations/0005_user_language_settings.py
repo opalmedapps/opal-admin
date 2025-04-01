@@ -22,10 +22,14 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='user',
             name='language',
-            field=models.CharField(choices=[('en', 'English'), ('fr', 'French')], default='en', max_length=2, verbose_name='Language'),
+            field=models.CharField(
+                choices=[('en', 'English'), ('fr', 'French')], default='en', max_length=2, verbose_name='Language'
+            ),
         ),
         migrations.AddConstraint(
             model_name='user',
-            constraint=models.CheckConstraint(check=models.Q(('language__in', ['en', 'fr'])), name='users_user_language_valid'),
+            constraint=models.CheckConstraint(
+                check=models.Q(('language__in', ['en', 'fr'])), name='users_user_language_valid'
+            ),
         ),
     ]

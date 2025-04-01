@@ -27,9 +27,20 @@ class Migration(migrations.Migration):
                 ('has_labs', models.BooleanField(default=True, verbose_name='Labs Consent')),
                 ('has_questionnaires', models.BooleanField(default=True, verbose_name='Questionnaires Consent')),
                 ('consent_granted', models.DateTimeField(auto_now_add=True, verbose_name='Consent Granted')),
-                ('consent_updated', models.DateTimeField(default=django.utils.timezone.now, verbose_name='Consent Updated')),
+                (
+                    'consent_updated',
+                    models.DateTimeField(default=django.utils.timezone.now, verbose_name='Consent Updated'),
+                ),
                 ('last_synchronized', models.DateTimeField(verbose_name='Last Synchronized', null=True, blank=True)),
-                ('patient', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='databank_consent', to='patients.patient', verbose_name='Patient')),
+                (
+                    'patient',
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='databank_consent',
+                        to='patients.patient',
+                        verbose_name='Patient',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Databank Consent',

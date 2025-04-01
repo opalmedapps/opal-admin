@@ -19,17 +19,32 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='institution',
             name='terms_of_use_en',
-            field=models.FileField(null=True, upload_to='uploads/%Y/%m/%d/', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['pdf'])], verbose_name='Terms of use'),
+            field=models.FileField(
+                null=True,
+                upload_to='uploads/%Y/%m/%d/',
+                validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['pdf'])],
+                verbose_name='Terms of use',
+            ),
         ),
         migrations.AddField(
             model_name='institution',
             name='terms_of_use_fr',
-            field=models.FileField(null=True, upload_to='uploads/%Y/%m/%d/', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['pdf'])], verbose_name='Terms of use'),
+            field=models.FileField(
+                null=True,
+                upload_to='uploads/%Y/%m/%d/',
+                validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['pdf'])],
+                verbose_name='Terms of use',
+            ),
         ),
         migrations.AddField(
             model_name='institution',
             name='terms_of_use',
-            field=models.FileField(default=None, upload_to='uploads/%Y/%m/%d/', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['pdf'])], verbose_name='Terms of use'),
+            field=models.FileField(
+                default=None,
+                upload_to='uploads/%Y/%m/%d/',
+                validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['pdf'])],
+                verbose_name='Terms of use',
+            ),
             preserve_default=False,
         ),
     ]

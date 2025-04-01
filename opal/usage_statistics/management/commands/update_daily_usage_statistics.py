@@ -106,9 +106,11 @@ class Command(BaseCommand):
             end_datetime_period=end_datetime_period,
         )
 
-        self.stdout.write(self.style.SUCCESS(
-            'Successfully populated daily statistics data',
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                'Successfully populated daily statistics data',
+            )
+        )
 
     def _populate_user_app_activities(
         self,
@@ -134,7 +136,8 @@ class Command(BaseCommand):
             DailyUserAppActivity(
                 action_by_user_id=users_dict[activity.pop('username')],
                 **activity,
-            ) for activity in activities
+            )
+            for activity in activities
         )
 
     def _populate_user_patient_app_activities(
@@ -160,23 +163,29 @@ class Command(BaseCommand):
         #
         # Since between the same patient and caregiver might be many different relationships,
         # the query fetches only one record per patient <===> caregiver relationship with the maximum end_date
-        relationships = Relationship.objects.select_related(
-            'patient',
-            'caregiver__user',
-        ).filter(
-            models.Q(end_date__gte=start_datetime_period.date()) | models.Q(end_date=None)
-            | models.Q(status=RelationshipStatus.CONFIRMED),
-        ).exclude(
-            models.Q(status=RelationshipStatus.PENDING)
-            | models.Q(status=RelationshipStatus.DENIED),
-        ).values(
-            'patient__legacy_id',
-            'patient__id',
-            'caregiver__user__username',
-            'caregiver__user__id',
-            'id',
-        ).annotate(
-            end_date=models.Max('end_date'),
+        relationships = (
+            Relationship.objects.select_related(
+                'patient',
+                'caregiver__user',
+            )
+            .filter(
+                models.Q(end_date__gte=start_datetime_period.date())
+                | models.Q(end_date=None)
+                | models.Q(status=RelationshipStatus.CONFIRMED),
+            )
+            .exclude(
+                models.Q(status=RelationshipStatus.PENDING) | models.Q(status=RelationshipStatus.DENIED),
+            )
+            .values(
+                'patient__legacy_id',
+                'patient__id',
+                'caregiver__user__username',
+                'caregiver__user__id',
+                'id',
+            )
+            .annotate(
+                end_date=models.Max('end_date'),
+            )
         )
 
         relationships_dict = stats_utils.RelationshipMapping(relationships)
@@ -211,7 +220,8 @@ class Command(BaseCommand):
             DailyPatientDataReceived(
                 patient_id=patients_dict[data.pop('patient')],
                 **data,
-            ) for data in received_data
+            )
+            for data in received_data
         )
 
     def _delete_stored_statistics(self) -> bool:
@@ -225,16 +235,16 @@ class Command(BaseCommand):
             True, if the records were deleted, False otherwise
         """
         if settings.DEBUG is False:
-            self.stdout.write(self.style.WARNING(
-                'Existing usage statistics data cannot be deleted in production environment',
-            ))
+            self.stdout.write(
+                self.style.WARNING(
+                    'Existing usage statistics data cannot be deleted in production environment',
+                )
+            )
             return False
 
         self.stdout.write(self.style.WARNING('Deleting existing usage statistics data'))
         confirm = input(
-            'Are you sure you want to do this?\n'
-            + '\n'
-            + "Type 'yes' to continue, or 'no' to cancel: ",
+            'Are you sure you want to do this?\n' + '\n' + "Type 'yes' to continue, or 'no' to cancel: ",
         )
 
         if confirm != 'yes':

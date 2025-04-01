@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing validation rules for the data being sent/received to/from ORMS."""
+
 from typing import Any
 
 

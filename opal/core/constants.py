@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Constants for modules of the core app."""
+
 import secrets
 
 # minimum length in bytes for secrets.token_urlsafe (32 characters)

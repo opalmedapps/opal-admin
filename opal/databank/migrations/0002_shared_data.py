@@ -20,19 +20,29 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('sent_at', models.DateTimeField(auto_now=True, verbose_name='Sent At')),
                 ('data_id', models.IntegerField(verbose_name='Data ID')),
-                ('data_type', models.CharField(
-                    choices=[
-                        ('APPT', 'Appointments'),
-                        ('DIAG', 'Diagnoses'),
-                        ('DEMO', 'Demographics'),
-                        ('LABS', 'Labs'),
-                        ('QSTN', 'Questionnaires'),
-                    ],
-                    max_length=4,
-                    verbose_name='Data Type',
+                (
+                    'data_type',
+                    models.CharField(
+                        choices=[
+                            ('APPT', 'Appointments'),
+                            ('DIAG', 'Diagnoses'),
+                            ('DEMO', 'Demographics'),
+                            ('LABS', 'Labs'),
+                            ('QSTN', 'Questionnaires'),
+                        ],
+                        max_length=4,
+                        verbose_name='Data Type',
+                    ),
                 ),
+                (
+                    'databank_consent',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='shared_data',
+                        to='databank.databankconsent',
+                        verbose_name='Databank Consent',
+                    ),
                 ),
-                ('databank_consent', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='shared_data', to='databank.databankconsent', verbose_name='Databank Consent')),
             ],
             options={
                 'verbose_name': 'Shared Datum',

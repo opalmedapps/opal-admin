@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides configuration for the hospital-specific settings app."""
+
 from django.apps import AppConfig
 from django.utils.translation import gettext_lazy as _
 

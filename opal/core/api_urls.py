@@ -7,6 +7,7 @@ URL configuration for the project-wide REST API.
 
 Inspired by Two Scoops of Django Section 17.3.
 """
+
 # TODO: determine whether to move API Urls to config module (and support versioning)
 from django.conf import settings
 from django.urls import path
@@ -57,14 +58,12 @@ urlpatterns = [
     path('app/home/', AppHomeView.as_view(), name='app-home'),
     path('app/appointments/', AppAppointmentsView.as_view(), name='app-appointments'),
     path('app/general/', AppGeneralView.as_view(), name='app-general'),
-
     # AUTH ENDPOINTS
     path('auth/', include('dj_rest_auth.urls')),
     # authentication endpoint for the ORMS
     path('auth/orms/login/', ORMSLoginView.as_view(), name='orms-login'),
     # validate session endpoint for the ORMS
     path('auth/orms/validate/', ORMSValidateView.as_view(), name='orms-validate'),
-
     # CAREGIVERS ENDPOINTS
     path(
         'caregivers/patients/',
@@ -106,7 +105,6 @@ urlpatterns = [
         caregivers_views.RetrieveCaregiverView.as_view(),
         name='caregivers-detail',
     ),
-
     # INSTITUTIONS ENDPOINTS
     path(
         'institution/',
@@ -118,10 +116,8 @@ urlpatterns = [
         settings_viewsets.InstitutionViewSet.as_view({'get': 'retrieve_terms_of_use'}),
         name='institutions-terms-of-use',
     ),
-
     # LANGUAGES ENDPOINTS
     path('languages/', core_views.LanguagesView.as_view(), name='languages'),
-
     # PATIENTS ENDPOINTS
     path(
         'patients/legacy/<int:legacy_id>/check-permissions/',
@@ -197,14 +193,12 @@ urlpatterns = [
         UpdateAppointmentCheckinView.as_view(),
         name='patients-legacy-appointment-checkin',
     ),
-
     # QUESTIONNAIRES ENDPOINTS
     path(
         'questionnaires/reviewed/',
         QuestionnairesReportView.as_view(),
         name='questionnaires-reviewed',
     ),
-
     # REGISTRATION ENDPOINTS
     path(
         'registration/by-hash/<str:hash>/',
@@ -231,7 +225,6 @@ urlpatterns = [
         caregivers_views.RegistrationCompletionView.as_view(),
         name='registration-register',
     ),
-
     # USERS ENDPOINTS
     path(
         'groups/',
@@ -243,6 +236,5 @@ urlpatterns = [
         user_views.UserCaregiverUpdateView.as_view(),
         name='users-caregivers-update',
     ),
-
     path('', include(router.urls)),
 ]

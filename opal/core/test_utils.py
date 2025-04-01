@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Utility classes used by management commands or in the testing of management commands."""
+
 import json
 from http import HTTPStatus
 from io import StringIO

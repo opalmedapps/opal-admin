@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Command for Users Caregivers migration."""
+
 from typing import Any
 
 from django.core.management.base import BaseCommand
@@ -47,9 +48,11 @@ class Command(BaseCommand):
 
                 self._create_relationship(patient, caregiver_profile, relationship_type)
             else:
-                self.stderr.write(self.style.WARNING(
-                    f'Patient with sernum: {legacy_user.usertypesernum}, does not exist, skipping.',
-                ))
+                self.stderr.write(
+                    self.style.WARNING(
+                        f'Patient with sernum: {legacy_user.usertypesernum}, does not exist, skipping.',
+                    )
+                )
         self.stdout.write(
             f'Number of imported caregivers is: {migrated_users_count} (out of {legacy_users.count()})',
         )
@@ -117,9 +120,11 @@ class Command(BaseCommand):
             type=relationship_type,
         ).first()
         if relationship:
-            self.stdout.write(self.style.WARNING(
-                f'Self relationship for patient with legacy_id: {patient.legacy_id} already exists.',
-            ))
+            self.stdout.write(
+                self.style.WARNING(
+                    f'Self relationship for patient with legacy_id: {patient.legacy_id} already exists.',
+                )
+            )
         else:
             relationship = Relationship(
                 patient=patient,

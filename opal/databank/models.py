@@ -10,6 +10,7 @@ store the data itself. The data stored here includes patient consent information
 and identifiers for what data has already been sent to the databank.
 The actual patient data is sent to the databank via a set of API logic, after being deidentified.
 """
+
 import datetime
 
 from django.db import models

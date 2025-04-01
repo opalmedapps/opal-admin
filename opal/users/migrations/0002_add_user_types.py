@@ -23,8 +23,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.CreateModel(
             name='Caregiver',
-            fields=[
-            ],
+            fields=[],
             options={
                 'verbose_name': 'Caregiver',
                 'verbose_name_plural': 'Caregivers',
@@ -39,8 +38,7 @@ class Migration(migrations.Migration):
         ),
         migrations.CreateModel(
             name='ClinicalStaff',
-            fields=[
-            ],
+            fields=[],
             options={
                 'verbose_name': 'Clinical Staff Member',
                 'verbose_name_plural': 'Clinical Staff',
@@ -60,10 +58,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='type',
-            field=models.CharField(choices=[('CLINICAL', 'Clinical Staff'), ('CAREGIVER', 'Caregiver')], default='CLINICAL', max_length=10, verbose_name='Type'),
+            field=models.CharField(
+                choices=[('CLINICAL', 'Clinical Staff'), ('CAREGIVER', 'Caregiver')],
+                default='CLINICAL',
+                max_length=10,
+                verbose_name='Type',
+            ),
         ),
         migrations.AddConstraint(
             model_name='user',
-            constraint=models.CheckConstraint(check=models.Q(('type__in', ['CLINICAL', 'CAREGIVER'])), name='users_user_type_valid'),
+            constraint=models.CheckConstraint(
+                check=models.Q(('type__in', ['CLINICAL', 'CAREGIVER'])), name='users_user_type_valid'
+            ),
         ),
     ]

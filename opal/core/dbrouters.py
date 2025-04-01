@@ -7,6 +7,7 @@ Module providing DB routers for multi-database scenarios.
 
 Specifically provides a DB router for separate handling database operations of regular and legacy DBs.
 """
+
 from typing import Any
 
 from django.db.models import Model

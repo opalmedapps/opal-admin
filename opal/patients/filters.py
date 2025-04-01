@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides filters for `patients` app."""
+
 from typing import Any
 
 from django.db.models import QuerySet
@@ -87,15 +88,19 @@ class ManageCaregiverAccessFilter(django_filters.FilterSet):
             Column('card_type'),
             Column('medical_number'),
             Column('site'),
-            Column(InlineSubmit(
-                name='',
-                label=gettext('Search Specific Patient'),
-                extra_css=None if self.is_bound else 'btn-unselected',
-            )),
-            Column(InlineReset(
-                label=gettext('Show Pending Requests'),
-                extra_css=None if self.is_bound else 'btn-selected',
-            )),
+            Column(
+                InlineSubmit(
+                    name='',
+                    label=gettext('Search Specific Patient'),
+                    extra_css=None if self.is_bound else 'btn-unselected',
+                )
+            ),
+            Column(
+                InlineReset(
+                    label=gettext('Show Pending Requests'),
+                    extra_css=None if self.is_bound else 'btn-selected',
+                )
+            ),
         )
 
         medical_number_field = self.form.fields['medical_number']
