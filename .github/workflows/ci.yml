@@ -114,7 +114,7 @@ jobs:
         run: |
           uv run pytest --version
           # -m "" runs all tests, even the ones marked as slow
-          uv run pytest -m "" -x -v --junitxml=test-report.xml
+          uv run pytest -m "" -v --junitxml=test-report.xml
       # see: https://github.com/dorny/test-reporter/issues/244
       # - name: Publish Test Results
       #   uses: dorny/test-reporter@v1.9.1
@@ -160,6 +160,13 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync --locked --no-dev --group docs
+      # create minimal env file for mypy
+      - name: Prepare environment
+        run: |
+          cp .env.sample .env
+          # generate secret key
+          SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
+          sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
       # see: https://squidfunk.github.io/mkdocs-material/publishing-your-site/#with-github-actions
       # weekly cache updates
       - run: echo "cache_id=$(date --utc '+%V')" >> "$GITHUB_ENV"

@@ -1660,6 +1660,7 @@ def test_accessrequestsendsmsform_incomplete_data(mocker: MockerFixture) -> None
     mock_send.assert_not_called()
 
 
+@pytest.mark.usefixtures('use_twilio')
 def test_accessrequestsendsmsform_send_success(mocker: MockerFixture) -> None:
     """Ensure that the SMS is sent successfully."""
     hospital_factories.Institution.create()
@@ -1679,6 +1680,7 @@ def test_accessrequestsendsmsform_send_success(mocker: MockerFixture) -> None:
     mock_send.assert_called_once_with('+15005550001', mocker.ANY)
 
 
+@pytest.mark.usefixtures('use_twilio')
 def test_accessrequestsendsmsform_send_error(mocker: MockerFixture) -> None:
     """Ensure that the form shows an error if sending the SMS failed."""
     hospital_factories.Institution.create()
