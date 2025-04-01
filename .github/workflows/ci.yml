@@ -96,7 +96,7 @@ jobs:
           sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=db/" .env
           # set up legacy DB connection
           # reuse the same database as for the other tests to make it easier
-          sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
+          sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=db/" .env
           sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
           sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
           sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
