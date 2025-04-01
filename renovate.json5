@@ -51,17 +51,17 @@
     },
     // Group all pytest package updates together
     {
-      "matchPackagePatterns": ["/pytest/"],
+      "matchPackageNames": ["/pytest/"],
       "groupName": "pytest packages"
     },
     // Combine ruff and ruff-pre-commit
     {
-      "matchPackagePatterns": "/ruff-pre-commit|ruff$/",
+      "matchPackageNames": ["/ruff-pre-commit|ruff$/"],
       "groupName": "ruff",
     },
     // Combine uv package, uv image, and uv-pre-commit
     {
-      "matchPackagePatterns": "uv-pre-commit|uv$",
+      "matchPackageNames": ["/uv-pre-commit|uv$/"],
       "groupName": "uv",
     },
   ],
