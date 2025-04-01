@@ -114,7 +114,7 @@ jobs:
         run: |
           uv run pytest --version
           # -m "" runs all tests, even the ones marked as slow
-          uv run pytest -m "" -v --junitxml=test-report.xml
+          uv run coverage -m pytest -m "" -v --junitxml=test-report.xml
       # see: https://github.com/dorny/test-reporter/issues/244
       # - name: Publish Test Results
       #   uses: dorny/test-reporter@v1.9.1
@@ -123,14 +123,9 @@ jobs:
       #     name: Tests
       #     path: ./test-report.xml
       #     reporter: java-junit
-      - name: Run SQL scripts
+      - name: Check coverage
         run: |
-          source .venv/bin/activate
-          # migrate databases first
-          ./docker/alembic-upgrade.sh
-          # Full refresh for both OMI and OHIGPH datasets to ensure no broken data links/inconsistencies
-          db_management/reset_data.sh OMI
-          db_management/reset_data.sh OHIGPH
+          coverage report
 
 
   markdownlint:
