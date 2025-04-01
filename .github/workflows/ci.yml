@@ -75,10 +75,9 @@ jobs:
           MARIADB_PASSWORD: ${{ env.DB_PASSWORD }}
 
     steps:
-      - name: Install Git LFS
+      - name: Install Git
         run: |
-          which git
-          apk add --no-cache git-lfs
+          apk add --no-cache git git-lfs
       - uses: actions/checkout@v4.2.2
         with:
           persist-credentials: false
