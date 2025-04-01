@@ -1519,10 +1519,6 @@ def test_access_request_confirm_password_invalid(
     mocker: MockerFixture,
 ) -> None:
     """The confirm password step handles an invalid password and the previous form is still valid."""
-    # mock authentication and pretend it was unsuccessful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
-    mock_authenticate.return_value = False
-
     hospital_patient = factories.HospitalPatient.create()
     relationship_type = models.RelationshipType.objects.guardian_caregiver()
     caregiver = factories.CaregiverProfile.create(
@@ -1576,10 +1572,6 @@ def test_access_request_confirm_password_existing_user(
     mocker: MockerFixture,
 ) -> None:
     """The confirm password step handles an invalid password and the previous form is still valid."""
-    # mock authentication and pretend it was unsuccessful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
-    mock_authenticate.return_value = False
-
     hospital_patient = factories.HospitalPatient.create()
     relationship_type = models.RelationshipType.objects.guardian_caregiver()
     caregiver = factories.CaregiverProfile.create(
@@ -1639,10 +1631,6 @@ def test_access_request_confirm_password_new_user(
     mocker: MockerFixture,
 ) -> None:
     """The confirm password step handles an invalid password and the previous form is still valid."""
-    # mock authentication and pretend it was unsuccessful
-    mock_authenticate = mocker.patch('opal.core.auth.FedAuthBackend._authenticate_fedauth')
-    mock_authenticate.return_value = False
-
     hospital_patient = factories.HospitalPatient.create()
     relationship_type = models.RelationshipType.objects.guardian_caregiver()
     data = {
