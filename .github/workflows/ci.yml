@@ -49,7 +49,7 @@ jobs:
           # generate secret key
           SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
           sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
-      - uses: mschoettle/pre-commit-action@v4.2.1
+      - uses: mschoettle/pre-commit-action@v4.2.2
         if: '!cancelled()'
         env:
           SKIP: ruff,ruff-format,markdownlint-cli2,reuse-lint-file
