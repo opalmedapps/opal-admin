@@ -91,7 +91,6 @@ jobs:
         # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
         run: |
           cp .env.sample .env
-          sed -i "s/^DATABASE_NAME=.*/DATABASE_NAME=$DB_NAME/" .env
           sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
           sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$DB_PASSWORD/" .env
           sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=db/" .env
