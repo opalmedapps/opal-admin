@@ -31,10 +31,11 @@ services:
       # default docker address, because host.docker.internal does not work in linux - docker-compose
       - DATABASE_HOST=db
       - LEGACY_DATABASE_HOST=host.docker.internal
-    # volumes:
-      # - ./opal:/app/opal
-      # - ./config:/app/config
-      # - ./locale:/app/locale
+    # TODO: use compose watch feature instead: https://docs.docker.com/compose/how-tos/file-watch/
+    volumes:
+      - ./opal:/app/opal
+      - ./config:/app/config
+      - ./locale:/app/locale
     ports:
       - 8000:8000
     depends_on:
