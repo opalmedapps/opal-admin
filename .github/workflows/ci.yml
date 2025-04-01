@@ -50,7 +50,7 @@ jobs:
           SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
           sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
           uv run mypy .
-      - uses: mschoettle/pre-commit-action@4.2.2
+      - uses: mschoettle/pre-commit-action@v4.2.3
         if: '!cancelled()'
         env:
           SKIP: ruff,ruff-format,mypy,markdownlint-cli2,reuse-lint-file
