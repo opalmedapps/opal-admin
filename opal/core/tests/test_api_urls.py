@@ -134,10 +134,13 @@ def test_api_caregiver_security_questions_defined(settings: SettingsWrapper) -> 
         api_root=settings.API_ROOT,
         username='username',
     )
-    assert reverse(
-        'api:caregivers-securityquestions-detail',
-        kwargs={'username': 'username', 'pk': 123},
-    ) == question_path
+    assert (
+        reverse(
+            'api:caregivers-securityquestions-detail',
+            kwargs={'username': 'username', 'pk': 123},
+        )
+        == question_path
+    )
     assert resolve(question_path).view_name == 'api:caregivers-securityquestions-detail'
 
 
@@ -163,10 +166,13 @@ def test_api_security_question_random_defined(settings: SettingsWrapper) -> None
         api_root=settings.API_ROOT,
         username='username',
     )
-    assert reverse(
-        'api:caregivers-securityquestions-random',
-        kwargs={'username': 'username'},
-    ) == question_path
+    assert (
+        reverse(
+            'api:caregivers-securityquestions-random',
+            kwargs={'username': 'username'},
+        )
+        == question_path
+    )
     assert resolve(question_path).view_name == 'api:caregivers-securityquestions-random'
 
 
@@ -174,10 +180,13 @@ def test_api_verify_security_answer_defined(settings: SettingsWrapper) -> None:
     """Ensure that the REST API carigiver security questions verify endpoints are defined."""
     question_path = 'caregivers/username/security-questions/123/verify/'
     question_path = f'/{settings.API_ROOT}/{question_path}'
-    assert reverse(
-        'api:caregivers-securityquestions-verify',
-        kwargs={'username': 'username', 'pk': 123},
-    ) == question_path
+    assert (
+        reverse(
+            'api:caregivers-securityquestions-verify',
+            kwargs={'username': 'username', 'pk': 123},
+        )
+        == question_path
+    )
     assert resolve(question_path).view_name == 'api:caregivers-securityquestions-verify'
 
 
@@ -297,10 +306,13 @@ def test_user_caregiver_update(settings: SettingsWrapper) -> None:
         api_root=settings.API_ROOT,
         username='username',
     )
-    assert reverse(
-        'api:users-caregivers-update',
-        kwargs={'username': 'username'},
-    ) == url_path
+    assert (
+        reverse(
+            'api:users-caregivers-update',
+            kwargs={'username': 'username'},
+        )
+        == url_path
+    )
     assert resolve(url_path).view_name == 'api:users-caregivers-update'
 
 

@@ -19,6 +19,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='phone_number',
-            field=models.CharField(blank=True, help_text='Format: +<countryCode><phoneNumber> (for example +15141234567) with an optional extension "x123"', max_length=22, validators=[django.core.validators.RegexValidator('^\\+[1-9]\\d{6,14}(x\\d{1,5})?$')], verbose_name='Phone Number'),
+            field=models.CharField(
+                blank=True,
+                help_text='Format: +<countryCode><phoneNumber> (for example +15141234567) with an optional extension "x123"',
+                max_length=22,
+                validators=[django.core.validators.RegexValidator('^\\+[1-9]\\d{6,14}(x\\d{1,5})?$')],
+                verbose_name='Phone Number',
+            ),
         ),
     ]

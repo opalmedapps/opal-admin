@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides Django REST framework serializers for User-specific models."""
+
 from typing import Any
 
 from django.contrib.auth.hashers import make_password
@@ -106,11 +107,7 @@ class UserClinicalStaffSerializer(serializers.ModelSerializer[ClinicalStaff]):
         Raises:
             ValidationError: if the passwords are not the same
         """
-        if (
-            'password' in data
-            and 'password2' in data
-            and data['password'] != data['password2']
-        ):
+        if 'password' in data and 'password2' in data and data['password'] != data['password2']:
             raise serializers.ValidationError(gettext("The two password fields don't match."))
 
         return data

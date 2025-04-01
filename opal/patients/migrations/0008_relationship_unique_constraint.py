@@ -17,6 +17,8 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddConstraint(
             model_name='relationship',
-            constraint=models.UniqueConstraint(fields=('patient', 'caregiver', 'type', 'status'), name='patients_relationship_unique_constraint'),
+            constraint=models.UniqueConstraint(
+                fields=('patient', 'caregiver', 'type', 'status'), name='patients_relationship_unique_constraint'
+            ),
         ),
     ]

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Test module for common validators of specific fields throughout opal system."""
+
 from django.core.exceptions import ValidationError
 
 from pytest_django.asserts import assertRaisesMessage

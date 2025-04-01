@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Authentication backends specific to the opal project."""
+
 import logging
 from collections import namedtuple
 from http import HTTPStatus

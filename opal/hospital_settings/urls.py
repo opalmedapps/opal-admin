@@ -7,6 +7,7 @@ URL configuration for hospital-specific settings.
 
 Provides URLs for the API and any additional paths for regular views.
 """
+
 from django.urls import path
 
 from . import views

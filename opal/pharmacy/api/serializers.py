@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Serializers for the API views of the `pharmacy` app."""
+
 from typing import Any
 
 from rest_framework import serializers
@@ -75,11 +76,14 @@ class _NestedCodedElementSerializer(CodedElementSerializer):
         super().__init__(*args, **kwargs)
         # Dynamically remove just the UniqueTogetherValidator
         self.validators = [
-            validator for validator in self.validators if not (  # type: ignore[redundant-expr]
+            validator
+            for validator in self.validators
+            if not (  # type: ignore[redundant-expr]
                 isinstance(
                     validator,
                     UniqueTogetherValidator,
-                ) and set(validator.fields) == {'identifier', 'text', 'coding_system'}  # type: ignore[unreachable]
+                )
+                and set(validator.fields) == {'identifier', 'text', 'coding_system'}  # type: ignore[unreachable]
             )
         ]
 

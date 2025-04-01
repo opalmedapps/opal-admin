@@ -309,7 +309,7 @@ class PathologyPDF(FPDF):
             markdown=False,
         )
         space_between_titles: int = 6  # the height between titles
-        title_indentation: int = 12    # to make an indentation from previous section/block
+        title_indentation: int = 12  # to make an indentation from previous section/block
 
         self.set_font(**table_title_font)
         self.ln(title_indentation)
@@ -356,7 +356,7 @@ class PathologyPDF(FPDF):
             {'section_title': 'GROSS DESCRIPTION', 'section_content': self.pathology_data.observation_descriptions},
             {'section_title': 'DIAGNOSIS', 'section_content': self.pathology_data.observation_diagnosis},
         ]
-        block_top_indentation: int = 5      # to make an indentation from previous section/block
+        block_top_indentation: int = 5  # to make an indentation from previous section/block
         block_bottom_indentation: int = 20  # to make an indentation at the end of the section
 
         self.ln(block_top_indentation)
@@ -415,7 +415,7 @@ class PathologyPDF(FPDF):
 
     def _add_new_page_if_needed(self) -> None:
         """Add new page if the prepared-by-table will not fit the current page."""
-        height_of_section: int = 40      # the height of the section to be added
+        height_of_section: int = 40  # the height of the section to be added
         new_ordinate_position: int = 30  # the position of the ordinate on the new page
         if self.will_page_break(height_of_section):
             self.add_page()
@@ -444,13 +444,15 @@ class PathologyPDF(FPDF):
             [f'{site_mrn["site_code"]}# : {site_mrn["mrn"]}' for site_mrn in sites_and_mrns],
         )
         site_city = (
-            f'{self.site_data.site_city} '
-            + f'({self.site_data.site_province}) '
-            + f'{self.site_data.site_postal_code}'
-        ) if str(self.site_data.site_city) else ''
-        site_phone = (
-            f'Tél. : {self.site_data.site_phone}'
-        ) if str(self.site_data.site_phone) else ''
+            (
+                f'{self.site_data.site_city} '
+                + f'({self.site_data.site_province}) '
+                + f'{self.site_data.site_postal_code}'
+            )
+            if str(self.site_data.site_city)
+            else ''
+        )
+        site_phone = (f'Tél. : {self.site_data.site_phone}') if str(self.site_data.site_phone) else ''
 
         # Wrap the text with the maximum characters can be filled in each line.
         wrapper = textwrap.TextWrapper(

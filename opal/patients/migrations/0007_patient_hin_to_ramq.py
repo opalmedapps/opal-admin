@@ -23,6 +23,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='patient',
             name='ramq',
-            field=models.CharField(blank=True, max_length=12, null=True, unique=True, validators=[django.core.validators.MinLengthValidator(12), django.core.validators.RegexValidator(message='Enter a valid RAMQ number consisting of 4 letters followed by 8 digits', regex='^[A-Z]{4}[0-9]{8}$')], verbose_name='RAMQ Number'),
+            field=models.CharField(
+                blank=True,
+                max_length=12,
+                null=True,
+                unique=True,
+                validators=[
+                    django.core.validators.MinLengthValidator(12),
+                    django.core.validators.RegexValidator(
+                        message='Enter a valid RAMQ number consisting of 4 letters followed by 8 digits',
+                        regex='^[A-Z]{4}[0-9]{8}$',
+                    ),
+                ],
+                verbose_name='RAMQ Number',
+            ),
         ),
     ]

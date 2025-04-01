@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Reusable form widgets."""
+
 from typing import Any
 
 from django import forms
@@ -100,7 +101,13 @@ class AvailableRadioSelect(forms.widgets.RadioSelect):
             the dict for _available_choices.
         """
         option_dict = super().create_option(
-            name, value, label, selected, index, subindex=subindex, attrs=attrs,
+            name,
+            value,
+            label,
+            selected,
+            index,
+            subindex=subindex,
+            attrs=attrs,
         )
         if value not in self.available_choices:
             option_dict['attrs']['disabled'] = 'disabled'

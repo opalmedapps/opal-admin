@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Command for detecting outdated new registration codes and expire them."""
+
 from datetime import timedelta
 from typing import Any
 

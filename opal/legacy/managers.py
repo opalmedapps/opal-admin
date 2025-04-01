@@ -14,6 +14,7 @@ Module also provide mixin classes to make the code reusable.
 See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
+
 import logging
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar
@@ -128,15 +129,19 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             for legacy_id in relationships.values_list('patient__legacy_id', flat=True)
             if legacy_id is not None
         ]
-        return self.select_related(
-            'aliasexpressionsernum__aliassernum__appointmentcheckin',
-            'aliasexpressionsernum__aliassernum__educational_material_control_ser_num',
-        ).filter(
-            scheduledstarttime__date=timezone.localtime(timezone.now()).date(),
-            patientsernum__in=patient_ids,
-            state='Active',
-        ).exclude(
-            status='Deleted',
+        return (
+            self.select_related(
+                'aliasexpressionsernum__aliassernum__appointmentcheckin',
+                'aliasexpressionsernum__aliassernum__educational_material_control_ser_num',
+            )
+            .filter(
+                scheduledstarttime__date=timezone.localtime(timezone.now()).date(),
+                patientsernum__in=patient_ids,
+                state='Active',
+            )
+            .exclude(
+                status='Deleted',
+            )
         )
 
     def get_closest_appointment(self, username: str) -> Optional['LegacyAppointment']:
@@ -155,14 +160,18 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             username=username,
             status=RelationshipStatus.CONFIRMED,
         )
-        return self.filter(
-            scheduledstarttime__gte=timezone.localtime(timezone.now()),
-            patientsernum__in=patient_ids,
-            state='Active',
-            status='Open',
-        ).order_by(
-            'scheduledstarttime',
-        ).first()
+        return (
+            self.filter(
+                scheduledstarttime__gte=timezone.localtime(timezone.now()),
+                patientsernum__in=patient_ids,
+                state='Active',
+                status='Open',
+            )
+            .order_by(
+                'scheduledstarttime',
+            )
+            .first()
+        )
 
     def get_databank_data_for_patient(
         self,
@@ -180,34 +189,39 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             Appointment data
 
         """
-        return self.select_related(
-            'aliasexpressionsernum__aliassernum',
-            'source_database',
-            'patientsernum',
-        ).filter(
-            checkin=1,
-            patientsernum__patientsernum=patient_ser_num,
-            last_updated__gt=last_synchronized,
-        ).annotate(
-            appointment_id=models.F('appointmentsernum'),
-            date_created=models.F('date_added'),
-            source_db_name=models.F('source_database__source_database_name'),
-            source_db_alias_code=models.F('aliasexpressionsernum__expression_name'),
-            source_db_alias_description=models.F('aliasexpressionsernum__description'),
-            source_db_appointment_id=models.F('source_system_id'),
-            alias_name=models.F('aliasexpressionsernum__aliassernum__aliasname_en'),
-            scheduled_start_time=models.F('scheduledstarttime'),
-        ).values(
-            'appointment_id',
-            'date_created',
-            'source_db_name',
-            'source_db_alias_code',
-            'source_db_alias_description',
-            'source_db_appointment_id',
-            'alias_name',
-            'scheduled_start_time',
-            'scheduled_end_time',
-            'last_updated',
+        return (
+            self.select_related(
+                'aliasexpressionsernum__aliassernum',
+                'source_database',
+                'patientsernum',
+            )
+            .filter(
+                checkin=1,
+                patientsernum__patientsernum=patient_ser_num,
+                last_updated__gt=last_synchronized,
+            )
+            .annotate(
+                appointment_id=models.F('appointmentsernum'),
+                date_created=models.F('date_added'),
+                source_db_name=models.F('source_database__source_database_name'),
+                source_db_alias_code=models.F('aliasexpressionsernum__expression_name'),
+                source_db_alias_description=models.F('aliasexpressionsernum__description'),
+                source_db_appointment_id=models.F('source_system_id'),
+                alias_name=models.F('aliasexpressionsernum__aliassernum__aliasname_en'),
+                scheduled_start_time=models.F('scheduledstarttime'),
+            )
+            .values(
+                'appointment_id',
+                'date_created',
+                'source_db_name',
+                'source_db_alias_code',
+                'source_db_alias_description',
+                'source_db_appointment_id',
+                'alias_name',
+                'scheduled_start_time',
+                'scheduled_end_time',
+                'last_updated',
+            )
         )
 
 
@@ -312,11 +326,15 @@ class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
         Returns:
             Count of unread announcement(s) records.
         """
-        return self.exclude(
-            readby__contains=username,
-        ).filter(
-            patientsernum__in=patient_sernum_list,
-        ).count()
+        return (
+            self.exclude(
+                readby__contains=username,
+            )
+            .filter(
+                patientsernum__in=patient_sernum_list,
+            )
+            .count()
+        )
 
 
 class LegacyPatientManager(models.Manager['LegacyPatient']):
@@ -338,26 +356,31 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
             Demographics data
 
         """
-        return self.filter(
-            patientsernum=patient_ser_num,
-            last_updated__gt=last_synchronized,
-        ).exclude(
-            sex='Unknown',
-        ).annotate(
-            patient_id=models.F('patientsernum'),
-            opal_registration_date=models.F('registration_date'),
-            patient_sex=models.F('sex'),
-            patient_dob=models.F('date_of_birth'),
-            patient_primary_language=models.F('language'),
-            patient_death_date=models.F('death_date'),
-        ).values(
-            'patient_id',
-            'opal_registration_date',
-            'patient_sex',
-            'patient_dob',
-            'patient_primary_language',
-            'patient_death_date',
-            'last_updated',
+        return (
+            self.filter(
+                patientsernum=patient_ser_num,
+                last_updated__gt=last_synchronized,
+            )
+            .exclude(
+                sex='Unknown',
+            )
+            .annotate(
+                patient_id=models.F('patientsernum'),
+                opal_registration_date=models.F('registration_date'),
+                patient_sex=models.F('sex'),
+                patient_dob=models.F('date_of_birth'),
+                patient_primary_language=models.F('language'),
+                patient_death_date=models.F('death_date'),
+            )
+            .values(
+                'patient_id',
+                'opal_registration_date',
+                'patient_sex',
+                'patient_dob',
+                'patient_primary_language',
+                'patient_death_date',
+                'last_updated',
+            )
         )
 
 
@@ -389,20 +412,24 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         Returns:
             Diagnosis data
         """
-        return self.filter(
-            patient_ser_num=patient_ser_num,
-            last_updated__gt=last_synchronized,
-        ).annotate(
-            diagnosis_id=models.F('diagnosis_ser_num'),
-            date_created=models.F('creation_date'),
-            source_system_code=models.F('diagnosis_code'),
-            source_system_code_description=models.F('description_en'),
-        ).values(
-            'diagnosis_id',
-            'date_created',
-            'source_system_code',
-            'source_system_code_description',
-            'last_updated',
+        return (
+            self.filter(
+                patient_ser_num=patient_ser_num,
+                last_updated__gt=last_synchronized,
+            )
+            .annotate(
+                diagnosis_id=models.F('diagnosis_ser_num'),
+                date_created=models.F('creation_date'),
+                source_system_code=models.F('diagnosis_code'),
+                source_system_code_description=models.F('description_en'),
+            )
+            .values(
+                'diagnosis_id',
+                'date_created',
+                'source_system_code',
+                'source_system_code_description',
+                'last_updated',
+            )
         )
 
 
@@ -424,43 +451,49 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
         Returns:
             Lab data
         """
-        return self.select_related(
-            'test_expression_ser_num',
-            'test_group_expression_ser_num',
-            'patient_ser_num',
-            'test_expression_ser_num__source_database',
-        ).filter(
-            patient_ser_num=patient_ser_num,
-            last_updated__gt=last_synchronized,
-        ).annotate(
-            test_result_id=models.F('patient_test_result_ser_num'),
-            specimen_collected_date=models.F('collected_date_time'),
-            component_result_date=models.F('result_date_time'),
-            test_group_name=models.F('test_group_expression_ser_num__expression_name'),
-            test_group_indicator=models.F('test_group_expression_ser_num__test_group_expression_ser_num'),
-            test_component_sequence=models.F('sequence_num'),
-            test_component_name=models.F('test_expression_ser_num__expression_name'),
-            test_value=models.F('test_value_numeric'),
-            test_units=models.F('unit_description'),
-            max_norm_range=models.F('normal_range_max'),
-            min_norm_range=models.F('normal_range_min'),
-            source_system=models.F('test_expression_ser_num__source_database__source_database_name'),
-        ).values(
-            'test_result_id',
-            'specimen_collected_date',
-            'component_result_date',
-            'test_group_name',
-            'test_group_indicator',
-            'test_component_sequence',
-            'test_component_name',
-            'test_value',
-            'test_units',
-            'max_norm_range',
-            'min_norm_range',
-            'abnormal_flag',
-            'source_system',
-            'last_updated',
-        ).order_by('component_result_date', 'test_group_indicator', 'test_component_sequence')
+        return (
+            self.select_related(
+                'test_expression_ser_num',
+                'test_group_expression_ser_num',
+                'patient_ser_num',
+                'test_expression_ser_num__source_database',
+            )
+            .filter(
+                patient_ser_num=patient_ser_num,
+                last_updated__gt=last_synchronized,
+            )
+            .annotate(
+                test_result_id=models.F('patient_test_result_ser_num'),
+                specimen_collected_date=models.F('collected_date_time'),
+                component_result_date=models.F('result_date_time'),
+                test_group_name=models.F('test_group_expression_ser_num__expression_name'),
+                test_group_indicator=models.F('test_group_expression_ser_num__test_group_expression_ser_num'),
+                test_component_sequence=models.F('sequence_num'),
+                test_component_name=models.F('test_expression_ser_num__expression_name'),
+                test_value=models.F('test_value_numeric'),
+                test_units=models.F('unit_description'),
+                max_norm_range=models.F('normal_range_max'),
+                min_norm_range=models.F('normal_range_min'),
+                source_system=models.F('test_expression_ser_num__source_database__source_database_name'),
+            )
+            .values(
+                'test_result_id',
+                'specimen_collected_date',
+                'component_result_date',
+                'test_group_name',
+                'test_group_indicator',
+                'test_component_sequence',
+                'test_component_name',
+                'test_value',
+                'test_units',
+                'max_norm_range',
+                'min_norm_range',
+                'abnormal_flag',
+                'source_system',
+                'last_updated',
+            )
+            .order_by('component_result_date', 'test_group_indicator', 'test_component_sequence')
+        )
 
     def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet['LegacyPatientTestResult']:
         """
@@ -506,67 +539,75 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
         Returns:
             Annotated `LegacyPatientActivityLog` records
         """
-        return self.filter(
-            date_time__gte=start_datetime_period,
-            date_time__lt=end_datetime_period,
-        ).values(
-            'username',
-        ).annotate(
-            last_login=models.Max('date_time', filter=LOGIN_ACTIVITY_FILTER),
-            count_logins=models.Count('activity_ser_num', filter=LOGIN_ACTIVITY_FILTER, distinct=True),
-            count_feedback=models.Count('activity_ser_num', filter=models.Q(request='Feedback')),
-            count_update_security_answers=models.Count(
-                'activity_ser_num',
-                filter=models.Q(request='UpdateSecurityQuestionAnswer'),
-            ),
-            count_update_passwords=models.Count(
-                'activity_ser_num',
-                filter=models.Q(request='AccountChange', parameters='OMITTED'),
-            ),
-            count_update_language=models.Count(
-                'activity_ser_num',
-                filter=models.Q(request='AccountChange', parameters__contains='Language'),
-            ),
-            count_device_ios=models.Count(
-                'activity_ser_num',
-                filter=LOGIN_ACTIVITY_FILTER & models.Q(
-                    parameters__contains='"deviceType":"iOS"',
+        return (
+            self.filter(
+                date_time__gte=start_datetime_period,
+                date_time__lt=end_datetime_period,
+            )
+            .values(
+                'username',
+            )
+            .annotate(
+                last_login=models.Max('date_time', filter=LOGIN_ACTIVITY_FILTER),
+                count_logins=models.Count('activity_ser_num', filter=LOGIN_ACTIVITY_FILTER, distinct=True),
+                count_feedback=models.Count('activity_ser_num', filter=models.Q(request='Feedback')),
+                count_update_security_answers=models.Count(
+                    'activity_ser_num',
+                    filter=models.Q(request='UpdateSecurityQuestionAnswer'),
                 ),
-                distinct=True,
-            ),
-            count_device_android=models.Count(
-                'activity_ser_num',
-                filter=LOGIN_ACTIVITY_FILTER & models.Q(
-                    parameters__contains='"deviceType":"Android"',
+                count_update_passwords=models.Count(
+                    'activity_ser_num',
+                    filter=models.Q(request='AccountChange', parameters='OMITTED'),
                 ),
-                distinct=True,
-            ),
-            count_device_browser=models.Count(
-                'activity_ser_num',
-                filter=LOGIN_ACTIVITY_FILTER & models.Q(
-                    parameters__contains='"deviceType":"browser"',
+                count_update_language=models.Count(
+                    'activity_ser_num',
+                    filter=models.Q(request='AccountChange', parameters__contains='Language'),
                 ),
-                distinct=True,
-            ),
-            # NOTE! The action_date indicates the date when the application activities were made.
-            # It is not the date when the activity statistics were populated.
-            action_date=models.Value(start_datetime_period.date()),
-        ).filter(
-            # Since the query returns each unique pairing of patient+user (e.g., relationship),
-            #     we have the potential to have several 'useless' records created here.
-            # This might occur if the legacy 'PatientActivityLog' table contains only
-            # patient activity records with no user activities.
-            #
-            # To solve this problem we filter out these rows with 0 counts
-            # using a secondary filter to mimic the MySQL `HAVING` clause.
-            models.Q(count_logins__gt=0)
-            | models.Q(count_feedback__gt=0)
-            | models.Q(count_update_security_answers__gt=0)
-            | models.Q(count_update_passwords__gt=0)
-            | models.Q(count_update_language__gt=0)
-            | models.Q(count_device_ios__gt=0)
-            | models.Q(count_device_android__gt=0)
-            | models.Q(count_device_browser__gt=0),
+                count_device_ios=models.Count(
+                    'activity_ser_num',
+                    filter=LOGIN_ACTIVITY_FILTER
+                    & models.Q(
+                        parameters__contains='"deviceType":"iOS"',
+                    ),
+                    distinct=True,
+                ),
+                count_device_android=models.Count(
+                    'activity_ser_num',
+                    filter=LOGIN_ACTIVITY_FILTER
+                    & models.Q(
+                        parameters__contains='"deviceType":"Android"',
+                    ),
+                    distinct=True,
+                ),
+                count_device_browser=models.Count(
+                    'activity_ser_num',
+                    filter=LOGIN_ACTIVITY_FILTER
+                    & models.Q(
+                        parameters__contains='"deviceType":"browser"',
+                    ),
+                    distinct=True,
+                ),
+                # NOTE! The action_date indicates the date when the application activities were made.
+                # It is not the date when the activity statistics were populated.
+                action_date=models.Value(start_datetime_period.date()),
+            )
+            .filter(
+                # Since the query returns each unique pairing of patient+user (e.g., relationship),
+                #     we have the potential to have several 'useless' records created here.
+                # This might occur if the legacy 'PatientActivityLog' table contains only
+                # patient activity records with no user activities.
+                #
+                # To solve this problem we filter out these rows with 0 counts
+                # using a secondary filter to mimic the MySQL `HAVING` clause.
+                models.Q(count_logins__gt=0)
+                | models.Q(count_feedback__gt=0)
+                | models.Q(count_update_security_answers__gt=0)
+                | models.Q(count_update_passwords__gt=0)
+                | models.Q(count_update_language__gt=0)
+                | models.Q(count_device_ios__gt=0)
+                | models.Q(count_device_android__gt=0)
+                | models.Q(count_device_browser__gt=0),
+            )
         )
 
     def get_aggregated_patient_app_activities(
@@ -596,49 +637,55 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
         #       the PAL shows Request==GetOneItem, Parameters=={"category":"TxTeamMessages","serNum":"3"}.
         #       Whereas if Marge clicks on a TxTeamMessage from her chart page,
         #       PAL shows Request=Read, Parameters={"Field":"TxTeamMessages","Id":"1"}
-        return self.filter(
-            date_time__gte=start_datetime_period,
-            date_time__lt=end_datetime_period,
-        ).exclude(
-            target_patient_id=None,
-        ).values(
-            'target_patient_id',
-            'username',
-        ).annotate(
-            # NOTE: the count includes both successful and failed check-ins
-            # TODO: QSCCD-2139. Split the counts of successful from failed check in attempts
-            count_checkins=models.Count('activity_ser_num', filter=models.Q(request='Checkin')),
-            count_documents=models.Count('activity_ser_num', filter=models.Q(request='DocumentContent')),
-            # NOTE: educational materials count does not include opened sub educational materials or chapters.
-            # E.g., Package or Booklet educational materials might have sub-materials that won't be counted.
-            count_educational_materials=models.Count(
-                'activity_ser_num',
-                filter=models.Q(request='Log', parameters__contains='EducationalMaterialSerNum'),
-            ),
-            count_questionnaires_complete=models.Count(
-                'activity_ser_num',
-                filter=models.Q(request='QuestionnaireUpdateStatus', parameters__contains='"new_status":"2"'),
-            ),
-            count_labs=models.Count(
-                'activity_ser_num',
-                filter=models.Q(request='PatientTestTypeResults') | models.Q(request='PatientTestDateResults'),
-            ),
-            # NOTE! The action_date indicates the date when the application activities were made.
-            # It is not the date when the activity statistics were populated.
-            action_date=models.Value(start_datetime_period.date()),
-        ).filter(
-            # Since the query returns each unique pairing of patient+user (e.g., relationship),
-            #     we have the potential to have several 'useless' records created here.
-            # For example, if Fred Flintstone logged in once, did nothing and logged out,
-            #     then this query would create one row for Fred's patient activity with all the counts set to 0.
-            # Also, a row with with zero counts might be created if user switches the profile to associated profile
-            # and makes activities that are not captured by this query (e.g., navigating to the `Notifications` tab).
-            #
-            # To solve this problem we filter out these rows with 0 counts
-            # using a secondary filter to mimic the MySQL `HAVING` clause.
-            models.Q(count_checkins__gt=0)
-            | models.Q(count_documents__gt=0)
-            | models.Q(count_educational_materials__gt=0)
-            | models.Q(count_questionnaires_complete__gt=0)
-            | models.Q(count_labs__gt=0),
+        return (
+            self.filter(
+                date_time__gte=start_datetime_period,
+                date_time__lt=end_datetime_period,
+            )
+            .exclude(
+                target_patient_id=None,
+            )
+            .values(
+                'target_patient_id',
+                'username',
+            )
+            .annotate(
+                # NOTE: the count includes both successful and failed check-ins
+                # TODO: QSCCD-2139. Split the counts of successful from failed check in attempts
+                count_checkins=models.Count('activity_ser_num', filter=models.Q(request='Checkin')),
+                count_documents=models.Count('activity_ser_num', filter=models.Q(request='DocumentContent')),
+                # NOTE: educational materials count does not include opened sub educational materials or chapters.
+                # E.g., Package or Booklet educational materials might have sub-materials that won't be counted.
+                count_educational_materials=models.Count(
+                    'activity_ser_num',
+                    filter=models.Q(request='Log', parameters__contains='EducationalMaterialSerNum'),
+                ),
+                count_questionnaires_complete=models.Count(
+                    'activity_ser_num',
+                    filter=models.Q(request='QuestionnaireUpdateStatus', parameters__contains='"new_status":"2"'),
+                ),
+                count_labs=models.Count(
+                    'activity_ser_num',
+                    filter=models.Q(request='PatientTestTypeResults') | models.Q(request='PatientTestDateResults'),
+                ),
+                # NOTE! The action_date indicates the date when the application activities were made.
+                # It is not the date when the activity statistics were populated.
+                action_date=models.Value(start_datetime_period.date()),
+            )
+            .filter(
+                # Since the query returns each unique pairing of patient+user (e.g., relationship),
+                #     we have the potential to have several 'useless' records created here.
+                # For example, if Fred Flintstone logged in once, did nothing and logged out,
+                #     then this query would create one row for Fred's patient activity with all the counts set to 0.
+                # Also, a row with with zero counts might be created if user switches the profile to associated profile
+                # and makes activities that are not captured by this query (e.g., navigating to the `Notifications` tab).
+                #
+                # To solve this problem we filter out these rows with 0 counts
+                # using a secondary filter to mimic the MySQL `HAVING` clause.
+                models.Q(count_checkins__gt=0)
+                | models.Q(count_documents__gt=0)
+                | models.Q(count_educational_materials__gt=0)
+                | models.Q(count_questionnaires_complete__gt=0)
+                | models.Q(count_labs__gt=0),
+            )
         )

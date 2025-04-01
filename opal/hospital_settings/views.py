@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """This module provides views for hospital-specific settings."""
+
 from typing import Any
 
 from django.contrib.auth.mixins import PermissionRequiredMixin

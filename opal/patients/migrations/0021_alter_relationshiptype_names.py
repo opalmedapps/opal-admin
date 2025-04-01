@@ -19,9 +19,7 @@ class Migration(migrations.Migration):
             name='relationshiptype',
             options={
                 'ordering': ['name'],
-                'permissions': (
-                    ('can_manage_relationshiptypes', 'Can manage relationship types'),
-                ),
+                'permissions': (('can_manage_relationshiptypes', 'Can manage relationship types'),),
                 'verbose_name': 'Relationship Type',
                 'verbose_name_plural': 'Relationship Types',
             },

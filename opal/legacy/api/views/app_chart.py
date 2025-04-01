@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Collection of api views used to display the Opal's Chart view."""
+
 from typing import Any
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -72,9 +73,11 @@ class AppChartView(APIView):
             'unread_educationalmaterial_count': models.LegacyEducationalMaterial.objects.get_unread_queryset(
                 legacy_id,
                 username,
-            ).filter(
+            )
+            .filter(
                 educationalmaterialcontrolsernum__educationalmaterialcategoryid__title_en='Clinical',
-            ).count(),
+            )
+            .count(),
             'unread_questionnaire_count': LegacyQuestionnaire.objects.new_questionnaires(
                 legacy_id,
                 username,
@@ -83,9 +86,11 @@ class AppChartView(APIView):
             'unread_research_reference_count': models.LegacyEducationalMaterial.objects.get_unread_queryset(
                 legacy_id,
                 username,
-            ).filter(
+            )
+            .filter(
                 educationalmaterialcontrolsernum__educationalmaterialcategoryid__title_en='Research',
-            ).count(),
+            )
+            .count(),
             'unread_research_questionnaire_count': LegacyQuestionnaire.objects.new_questionnaires(
                 legacy_id,
                 username,
