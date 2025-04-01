@@ -40,6 +40,14 @@ jobs:
         uses: astral-sh/ruff-action@v3.2.2
         with:
           args: "format --check"
+      - name: Prepare environment
+        if: '!cancelled()'
+        # create minimal env file for mypy
+        run: |
+          cp .env.sample .env
+          # generate secret key
+          SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
+          sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
       - uses: mschoettle/pre-commit-action@v4.2.1
         if: '!cancelled()'
         env:
@@ -88,13 +96,13 @@ jobs:
           sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=db/" .env
           # set up legacy DB connection
           # reuse the same database as for the other tests to make it easier
-          - sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
-          - sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
-          - sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
-          - sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
+          sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=mariadb/" .env
+          sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
+          sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
+          sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
           # generate secret key
-          - SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
-          - sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
+          SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
+          sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
           MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$DB_USER\`@\`%\`;"
           MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$DB_USER\`@\`%\`;"
       - name: Run pytest
