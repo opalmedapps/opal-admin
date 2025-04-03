@@ -54,10 +54,9 @@ repos:
   - id: markdownlint-cli2
 
 - repo: https://github.com/adamchainz/django-upgrade
-  rev: 1.23.1
+  rev: 1.24.0
   hooks:
   - id: django-upgrade
-    args: [--target-version, "4.2"]
 
 - repo: https://github.com/fsfe/reuse-tool
   rev: v5.0.2
