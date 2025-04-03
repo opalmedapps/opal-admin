@@ -71,7 +71,7 @@ COPY REUSE.toml .
 
 # Compile messages so translations are baked into the image
 RUN cp .env.sample .env \
-  && DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages \
+  && DJANGO_SETTINGS_MODULE=config.settings.test python manage.py compilemessages --ignore .venv \
   && rm .env \
   # ensure the uploads directory exists with appuser as the owner
   && mkdir -p ./opal/media/uploads \
