@@ -58,6 +58,61 @@ jobs:
         if: failure()
         run: exit 1
 
+  django-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v5.4.0
+        id: setup-uv
+        with:
+          # renovate: datasource=pypi dependency=uv
+          version: "0.6.11"
+      - name: Install dependencies
+        run: uv sync --locked --no-dev
+      - name: Configure environment file
+        # create minimal env file for management commands
+        run: |
+          cp .env.sample .env
+          # generate secret key
+          SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
+          sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
+      - name: Check for model changes with no migration
+        if: '!cancelled()'
+        run: python manage.py makemigrations --dry-run --check
+      - name: Check for stale translation files
+        if: '!cancelled()'
+        run: |
+          python manage.py makemessages --add-location file -l fr
+          # due to git LFS the LFS-tracked files show up in the diff, limit the diff to only .po files
+          git diff --ignore-matching-lines=POT-Creation-Date --exit-code -- *.po
+      - name: Check for fuzzy translation strings
+        if: '!cancelled()'
+        run: |
+          FUZZY_STRINGS=$(grep --include=\*.po -rnw './opal' -e "#, fuzzy" -B01 -A02 | grep -E '#[~]?\| msgid' -B02 -A01 || true)
+          if [[ $FUZZY_STRINGS ]]; then
+            echo "$FUZZY_STRINGS"
+            (! echo "$FUZZY_STRINGS" | grep -q .)
+          fi
+      - name: Check for commented out translation strings
+        if: '!cancelled()'
+        run: |
+          COMMENTED_STRINGS=$(grep --include=\*.po -rnw './opal' -e "#~ msgid" -B01 -A03 || true)
+          if [[ $COMMENTED_STRINGS ]]; then
+            echo "$COMMENTED_STRINGS"
+            (! echo "$COMMENTED_STRINGS" | grep -q .)
+          fi
+      - name: Run check management command
+        if: '!cancelled()'
+        run: python manage.py check --fail-level WARNING
+      - name: Validate templates
+        if: '!cancelled()'
+        run: python manage.py validate_templates
+      # - name: Fail if any previous steps failed
+      #   if: failure()
+      #   run: exit 1
+
   test:
     runs-on: ubuntu-latest
     env:
