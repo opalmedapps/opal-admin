@@ -29,7 +29,7 @@ repos:
   - id: trailing-whitespace
 
 - repo: https://github.com/abravalheri/validate-pyproject
-  rev: v0.23
+  rev: v0.24.1
   hooks:
     - id: validate-pyproject
 
@@ -99,7 +99,7 @@ repos:
 
 # zizmor detects security vulnerabilities in GitHub Actions workflows.
 - repo: https://github.com/woodruffw/zizmor-pre-commit
-  rev: v1.5.1
+  rev: v1.5.2
   hooks:
     - id: zizmor
 
