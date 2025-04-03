@@ -80,11 +80,11 @@ jobs:
           sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
       - name: Check for model changes with no migration
         if: '!cancelled()'
-        run: python manage.py makemigrations --dry-run --check
+        run: uv run python manage.py makemigrations --dry-run --check
       - name: Check for stale translation files
         if: '!cancelled()'
         run: |
-          python manage.py makemessages --add-location file -l fr
+          uv run python manage.py makemessages --add-location file -l fr
           # due to git LFS the LFS-tracked files show up in the diff, limit the diff to only .po files
           git diff --ignore-matching-lines=POT-Creation-Date --exit-code -- *.po
       - name: Check for fuzzy translation strings
@@ -105,10 +105,10 @@ jobs:
           fi
       - name: Run check management command
         if: '!cancelled()'
-        run: python manage.py check --fail-level WARNING
+        run: uv run python manage.py check --fail-level WARNING
       - name: Validate templates
         if: '!cancelled()'
-        run: python manage.py validate_templates
+        run: uv run python manage.py validate_templates
       # - name: Fail if any previous steps failed
       #   if: failure()
       #   run: exit 1
@@ -239,4 +239,4 @@ jobs:
       packages: write
     uses: opalmedapps/.github/.github/workflows/docker-build.yaml@fix-build
     with:
-      test-command: python manage.py
+      test-command: uv run python manage.py
