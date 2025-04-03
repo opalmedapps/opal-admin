@@ -23,7 +23,7 @@ dependencies = [
     "django-extensions==3.2.3",
     "django-filter==25.1",
     "django-forms-dynamic==1.0.0",
-    "django-modeltranslation==0.19.12",
+    "django-modeltranslation==0.19.13",
     "django-phonenumber-field[phonenumberslite]==8.0.0",
     "django-structlog==9.0.1",
     # required as a runtime dependency due to the need to monkeypatch at runtime for generics
