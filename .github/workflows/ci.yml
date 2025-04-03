@@ -84,7 +84,7 @@ jobs:
       - name: Check for stale translation files
         if: '!cancelled()'
         run: |
-          apt update && apt install gettext
+          sudo apt update && sudo apt install gettext
           uv run python manage.py makemessages --add-location file -l fr
           # due to git LFS the LFS-tracked files show up in the diff, limit the diff to only .po files
           git diff --ignore-matching-lines=POT-Creation-Date --exit-code -- *.po
