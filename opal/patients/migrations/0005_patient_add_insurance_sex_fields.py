@@ -22,13 +22,20 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='patient',
             name='health_insurance_number',
-            field=models.CharField(blank=True, null=True, max_length=12, unique=True, verbose_name='Health Insurance Number'),
+            field=models.CharField(
+                blank=True, null=True, max_length=12, unique=True, verbose_name='Health Insurance Number'
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='patient',
             name='sex',
-            field=models.CharField(choices=[('F', 'Female'), ('M', 'Male'), ('O', 'Other'), ('U', 'Unknown')], default='U', max_length=1, verbose_name='Sex'),
+            field=models.CharField(
+                choices=[('F', 'Female'), ('M', 'Male'), ('O', 'Other'), ('U', 'Unknown')],
+                default='U',
+                max_length=1,
+                verbose_name='Sex',
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
@@ -38,6 +45,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='patient',
-            constraint=models.CheckConstraint(check=models.Q(('sex__in', ['F', 'M', 'O', 'U'])), name='patients_patient_sex_valid'),
+            constraint=models.CheckConstraint(
+                check=models.Q(('sex__in', ['F', 'M', 'O', 'U'])), name='patients_patient_sex_valid'
+            ),
         ),
     ]

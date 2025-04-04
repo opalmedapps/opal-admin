@@ -8,7 +8,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    """Alter the statitics table to allowed the null value in the field."""
+    """Alter the statistics table to allowed the null value in the field."""
 
     dependencies = [
         ('usage_statistics', '0003_rename_date_added_to_action_date'),

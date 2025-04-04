@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Collection of serializers for the core ApiViews."""
+
 from typing import Any, TypeVar
 
 from django.db.models import Model

@@ -262,7 +262,7 @@ class LegacyQuestionnaireFactory(DjangoModelFactory[models.LegacyQuestionnaire])
 
 
 class LegacyPostcontrolFactory(DjangoModelFactory[models.LegacyPostcontrol]):
-    """Post Controle factory for announcement from the legacy database."""
+    """Post Control factory for announcement from the legacy database."""
 
     posttype = 'Announcement'
 

@@ -20,6 +20,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='quantitysample',
             name='patient',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='quantity_samples', to='patients.patient', verbose_name='Patient'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='quantity_samples',
+                to='patients.patient',
+                verbose_name='Patient',
+            ),
         ),
     ]

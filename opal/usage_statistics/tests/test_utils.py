@@ -986,7 +986,7 @@ def test_export_data_empty_data(tmp_path: Path) -> None:
 
 
 def test_export_data_simple_dictionary(tmp_path: Path) -> None:
-    """Ensure the export function handle the input in form of dictionnary."""
+    """Ensure the export function handle the input in form of dictionary."""
     file_path = tmp_path / 'test_dict.csv'
     stats_factories.DailyUserPatientActivity.create(
         action_by_user=caregiver_factories.Caregiver.create(username='marge'),

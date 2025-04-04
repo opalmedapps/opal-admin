@@ -26,7 +26,7 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
 
     model = QuantitySample
     template_name = 'chart_display.html'
-    permission_required = ('health_data.view_quantitysample')
+    permission_required = 'health_data.view_quantitysample'
     http_method_names = ['get', 'head', 'options', 'trace']
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:

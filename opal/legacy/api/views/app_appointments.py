@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Collection of api views used to get and update appointment details."""
+
 from typing import Any
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer

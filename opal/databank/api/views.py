@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing API views for the `databank` app."""
+
 from django.shortcuts import get_object_or_404
 
 from rest_framework import generics, serializers

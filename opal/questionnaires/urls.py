@@ -7,6 +7,7 @@ URL configuration for questionnaires.
 
 Provides URLs for regular views.
 """
+
 from django.urls import path
 
 from . import views

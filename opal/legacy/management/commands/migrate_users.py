@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Command for Users migration."""
+
 from enum import Enum
 from typing import Any
 
@@ -81,12 +82,14 @@ class Command(BaseCommand):
 
                     all_users_counter += 1
         message = 'Migrated {total} of {total_legacy} users ({admins} system administrators and {staff} registrants)'
-        self.stdout.write(message.format(
-            total=all_users_counter,
-            total_legacy=legacy_users.count(),
-            admins=admin_users_counter,
-            staff=staff_users_counter,
-        ))
+        self.stdout.write(
+            message.format(
+                total=all_users_counter,
+                total_legacy=legacy_users.count(),
+                admins=admin_users_counter,
+                staff=staff_users_counter,
+            )
+        )
 
     def _save_clinical_staff_user(self, clinical_staff_user: ClinicalStaff) -> bool:
         """
@@ -104,9 +107,11 @@ class Command(BaseCommand):
             clinical_staff_user.full_clean()
 
         except ValidationError as exception:
-            self.stderr.write(self.style.ERROR(
-                f'Error: {exception} when saving username: {clinical_staff_user.username}',
-            ))
+            self.stderr.write(
+                self.style.ERROR(
+                    f'Error: {exception} when saving username: {clinical_staff_user.username}',
+                )
+            )
             return False
 
         clinical_staff_user.save()

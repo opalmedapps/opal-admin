@@ -18,6 +18,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='relationshiptype',
             name='role_type',
-            field=models.CharField(choices=[('SELF', 'Self'), ('CAREGIVER', 'Caregiver'), ('PARENTGUARDIAN', 'Parent/Guardian')], default='CAREGIVER', help_text='Role types track the category of relationship between a caregiver and patient. A "Self" role type indicates a patient who owns the data that is being accessed.', max_length=14, verbose_name='Relationship Role Type'),
+            field=models.CharField(
+                choices=[('SELF', 'Self'), ('CAREGIVER', 'Caregiver'), ('PARENTGUARDIAN', 'Parent/Guardian')],
+                default='CAREGIVER',
+                help_text='Role types track the category of relationship between a caregiver and patient. A "Self" role type indicates a patient who owns the data that is being accessed.',
+                max_length=14,
+                verbose_name='Relationship Role Type',
+            ),
         ),
     ]

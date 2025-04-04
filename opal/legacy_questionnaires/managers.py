@@ -47,7 +47,7 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
 
         Args:
             patient_sernum: OpalDB.Patient.PatientSerNum
-            username: loggin user name
+            username: login user name
             purpose_id: 1 = CLINICAL, 2 = RESEARCH, 3 = QUALITY, 4 = CONSENT, 5 = CLERICAL, 6 = OPAL
 
         Returns:

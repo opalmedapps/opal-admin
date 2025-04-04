@@ -34,7 +34,15 @@ class Migration(migrations.Migration):
             name='SecurityAnswer',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='security_answers', to='caregivers.caregiverprofile', verbose_name='Caregiver Profile')),
+                (
+                    'user',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='security_answers',
+                        to='caregivers.caregiverprofile',
+                        verbose_name='Caregiver Profile',
+                    ),
+                ),
                 ('question', models.CharField(max_length=100, verbose_name='Question')),
                 ('answer', models.CharField(max_length=128, verbose_name='Answer')),
             ],

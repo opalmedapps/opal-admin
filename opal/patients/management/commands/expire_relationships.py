@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Management command for changing relationships' status to 'expired'."""
+
 from typing import Any
 
 from django.core.management.base import BaseCommand
@@ -28,12 +29,16 @@ class Command(BaseCommand):
         """
         number_of_updates = 0
 
-        relationships_to_check = Relationship.objects.select_related(
-            'patient',
-            'type',
-        ).filter(
-            status=RelationshipStatus.CONFIRMED,
-        ).exclude(type__end_age=None)
+        relationships_to_check = (
+            Relationship.objects.select_related(
+                'patient',
+                'type',
+            )
+            .filter(
+                status=RelationshipStatus.CONFIRMED,
+            )
+            .exclude(type__end_age=None)
+        )
 
         for relationship in relationships_to_check:
             patient_age = relationship.patient.age

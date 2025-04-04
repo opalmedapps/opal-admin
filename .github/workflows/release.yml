@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: Copyright (C) 2025 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: ci
+
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release-image:
+    permissions:
+      contents: read
+      packages: write
+    uses: opalmedapps/.github/.github/workflows/docker-build.yaml@fix-build
+    with:
+      test-command: python manage.py

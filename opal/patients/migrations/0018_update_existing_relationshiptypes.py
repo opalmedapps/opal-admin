@@ -32,9 +32,13 @@ def update_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     guardian_type.name = 'Parent/Guardian'
     guardian_type.name_en = guardian_type.name
     guardian_type.name_fr = 'Parent/Tuteur'
-    guardian_type.description = 'Parent or guardian of a minor under the age of medical consent legally under their care'
+    guardian_type.description = (
+        'Parent or guardian of a minor under the age of medical consent legally under their care'
+    )
     guardian_type.description_en = guardian_type.description
-    guardian_type.description_fr = "Parent ou tuteur d'un mineur sous l'âge de consentement médical, légalement sous sa garde"
+    guardian_type.description_fr = (
+        "Parent ou tuteur d'un mineur sous l'âge de consentement médical, légalement sous sa garde"
+    )
     guardian_type.can_answer_questionnaire = True
     guardian_type.full_clean()
     guardian_type.save()
@@ -51,7 +55,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='relationshiptype',
             name='can_answer_questionnaire',
-            field=models.BooleanField(default=False, help_text='The caregiver can answer questionnaires on behalf of the patient.', verbose_name='Can answer patient questionnaires'),
+            field=models.BooleanField(
+                default=False,
+                help_text='The caregiver can answer questionnaires on behalf of the patient.',
+                verbose_name='Can answer patient questionnaires',
+            ),
         ),
         migrations.RunPython(update_data, reverse_code=migrations.RunPython.noop),
     ]

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Authentication backends specific to the opal project."""
+
 import logging
 from collections import namedtuple
 from http import HTTPStatus
@@ -32,7 +33,7 @@ class FedAuthBackend(BaseBackend):
     """
     Authentication backend which authenticates against the provincial auth web service.
 
-    The "Service d'authentification fédéré ENA" internally authenticates against an institution's ADFS.
+    The "Service d'authentication fédéré ENA" internally authenticates against an institution's ADFS.
 
     See: https://docs.djangoproject.com/en/4.0/topics/auth/customizing/#writing-an-authentication-backend
     """

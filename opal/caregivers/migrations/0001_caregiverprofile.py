@@ -22,8 +22,24 @@ class Migration(migrations.Migration):
             name='CaregiverProfile',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('legacy_id', models.PositiveIntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(1)], verbose_name='Legacy ID')),
-                ('user', models.OneToOneField(limit_choices_to={'type': 'CAREGIVER'}, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL, verbose_name='User')),
+                (
+                    'legacy_id',
+                    models.PositiveIntegerField(
+                        blank=True,
+                        null=True,
+                        validators=[django.core.validators.MinValueValidator(1)],
+                        verbose_name='Legacy ID',
+                    ),
+                ),
+                (
+                    'user',
+                    models.OneToOneField(
+                        limit_choices_to={'type': 'CAREGIVER'},
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name='User',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Caregiver Profile',

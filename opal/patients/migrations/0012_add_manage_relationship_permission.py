@@ -17,6 +17,10 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='relationship',
-            options={'permissions': (('can_manage_relationships', 'Can manage relationships'),), 'verbose_name': 'Relationship', 'verbose_name_plural': 'Relationships'},
+            options={
+                'permissions': (('can_manage_relationships', 'Can manage relationships'),),
+                'verbose_name': 'Relationship',
+                'verbose_name_plural': 'Relationships',
+            },
         ),
     ]

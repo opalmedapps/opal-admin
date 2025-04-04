@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Serializers for the API views of the `health_data` app."""
+
 from typing import Any
 
 from rest_framework import serializers

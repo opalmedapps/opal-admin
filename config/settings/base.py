@@ -224,7 +224,7 @@ AUTH_EXEMPT_ROUTES = ['login', 'admin:login', 'admin:index', 'favicon.ico']
 AUTH_USER_MODEL = 'users.User'
 
 # fedauth webservice API
-if env.get_value('FEDAUTH_API_ENDPOINT', default=None):
+if env.get_value('FEDAUTH_API_ENDPOINT', default=None):  # pragma: no cover
     FEDAUTH_API_ENDPOINT = env.url('FEDAUTH_API_ENDPOINT').geturl()
     FEDAUTH_INSTITUTION = env.str('FEDAUTH_INSTITUTION')
 

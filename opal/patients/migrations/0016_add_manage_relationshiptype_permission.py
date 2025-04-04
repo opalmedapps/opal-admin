@@ -17,6 +17,11 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='relationshiptype',
-            options={'ordering': ['name'], 'permissions': (('can_manage_relationshiptypes', 'Can manage relationship types'),), 'verbose_name': 'Caregiver Relationship Type', 'verbose_name_plural': 'Caregiver Relationship Types'},
+            options={
+                'ordering': ['name'],
+                'permissions': (('can_manage_relationshiptypes', 'Can manage relationship types'),),
+                'verbose_name': 'Caregiver Relationship Type',
+                'verbose_name_plural': 'Caregiver Relationship Types',
+            },
         ),
     ]

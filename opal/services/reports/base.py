@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Shared functionality for report generation functionality."""
+
 from datetime import date
 from pathlib import Path
 from typing import Literal, NamedTuple
@@ -55,7 +56,7 @@ class InstitutionData(NamedTuple):
     Information about an institution from which a report was received.
 
     Attributes:
-        institution_logo_path: file path of the instituion's logo image
+        institution_logo_path: file path of the institution's logo image
         document_number: the unique number assigned in the hospital system for this type of document
         source_system: the name of the system that generated the document
     """

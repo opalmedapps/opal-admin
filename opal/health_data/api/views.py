@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing API views for the `health_data` app."""
+
 from typing import Any
 
 from django.db import models
@@ -125,16 +126,21 @@ class UnviewedQuantitySampleView(APIView):
         serializer.is_valid(raise_exception=True)
 
         # Unviewed counts of patients' QuantitySamples
-        unviewed_counts = Patient.objects.select_related(
-            'quantity_samples',
-        ).filter(
-            uuid__in=[quantity['patient_uuid'] for quantity in serializer.validated_data],
-            quantity_samples__viewed_at=None,
-            quantity_samples__viewed_by='',
-        ).annotate(
-            count=models.Count('quantity_samples'),
-            patient_uuid=models.F('uuid'),
-        ).values('patient_uuid', 'count')
+        unviewed_counts = (
+            Patient.objects.select_related(
+                'quantity_samples',
+            )
+            .filter(
+                uuid__in=[quantity['patient_uuid'] for quantity in serializer.validated_data],
+                quantity_samples__viewed_at=None,
+                quantity_samples__viewed_by='',
+            )
+            .annotate(
+                count=models.Count('quantity_samples'),
+                patient_uuid=models.F('uuid'),
+            )
+            .values('patient_uuid', 'count')
+        )
 
         return Response(data=unviewed_counts)
 

@@ -22,17 +22,67 @@ class Migration(migrations.Migration):
             name='GeneralTest',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type', models.CharField(choices=[('P', 'Pathology'), ('L', 'Lab')], help_text='The test type, for example pathlogy or regular lab.', max_length=1, verbose_name='Type')),
+                (
+                    'type',
+                    models.CharField(
+                        choices=[('P', 'Pathology'), ('L', 'Lab')],
+                        help_text='The test type, for example pathlogy or regular lab.',
+                        max_length=1,
+                        verbose_name='Type',
+                    ),
+                ),
                 ('sending_facility', models.CharField(blank=True, max_length=6, verbose_name='Sending facility')),
                 ('receiving_facility', models.CharField(blank=True, max_length=6, verbose_name='Receiving facility')),
-                ('collected_at', models.DateTimeField(help_text='When the specimen was collected from the patient.', verbose_name='Collected At')),
-                ('received_at', models.DateTimeField(help_text='When the test result was entered into the source system.', verbose_name='Received At')),
-                ('message_type', models.CharField(blank=True, help_text='HL7 message type indicator.', max_length=3, verbose_name='Message Type')),
-                ('message_event', models.CharField(blank=True, help_text='HL7 message trigger event indicator.', max_length=3, verbose_name='Message Event')),
+                (
+                    'collected_at',
+                    models.DateTimeField(
+                        help_text='When the specimen was collected from the patient.', verbose_name='Collected At'
+                    ),
+                ),
+                (
+                    'received_at',
+                    models.DateTimeField(
+                        help_text='When the test result was entered into the source system.', verbose_name='Received At'
+                    ),
+                ),
+                (
+                    'message_type',
+                    models.CharField(
+                        blank=True, help_text='HL7 message type indicator.', max_length=3, verbose_name='Message Type'
+                    ),
+                ),
+                (
+                    'message_event',
+                    models.CharField(
+                        blank=True,
+                        help_text='HL7 message trigger event indicator.',
+                        max_length=3,
+                        verbose_name='Message Event',
+                    ),
+                ),
                 ('test_group_code', models.CharField(max_length=30, verbose_name='Test Group Code')),
-                ('test_group_code_description', models.CharField(max_length=60, verbose_name='Test Group Code Description')),
-                ('legacy_document_id', models.IntegerField(blank=True, help_text='OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to patients.', null=True, verbose_name='Legacy Document ID')),
-                ('patient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='general_test', to='patients.patient', verbose_name='Patient')),
+                (
+                    'test_group_code_description',
+                    models.CharField(max_length=60, verbose_name='Test Group Code Description'),
+                ),
+                (
+                    'legacy_document_id',
+                    models.IntegerField(
+                        blank=True,
+                        help_text='OpalDB.Document.DocumentSerNum, used for displaying pathology pdfs to patients.',
+                        null=True,
+                        verbose_name='Legacy Document ID',
+                    ),
+                ),
+                (
+                    'patient',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='general_test',
+                        to='patients.patient',
+                        verbose_name='Patient',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'General Test',
@@ -44,16 +94,48 @@ class Migration(migrations.Migration):
             name='Observation',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('identifier_code', models.CharField(help_text='Test component code.', max_length=20, verbose_name='Observation Identifier')),
-                ('identifier_text', models.CharField(help_text='Test component text.', max_length=199, verbose_name='Observation Identifier Text')),
+                (
+                    'identifier_code',
+                    models.CharField(
+                        help_text='Test component code.', max_length=20, verbose_name='Observation Identifier'
+                    ),
+                ),
+                (
+                    'identifier_text',
+                    models.CharField(
+                        help_text='Test component text.', max_length=199, verbose_name='Observation Identifier Text'
+                    ),
+                ),
                 ('value', models.CharField(max_length=512, verbose_name='Value')),
                 ('value_units', models.CharField(blank=True, max_length=20, verbose_name='Value Units')),
                 ('value_min_range', models.FloatField(blank=True, null=True, verbose_name='Minimum Value Range')),
                 ('value_max_range', models.FloatField(blank=True, null=True, verbose_name='Maximum Value Range')),
-                ('value_abnormal', models.CharField(choices=[('L', 'Low'), ('N', 'Normal'), ('H', 'High')], default='N', max_length=1, verbose_name='Abormal Flag')),
-                ('observed_at', models.DateTimeField(help_text='When this specific observation segment was entered into the source system.', verbose_name='Observed At')),
+                (
+                    'value_abnormal',
+                    models.CharField(
+                        choices=[('L', 'Low'), ('N', 'Normal'), ('H', 'High')],
+                        default='N',
+                        max_length=1,
+                        verbose_name='Abormal Flag',
+                    ),
+                ),
+                (
+                    'observed_at',
+                    models.DateTimeField(
+                        help_text='When this specific observation segment was entered into the source system.',
+                        verbose_name='Observed At',
+                    ),
+                ),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Updated At')),
-                ('general_test', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='observation', to='test_results.generaltest', verbose_name='General Test')),
+                (
+                    'general_test',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='observation',
+                        to='test_results.generaltest',
+                        verbose_name='General Test',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Observation',
@@ -68,7 +150,15 @@ class Migration(migrations.Migration):
                 ('note_source', models.CharField(max_length=30, verbose_name='Note Source')),
                 ('note_text', models.TextField(verbose_name='Note Text')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Updated At')),
-                ('general_test', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='note', to='test_results.generaltest', verbose_name='General Test')),
+                (
+                    'general_test',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='note',
+                        to='test_results.generaltest',
+                        verbose_name='General Test',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'Note',
@@ -78,6 +168,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='generaltest',
-            constraint=models.CheckConstraint(check=models.Q(('type__in', ['P', 'L'])), name='test_results_generaltest_type_valid'),
+            constraint=models.CheckConstraint(
+                check=models.Q(('type__in', ['P', 'L'])), name='test_results_generaltest_type_valid'
+            ),
         ),
     ]

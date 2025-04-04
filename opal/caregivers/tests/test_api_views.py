@@ -1589,7 +1589,7 @@ class TestRegistrationCompletionView:
             last_name='test',
         )
         caregiver_profile = caregiver_factories.CaregiverProfile.create(user=caregiver)
-        caregiver_factories.SecurityAnswer.create(user=caregiver_profile, answer='anser1')
+        caregiver_factories.SecurityAnswer.create(user=caregiver_profile, answer='answer1')
         registration_code, _ = self._build_access_request()
 
         response = api_client.post(

@@ -13,8 +13,7 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
@@ -36,7 +35,15 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100, verbose_name='Name')),
                 ('code', models.CharField(max_length=10, verbose_name='Code')),
                 ('parking_url', models.URLField(verbose_name='Parking Info (URL)')),
-                ('institution', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='sites', to='hospital_settings.institution', verbose_name='Institution')),
+                (
+                    'institution',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='sites',
+                        to='hospital_settings.institution',
+                        verbose_name='Institution',
+                    ),
+                ),
             ],
             options={
                 'abstract': False,

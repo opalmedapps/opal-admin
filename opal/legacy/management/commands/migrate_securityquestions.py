@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Command for Security Question migration."""
+
 from typing import Any
 
 from django.core.management.base import BaseCommand
@@ -23,7 +24,7 @@ class Command(BaseCommand):
         Return 'None'.
 
         Args:
-            args: non-keyward input arguments.
+            args: non-keyword input arguments.
             kwargs:  variable keyword input arguments.
         """
         legacy_questions = LegacySecurityQuestion.objects.all()

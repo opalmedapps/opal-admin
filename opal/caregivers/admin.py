@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing admin functionality for the caregivers app."""
+
 from django.contrib import admin
 
 from modeltranslation.admin import TranslationAdmin

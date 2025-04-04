@@ -52,21 +52,76 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='dailyuserappactivity',
             name='action_by_user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='daily_user_app_activities', to=settings.AUTH_USER_MODEL, verbose_name='User who triggered this action'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='daily_user_app_activities',
+                to=settings.AUTH_USER_MODEL,
+                verbose_name='User who triggered this action',
+            ),
         ),
         migrations.CreateModel(
             name='DailyUserPatientActivity',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('count_checkins', models.PositiveIntegerField(validators=[django.core.validators.MinValueValidator(0)], verbose_name='Count Checkins')),
-                ('count_documents', models.PositiveIntegerField(validators=[django.core.validators.MinValueValidator(0)], verbose_name='Count Documents')),
-                ('count_educational_materials', models.PositiveIntegerField(validators=[django.core.validators.MinValueValidator(0)], verbose_name='Count Educational Materials')),
-                ('count_questionnaires_complete', models.PositiveIntegerField(validators=[django.core.validators.MinValueValidator(0)], verbose_name='Count Questionnaires')),
-                ('count_labs', models.PositiveIntegerField(validators=[django.core.validators.MinValueValidator(0)], verbose_name='Count Labs')),
+                (
+                    'count_checkins',
+                    models.PositiveIntegerField(
+                        validators=[django.core.validators.MinValueValidator(0)], verbose_name='Count Checkins'
+                    ),
+                ),
+                (
+                    'count_documents',
+                    models.PositiveIntegerField(
+                        validators=[django.core.validators.MinValueValidator(0)], verbose_name='Count Documents'
+                    ),
+                ),
+                (
+                    'count_educational_materials',
+                    models.PositiveIntegerField(
+                        validators=[django.core.validators.MinValueValidator(0)],
+                        verbose_name='Count Educational Materials',
+                    ),
+                ),
+                (
+                    'count_questionnaires_complete',
+                    models.PositiveIntegerField(
+                        validators=[django.core.validators.MinValueValidator(0)], verbose_name='Count Questionnaires'
+                    ),
+                ),
+                (
+                    'count_labs',
+                    models.PositiveIntegerField(
+                        validators=[django.core.validators.MinValueValidator(0)], verbose_name='Count Labs'
+                    ),
+                ),
                 ('date_added', models.DateField(default=django.utils.timezone.now, verbose_name='Date Added')),
-                ('action_by_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='daily_patient_activities', to=settings.AUTH_USER_MODEL, verbose_name='User who triggered this action')),
-                ('patient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='daily_patient_activities', to='patients.patient', verbose_name='Patient')),
-                ('user_relationship_to_patient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='daily_patient_activities', to='patients.relationship', verbose_name='Relationship between user and patient')),
+                (
+                    'action_by_user',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='daily_patient_activities',
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name='User who triggered this action',
+                    ),
+                ),
+                (
+                    'patient',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='daily_patient_activities',
+                        to='patients.patient',
+                        verbose_name='Patient',
+                    ),
+                ),
+                (
+                    'user_relationship_to_patient',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='daily_patient_activities',
+                        to='patients.relationship',
+                        verbose_name='Relationship between user and patient',
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'User Patient Activity',

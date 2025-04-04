@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing different middlewares for the whole project."""
+
 from collections.abc import Callable
 
 from django.conf import settings

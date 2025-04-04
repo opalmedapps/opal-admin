@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing models for pharmacy data."""
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 

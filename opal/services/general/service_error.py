@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing functionality for handling errors from external components and generating error messages."""
+
 from typing import Any
 
 

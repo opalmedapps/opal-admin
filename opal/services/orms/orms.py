@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Module providing business logic for communication with ORMS."""
+
 from typing import Any
 from uuid import UUID
 

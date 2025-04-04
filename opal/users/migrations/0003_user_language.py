@@ -18,10 +18,14 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='language',
-            field=models.CharField(choices=[('EN', 'English'), ('FR', 'French')], default='FR', max_length=2, verbose_name='Language'),
+            field=models.CharField(
+                choices=[('EN', 'English'), ('FR', 'French')], default='FR', max_length=2, verbose_name='Language'
+            ),
         ),
         migrations.AddConstraint(
             model_name='user',
-            constraint=models.CheckConstraint(check=models.Q(('language__in', ['EN', 'FR'])), name='users_user_language_valid'),
+            constraint=models.CheckConstraint(
+                check=models.Q(('language__in', ['EN', 'FR'])), name='users_user_language_valid'
+            ),
         ),
     ]

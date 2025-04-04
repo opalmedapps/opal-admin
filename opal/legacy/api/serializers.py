@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Collection of serializers for the app ApiViews."""
+
 from typing import Any
 
 from rest_framework import serializers
