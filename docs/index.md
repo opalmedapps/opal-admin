@@ -4,6 +4,6 @@ SPDX-FileCopyrightText: Copyright (C) 2022 Opal Health Informatics Group at the 
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
-<!-- markdownlint-disable-next-line first-line-heading -->
+<!-- markdownlint-disable first-line-heading -->
 
 --8<-- "README.md"
