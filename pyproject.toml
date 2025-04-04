@@ -63,7 +63,7 @@ dev = [
     "pandas-stubs==2.2.3.250308",
     "pre-commit==4.2.0",
     "pytest==8.3.5",
-    "pytest-django==4.10.0",
+    "pytest-django==4.11.1",
     "pytest-mock==3.14.0",
     "pytest-randomly==3.16.0",
     "pytest-socket==0.7.0",
