@@ -92,7 +92,7 @@ requires-dist = [
     { name = "django-extensions", specifier = "==3.2.3" },
     { name = "django-filter", specifier = "==25.1" },
     { name = "django-forms-dynamic", specifier = "==1.0.0" },
-    { name = "django-modeltranslation", specifier = "==0.19.12" },
+    { name = "django-modeltranslation", specifier = "==0.19.13" },
     { name = "django-phonenumber-field", extras = ["phonenumberslite"], specifier = "==8.0.0" },
     { name = "django-structlog", specifier = "==9.0.1" },
     { name = "django-stubs-ext", specifier = "==5.1.3" },
@@ -618,14 +618,14 @@ wheels = [
 
 [[package]]
 name = "django-modeltranslation"
-version = "0.19.12"
+version = "0.19.13"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d7/85/16e4f8d3c6f2bb57ca1ac4573005705a9a3b9dc42844a0465c1cc867d766/django_modeltranslation-0.19.12.tar.gz", hash = "sha256:d3a48c4b0e2a8033fc53a4e4d4d8c27c52e81bfbf00ae65fc76bd4ef64177d5b", size = 76812 }
+sdist = { url = "https://files.pythonhosted.org/packages/44/e1/54a2f2cff0bf6c5798a0185f4b962d680999a8f0207a61f8aebb75ff8226/django_modeltranslation-0.19.13.tar.gz", hash = "sha256:df2516fdfb6a865fd1dfdda74e549d437d8ca148c1d435663db36edb6863f34e", size = 76720 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9f/f1/6097be1aa0477008b05bcfd6103916dd214a1cab48ac5bf8e4593c341d90/django_modeltranslation-0.19.12-py3-none-any.whl", hash = "sha256:6f42811876cb36370a2a727f4669bf9fa086d3c2efad573aedf49f339ba48cd1", size = 53830 },
+    { url = "https://files.pythonhosted.org/packages/10/a9/87ddfca789c95e8aaa7d5481d00184046cad925f943aeaee31dd21e62f0b/django_modeltranslation-0.19.13-py3-none-any.whl", hash = "sha256:69b7dc9a8bae152ab84caf969a5ad478f588f4d9f8345545d4f20f66eeb51ef6", size = 53996 },
 ]
 
 [[package]]
