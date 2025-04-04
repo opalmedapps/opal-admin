@@ -46,6 +46,7 @@ To grant the `export_report` permission:
 9. Return to the first `Export Reports` page and verify your questionnaire profile now displays the saved questionnaire.
 
 <!-- Link identifiers -->
+
 [django-modelless-perms-github]: https://github.com/surfer190/fixes/blob/master/docs/django/django-permissions-without-a-model.md
 [django-modelless-perms-stackoverflow]: https://stackoverflow.com/questions/13932774/how-can-i-use-django-permissions-without-defining-a-content-type-or-model
 [questionnaire-reporting-repo]: https://gitlab.com/opalmedapps/opalquestionnairesDB

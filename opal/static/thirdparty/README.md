@@ -17,5 +17,5 @@ It remains to be investigated whether it is possible to automatically update the
 
 Potential hook:
 
-* https://docs.renovatebot.com/configuration-options/#postupgradetasks
-* https://docs.renovatebot.com/configuration-options/#updatelockfiles
+- https://docs.renovatebot.com/configuration-options/#postupgradetasks
+- https://docs.renovatebot.com/configuration-options/#updatelockfiles

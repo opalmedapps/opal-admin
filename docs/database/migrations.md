@@ -28,6 +28,7 @@ agreement from the team, and in a manner that does not cause the database struct
 machines.
 
 !!! important
+
     The solutions below may cause you to lose data related to the migration that failed. For example, if your failing
     migration added a field `date_of_birth`, reverting and re-migrating will cause you to lose any values entered in
     this field. If you're worried about loss of data, make a database backup and proceed with caution.
@@ -43,6 +44,7 @@ python manage.py migrate patients 0002
 ```
 
 !!! note
+
     You don't have to enter the entire name of the file corresponding to a migration, just the number (e.g. 0002).
 
 Fix the error in your migration file (which caused the initial problem), then apply it again:
@@ -60,6 +62,7 @@ In these cases, you might have a column that exists in your database, but that D
 or vice-versa.
 
 ??? question "Why does this happen?"
+
     MySQL databases don't support transactions for schema alterations, which means that a failure midway through
     will not be rolled back. This is why it's possible to end up with a partially completed migration.
 
@@ -70,6 +73,7 @@ used by Django (check the Docker container for the right port to use), or spin u
 to connect to the database.
 
 ??? note "HeidiSQL Database Client"
+
     [HeidiSQL](https://www.heidisql.com/) is a free and easy-to-use database client that you can use to connect
     to your database. Install and launch the software, then enter the following values to start a session:
 
@@ -112,6 +116,7 @@ This will remove the checkbox for the 0002 migration, correctly expressing that 
 in the database.
 
 !!! important
+
     Be careful when using the `--fake` flag, since it's easy to lose track of what changes you have to do manually
     to make sure the database state and `showmigrations` match each other. Only use this flag if you know
     what you're doing, or are working in an easily recreated test environment.

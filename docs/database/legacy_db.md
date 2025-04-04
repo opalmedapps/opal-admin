@@ -27,6 +27,7 @@ The easiest way to create models is to use the `inspectdb` management command. T
 Use the following command to generate a model definition for a legacy table: `python manage.py inspectdb --database legacy <tableName>`
 
 !!! important
+
     Always check the generated model and make adjustments as necessary. This also applies to the field attribute names.
 
 ## Testing
@@ -35,7 +36,7 @@ Django does not create tables for unmanaged models in the test database. To over
 
 ## Resources
 
-* https://www.caktusgroup.com/blog/2010/09/24/simplifying-the-testing-of-unmanaged-database-models-in-django/
-* https://hannylicious.com/blog/testing-django/
-* https://stackoverflow.com/questions/53289057/how-to-run-django-test-when-managed-false
-* https://stackoverflow.com/questions/3519143/django-how-to-specify-a-database-for-a-model
+- https://www.caktusgroup.com/blog/2010/09/24/simplifying-the-testing-of-unmanaged-database-models-in-django/
+- https://hannylicious.com/blog/testing-django/
+- https://stackoverflow.com/questions/53289057/how-to-run-django-test-when-managed-false
+- https://stackoverflow.com/questions/3519143/django-how-to-specify-a-database-for-a-model

@@ -22,6 +22,7 @@ This project is set up with the support for authentication tokens. Follow these 
     ```
 
 2. Log into the Django admin site
+
 3. Set permissions by assigning them directly to the user or to a group the user is a part of
 
     For example: To allow the user to view institutions of the `hospital_settings` app, choose the permission `hospital_settings | institution | Can view institution`.

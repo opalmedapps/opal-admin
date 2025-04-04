@@ -15,11 +15,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 This project has the following requirements to be available on your system:
 
-* [uv](https://docs.astral.sh/uv/) for Python project management
-* [Docker Desktop](https://docs.docker.com/desktop/) (or Docker Engine on Linux)
-* [Git LFS](https://git-lfs.com/)
-* Legacy Databases set up and its DB server running: https://github.com/opalmedapps/opal-db-management
-* macOS/Linux only: Have `mysql-client` and `pkg-config` installed to build the `mysqlclient` package: https://github.com/PyMySQL/mysqlclient#install
+- [uv](https://docs.astral.sh/uv/) for Python project management
+- [Docker Desktop](https://docs.docker.com/desktop/) (or Docker Engine on Linux)
+- [Git LFS](https://git-lfs.com/)
+- Legacy Databases set up and its DB server running: https://github.com/opalmedapps/opal-db-management
+- macOS/Linux only: Have `mysql-client` and `pkg-config` installed to build the `mysqlclient` package: https://github.com/PyMySQL/mysqlclient#install
 
 ## Getting Started
 
@@ -188,18 +188,18 @@ export PATH=$PATH:"/C/Users/path/to/.venv/Scripts/"
 
 ### Recommended IDE Extensions
 
-* **VSCode:** This project contains recommendations for vscode extensions (see `.vscode/extensions.json`).
-  You should get a popup about this when you open the project.
-  These extensions are also highlighted in the extensions list.
-    * Note: `shellcheck` on Apple Silicon:
-      Currently, the *shellcheck* extension does not come with a binary for `arm64`.
-      Install `shellcheck` via `brew install shellcheck`.
-* **PyCharm:** We recommend the installation of some PyCharm extensions.
-  These can be installed under `File > Settings/Preferences > Plugins`.
-  The following extensions are required or strongly recommended:
-    * [EditorConfig by JetBrains s.r.o.](https://plugins.jetbrains.com/plugin/7294-editorconfig) (should come pre-bundled with PyCharm)
-    * [Docker by Jetbrains s.r.o.](https://plugins.jetbrains.com/plugin/7724-docker)
-    * [Markdown by Jetbrains s.r.o.](https://plugins.jetbrains.com/plugin/7793-markdown)
+- **VSCode:** This project contains recommendations for vscode extensions (see `.vscode/extensions.json`).
+    You should get a popup about this when you open the project.
+    These extensions are also highlighted in the extensions list.
+    - Note: `shellcheck` on Apple Silicon:
+        Currently, the *shellcheck* extension does not come with a binary for `arm64`.
+        Install `shellcheck` via `brew install shellcheck`.
+- **PyCharm:** We recommend the installation of some PyCharm extensions.
+    These can be installed under `File > Settings/Preferences > Plugins`.
+    The following extensions are required or strongly recommended:
+    - [EditorConfig by JetBrains s.r.o.](https://plugins.jetbrains.com/plugin/7294-editorconfig) (should come pre-bundled with PyCharm)
+    - [Docker by Jetbrains s.r.o.](https://plugins.jetbrains.com/plugin/7724-docker)
+    - [Markdown by Jetbrains s.r.o.](https://plugins.jetbrains.com/plugin/7793-markdown)
 
 ## Documentation
 
@@ -281,9 +281,9 @@ The following commands can all be executed from the project root.
 
 We have very precise rules over how our Git commit messages must be formatted. It is based on the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/) which has the following advantages (non-exhaustive list):
 
-* communicates the nature of changes to others
-* allows a tool to automatically determine a version bump
-* allows a tool to automatically generate the CHANGELOG
+- communicates the nature of changes to others
+- allows a tool to automatically determine a version bump
+- allows a tool to automatically generate the CHANGELOG
 
 Each commit message consists of a **header**, a **body**, and a **footer**.
 
@@ -307,24 +307,24 @@ The `<type>` and `<summary>` fields are mandatory, the `(<scope>)` field is opti
 
 Use the summary field to provide a succinct description of the change:
 
-* use the imperative, present tense: "change" not "changed" nor "changes"
-* don't capitalize the first letter
-* no dot (.) at the end
+- use the imperative, present tense: "change" not "changed" nor "changes"
+- don't capitalize the first letter
+- no dot (.) at the end
 
 ##### Type
 
 Must be one of the following:
 
-* **build**: Changes that affect the build system or external dependencies (i.e., pip, Docker)
-* **chore**: Other changes that don't modify source or test files (e.g., a grunt task)
-* **ci**: Changes to our CI configuration files and scripts (i.e., GitLab CI)
-* **docs**: Documentation only changes
-* **feat**: A new feature
-* **fix**: A bug fix
-* **perf**: A code change that improves performance
-* **refactor**: A code change that neither fixes a bug nor adds a feature
-* **style**: Changes that do not affect the meaning of the code (whitespace, formatting etc.)
-* **test**: Adding missing tests or correcting existing tests
+- **build**: Changes that affect the build system or external dependencies (i.e., pip, Docker)
+- **chore**: Other changes that don't modify source or test files (e.g., a grunt task)
+- **ci**: Changes to our CI configuration files and scripts (i.e., GitLab CI)
+- **docs**: Documentation only changes
+- **feat**: A new feature
+- **fix**: A bug fix
+- **perf**: A code change that improves performance
+- **refactor**: A code change that neither fixes a bug nor adds a feature
+- **style**: Changes that do not affect the meaning of the code (whitespace, formatting etc.)
+- **test**: Adding missing tests or correcting existing tests
 
 ##### Scope
 
@@ -332,8 +332,8 @@ The (optional) scope provides additional contextual information.
 
 The following is the list of supported scopes:
 
-* **deps**: Changes to the dependencies
-* **i18n**: Changes to the translations (i18n)
+- **deps**: Changes to the dependencies
+- **i18n**: Changes to the translations (i18n)
 
 #### Breaking Changes
 
@@ -366,11 +366,11 @@ services:
 
 The following management commands need to be run periodically (e.g., as a cronjob):
 
-* `find_deviations` (once per day): to detect deviations with data stored in the legacy database for patients and caregivers
-* `find_questionnaire_respondent_deviations` (once per day): to detect deviations for questionnaire respondents in the legacy questionnaire database
-* `expire_relationships` (once per day after midnight): to expire relationships where the patient reached the end age of the relationship type
-* `expire_outdated_registration_codes` (every hour or more often): to expire unused registration codes
-* `update_daily_usage_statistics` (once per day at 5am): to update daily usage statistics for patients and caregivers
+- `find_deviations` (once per day): to detect deviations with data stored in the legacy database for patients and caregivers
+- `find_questionnaire_respondent_deviations` (once per day): to detect deviations for questionnaire respondents in the legacy questionnaire database
+- `expire_relationships` (once per day after midnight): to expire relationships where the patient reached the end age of the relationship type
+- `expire_outdated_registration_codes` (every hour or more often): to expire unused registration codes
+- `update_daily_usage_statistics` (once per day at 5am): to update daily usage statistics for patients and caregivers
 
 ## Running the databases with encrypted connections
 

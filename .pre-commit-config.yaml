@@ -48,6 +48,15 @@ repos:
     # Run the formatter
     - id: ruff-format
 
+- repo: https://github.com/executablebooks/mdformat
+  rev: 0.7.22
+  hooks:
+    - id: mdformat
+      args: [--number]
+      language: python
+      additional_dependencies:
+        - mdformat-mkdocs==4.1.2
+
 - repo: https://github.com/DavidAnson/markdownlint-cli2
   rev: v0.17.2
   hooks:
