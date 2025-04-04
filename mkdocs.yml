@@ -132,6 +132,5 @@ markdown_extensions:
 
 watch:
   - README.md
-  - CHANGELOG.md
   - opal/
   - config/
