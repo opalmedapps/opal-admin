@@ -168,6 +168,9 @@ jobs:
           MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_OpalDB%\`.* TO \`$DB_USER\`@\`%\`;"
           MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB%\`.* TO \`$DB_USER\`@\`%\`;"
       - name: Run pytest
+        env:
+          # https://github.com/zupo/awesome-pytest-speedup#pythondontwritebytecode
+          PYTHONDONTWRITEBYTECODE: 1
         run: |
           uv run pytest --version
           # -m "" runs all tests, even the ones marked as slow
