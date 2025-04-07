@@ -38,6 +38,7 @@ jobs:
           npm install
           git status
           echo "modified=$(if git diff-index --quiet HEAD --; then echo false; else echo true; fi)" >> "$GITHUB_OUTPUT"
+          echo "$GITHUB_OUTPUT"
       - name: Push changes
         if: steps.update.outputs.modified
         # see: https://github.com/actions/checkout#push-a-commit-to-a-pr-using-the-built-in-token
