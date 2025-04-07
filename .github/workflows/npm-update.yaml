@@ -28,6 +28,7 @@ jobs:
       - run: |
           cd opal/static/thirdparty/
           npm install
+          git log
           git add .
           git commit -m "update static thirdparty files"
-          git push
+          git push origin HEAD:
