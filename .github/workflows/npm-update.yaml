@@ -27,7 +27,7 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
       - name: Update thirdparty static files
         env:
-          GIT_REF: ${{ github.ref }}
+          GIT_REF: ${{ github.head_ref }}
         run: |
           cd opal/static/thirdparty/
           npm install
