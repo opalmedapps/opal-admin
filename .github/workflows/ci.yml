@@ -12,8 +12,8 @@ on:
   merge_group:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -237,6 +237,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: opalmedapps/.github/.github/workflows/docker-build.yaml@fix-build
+    uses: opalmedapps/.github/.github/workflows/docker-build.yaml@main
     with:
       test-command: python manage.py
