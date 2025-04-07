@@ -34,4 +34,4 @@ jobs:
           git log
           git add .
           git commit -m "update static thirdparty files"
-          git push origin HEAD:"${REF_NAME}"
+          git push origin "HEAD:${REF_NAME}"
