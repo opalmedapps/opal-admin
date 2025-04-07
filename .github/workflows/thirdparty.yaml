@@ -29,6 +29,7 @@ jobs:
         with:
           persist-credentials: true
           ref: ${{ github.head_ref }}
+          lfs: true
       - name: Update thirdparty static files
         id: update
         # check for modified files: https://peterevans.dev/posts/github-actions-how-to-automate-code-formatting-in-pull-requests/
