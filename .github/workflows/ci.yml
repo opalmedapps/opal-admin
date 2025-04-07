@@ -171,7 +171,7 @@ jobs:
         run: |
           uv run pytest --version
           # -m "" runs all tests, even the ones marked as slow
-          uv run coverage run -m pytest -n auto -m "" -v --junitxml=test-report.xml
+          uv run pytest --cov=opal -n auto -m "" --junitxml=test-report.xml
       # see: https://github.com/dorny/test-reporter/issues/244
       # - name: Publish Test Results
       #   uses: dorny/test-reporter@v1.9.1
