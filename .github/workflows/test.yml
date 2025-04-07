@@ -21,8 +21,12 @@ permissions:
 jobs:
   seed:
     runs-on: ubuntu-latest
+    outputs:
+      seed: ${{ steps.calculate-seed.outputs.seed }}
     steps:
-      - run: echo "SEED=$(python3 -c 'import random; print(random.Random().getrandbits(32));')" >> "$GITHUB_ENV"
+      - name: Create seed
+        id: calculate-seed
+        run: echo "seed=$(python3 -c 'import random; print(random.Random().getrandbits(32));')" >> "$GITHUB_OUTPUT"
 
   # usage of pytest-split and matrix strategy based on:
   # https://github.com/jerry-git/pytest-split-gh-actions-demo/blob/master/.github/workflows/test.yml
@@ -37,6 +41,7 @@ jobs:
       DB_ROOT_PASSWORD: "root-password"
       DB_PASSWORD: "user-password"
       DB_USER: citest
+      SEED: ${{ needs.seed.outputs.seed }}
     container: python:3.12.9-alpine3.20
     services:
       db:
