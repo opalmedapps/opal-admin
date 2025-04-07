@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: Copyright (C) 2025 Opal Health Informatics Group <https://www.opalmedapps.com>
 #
 # SPDX-License-Identifier: MIT
-name: npm-update
+name: thirdparty
 
 on:
   pull_request:
@@ -32,15 +32,15 @@ jobs:
           lfs: true
       - name: Update thirdparty static files
         id: update
-        # check for modified files: https://peterevans.dev/posts/github-actions-how-to-automate-code-formatting-in-pull-requests/
         run: |
           cd opal/static/thirdparty/
           npm install
           git status
-          echo "modified=$(if git diff-index --quiet HEAD --; then echo false; else echo true; fi)" >> "$GITHUB_OUTPUT"
-          echo "$GITHUB_OUTPUT"
+          MODIFIED=$(if git diff-index --quiet HEAD --; then echo false; else echo true; fi)
+          echo "$MODIFIED"
+          echo "modified=$MODIFIED" >> "$GITHUB_OUTPUT"
       - name: Push changes
-        if: steps.update.outputs.modified
+        if: steps.update.outputs.modified == 'true'
         # see: https://github.com/actions/checkout#push-a-commit-to-a-pr-using-the-built-in-token
         run: |
           git config user.name github-actions[bot]
