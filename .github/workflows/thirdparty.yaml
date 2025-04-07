@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: Copyright (C) 2025 Opal Health Informatics Group <https://www.opalmedapps.com>
+#
+# SPDX-License-Identifier: MIT
+name: npm-update
+
+on:
+  pull_request:
+    paths:
+      - opal/static/thirdparty/package.json
+      - opal/static/thirdparty/package-lock.json
+
+permissions:
+  contents: read
+
+jobs:
+  npm-update:
+    runs-on: ubuntu-latest
+    # ensure that this only runs for Renovate PRs and not on forks
+    # https://woodruffw.github.io/zizmor/audits/#bot-conditions
+    if: github.event.pull_request.user.login == 'renovate[bot]' && github.repository == github.event.pull_request.head.repo.full_name
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: true
+          ref: ${{ github.head_ref }}
+      - name: Update thirdparty static files
+        id: update
+        # check for modified files: https://peterevans.dev/posts/github-actions-how-to-automate-code-formatting-in-pull-requests/
+        run: |
+          cd opal/static/thirdparty/
+          npm install
+          git status
+          echo "modified=$(if git diff-index --quiet HEAD --; then echo false; else echo true; fi)" >> "$GITHUB_OUTPUT"
+      - name: Push changes
+        if: steps.update.outputs.modified
+        # see: https://github.com/actions/checkout#push-a-commit-to-a-pr-using-the-built-in-token
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add opal/static/thirdparty/
+          git commit -m "update static thirdparty files"
+          git push
