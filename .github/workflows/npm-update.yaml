@@ -19,7 +19,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4.2.2
         with:
-          persist-credentials: false
+          persist-credentials: true
+      - name: Configure Git Credentials
+        # see: https://github.com/actions/checkout#push-a-commit-using-the-built-in-token
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
       - run: |
           cd opal/static/thirdparty/
           npm install
