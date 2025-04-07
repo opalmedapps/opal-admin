@@ -63,6 +63,8 @@ dev = [
     "pandas-stubs==2.2.3.250308",
     "pre-commit==4.2.0",
     "pytest==8.3.5",
+    # for proper coverage support with pytest-xdist
+    "pytest-cov==6.1.1",
     "pytest-django==4.11.1",
     "pytest-mock==3.14.0",
     "pytest-randomly==3.16.0",
