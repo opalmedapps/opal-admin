@@ -12,8 +12,8 @@ on:
   merge_group:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -29,7 +29,7 @@ jobs:
         id: setup-uv
         with:
           # renovate: datasource=pypi dependency=uv
-          version: "0.6.12"
+          version: "0.6.13"
       - name: Install dependencies
         # docs dependencies required to type check scripts in docs/
         run: uv sync --locked --group docs
@@ -68,7 +68,7 @@ jobs:
         id: setup-uv
         with:
           # renovate: datasource=pypi dependency=uv
-          version: "0.6.12"
+          version: "0.6.13"
       - name: Install dependencies
         run: uv sync --locked --no-dev
       - name: Configure environment file
@@ -207,7 +207,7 @@ jobs:
         id: setup-uv
         with:
           # renovate: datasource=pypi dependency=uv
-          version: "0.6.12"
+          version: "0.6.13"
       - name: Install dependencies
         run: |
           uv sync --locked --no-dev --group docs
@@ -237,6 +237,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: opalmedapps/.github/.github/workflows/docker-build.yaml@fix-build
+    uses: opalmedapps/.github/.github/workflows/docker-build.yaml@main
     with:
       test-command: python manage.py
