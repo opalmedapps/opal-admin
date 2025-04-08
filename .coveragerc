@@ -4,6 +4,8 @@
 
 [run]
 source = opal
+# store relative paths to make it easier to combine different coverages
+relative_files = True
 omit =
     .*,
     **/tests/*,
