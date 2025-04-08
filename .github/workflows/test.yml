@@ -36,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group: [1, 2, 3, 4, 5, 6]
+        group: [1, 2, 3, 4]
     env:
       DB_ROOT_PASSWORD: "root-password"
       DB_PASSWORD: "user-password"
@@ -94,7 +94,7 @@ jobs:
         run: |
           uv run pytest --version
           # -m "" runs all tests, even the ones marked as slow
-          uv run pytest --cov --cov-fail-under=0 --cov-report= --randomly-seed="$SEED" --splitting-algorithm=least_duration --splits 6 --group ${{ matrix.group }} -m ""
+          uv run pytest --cov --cov-fail-under=0 --cov-report= --randomly-seed="$SEED" --splitting-algorithm=least_duration --splits 4 --group ${{ matrix.group }} -m ""
           pwd
       - name: Upload coverage
         uses: actions/upload-artifact@v4.6.2
