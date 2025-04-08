@@ -1,0 +1,131 @@
+# SPDX-FileCopyrightText: Copyright (C) 2025 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    outputs:
+      seed: ${{ steps.calculate-seed.outputs.seed }}
+    steps:
+      - name: Create seed
+        id: calculate-seed
+        run: echo "seed=$(python3 -c 'import random; print(random.Random().getrandbits(32));')" >> "$GITHUB_OUTPUT"
+
+  # usage of pytest-split and matrix strategy based on:
+  # https://github.com/jerry-git/pytest-split-gh-actions-demo/blob/master/.github/workflows/test.yml
+  pytest:
+    runs-on: ubuntu-latest
+    needs: seed
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [1, 2, 3, 4]
+    env:
+      DB_ROOT_PASSWORD: "root-password"
+      DB_PASSWORD: "user-password"
+      DB_USER: citest
+      SEED: ${{ needs.seed.outputs.seed }}
+    container: python:3.12.9-alpine3.20
+    services:
+      db:
+        image: mariadb:10.11.11-jammy
+        env:
+          MARIADB_ROOT_PASSWORD: ${{ env.DB_ROOT_PASSWORD }}
+          # ensure that user has permissions for test DB to be used by pytest
+          MARIADB_DATABASE: test_opal
+          MARIADB_USER: ${{ env.DB_USER }}
+          MARIADB_PASSWORD: ${{ env.DB_PASSWORD }}
+
+    steps:
+      - name: Install Git
+        run: |
+          apk add --no-cache git git-lfs
+      - uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
+          lfs: true
+      - name: Install dependencies
+        run: |
+          pip install uv
+          echo "Installed uv version is $(uv --version)"
+          # install dependencies for mysqlclient
+          apk add --no-cache build-base mariadb-dev mariadb-client chromium
+          uv sync --locked
+      - name: Prepare environment
+        # set up env file for DB service
+        # use sample env file
+        # create additional DBs for legacy DB tests (OpalDB & QuestionnaireDB)
+        run: |
+          cp .env.sample .env
+          sed -i "s/^DATABASE_USER=.*/DATABASE_USER=$DB_USER/" .env
+          sed -i "s/^DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$DB_PASSWORD/" .env
+          sed -i "s/^DATABASE_HOST=.*/DATABASE_HOST=db/" .env
+          # set up legacy DB connection
+          # reuse the same database as for the other tests to make it easier
+          sed -i "s/^LEGACY_DATABASE_HOST=.*/LEGACY_DATABASE_HOST=db/" .env
+          sed -i "s/^LEGACY_DATABASE_PORT=.*/LEGACY_DATABASE_PORT=3306/" .env
+          sed -i "s/^LEGACY_DATABASE_USER=.*/LEGACY_DATABASE_USER=$DB_USER/" .env
+          sed -i "s/^LEGACY_DATABASE_PASSWORD=.*/LEGACY_DATABASE_PASSWORD=$DB_PASSWORD/" .env
+          # generate secret key
+          SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
+          sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
+          MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$DB_USER\`@\`%\`;"
+          MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$DB_USER\`@\`%\`;"
+      - name: Run pytest
+        # use pytest-cov to disable coverage fail
+        # use the same seed for each group
+        run: |
+          uv run pytest --version
+          # -m "" runs all tests, even the ones marked as slow
+          uv run pytest --cov --cov-fail-under=0 --cov-report= --randomly-seed="$SEED" --splitting-algorithm=least_duration --splits 4 --group ${{ matrix.group }} -m ""
+          pwd
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: coverage-${{ matrix.group }}
+          path: .coverage
+          include-hidden-files: true
+          if-no-files-found: error
+
+  coverage:
+    needs: pytest
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v5.4.1
+        id: setup-uv
+        with:
+          # renovate: datasource=pypi dependency=uv
+          version: "0.6.12"
+      - name: Install dependencies
+        run: uv sync --locked --only-dev
+      - name: Download coverage reports
+        uses: actions/download-artifact@v4.2.1
+      - name: Check coverage
+        run: |
+          pwd
+          ls -la coverage-*
+          ls -la opal/
+          uv run coverage combine coverage*/.coverage*
+          ls -la
+          uv run coverage report
