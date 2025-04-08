@@ -94,7 +94,7 @@ jobs:
         run: |
           uv run pytest --version
           # -m "" runs all tests, even the ones marked as slow
-          uv run pytest --cov --cov-fail-under=0 --cov-report= --randomly-seed="$SEED" --splits 6 --group ${{ matrix.group }} -m ""
+          uv run pytest --cov --cov-fail-under=0 --cov-report= --randomly-seed="$SEED" --splitting-algorithm=least_duration --splits 6 --group ${{ matrix.group }} -m ""
       - name: Upload coverage
         uses: actions/upload-artifact@v4.6.2
         with:
