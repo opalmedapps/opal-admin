@@ -38,6 +38,7 @@ jobs:
           git status
           MODIFIED=$(if git diff-index --quiet HEAD --; then echo false; else echo true; fi)
           echo "modified=$MODIFIED" >> "$GITHUB_OUTPUT"
+      # this does not trigger a new workflow run due to: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow#triggering-a-workflow-from-a-workflow
       - name: Push changes
         if: steps.update.outputs.modified == 'true'
         # see: https://github.com/actions/checkout#push-a-commit-to-a-pr-using-the-built-in-token
