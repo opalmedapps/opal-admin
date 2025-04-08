@@ -122,6 +122,9 @@ jobs:
         uses: actions/download-artifact@v4.2.1
       - name: Check coverage
         run: |
-          ls -la
+          pwd
+          ls -la coverage-*
+          ls -la opal/
           uv run coverage combine coverage*/.coverage*
+          ls -la
           uv run coverage report
