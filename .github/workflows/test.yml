@@ -36,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group: [1, 2, 3, 4, 5, 6]
+        group: [1, 2, 3, 4]
     env:
       DB_ROOT_PASSWORD: "root-password"
       DB_PASSWORD: "user-password"
@@ -100,7 +100,8 @@ jobs:
         uses: actions/upload-artifact@v4.6.2
         with:
           name: coverage-${{ matrix.group }}
-          path: .coverage
+          path: ${{ github.workspace }}/.coverage
+          if-no-files-found: error
 
   coverage:
     needs: pytest
