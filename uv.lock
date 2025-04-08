@@ -81,7 +81,7 @@ production = [
 [package.metadata]
 requires-dist = [
     { name = "argon2-cffi", specifier = "==23.1.0" },
-    { name = "choreographer", specifier = "==0.99.7" },
+    { name = "choreographer", specifier = "==1.0.5" },
     { name = "crispy-bootstrap5", specifier = "==2025.4" },
     { name = "dj-rest-auth", specifier = "==7.0.1" },
     { name = "django", specifier = "==4.2.20" },
@@ -408,14 +408,15 @@ wheels = [
 
 [[package]]
 name = "choreographer"
-version = "0.99.7"
+version = "1.0.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "logistro" },
     { name = "simplejson" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/04/ff/2ca24b0bbf665555f4aaa4acdb5645043ee1237215a0e8dc7568eec14957/choreographer-0.99.7.tar.gz", hash = "sha256:cdb98712fe950bc3c37f2fb8c381582cdd4779f013fc40ec3e3d1d749187577e", size = 22493 }
+sdist = { url = "https://files.pythonhosted.org/packages/04/41/04ee6009b5fbb5c7bf7ca3ca5ca2e45f847cf5f9784cd7fb64a3caaafa26/choreographer-1.0.5.tar.gz", hash = "sha256:d4bb9ddef57053483ce30a965ac261510533e97039265739ecc2313b54ec78e7", size = 38759 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/ab/b7b53fd6cfb5dc850c2e48819b4047457408f85f6137d3df0f2bf20e2216/choreographer-0.99.7-py3-none-any.whl", hash = "sha256:02b66165ec09547d4bbff8278f8a64cc036589d426e70f7f04f4804fbc4da292", size = 20507 },
+    { url = "https://files.pythonhosted.org/packages/a6/ad/e457c1fe3f6bf16b5a85b725c6db609a93fd22dbf0223edbbb142a0a589e/choreographer-1.0.5-py3-none-any.whl", hash = "sha256:803f23ce154ff810fa360004d567c255f17ee9826ef0edf44df74353350a3e84", size = 42731 },
 ]
 
 [[package]]
@@ -975,6 +976,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a0/ee/918c3add926f1abae064f2625efcd00c515b129267e11480c6fd7272b758/kaleido-1.0.0rc0.tar.gz", hash = "sha256:fc3cab45dda7f20b24539feb8fcc275bf674ebb382befdd93933eb5c43e24e65", size = 3317126 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b6/62/5ece120df79e0d58129c3943b8dc0976108e4eb9e0cbdaf1869ede014c11/kaleido-1.0.0rc0-py3-none-any.whl", hash = "sha256:92d8b74b5d1015b43d2f61b90036408100ad4e423a4a1f63116d37c32fd87102", size = 3822462 },
+]
+
+[[package]]
+name = "logistro"
+version = "1.0.12"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cb/31/d34817a8443aa4dc68bc6eb0be4bd5f2bb848bd47814a4fd38b6196c6895/logistro-1.0.12.tar.gz", hash = "sha256:de51204ffb4d1b556dd2716182b82e519cd8bf1ecdf5bfb9a2710b7a6d7ec2d3", size = 8271 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9f/3a/1d5c68756829d258b7f35860cff08c135b3dd530194e357fa34c1c4c1936/logistro-1.0.12-py3-none-any.whl", hash = "sha256:78be7e44bc348f1801fd037dcbe94804b1504cadb17d0ee29d8fd726a96e98d3", size = 7886 },
 ]
 
 [[package]]
