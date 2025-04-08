@@ -164,13 +164,17 @@ jobs:
           # generate secret key
           SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
           sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
-          MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$DB_USER\`@\`%\`;"
-          MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$DB_USER\`@\`%\`;"
+          MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_opal%\`.* TO \`$DB_USER\`@\`%\`;"
+          MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_OpalDB%\`.* TO \`$DB_USER\`@\`%\`;"
+          MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB%\`.* TO \`$DB_USER\`@\`%\`;"
       - name: Run pytest
+        env:
+          # https://github.com/zupo/awesome-pytest-speedup#pythondontwritebytecode
+          PYTHONDONTWRITEBYTECODE: 1
         run: |
           uv run pytest --version
           # -m "" runs all tests, even the ones marked as slow
-          uv run coverage run -m pytest -m "" -v --junitxml=test-report.xml
+          uv run pytest --cov=opal -n auto -m "" --junitxml=test-report.xml
       # see: https://github.com/dorny/test-reporter/issues/244
       # - name: Publish Test Results
       #   uses: dorny/test-reporter@v1.9.1
