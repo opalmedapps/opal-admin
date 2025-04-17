@@ -74,7 +74,7 @@ docs = [
     { name = "mkdocs-material" },
     { name = "mkdocstrings", extra = ["python-legacy"] },
 ]
-production = [
+prod = [
     { name = "gunicorn" },
 ]
 
@@ -147,7 +147,7 @@ docs = [
     { name = "mkdocs-material", specifier = "==9.6.11" },
     { name = "mkdocstrings", extras = ["python-legacy"], specifier = "==0.27.0" },
 ]
-production = [{ name = "gunicorn", specifier = "==23.0.0" }]
+prod = [{ name = "gunicorn", specifier = "==23.0.0" }]
 
 [[package]]
 name = "aiohappyeyeballs"
