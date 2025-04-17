@@ -230,3 +230,11 @@ jobs:
             mkdocs-material-
       - name: Build site
         run: uv run mkdocs build --strict
+
+  build-image:
+    needs:
+      - lint
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/build.yml

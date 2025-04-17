@@ -17,6 +17,4 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: opalmedapps/.github/.github/workflows/docker-build.yaml@main
-    with:
-      test-command: python manage.py
+    uses: ./.github/workflows/build.yml
