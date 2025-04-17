@@ -21,7 +21,7 @@ services:
       context: .
       args:
         # install development dependencies in the local image
-        - ENV=development
+        - ENV=dev
     command: python manage.py runserver 0:8000
     env_file:
       - .env

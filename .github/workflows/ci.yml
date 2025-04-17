@@ -230,13 +230,3 @@ jobs:
             mkdocs-material-
       - name: Build site
         run: uv run mkdocs build --strict
-
-  build-image:
-    needs:
-      - lint
-    permissions:
-      contents: read
-      packages: write
-    uses: opalmedapps/.github/.github/workflows/docker-build.yaml@main
-    with:
-      test-command: python manage.py

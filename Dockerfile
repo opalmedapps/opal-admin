@@ -15,8 +15,8 @@ RUN apk add --no-cache build-base \
   # argon2-cffi dependencies
   && apk add --no-cache libffi-dev
 
-# for which environment the build is done: development or production
-ARG ENV=production
+# for which environment the build is done: dev or prod
+ARG ENV=prod
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ WORKDIR /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-editable --no-dev --compile-bytecode
+    uv sync --locked --no-editable --no-default-groups --group $ENV --compile-bytecode
 
 
 FROM python:3.12.9-alpine3.20
@@ -83,4 +83,4 @@ RUN cp .env.sample .env \
 USER appuser
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
-CMD [ "./start.sh" ]
+CMD [ "/app/start.sh" ]
