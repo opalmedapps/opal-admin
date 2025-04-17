@@ -239,4 +239,4 @@ jobs:
       packages: write
     uses: opalmedapps/.github/.github/workflows/docker-build.yaml@main
     with:
-      test-command: /usr/local/bin/gunicorn --help
+      test-command: /usr/local/bin/gunicorn --help && python manage.py check
