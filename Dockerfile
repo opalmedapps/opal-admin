@@ -83,4 +83,4 @@ RUN cp .env.sample .env \
 USER appuser
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
-CMD [ "./start.sh" ]
+CMD [ "/app/start.sh" ]

@@ -39,6 +39,13 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      # create minimal env file for testing the image
+      - name: Prepare environment
+        run: |
+          cp .env.sample .env
+          # generate secret key
+          SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
+          sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
       - name: Test the image
         env:
           TAG: ${{ steps.build-image.outputs.tag }}
