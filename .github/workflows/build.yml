@@ -49,4 +49,5 @@ jobs:
       - name: Test the image
         env:
           TAG: ${{ steps.build-image.outputs.tag }}
-        run: docker run --rm "$TAG" sh -c "gunicorn --version && python manage.py check"
+        # ensure that gunicorn is installed and that simple checks pass
+        run: docker run --rm --env-file .env "$TAG" sh -c "gunicorn --version && python manage.py check"
