@@ -120,7 +120,7 @@ jobs:
       DB_ROOT_PASSWORD: "root-password"
       DB_PASSWORD: "user-password"
       DB_USER: citest
-    container: python:3.12.9-alpine3.20
+    container: python:3.12.10-alpine3.20
     services:
       db:
         image: mariadb:10.11.11-jammy
