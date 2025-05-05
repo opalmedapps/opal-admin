@@ -45,7 +45,7 @@ dependencies = [
     "qrcode==8.1",
     "requests==2.32.3",
     "slippers==0.6.2",
-    "twilio==9.5.2",
+    "twilio==9.6.0",
     "unidecode==1.4.0",
     "whitenoise[brotli]==6.9.0",
 ]
