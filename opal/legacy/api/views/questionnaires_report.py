@@ -17,7 +17,6 @@ from rest_framework.request import Request
 from opal.core.drf_permissions import IsORMSUser
 from opal.legacy.utils import generate_questionnaire_report, get_questionnaire_data
 from opal.patients.models import Patient
-from opal.services.hospital.hospital import SourceSystemService
 from opal.services.integration import hospital
 
 from ..serializers import QuestionnaireReportRequestSerializer
@@ -30,7 +29,6 @@ class QuestionnairesReportView(views.APIView):
 
     permission_classes = (IsORMSUser,)
     serializer_class = QuestionnaireReportRequestSerializer
-    source_system = SourceSystemService()
 
     def post(
         self,
