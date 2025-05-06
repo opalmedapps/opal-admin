@@ -214,3 +214,16 @@ def test_questionnaire_report_request_base64() -> None:
     assert exc.value.error_count() == 1
     assert exc.value.errors()[0]['loc'] == ('document',)
     assert exc.value.errors()[0]['type'] == 'base64_decode'
+
+
+def test_questionnaire_report_request_base64_dumped() -> None:
+    """The base64 encoded string is dumped correctly."""
+    content = b'test'
+    request = schemas.QuestionnaireReportRequestSchema(
+        mrn='1234',
+        site='TEST',
+        document=base64.b64encode(content),
+        document_datetime=dt.datetime.now(dt.UTC),
+    )
+
+    assert request.model_dump()['document'] == base64.b64encode(content)
