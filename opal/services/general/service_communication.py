@@ -101,35 +101,3 @@ class ServiceHTTPCommunicationManager:
                 'message': str(req_exp),
                 'exception': req_exp,
             })
-
-    # TODO: make function async
-    def fetch(
-        self,
-        endpoint: str,
-        params: dict[str, Any] | None = None,
-        metadata: dict[str, Any] | None = None,
-    ) -> Any:
-        """
-        Retrieve data from the external component by making HTTP GET request.
-
-        Args:
-            endpoint (str): communication endpoint exposed by the external component
-            params (dict[str, Any]): URL parameters (a.k.a query string)
-            metadata (dict[str, Any]): auxiliary data transmitted to the external component (e.g., HTTP language header)
-
-        Returns:
-            Any: response data in json-encoded format
-        """
-        # Try to send an HTTP GET request and get a response
-        try:
-            # https://requests.readthedocs.io/en/latest/api/#requests.get
-            # https://www.w3schools.com/python/ref_requests_get.asp
-            return requests.get(
-                url=f'{self.base_url}{endpoint}',
-                auth=HTTPBasicAuth(self.user, self.password),
-                headers=metadata,
-                params=params,
-                timeout=SOURCE_SYSTEM_TIMEOUT,
-            ).json()
-        except requests.exceptions.RequestException as req_exp:
-            return self.error_handler.generate_error({'message': str(req_exp)})
