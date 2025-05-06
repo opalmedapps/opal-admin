@@ -302,7 +302,7 @@ class TestQuestionnairesReportView:
 
     # Marking this slow since the test uses chromium
     @pytest.mark.slow
-    # Allow hosts to make the test work for Windows, Linux and Unix-based environements
+    # Allow hosts to make the test work for Windows, Linux and Unix-based environments
     @pytest.mark.allow_hosts(['127.0.0.1'])
     @pytest.mark.django_db(databases=['default', 'questionnaire'])
     def test_pdf_generation(
@@ -321,8 +321,7 @@ class TestQuestionnairesReportView:
         )
 
         mock_export_pdf_report = mocker.patch(
-            'opal.services.hospital.hospital.SourceSystemService.export_pdf_report',
-            return_value={'status': 'success'},
+            'opal.services.integration.hospital.add_questionnaire_report',
         )
 
         response = self.make_request(api_client, admin_user, hospital_patient.site.acronym, hospital_patient.mrn)
@@ -332,7 +331,7 @@ class TestQuestionnairesReportView:
         calls = mock_export_pdf_report.call_args_list
 
         assert len(calls) == 1
-        encoded_pdf = calls[0].args[0].base64_content
+        encoded_pdf = calls[0].args[2]
 
         assert encoded_pdf
         base64_pdf = base64.b64decode(encoded_pdf)
