@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+import base64
+import datetime as dt
 from typing import Any
 
 import pytest
@@ -162,3 +164,53 @@ def test_patient_by_mrn_request() -> None:
 
     assert request.mrn == '1234'
     assert request.site == 'TEST'
+
+
+def test_questionnaire_report_request() -> None:
+    """Test the QuestionnaireReportRequestSchema."""
+    content = b'test'
+    request = schemas.QuestionnaireReportRequestSchema(
+        mrn='1234',
+        site='TEST',
+        document=base64.b64encode(content),
+        document_datetime=dt.datetime.now(dt.UTC),
+    )
+
+    assert request.mrn == '1234'
+    assert request.site == 'TEST'
+    assert request.document == content
+    assert request.document_datetime.tzinfo is not None
+
+
+def test_questionnaire_report_request_aware() -> None:
+    """Test the QuestionnaireReportRequestSchema with a native datetime."""
+    content = b'test'
+
+    with pytest.raises(ValidationError) as exc:
+        schemas.QuestionnaireReportRequestSchema(
+            mrn='1234',
+            site='TEST',
+            document=base64.b64encode(content),
+            document_datetime=dt.datetime.now(),  # noqa: DTZ005
+        )
+
+    assert exc.value.error_count() == 1
+    assert exc.value.errors()[0]['loc'] == ('document_datetime',)
+    assert exc.value.errors()[0]['type'] == 'timezone_aware'
+
+
+def test_questionnaire_report_request_base64() -> None:
+    """Test the QuestionnaireReportRequestSchema with an invalid base64 encoded string."""
+    content = b'unencodable'
+
+    with pytest.raises(ValidationError) as exc:
+        schemas.QuestionnaireReportRequestSchema(
+            mrn='1234',
+            site='TEST',
+            document=content,
+            document_datetime=dt.datetime.now(dt.UTC),
+        )
+
+    assert exc.value.error_count() == 1
+    assert exc.value.errors()[0]['loc'] == ('document',)
+    assert exc.value.errors()[0]['type'] == 'base64_decode'
