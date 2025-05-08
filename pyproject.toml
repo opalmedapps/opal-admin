@@ -15,7 +15,7 @@ dependencies = [
     "choreographer==0.99.7",
     "crispy-bootstrap5==2025.4",
     "dj-rest-auth==7.0.1",
-    "django==4.2.20",
+    "django==4.2.21",
     "django-auditlog==3.1.2",
     "django-cors-headers==4.7.0",
     "django-crispy-forms==2.4",
