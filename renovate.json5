@@ -46,7 +46,7 @@
     },
     // Group django stubs together
     {
-      "matchPackageNames": ["django-stubs", "django-stubs-ext"],
+      "matchPackageNames": ["django-stubs", "django-stubs-ext", "djangorestframework-stubs"],
       "groupName": "django-stubs"
     },
     // Group all pytest package updates together
