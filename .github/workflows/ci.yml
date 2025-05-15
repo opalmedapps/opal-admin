@@ -144,8 +144,10 @@ jobs:
           pip install uv
           echo "Installed uv version is $(uv --version)"
           # install dependencies for mysqlclient
-          apk add --no-cache build-base mariadb-dev mariadb-client chromium
+          apk add --no-cache build-base mariadb-dev mariadb-client
           uv sync --locked
+          uv run kaleido_get_chrome
+
       - name: Prepare environment
         # set up env file for DB service
         # use sample env file
