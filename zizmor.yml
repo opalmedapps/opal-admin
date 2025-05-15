@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: Copyright (C) 2025 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        actions/*: ref-pin
+        astral-sh/setup-uv: ref-pin
+        astral-sh/ruff-action: ref-pin
+        mschoettle/pre-commit-action: ref-pin
+        opalmedapps/*: ref-pin
