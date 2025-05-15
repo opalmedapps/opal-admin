@@ -58,7 +58,7 @@ repos:
         - mdformat-mkdocs==4.1.2
 
 - repo: https://github.com/DavidAnson/markdownlint-cli2
-  rev: v0.18.0
+  rev: v0.18.1
   hooks:
   - id: markdownlint-cli2
 
