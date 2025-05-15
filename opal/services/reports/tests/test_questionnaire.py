@@ -459,4 +459,4 @@ def test_draw_text_answer_and_charts_question_page_break(mocker: MockerFixture) 
 
     assert prepare_chart.call_count == 3
     assert draw_text_answer.call_count == 3
-    assert add_page.call_count == 4
+    assert add_page.call_count == 6
