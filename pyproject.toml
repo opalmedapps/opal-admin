@@ -12,7 +12,7 @@ dependencies = [
     "argon2-cffi==23.1.0",
     # pinned to last working version due to issue: https://github.com/plotly/choreographer/issues/218
     # once resolved, remove this dependency since it is a transitive dependency (via kaleido)
-    "choreographer==0.99.7",
+    "choreographer==1.0.7",
     "crispy-bootstrap5==2025.4",
     "dj-rest-auth==7.0.1",
     "django==4.2.21",
