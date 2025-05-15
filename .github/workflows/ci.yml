@@ -120,7 +120,7 @@ jobs:
       DB_ROOT_PASSWORD: "root-password"
       DB_PASSWORD: "user-password"
       DB_USER: citest
-    container: python:3.12.10-alpine3.20
+    container: python:3.12.10-alpine3.21
     services:
       db:
         image: mariadb:10.11.11-jammy
@@ -144,10 +144,9 @@ jobs:
           pip install uv
           echo "Installed uv version is $(uv --version)"
           # install dependencies for mysqlclient
-          apk add --no-cache build-base mariadb-dev mariadb-client
+          apk add --no-cache build-base mariadb-dev mariadb-client chromium
           uv sync --locked
-          uv run kaleido_get_chrome
-
+          chromium --version
       - name: Prepare environment
         # set up env file for DB service
         # use sample env file
