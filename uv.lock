@@ -133,9 +133,9 @@ dev = [
     { name = "pytest-socket", specifier = "==0.7.0" },
     { name = "pytest-sugar", specifier = "==1.0.0" },
     { name = "ruff", specifier = "==0.11.10" },
-    { name = "types-beautifulsoup4", specifier = "==4.12.0.20250204" },
-    { name = "types-fpdf2", specifier = "==2.8.3.20250426" },
-    { name = "types-python-dateutil", specifier = "==2.9.0.20241206" },
+    { name = "types-beautifulsoup4", specifier = "==4.12.0.20250516" },
+    { name = "types-fpdf2", specifier = "==2.8.3.20250516" },
+    { name = "types-python-dateutil", specifier = "==2.9.0.20250516" },
     { name = "types-requests", specifier = "==2.32.0.20250515" },
 ]
 docs = [
@@ -1880,26 +1880,26 @@ wheels = [
 
 [[package]]
 name = "types-beautifulsoup4"
-version = "4.12.0.20250204"
+version = "4.12.0.20250516"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "types-html5lib" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/11/6c/00fd71754ac3babe121c73b52e0de7ec05acd627edcb7ee652223c084d69/types_beautifulsoup4-4.12.0.20250204.tar.gz", hash = "sha256:f083d8edcbd01279f8c3995b56cfff2d01f1bb894c3b502ba118d36fbbc495bf", size = 16641, upload-time = "2025-02-04T02:39:16.241Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/d1/32b410f6d65eda94d3dfb0b3d0ca151f12cb1dc4cef731dcf7cbfd8716ff/types_beautifulsoup4-4.12.0.20250516.tar.gz", hash = "sha256:aa19dd73b33b70d6296adf92da8ab8a0c945c507e6fb7d5db553415cc77b417e", size = 16628, upload-time = "2025-05-16T03:09:09.93Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b1/ec/9097e9f7f5901e4d7834c7e0bc8f775f9ffa448ae31471457a1ebafeb4c5/types_beautifulsoup4-4.12.0.20250204-py3-none-any.whl", hash = "sha256:57ce9e75717b63c390fd789c787d267a67eb01fa6d800a03b9bdde2e877ed1eb", size = 17061, upload-time = "2025-02-04T02:39:14.559Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/79/d84de200a80085b32f12c5820d4fd0addcbe7ba6dce8c1c9d8605e833c8e/types_beautifulsoup4-4.12.0.20250516-py3-none-any.whl", hash = "sha256:5923399d4a1ba9cc8f0096fe334cc732e130269541d66261bb42ab039c0376ee", size = 16879, upload-time = "2025-05-16T03:09:09.051Z" },
 ]
 
 [[package]]
 name = "types-fpdf2"
-version = "2.8.3.20250426"
+version = "2.8.3.20250516"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pillow" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/89/02/26118b106a0c57c8d0149e6d52619e98d3242bdaec4d88ce24f21c2639fe/types_fpdf2-2.8.3.20250426.tar.gz", hash = "sha256:13657fb72eca2a82745dde7025bfe41edf3fe8ae2435ec5817d141546e1cd384", size = 39348, upload-time = "2025-04-26T02:54:53.4Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d8/d5/d277bc31ac67e33c3082458354e18173cfdbb5c9d0567815e2c438d1c429/types_fpdf2-2.8.3.20250516.tar.gz", hash = "sha256:323c1bd6a60d5a37f95fbe832e7254b627b7379411591099c74eaabd5334527d", size = 39196, upload-time = "2025-05-16T03:09:20.289Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ab/17/419c96cecfb5c161592ba16d6e8621dc639c8f49548076517a6b692420d4/types_fpdf2-2.8.3.20250426-py3-none-any.whl", hash = "sha256:78c46d725fcbb1367485ec52ec927d439615bc12646396228fc85ec99387d7fb", size = 46451, upload-time = "2025-04-26T02:54:52.013Z" },
+    { url = "https://files.pythonhosted.org/packages/ed/0e/e3fd7d8eec13885df2979b91523eb22326a0e89a1a2f02fa3ff57c73296e/types_fpdf2-2.8.3.20250516-py3-none-any.whl", hash = "sha256:99190d30966e9e2af34fa0972b8a54c759eb16004c972c461ce036c8b254ef02", size = 46326, upload-time = "2025-05-16T03:09:19.3Z" },
 ]
 
 [[package]]
@@ -1913,11 +1913,11 @@ wheels = [
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.9.0.20241206"
+version = "2.9.0.20250516"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a9/60/47d92293d9bc521cd2301e423a358abfac0ad409b3a1606d8fbae1321961/types_python_dateutil-2.9.0.20241206.tar.gz", hash = "sha256:18f493414c26ffba692a72369fea7a154c502646301ebfe3d56a04b3767284cb", size = 13802, upload-time = "2024-12-06T02:56:41.019Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ef/88/d65ed807393285204ab6e2801e5d11fbbea811adcaa979a2ed3b67a5ef41/types_python_dateutil-2.9.0.20250516.tar.gz", hash = "sha256:13e80d6c9c47df23ad773d54b2826bd52dbbb41be87c3f339381c1700ad21ee5", size = 13943, upload-time = "2025-05-16T03:06:58.385Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0f/b3/ca41df24db5eb99b00d97f89d7674a90cb6b3134c52fb8121b6d8d30f15c/types_python_dateutil-2.9.0.20241206-py3-none-any.whl", hash = "sha256:e248a4bc70a486d3e3ec84d0dc30eec3a5f979d6e7ee4123ae043eedbb987f53", size = 14384, upload-time = "2024-12-06T02:56:39.412Z" },
+    { url = "https://files.pythonhosted.org/packages/c5/3f/b0e8db149896005adc938a1e7f371d6d7e9eca4053a29b108978ed15e0c2/types_python_dateutil-2.9.0.20250516-py3-none-any.whl", hash = "sha256:2b2b3f57f9c6a61fba26a9c0ffb9ea5681c9b83e69cd897c6b5f668d9c0cab93", size = 14356, upload-time = "2025-05-16T03:06:57.249Z" },
 ]
 
 [[package]]

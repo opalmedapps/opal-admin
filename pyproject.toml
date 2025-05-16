@@ -67,9 +67,9 @@ dev = [
     "pytest-socket==0.7.0",
     "pytest-sugar==1.0.0",
     "ruff==0.11.10",
-    "types-beautifulsoup4==4.12.0.20250204",
-    "types-fpdf2==2.8.3.20250426",
-    "types-python-dateutil==2.9.0.20241206",
+    "types-beautifulsoup4==4.12.0.20250516",
+    "types-fpdf2==2.8.3.20250516",
+    "types-python-dateutil==2.9.0.20250516",
     "types-requests==2.32.0.20250515",
 ]
 docs = [
