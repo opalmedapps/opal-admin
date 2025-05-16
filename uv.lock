@@ -8,7 +8,6 @@ version = "0"
 source = { virtual = "." }
 dependencies = [
     { name = "argon2-cffi" },
-    { name = "choreographer" },
     { name = "crispy-bootstrap5" },
     { name = "dj-rest-auth" },
     { name = "django" },
@@ -81,7 +80,6 @@ prod = [
 [package.metadata]
 requires-dist = [
     { name = "argon2-cffi", specifier = "==23.1.0" },
-    { name = "choreographer", specifier = "==0.99.7" },
     { name = "crispy-bootstrap5", specifier = "==2025.4" },
     { name = "dj-rest-auth", specifier = "==7.0.1" },
     { name = "django", specifier = "==4.2.21" },
@@ -101,12 +99,12 @@ requires-dist = [
     { name = "drf-spectacular", specifier = "==0.28.0" },
     { name = "fpdf2", specifier = "==2.8.2" },
     { name = "hl7apy", specifier = "==1.3.5" },
-    { name = "kaleido", specifier = "==1.0.0rc0" },
+    { name = "kaleido", specifier = "==1.0.0rc13" },
     { name = "mysqlclient", specifier = "==2.2.7" },
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "pandas", specifier = "==2.2.3" },
     { name = "pillow", specifier = "==11.2.1" },
-    { name = "plotly", specifier = "==6.0.1" },
+    { name = "plotly", specifier = "==6.1.0" },
     { name = "pydantic", specifier = "==2.11.4" },
     { name = "qrcode", specifier = "==8.2" },
     { name = "requests", specifier = "==2.32.3" },
@@ -267,15 +265,6 @@ wheels = [
 ]
 
 [[package]]
-name = "async-timeout"
-version = "5.0.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a5/ae/136395dfbfe00dfc94da3f3e136d0b13f394cba8f4841120e34226265780/async_timeout-5.0.1.tar.gz", hash = "sha256:d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3", size = 9274, upload-time = "2024-11-06T16:41:39.6Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/fe/ba/e2081de779ca30d473f21f5b30e0e737c438205440784c7dfc81efc2b029/async_timeout-5.0.1-py3-none-any.whl", hash = "sha256:39e3809566ff85354557ec2398b55e096c8364bacac9405a7a1fa429e77fe76c", size = 6233, upload-time = "2024-11-06T16:41:37.9Z" },
-]
-
-[[package]]
 name = "attrs"
 version = "25.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -408,14 +397,15 @@ wheels = [
 
 [[package]]
 name = "choreographer"
-version = "0.99.7"
+version = "1.0.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "logistro" },
     { name = "simplejson" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/04/ff/2ca24b0bbf665555f4aaa4acdb5645043ee1237215a0e8dc7568eec14957/choreographer-0.99.7.tar.gz", hash = "sha256:cdb98712fe950bc3c37f2fb8c381582cdd4779f013fc40ec3e3d1d749187577e", size = 22493, upload-time = "2024-11-20T18:49:19.64Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/49/99/9258997caddcbde122181fea930f42c9e2093c442d764d0a36eb393b679e/choreographer-1.0.7.tar.gz", hash = "sha256:674c0ee40d1d2248ca626e001a57f88ee8205971ec51761a323fbceb23d6b7ac", size = 40256, upload-time = "2025-04-16T22:15:39.046Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/ab/b7b53fd6cfb5dc850c2e48819b4047457408f85f6137d3df0f2bf20e2216/choreographer-0.99.7-py3-none-any.whl", hash = "sha256:02b66165ec09547d4bbff8278f8a64cc036589d426e70f7f04f4804fbc4da292", size = 20507, upload-time = "2024-11-20T18:49:18.683Z" },
+    { url = "https://files.pythonhosted.org/packages/dc/7f/0d3d45b078ce826044b402560710c9ea78a5feaf4e6dfd41b8ac7a24049c/choreographer-1.0.7-py3-none-any.whl", hash = "sha256:fba5548a850d49befb066a03c747f96a04613edbfa386fbbe08b0e4793c5ece6", size = 51143, upload-time = "2025-04-16T22:15:37.148Z" },
 ]
 
 [[package]]
@@ -968,15 +958,25 @@ wheels = [
 
 [[package]]
 name = "kaleido"
-version = "1.0.0rc0"
+version = "1.0.0rc13"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "async-timeout" },
     { name = "choreographer" },
+    { name = "logistro" },
+    { name = "orjson" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a0/ee/918c3add926f1abae064f2625efcd00c515b129267e11480c6fd7272b758/kaleido-1.0.0rc0.tar.gz", hash = "sha256:fc3cab45dda7f20b24539feb8fcc275bf674ebb382befdd93933eb5c43e24e65", size = 3317126, upload-time = "2024-11-19T17:27:53.965Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/af/8b/1c76fb839274b506b9d35bd00f46e49d3c32ca3179579452ca016f67f955/kaleido-1.0.0rc13.tar.gz", hash = "sha256:81ee99cc6c7c243b5832a2555bf75b8118173b7bcb9f94fb762c7b9b8a7eac60", size = 49819, upload-time = "2025-04-30T17:51:30.256Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b6/62/5ece120df79e0d58129c3943b8dc0976108e4eb9e0cbdaf1869ede014c11/kaleido-1.0.0rc0-py3-none-any.whl", hash = "sha256:92d8b74b5d1015b43d2f61b90036408100ad4e423a4a1f63116d37c32fd87102", size = 3822462, upload-time = "2024-11-19T17:27:51.052Z" },
+    { url = "https://files.pythonhosted.org/packages/90/9d/415b612800d72d4c5ddd0c98f8016063ed969ae43236ae50e2e2b09483fd/kaleido-1.0.0rc13-py3-none-any.whl", hash = "sha256:aa4a7adc4f9ac252695bfb0d107029c351a59543f6ace86331648b1ce616201d", size = 51945, upload-time = "2025-04-30T17:51:29.222Z" },
+]
+
+[[package]]
+name = "logistro"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/27/c1/aa8bc9e07e4b4bd9a3bc05804c483ba3f334c94dcd54995da856103a204d/logistro-1.1.0.tar.gz", hash = "sha256:ad51f0efa2bc705bea7c266e8a759cf539457cf7108202a5eec77bdf6300d774", size = 8269, upload-time = "2025-04-26T20:14:11.012Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bc/df/e51691ab004d74fa25b751527d041ad1b4d84ee86cbcb8630ab0d7d5188e/logistro-1.1.0-py3-none-any.whl", hash = "sha256:4f88541fe7f3c545561b754d86121abd9c6d4d8b312381046a78dcd794fddc7c", size = 7894, upload-time = "2025-04-26T20:14:09.363Z" },
 ]
 
 [[package]]
@@ -1230,11 +1230,11 @@ wheels = [
 
 [[package]]
 name = "narwhals"
-version = "1.39.0"
+version = "1.39.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/80/eb/50bd207820ac84b86dee216e2caf3fdf456e59bc854543f8d0ab8637cd66/narwhals-1.39.0.tar.gz", hash = "sha256:6f114def701fc6a23b0523ad53700ae545ad3f5ece041c64dc3ad59e699da43f", size = 471928, upload-time = "2025-05-12T10:01:51.352Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/56/e6/66682dd5ffe656358e07194fa9551b1d41e33952831a40553e791dd98dfc/narwhals-1.39.1.tar.gz", hash = "sha256:cf15389e6f8c5321e8cd0ca8b5bace3b1aea5f5622fa59dfd64821998741d836", size = 484444, upload-time = "2025-05-15T17:45:10.967Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/22/58/a12a534269aa5ba9abdf73a9e0deb600297b71cbf7291bca212944663143/narwhals-1.39.0-py3-none-any.whl", hash = "sha256:50b6778f4b4249eb86c88dd17c3907dd004a16ec25b02d5effaf226a2bcfb940", size = 339242, upload-time = "2025-05-12T10:01:49.069Z" },
+    { url = "https://files.pythonhosted.org/packages/70/c4/b83520ecc27840a4d58bd585ae0ec0f8a4f2b0c5a965b66749254a54de0e/narwhals-1.39.1-py3-none-any.whl", hash = "sha256:68d0f29c760f1a9419ada537f35f21ff202b0be1419e6d22135a0352c6d96deb", size = 355009, upload-time = "2025-05-15T17:45:07.954Z" },
 ]
 
 [[package]]
@@ -1399,15 +1399,15 @@ wheels = [
 
 [[package]]
 name = "plotly"
-version = "6.0.1"
+version = "6.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "narwhals" },
     { name = "packaging" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c7/cc/e41b5f697ae403f0b50e47b7af2e36642a193085f553bf7cc1169362873a/plotly-6.0.1.tar.gz", hash = "sha256:dd8400229872b6e3c964b099be699f8d00c489a974f2cfccfad5e8240873366b", size = 8094643, upload-time = "2025-03-17T15:02:23.994Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a9/e3/66eabba0b35095027e1ae5cb2e091cd168d44362242b5496baac9a460697/plotly-6.1.0.tar.gz", hash = "sha256:f13f497ccc2d97f06f771a30b27fab0cbd220f2975865f4ecbc75057135521de", size = 7545417, upload-time = "2025-05-15T16:04:39.532Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/02/65/ad2bc85f7377f5cfba5d4466d5474423a3fb7f6a97fd807c06f92dd3e721/plotly-6.0.1-py3-none-any.whl", hash = "sha256:4714db20fea57a435692c548a4eb4fae454f7daddf15f8d8ba7e1045681d7768", size = 14805757, upload-time = "2025-03-17T15:02:18.73Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/11/83ae52318353f9da4a88cc23e7f9dbc3d449b3f0fd6158fba15eb3c3b816/plotly-6.1.0-py3-none-any.whl", hash = "sha256:a29d3ed523c9d7960095693af1ee52689830df0f9c6bae3e5e92c20c4f5684c3", size = 16118476, upload-time = "2025-05-15T16:04:30.81Z" },
 ]
 
 [[package]]
