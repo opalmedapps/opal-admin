@@ -1144,16 +1144,16 @@ python-legacy = [
 
 [[package]]
 name = "mkdocstrings-python-legacy"
-version = "0.2.4"
+version = "0.2.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "mkdocs-autorefs" },
     { name = "mkdocstrings" },
     { name = "pytkdocs" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2a/8a/04c14190a64f29d4f85a6ceee0701a11d6899db85ffc15beb23a90437804/mkdocstrings_python_legacy-0.2.4.tar.gz", hash = "sha256:36d160ac7af5a3cec764eeb66522f42a116088a41289e04372592b91e14abbbc", size = 97213, upload-time = "2024-09-07T15:00:30.204Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/39/4b/3b1724ae9d82646c81f9dda3a7e3a0101f433e0b9e4344157b6e3a4e48b2/mkdocstrings_python_legacy-0.2.7.tar.gz", hash = "sha256:1aa8a277a332fb0d49be3786de3fa18af7d8792e8d611f6ba8d550dc3a1ff8a1", size = 99605, upload-time = "2025-05-22T10:58:41.657Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/05/10/5bfba474535450b07423df0a7e2b467148bbe83db15c509caba5472905a5/mkdocstrings_python_legacy-0.2.4-py3-none-any.whl", hash = "sha256:e2a05d9355500d8f596a0bfc2a5728af91300432def90bc605ed484b0052efa0", size = 27568, upload-time = "2024-09-07T15:00:28.526Z" },
+    { url = "https://files.pythonhosted.org/packages/e2/25/b353bc04f24502ea0afe129b3045b73f3297e828e4baaf33c286417a9657/mkdocstrings_python_legacy-0.2.7-py3-none-any.whl", hash = "sha256:c24a0a5867749fd826dfa190e10afcbd4c415cbcb2f805fc4791472b4bf221e9", size = 29263, upload-time = "2025-05-22T10:58:40.161Z" },
 ]
 
 [[package]]
