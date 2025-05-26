@@ -62,7 +62,7 @@ dev = [
     "pre-commit==4.2.0",
     "pytest==8.3.5",
     "pytest-django==4.11.1",
-    "pytest-mock==3.14.0",
+    "pytest-mock==3.14.1",
     "pytest-randomly==3.16.0",
     "pytest-socket==0.7.0",
     "pytest-sugar==1.0.0",
