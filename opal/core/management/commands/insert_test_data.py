@@ -908,7 +908,6 @@ def _create_caregiver(  # noqa: PLR0913, PLR0917
 
     # User passwords aren't currently saved in Django
     user.set_unusable_password()
-    print(f'checking {user}: {user.phone_number}')
     user.full_clean()
     user.save()
 
