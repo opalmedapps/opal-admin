@@ -228,7 +228,7 @@ if env.get_value('FEDAUTH_API_ENDPOINT', default=None):  # pragma: no cover
     FEDAUTH_API_ENDPOINT = env.url('FEDAUTH_API_ENDPOINT').geturl()
     FEDAUTH_INSTITUTION = env.str('FEDAUTH_INSTITUTION')
 
-    AUTHENTICATION_BACKENDS.append('opal.users.backends.FedAuthBackend')
+    AUTHENTICATION_BACKENDS.append('opal.core.auth.FedAuthBackend')
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
