@@ -58,7 +58,7 @@ dev = [
     "djangorestframework-stubs==3.15.3",
     "factory-boy==3.3.3",
     "mypy[faster-cache]==1.15.0",
-    "pandas-stubs==2.2.3.250308",
+    "pandas-stubs==2.2.3.250527",
     "pre-commit==4.2.0",
     "pytest==8.3.5",
     "pytest-django==4.11.1",
