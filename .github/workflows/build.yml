@@ -42,9 +42,9 @@ jobs:
           SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
           sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
           # ensure that the fedauth auth backend is correct
-          FEDAUTH_API_ENDPOINT=https://example.com
-          sed -i "s/^FEDAUTH_API_ENDPOINT=.*/FEDAUTH_API_ENDPOINT=$FEDAUTH_API_ENDPOINT/" .env
-          sed -i "s/^FEDAUTH_INSTITUTION=.*/FEDAUTH_INSTITUTION=test/" .env
+          FEDAUTH_API_ENDPOINT="https:\/\/example.com"
+          sed -i "s/^# FEDAUTH_API_ENDPOINT=.*/FEDAUTH_API_ENDPOINT=$FEDAUTH_API_ENDPOINT/" .env
+          sed -i "s/^# FEDAUTH_INSTITUTION=.*/FEDAUTH_INSTITUTION=test/" .env
       - name: Test the image
         env:
           TAG: ${{ steps.build-image.outputs.tag }}
