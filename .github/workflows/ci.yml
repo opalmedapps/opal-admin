@@ -29,7 +29,7 @@ jobs:
         id: setup-uv
         with:
           # renovate: datasource=pypi dependency=uv
-          version: "0.7.8"
+          version: "0.7.9"
       - name: Install dependencies
         # docs dependencies required to type check scripts in docs/
         run: uv sync --locked --group docs
@@ -68,7 +68,7 @@ jobs:
         id: setup-uv
         with:
           # renovate: datasource=pypi dependency=uv
-          version: "0.7.8"
+          version: "0.7.9"
       - name: Install dependencies
         run: uv sync --locked --no-dev
       - name: Configure environment file
@@ -208,7 +208,7 @@ jobs:
         id: setup-uv
         with:
           # renovate: datasource=pypi dependency=uv
-          version: "0.7.8"
+          version: "0.7.9"
       - name: Install dependencies
         run: |
           uv sync --locked --no-dev --group docs
