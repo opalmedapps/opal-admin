@@ -95,7 +95,7 @@ class RelationshipType(models.Model):
     )
     role_type = models.CharField(
         verbose_name=_('Role Type'),
-        choices=RoleType.choices,
+        choices=RoleType.choices,  # type: ignore[misc]
         default=RoleType.CAREGIVER,
         max_length=14,
         help_text=_(

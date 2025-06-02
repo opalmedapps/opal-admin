@@ -25,4 +25,4 @@ class UserAdmin(DjangoUserAdmin[DjangoUser]):
         new_fieldsets = list(self.fieldsets) if self.fieldsets else []
         new_fieldsets.append((_('Extra'), {'fields': ('type', 'language', 'phone_number')}))
 
-        self.fieldsets = tuple(new_fieldsets)
+        self.fieldsets = tuple(new_fieldsets)  # type: ignore[misc]

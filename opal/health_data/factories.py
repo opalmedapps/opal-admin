@@ -21,7 +21,7 @@ class QuantitySample(DjangoModelFactory[models.QuantitySample]):
     start_date = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     device = 'Test Device'
     source = models.SampleSourceType.PATIENT
-    type = factory.Iterator(models.QuantitySampleType.values)
+    type = factory.Iterator(models.QuantitySampleType.values)  # type: ignore[misc]
     value = factory.Faker('pydecimal', left_digits=2, right_digits=2, min_value=0)
     viewed_at = None
     viewed_by = ''

@@ -320,11 +320,11 @@ def test_form_search_result_update(relationship_user: Client) -> None:
     assert response_get.status_code == HTTPStatus.OK
 
     # prepare data to post
-    data = model_to_dict(response_get.context_data['object'])  # type: ignore[attr-defined]
+    data = model_to_dict(response_get.context_data['object'])
     data['status'] = models.RelationshipStatus.CONFIRMED
     data['first_name'] = 'test_firstname'
     data['last_name'] = 'test_lastname'
-    data['cancel_url'] = response_get.context_data['cancel_url']  # type: ignore[attr-defined]
+    data['cancel_url'] = response_get.context_data['cancel_url']
 
     # post
     relationship_user.post(reverse('patients:relationships-view-update', kwargs={'pk': 1}), data=data)
@@ -343,8 +343,8 @@ def test_form_search_result_update_view(relationship_user: Client) -> None:
     )
     response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
-    assert response_get.context_data['form'].__class__ == forms.RelationshipAccessForm  # type: ignore[attr-defined]
-    assert response_get.context_data['view'].__class__ == ManageCaregiverAccessUpdateView  # type: ignore[attr-defined]
+    assert response_get.context_data['form'].__class__ == forms.RelationshipAccessForm
+    assert response_get.context_data['view'].__class__ == ManageCaregiverAccessUpdateView
 
 
 def test_form_search_result_default_success_url(relationship_user: Client) -> None:
@@ -356,10 +356,10 @@ def test_form_search_result_default_success_url(relationship_user: Client) -> No
     )
     response_get = relationship_user.get(reverse('patients:relationships-view-update', kwargs={'pk': 1}))
 
-    assert response_get.context_data['view'].get_context_data()['cancel_url'] == reverse(  # type: ignore[attr-defined]
+    assert response_get.context_data['view'].get_context_data()['cancel_url'] == reverse(
         'patients:relationships-list',
     )
-    assert response_get.context_data['view'].get_success_url() == reverse(  # type: ignore[attr-defined]
+    assert response_get.context_data['view'].get_success_url() == reverse(
         'patients:relationships-list',
     )
 
@@ -378,7 +378,7 @@ def test_form_search_result_http_referrer(relationship_user: Client) -> None:
     )
 
     # assert cancel_url being set when HTTP_REFERER is not empty
-    cancel_url = response_get.context_data['view'].get_context_data()['cancel_url']  # type: ignore[attr-defined]
+    cancel_url = response_get.context_data['view'].get_context_data()['cancel_url']
     assert cancel_url == 'patient/test/?search-query'
 
     relationship_data = model_to_dict(relationship)
