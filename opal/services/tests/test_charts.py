@@ -27,11 +27,11 @@ def test_generate_line_chart_empty() -> None:
 def test_generate_line_chart_missing_columns(caplog: LogCaptureFixture) -> None:
     """Ensure generate_line_chart handles missing columns gracefully and logs an error."""
     chart_data = CHART_DATA._replace(
-        data=pd.DataFrame(
+        data=pd.DataFrame([
             {'not_x': 10, 'not_y': 20, 'not_legend': 'test legend'},
             {'not_x': 20, 'not_y': 30, 'not_legend': 'test legend'},
             {'not_x': 30, 'not_y': 40, 'not_legend': 'test legend'},
-        ),
+        ]),
     )
 
     error = (
@@ -45,11 +45,11 @@ def test_generate_line_chart_missing_columns(caplog: LogCaptureFixture) -> None:
     assert not chart
 
     chart_data = CHART_DATA._replace(
-        data=pd.DataFrame(
+        data=pd.DataFrame([
             {'x': 10, 'y': 20, 'not_legend': 'test legend'},
             {'x': 20, 'y': 30, 'not_legend': 'test legend'},
             {'x': 30, 'y': 40, 'not_legend': 'test legend'},
-        ),
+        ]),
     )
 
     error = (
@@ -67,11 +67,11 @@ def test_generate_line_chart_missing_columns(caplog: LogCaptureFixture) -> None:
 def test_generate_line_chart_success() -> None:
     """Ensure generate_line_chart successfully produces line charts."""
     chart_data = CHART_DATA._replace(
-        data=pd.DataFrame(
+        data=pd.DataFrame([
             {'x': 10, 'y': 20, 'legend': 'test legend'},
             {'x': 20, 'y': 30, 'legend': 'test legend'},
             {'x': 30, 'y': 40, 'legend': 'test legend'},
-        ),
+        ]),
     )
 
     chart = chart_service.generate_line_chart(chart_data)
@@ -92,11 +92,11 @@ def test_generate_error_bar_chart_empty() -> None:
 def test_generate_error_bar_chart_missing_columns(caplog: LogCaptureFixture) -> None:
     """Ensure generate_error_bar_chart handles missing columns gracefully and logs an error."""
     chart_data = CHART_DATA._replace(
-        data=pd.DataFrame(
+        data=pd.DataFrame([
             {'not_x': 10, 'not_error_max': 100, 'not_error_min': 10, 'not_legend': 'test legend'},
             {'not_x': 20, 'not_error_max': 200, 'not_error_min': 20, 'not_legend': 'test legend'},
             {'not_x': 30, 'not_error_max': 300, 'not_error_min': 30, 'not_legend': 'test legend'},
-        ),
+        ]),
     )
 
     error = (
@@ -110,11 +110,11 @@ def test_generate_error_bar_chart_missing_columns(caplog: LogCaptureFixture) -> 
     assert not chart
 
     chart_data = CHART_DATA._replace(
-        data=pd.DataFrame(
+        data=pd.DataFrame([
             {'x': 10, 'error_max': 100, 'error_min': 10, 'not_legend': 'test legend'},
             {'x': 20, 'error_max': 200, 'error_min': 20, 'not_legend': 'test legend'},
             {'x': 30, 'error_max': 300, 'error_min': 30, 'not_legend': 'test legend'},
-        ),
+        ]),
     )
 
     error = (
@@ -132,11 +132,11 @@ def test_generate_error_bar_chart_missing_columns(caplog: LogCaptureFixture) -> 
 def test_generate_error_bar_chart_success() -> None:
     """Ensure generate_error_bar_chart successfully produces line charts."""
     chart_data = CHART_DATA._replace(
-        data=pd.DataFrame(
+        data=pd.DataFrame([
             {'x': 10, 'error_max': 100, 'error_min': 10, 'legend': 'test legend'},
             {'x': 20, 'error_max': 200, 'error_min': 20, 'legend': 'test legend'},
             {'x': 30, 'error_max': 300, 'error_min': 30, 'legend': 'test legend'},
-        ),
+        ]),
     )
 
     chart = chart_service.generate_error_bar_chart(chart_data)
@@ -151,11 +151,11 @@ def test_generate_error_bar_chart_success() -> None:
 def test_generate_error_bar_chart_custom_candle_labels() -> None:
     """Ensure generate_error_bar_chart correctly changes candle legend labels."""
     chart_data = CHART_DATA._replace(
-        data=pd.DataFrame(
+        data=pd.DataFrame([
             {'x': 10, 'error_max': 100, 'error_min': 10, 'legend': 'test legend'},
             {'x': 20, 'error_max': 200, 'error_min': 20, 'legend': 'test legend'},
             {'x': 30, 'error_max': 300, 'error_min': 30, 'legend': 'test legend'},
-        ),
+        ]),
     )
 
     chart = chart_service.generate_error_bar_chart(
