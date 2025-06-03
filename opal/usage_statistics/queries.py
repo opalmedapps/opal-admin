@@ -139,7 +139,7 @@ def fetch_patients_summary(
     Returns:
         patients summary for a given time period
     """
-    access_types = [access_type[0] for access_type in patients_models.DataAccessType.choices]
+    access_types = [access_type[0] for access_type in patients_models.DataAccessType.choices]  # type: ignore[misc]
     access_dict = {}
     for access_type in access_types:
         key_name = f'access_{access_type.lower()}'

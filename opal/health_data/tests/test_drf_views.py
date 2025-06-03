@@ -34,9 +34,9 @@ def _create_sample_data(
 ) -> dict[str, Any]:
     return {
         'value': value,
-        'type': sample_type.value,
+        'type': sample_type.value,  # type: ignore[misc]
         'start_date': timezone.now(),
-        'source': source.value,
+        'source': source.value,  # type: ignore[misc]
         'device': 'Awesome Smart Device (tm)',
     }
 
