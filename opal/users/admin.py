@@ -4,12 +4,27 @@
 
 """Module providing admin functionality for the users app."""
 
+from typing import TYPE_CHECKING, override
+
 from django.contrib import admin
+
+if TYPE_CHECKING:
+    from django.contrib.admin.options import _FieldOpts  # noqa: PLC2701
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import User as DjangoUser
+from django.http import HttpRequest
 from django.utils.translation import gettext_lazy as _
 
+from django_stubs_ext import StrPromise
+
 from .models import Caregiver, ClinicalStaff, User
+
+# see: https://github.com/typeddjango/django-stubs/issues/1960
+type Fieldsets = (
+    list[tuple[str | StrPromise | None, _FieldOpts]]
+    | tuple[tuple[str | StrPromise | None, _FieldOpts], ...]
+    | tuple[()]
+)
 
 
 # use Django's default UserAdmin for now for all types of caregivers (until the User is actually customized)
@@ -17,12 +32,14 @@ from .models import Caregiver, ClinicalStaff, User
 class UserAdmin(DjangoUserAdmin[DjangoUser]):
     """Custom user admin that builds on Django's `UserAdmin` and adds the additional `User` fields to the fieldsets."""
 
-    def __init__(self, model: type[DjangoUser], admin_site: admin.AdminSite) -> None:
-        """Create admin and add extra fieldsets and list_displays."""
-        super().__init__(model, admin_site)
+    extra_fieldsets: Fieldsets = ((_('Extra'), {'fields': ('type', 'language', 'phone_number')}),)
 
-        # add our additional custom fields to the default fieldset
-        new_fieldsets = list(self.fieldsets) if self.fieldsets else []
-        new_fieldsets.append((_('Extra'), {'fields': ('type', 'language', 'phone_number')}))
+    @override
+    def get_fieldsets(self, request: HttpRequest, obj: DjangoUser | None = None) -> Fieldsets:
+        fieldsets = super().get_fieldsets(request, obj)
 
-        self.fieldsets = tuple(new_fieldsets)  # type: ignore[misc]
+        # add our additional custom fields to the default fieldsets
+        return (
+            *fieldsets,
+            *self.extra_fieldsets,
+        )
