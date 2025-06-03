@@ -53,7 +53,7 @@ class TestInsertTestData(CommandTestMixin):
         assert RelationshipType.objects.count() == 5
         assert RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).count() == 1
         assert Relationship.objects.count() == 13
-        assert SecurityAnswer.objects.count() == 21
+        assert SecurityAnswer.objects.count() == 24
         assert GeneralTest.objects.count() == 8
         assert PathologyObservation.objects.count() == 8
         assert Note.objects.count() == 8
@@ -126,7 +126,7 @@ class TestInsertTestData(CommandTestMixin):
         assert CaregiverProfile.objects.count() == 8
         assert Relationship.objects.count() == 13
         assert RelationshipType.objects.count() == 5
-        assert SecurityAnswer.objects.count() == 21
+        assert SecurityAnswer.objects.count() == 24
 
     def test_insert_existing_data_force_delete(self) -> None:
         """The existing data is deleted without confirmation."""

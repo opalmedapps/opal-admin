@@ -305,6 +305,15 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             legacy_id=93,
             mrns=mrn_data['John Smith'],
         )
+        richard = _create_patient(
+            first_name='Richard',
+            last_name='Smith',
+            date_of_birth=date(1946, 5, 5),
+            sex=SexType.MALE,
+            ramq='SMIR05054616',
+            legacy_id=94,
+            mrns=mrn_data['Richard Smith'],
+        )
         marge = _create_patient(
             first_name='Marge',
             last_name='Simpson',
@@ -313,18 +322,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             ramq='SIMM86600199',
             legacy_id=51,
             mrns=mrn_data['Marge Simpson'],
-        )
-
-        mona = _create_patient(
-            first_name='Mona',
-            last_name='Simpson',
-            date_of_birth=date(1940, 3, 15),
-            sex=SexType.FEMALE,
-            ramq='SIMM40531599',
-            legacy_id=55,
-            mrns=mrn_data['Mona Simpson'],
-            date_of_death=_relative_date(today, -2),
-            data_access=DataAccessType.NEED_TO_KNOW,
         )
 
         fred = _create_patient(
@@ -410,31 +407,29 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         user_cara = _create_caregiver(
             first_name=cara.first_name,
             last_name=cara.last_name,
-            username='4X1j2b3c4d5e6f7g8h9i0j1k2l3m4n5',
+            username='4X1j2b3c4d5e6f7g8h9i0j1k2l3m4n5',  # TODO
             email='cara@opalmedapps.ca',
             language='en',
             phone_number='',
-            legacy_id=999,
+            legacy_id=999,  # TODO
         )
         user_john = _create_caregiver(
-            first_name='John',
-            last_name='Smith',
+            first_name=john.first_name,
+            last_name=john.last_name,
             username='hIMnEXkedPMxYnXeqNXzphklu4V2',
             email='john@opalmedapps.ca',
             language='en',
             phone_number='',
             legacy_id=8,
         )
-
-        user_mona = _create_caregiver(
-            first_name=mona.first_name,
-            last_name=mona.last_name,
-            username='61DXBRwLCmPxlaUoX6M1MP9DiEl1',
-            email='mona@opalmedapps.ca',
+        user_richard = _create_caregiver(
+            first_name=richard.first_name,
+            last_name=richard.last_name,
+            username='5X6Y7Z8A9B0C1D2E3F4G5H6I7J8K9L0',  # TODO
+            email='richard@opalmedapps.ca',
             language='en',
-            phone_number='+15144758941',
-            legacy_id=4,
-            is_active=False,
+            phone_number='',
+            legacy_id=998,  # TODO
         )
 
         user_fred = _create_caregiver(
@@ -451,7 +446,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
     type_self = RelationshipType.objects.self_type()
     type_parent = RelationshipType.objects.parent_guardian()
     type_caregiver = RelationshipType.objects.guardian_caregiver()
-    type_mandatary = RelationshipType.objects.mandatary()
 
     # relationships
     date_bart_fourteen = _relative_date(bart.date_of_birth, 14)
@@ -488,16 +482,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             start_date=_relative_date(today, -14),
         )
 
-        # John --> John: Self
-        _create_relationship(
-            patient=john,
-            caregiver=user_john,
-            relationship_type=type_self,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),
-            start_date=_relative_date(today, -14),
-        )
-
         # Cara --> Cara: Self
         _create_relationship(
             patient=cara,
@@ -518,6 +502,36 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             start_date=_relative_date(today, -14),  # TBC
         )
 
+        # John --> John: Self
+        _create_relationship(
+            patient=john,
+            caregiver=user_john,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -14),
+            start_date=_relative_date(today, -14),
+        )
+
+        # Richard --> Richard: Self
+        _create_relationship(
+            patient=richard,
+            caregiver=user_richard,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -14),  # TBC
+            start_date=_relative_date(today, -14),  # TBC
+        )
+
+        # John --> Richard: Family & Friends
+        _create_relationship(
+            patient=richard,
+            caregiver=user_john,
+            relationship_type=type_family,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -14),  # TBC
+            start_date=_relative_date(today, -14),  # TBC
+        )
+
         # Marge --> Marge: Self
         _create_relationship(
             patient=marge,
@@ -526,30 +540,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             status=RelationshipStatus.CONFIRMED,
             request_date=_relative_date(today, -4),
             start_date=_relative_date(today, -6),
-        )
-
-        # Marge --> Mona: Mandatary
-        _create_relationship(
-            patient=mona,
-            caregiver=user_marge,
-            relationship_type=type_mandatary,
-            status=RelationshipStatus.EXPIRED,
-            request_date=_relative_date(today, -5),
-            start_date=_relative_date(today, -3),
-            end_date=_relative_date(today, -2),
-            reason='Patient deceased.',
-        )
-
-        # Mona --> Mona: Self
-        _create_relationship(
-            patient=mona,
-            caregiver=user_mona,
-            relationship_type=type_self,
-            status=RelationshipStatus.EXPIRED,
-            request_date=_relative_date(today, -5),
-            start_date=_relative_date(today, -4),
-            end_date=_relative_date(today, -2),
-            reason='Patient deceased.',
         )
 
         # Marge --> Bart: Guardian/Parent
@@ -612,6 +602,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         _create_security_answers(user_rory)
         _create_security_answers(user_cara)
         _create_security_answers(user_john)
+        _create_security_answers(user_richard)
         _create_security_answers(user_fred)
 
     _create_security_answers(user_marge)
