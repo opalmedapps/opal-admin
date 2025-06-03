@@ -27,13 +27,13 @@ from opal.patients.models import (
     Relationship,
     RelationshipStatus,
     RelationshipType,
+    RoleType,
     SexType,
 )
 from opal.test_results.models import GeneralTest, Note, PathologyObservation, TestType
 from opal.users.models import Caregiver
 
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
-PARKING_URLS_MUHC = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
 
 
 class InstitutionOption(Enum):
@@ -197,6 +197,8 @@ class Command(BaseCommand):
 def _delete_existing_data() -> None:
     """Delete all the existing test data."""
     Relationship.objects.all().delete()
+    # delete any custom relationship types
+    RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).delete()
     Patient.objects.all().delete()
     # also deletes security answers
     CaregiverProfile.objects.all().delete()
@@ -229,6 +231,17 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
     # hospital settings
     institution = create_institution(institution_option)
     sites = create_sites(institution_option, institution)
+
+    # create Family & Friends relationship type
+    RelationshipType.objects.create(
+        name='Family & Friends',
+        name_fr='Famille et Amis',
+        description='Family & Friends',
+        description_fr='Famille et Amis',
+        start_age=14,
+        end_age=120,
+        form_required=False,
+    )
 
     mrn_data: dict[str, list[tuple[Site, str]]] = {}
 

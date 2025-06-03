@@ -22,7 +22,7 @@ from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
 from opal.legacy import models as legacy_models
 from opal.patients import factories
-from opal.patients.models import HospitalPatient, Patient, Relationship
+from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
 from opal.test_results.models import GeneralTest, Note, PathologyObservation
 from opal.users.models import Caregiver, User
 
@@ -50,6 +50,8 @@ class TestInsertTestData(CommandTestMixin):
         assert Patient.objects.count() == 10
         assert HospitalPatient.objects.count() == 10
         assert CaregiverProfile.objects.count() == 8
+        assert RelationshipType.objects.count() == 5
+        assert RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).count() == 1
         assert Relationship.objects.count() == 13
         assert SecurityAnswer.objects.count() == 21
         assert GeneralTest.objects.count() == 9
@@ -67,6 +69,8 @@ class TestInsertTestData(CommandTestMixin):
         assert Patient.objects.count() == 2
         assert HospitalPatient.objects.count() == 2
         assert CaregiverProfile.objects.count() == 2
+        assert RelationshipType.objects.count() == 5
+        assert RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).count() == 1
         assert Relationship.objects.count() == 3
         assert SecurityAnswer.objects.count() == 6
         assert GeneralTest.objects.count() == 0
@@ -87,7 +91,8 @@ class TestInsertTestData(CommandTestMixin):
     def test_insert_existing_data_delete(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """The existing data is deleted when confirmed and new data added."""
         monkeypatch.setattr('builtins.input', lambda _: 'yes')
-        relationship = factories.Relationship.create()
+        relationship_type = factories.RelationshipType.create(name='Family', role_type=RoleType.CAREGIVER)
+        relationship = factories.Relationship.create(type=relationship_type)
         hospital_patient = factories.HospitalPatient.create()
         security_answer = caregiver_factories.SecurityAnswer.create(user=relationship.caregiver)
 
@@ -103,6 +108,7 @@ class TestInsertTestData(CommandTestMixin):
         assert 'Test data successfully created' in stdout
 
         # old data was deleted
+        assert not RelationshipType.objects.filter(pk=relationship_type.pk).exists()
         assert not Relationship.objects.filter(pk=relationship.pk).exists()
         assert not HospitalPatient.objects.filter(pk=hospital_patient.pk).exists()
         assert not Institution.objects.filter(pk=institution.pk).exists()
@@ -119,6 +125,7 @@ class TestInsertTestData(CommandTestMixin):
         assert HospitalPatient.objects.count() == 10
         assert CaregiverProfile.objects.count() == 8
         assert Relationship.objects.count() == 13
+        assert RelationshipType.objects.count() == 5
         assert SecurityAnswer.objects.count() == 21
 
     def test_insert_existing_data_force_delete(self) -> None:
