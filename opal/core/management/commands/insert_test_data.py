@@ -241,9 +241,9 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
     # create Family & Friends relationship type
     type_family = RelationshipType.objects.create(
         name='Family & Friends',
-        name_fr='Famille et Amis',
+        name_fr='Famille et amis',
         description='Family & Friends',
-        description_fr='Famille et Amis',
+        description_fr='Famille et amis',
         start_age=14,
         end_age=120,
         form_required=False,
