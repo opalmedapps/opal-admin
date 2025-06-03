@@ -62,7 +62,7 @@ INSTITUTION_DATA = MappingProxyType({
     InstitutionOption.ohigph: {
         'name': 'Opal Demo 2',
         'name_fr': 'Démo de Opal 2',
-        'acronym_fr': 'HPOHIG',
+        'acronym_fr': 'DO2',
         'support_email': 'info@opalmedapps.ca',
     },
 })
@@ -83,10 +83,10 @@ SITE_DATA = MappingProxyType({
     ],
     InstitutionOption.ohigph: [
         (
-            'OHIG Pediatric Hospital',
-            'Hôpital Pédiatrique OHIG',
-            'CHUSJ',
-            'CHUSJ',
+            'Opal Demo Hospital 2',
+            "Hôpital démo d'Opal 2",
+            'ODH2',
+            'HDO2',
             (
                 'https://www.chusj.org/en/a-propos/coordonnees/Stationnement',
                 'https://www.chusj.org/a-propos/coordonnees/Stationnement',
@@ -113,12 +113,19 @@ MRN_DATA = MappingProxyType({
         'Pebbles Flintstone': [('ODH', '9999999')],
         'Wednesday Addams': [('ODH', '9999991')],
         'Laurie Opal': [('ODH', '1092300')],
+        "Cara O'Brien": [('ODH', '8888885')],
         "Rory O'Brien": [('ODH', '9999989')],
         'John Smith': [('ODH', '9999994')],
+        'Richard Smith': [('ODH', '8888882')],
+        'Mike Brown': [('ODH', '8888881')],
+        'Kathy Brown': [('ODH', '8888880')],
+        'Valerie Solanas': [('ODH', '5555553')],
+        'Martin Curley': [('ODH', '5555559')],
+        'Pete Boyd': [('ODH', '5555554')],
     },
     InstitutionOption.ohigph: {
-        'Bart Simpson': [('CHUSJ', '9999996')],
-        'Lisa Simpson': [('CHUSJ', '9999993')],
+        'Bart Simpson': [('ODH2', '9999996')],
+        'Lisa Simpson': [('ODH2', '9999993')],
     },
 })
 
