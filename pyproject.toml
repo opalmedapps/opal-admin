@@ -9,7 +9,7 @@ description = "New administrative web application used to configure Opal and its
 readme = "README.md"
 requires-python = "==3.12.10"
 dependencies = [
-    "argon2-cffi==23.1.0",
+    "argon2-cffi==25.1.0",
     "crispy-bootstrap5==2025.4",
     "dj-rest-auth==7.0.1",
     "django==4.2.21",
