@@ -326,7 +326,7 @@ class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory[models.LegacyPat
         model = models.LegacyPatientHospitalIdentifier
 
     patient = SubFactory(LegacyPatientFactory)
-    hospital = SubFactory(LegacyHospitalIdentifierTypeFactory)
+    hospital = 'RVH'
     mrn = '9999996'
     is_active = True
 
