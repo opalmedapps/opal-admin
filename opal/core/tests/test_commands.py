@@ -49,14 +49,14 @@ class TestInsertTestData(CommandTestMixin):
         assert Site.objects.count() == 1
         assert Patient.objects.count() == 10
         assert HospitalPatient.objects.count() == 10
-        assert CaregiverProfile.objects.count() == 9
+        assert CaregiverProfile.objects.count() == 10
         assert RelationshipType.objects.count() == 5
         assert RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).count() == 1
-        assert Relationship.objects.count() == 12
-        assert SecurityAnswer.objects.count() == 27
-        assert GeneralTest.objects.count() == 4
-        assert PathologyObservation.objects.count() == 4
-        assert Note.objects.count() == 4
+        assert Relationship.objects.count() == 13
+        assert SecurityAnswer.objects.count() == 30
+        assert GeneralTest.objects.count() == 3
+        assert PathologyObservation.objects.count() == 3
+        assert Note.objects.count() == 3
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_ohigph(self) -> None:
@@ -123,10 +123,10 @@ class TestInsertTestData(CommandTestMixin):
         assert Site.objects.count() == 1
         assert Patient.objects.count() == 10
         assert HospitalPatient.objects.count() == 10
-        assert CaregiverProfile.objects.count() == 9
-        assert Relationship.objects.count() == 12
+        assert CaregiverProfile.objects.count() == 10
+        assert Relationship.objects.count() == 13
         assert RelationshipType.objects.count() == 5
-        assert SecurityAnswer.objects.count() == 27
+        assert SecurityAnswer.objects.count() == 30
 
     def test_insert_existing_data_force_delete(self) -> None:
         """The existing data is deleted without confirmation."""

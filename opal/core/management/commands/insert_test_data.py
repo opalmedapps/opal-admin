@@ -116,11 +116,7 @@ MRN_DATA = MappingProxyType({
         'Valerie Solanas': [('ODH', '5555553')],
         'Martin Curley': [('ODH', '5555559')],
         'Pete Boyd': [('ODH', '5555554')],
-        'Marge Simpson': [('ODH', '9999996')],
         'Bart Simpson': [('ODH', '9999995')],
-        'Mona Simpson': [('ODH', '9999993')],
-        'Fred Flintstone': [('ODH', '9999998')],
-        'Pebbles Flintstone': [('ODH', '9999999')],
         'Wednesday Addams': [('ODH', '9999991')],
     },
     InstitutionOption.ohigph: {
@@ -342,16 +338,16 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             legacy_id=99,
             mrns=mrn_data['Valerie Solanas'],
         )
-
-        wednesday = _create_patient(
-            first_name='Wednesday',
-            last_name='Addams',
-            date_of_birth=_create_date(15, 2, 13),
-            sex=SexType.FEMALE,
-            ramq='ADAW09021399',
-            legacy_id=58,
-            mrns=mrn_data['Wednesday Addams'],
+        pete = _create_patient(
+            first_name='Pete',
+            last_name='Boyd',
+            date_of_birth=date(1971, 6, 11),
+            sex=SexType.MALE,
+            ramq='BOYP06117199',
+            legacy_id=100,
+            mrns=mrn_data['Pete Boyd'],
         )
+
     # Bart exists at both institutions
     bart = _create_patient(
         first_name='Bart',
@@ -446,6 +442,15 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             language='en',
             phone_number='',
             legacy_id=995,  # TODO
+        )
+        user_pete = _create_caregiver(
+            first_name=pete.first_name,
+            last_name=pete.last_name,
+            username='pete_boyd_12345',  # TODO
+            email='pete@opalmedapps.ca',
+            language='en',
+            phone_number='',
+            legacy_id=994,  # TODO
         )
 
     # get relationship types
@@ -566,6 +571,17 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             request_date=_relative_date(today, -14),  # TBC
             start_date=_relative_date(today, -14),  # TBC
         )
+
+        # Pete --> Pete: Self
+        _create_relationship(
+            patient=pete,
+            caregiver=user_pete,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -14),  # TBC
+            start_date=_relative_date(today, -14),  # TBC
+        )
+
     # The rest of the relationships exist at both institutions
 
     # Bart --> Bart
@@ -588,10 +604,11 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         _create_security_answers(user_mike)
         _create_security_answers(user_kathy)
         _create_security_answers(user_valerie)
+        _create_security_answers(user_pete)
 
     _create_security_answers(user_bart)
 
-    # Pathology reports for Marge, Bart, Homer, Fred, Pebbles, and Wednesday
+    # Pathology reports for patients
     # Pathology reports are currently not intended to be rolled out at Sainte-Justine which is a pediatric hospital
     if not is_pediatric:
         # Bart received his pathology 5 days ago
@@ -602,15 +619,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             received_at=timezone.now() - relativedelta(years=0, months=0, days=5),
             reported_at=timezone.now() - relativedelta(years=0, months=0, days=5),
             legacy_document_id=5,
-        )
-        # Wednesday received her pathology 15 days ago
-        _create_pathology_result(
-            patient=wednesday,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=15),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=15),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=15),
-            legacy_document_id=16,
         )
         # Create a fake pathology for laurie as well to complete her dataset
         # Laurie received her pathology 15 days ago
