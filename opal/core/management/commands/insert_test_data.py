@@ -116,11 +116,8 @@ MRN_DATA = MappingProxyType({
         'Valerie Solanas': [('ODH', '5555553')],
         'Martin Curley': [('ODH', '5555559')],
         'Pete Boyd': [('ODH', '5555554')],
-        'Bart Simpson': [('ODH', '9999995')],
-        'Wednesday Addams': [('ODH', '9999991')],
     },
     InstitutionOption.ohigph: {
-        'Bart Simpson': [('ODH2', '9999996')],
         'Lisa Simpson': [('ODH2', '9999993')],
     },
 })
