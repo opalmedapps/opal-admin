@@ -310,15 +310,6 @@ class LegacySecurityAnswerFactory(DjangoModelFactory[models.LegacySecurityAnswer
     lastupdated = dt.datetime(2022, 9, 27, tzinfo=timezone.get_current_timezone())
 
 
-class LegacyHospitalIdentifierTypeFactory(DjangoModelFactory[models.LegacyHospitalIdentifierType]):
-    """Hospital_Identifier_Type factory from the legacy database OpalDB."""
-
-    class Meta:
-        model = models.LegacyHospitalIdentifierType
-
-    code = 'RVH'
-
-
 class LegacyPatientHospitalIdentifierFactory(DjangoModelFactory[models.LegacyPatientHospitalIdentifier]):
     """Patient_Hospital_Identifier factory from the legacy database OpalDB."""
 

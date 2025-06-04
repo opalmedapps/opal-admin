@@ -281,7 +281,7 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         """Test import pass for patient and fail patient identifier already exists."""
         legacy_patient = legacy_factories.LegacyPatientFactory.create(patientsernum=99)
         patient = patient_factories.Patient.create(legacy_id=99)
-        hospital = legacy_factories.LegacyHospitalIdentifierTypeFactory.create(code='TEST')
+        hospital = 'TEST'
         legacy_factories.LegacyPatientHospitalIdentifierFactory.create(
             hospital=hospital,
             patient=legacy_patient,
@@ -304,9 +304,9 @@ class TestPatientAndPatientIdentifierMigration(CommandTestMixin):
         """Test import fail for patient with multiple MRNs at the same site."""
         legacy_patient = legacy_factories.LegacyPatientFactory.create(patientsernum=10)
         patient_factories.Patient.create(legacy_id=10)
-        hospital = legacy_factories.LegacyHospitalIdentifierTypeFactory.create(code='TEST')
+        hospital = 'TEST'
         legacy_factories.LegacyPatientHospitalIdentifierFactory.create(
-            hospital=hospital,
+            hospital='TEST',
             patient=legacy_patient,
             mrn='9999996',
         )
@@ -669,7 +669,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         legacy_factories.LegacyPatientHospitalIdentifierFactory.create(
             patient=second_legacy_patient,
             mrn='9999997',
-            hospital=legacy_factories.LegacyHospitalIdentifierTypeFactory.create(code='MGH'),
+            hospital='MGH',
         )
 
         # create second `Patient` record
@@ -958,7 +958,7 @@ class TestPatientsDeviationsCommand(CommandTestMixin):
         legacy_factories.LegacyPatientHospitalIdentifierFactory.create(
             patient=second_legacy_patient,
             mrn='9999997',
-            hospital=legacy_factories.LegacyHospitalIdentifierTypeFactory.create(code='MGH'),
+            hospital='MGH',
         )
 
         # create second `Patient` record

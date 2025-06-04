@@ -497,16 +497,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
 
         # John --> John: Self
-        _create_relationship(
-            patient=cara,
-            caregiver=user_rory,
-            relationship_type=type_family,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
-        )
-
-        # John --> John: Self
         john_self = _create_relationship(
             patient=john,
             caregiver=user_john,

@@ -147,10 +147,6 @@ def test_insert_hospital_identifiers() -> None:
 
     legacy_patient = factories.LegacyPatientFactory.create(patientsernum=patient.legacy_id)
 
-    factories.LegacyHospitalIdentifierTypeFactory.create(code='RVH')
-    factories.LegacyHospitalIdentifierTypeFactory.create(code='MGH')
-    factories.LegacyHospitalIdentifierTypeFactory.create(code='MCH')
-
     legacy_utils.insert_hospital_identifiers(
         legacy_patient,
         [
@@ -164,17 +160,17 @@ def test_insert_hospital_identifiers() -> None:
     assert models.LegacyPatientHospitalIdentifier.objects.filter(patient=legacy_patient).count() == 3
     assert models.LegacyPatientHospitalIdentifier.objects.filter(
         mrn='9999995',
-        hospital__code='RVH',
+        hospital='RVH',
         is_active=True,
     ).exists()
     assert models.LegacyPatientHospitalIdentifier.objects.filter(
         mrn='7654321',
-        hospital__code='MGH',
+        hospital='MGH',
         is_active=True,
     ).exists()
     assert models.LegacyPatientHospitalIdentifier.objects.filter(
         mrn='1234567',
-        hospital__code='MCH',
+        hospital='MCH',
         is_active=False,
     ).exists()
 
@@ -192,10 +188,6 @@ def test_create_patient_control() -> None:
 def test_initialize_new_patient() -> None:
     """A legacy patient is initialized from an existing patient."""
     patient = patient_factories.Patient.create(ramq='SIMB04100199')
-
-    factories.LegacyHospitalIdentifierTypeFactory.create(code='RVH')
-    factories.LegacyHospitalIdentifierTypeFactory.create(code='MGH')
-    factories.LegacyHospitalIdentifierTypeFactory.create(code='MCH')
 
     legacy_patient = legacy_utils.initialize_new_patient(
         patient,

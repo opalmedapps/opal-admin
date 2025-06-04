@@ -25,7 +25,6 @@ from opal.caregivers.factories import CaregiverProfile, RegistrationCode
 from opal.core.test_utils import RequestMockerTest
 from opal.hospital_settings import models as hospital_models
 from opal.hospital_settings.factories import Institution, Site
-from opal.legacy.factories import LegacyHospitalIdentifierTypeFactory as LegacyHospitalIdentifierType
 from opal.legacy.factories import LegacyUserFactory as LegacyUser
 from opal.legacy.models import (
     LegacyEducationalMaterial,
@@ -513,7 +512,6 @@ def test_initialize_new_opal_patient_orms_success(mocker: MockerFixture) -> None
     mock_error_logger = mocker.patch('logging.Logger.info')
 
     rvh_site: hospital_models.Site = Site.create(acronym='RVH')
-    LegacyHospitalIdentifierType.create(code='RVH')
     mrn_list = [(rvh_site, '9999993', True)]
     patient = patient_factories.Patient.create()
     patient_uuid = uuid.uuid4()
@@ -531,7 +529,6 @@ def test_initialize_new_opal_patient_orms_success_disabled(mocker: MockerFixture
     mock_logger = mocker.patch('logging.Logger.info')
 
     rvh_site: hospital_models.Site = Site.create(acronym='RVH')
-    LegacyHospitalIdentifierType.create(code='RVH')
     mrn_list = [(rvh_site, '9999993', True)]
     patient = patient_factories.Patient.create()
     patient_uuid = uuid.uuid4()
@@ -547,7 +544,6 @@ def test_initialize_new_opal_patient_orms_error(mocker: MockerFixture) -> None:
     mock_error_logger = mocker.patch('logging.Logger.error')
 
     rvh_site: hospital_models.Site = Site.create(acronym='RVH')
-    LegacyHospitalIdentifierType.create(code='RVH')
     mrn_list = [(rvh_site, '9999993', True)]
     patient = patient_factories.Patient.create()
     patient_uuid = uuid.uuid4()
@@ -562,7 +558,6 @@ def test_initialize_new_opal_patient_source_system_success(mocker: MockerFixture
     mock_error_logger = mocker.patch('logging.Logger.info')
 
     rvh_site: hospital_models.Site = Site.create(acronym='RVH')
-    LegacyHospitalIdentifierType.create(code='RVH')
     mrn_list = [(rvh_site, '9999993', True)]
     patient = patient_factories.Patient.create()
     patient_uuid = uuid.uuid4()
@@ -582,7 +577,6 @@ def test_initialize_new_opal_patient_source_system_error(mocker: MockerFixture, 
     log_exception = mocker.spy(logging.Logger, 'exception')
 
     rvh_site: hospital_models.Site = Site.create(acronym='RVH')
-    LegacyHospitalIdentifierType.create(code='RVH')
     mrn_list = [(rvh_site, '9999993', True)]
     patient = patient_factories.Patient.create()
     patient_uuid = uuid.uuid4()
@@ -688,8 +682,6 @@ def test_create_access_request_new_patient_mrns(mocker: MockerFixture) -> None:
     RequestMockerTest.mock_requests_post(mocker, {})
     Site.create(acronym='RVH')
     Site.create(acronym='MGH')
-    LegacyHospitalIdentifierType.create(code='RVH')
-    LegacyHospitalIdentifierType.create(code='MGH')
     caregiver_profile = CaregiverProfile.create()
     self_type = RelationshipType.objects.self_type()
 
@@ -840,8 +832,6 @@ def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type
     RequestMockerTest.mock_requests_post(mocker, {})
     Site.create(acronym='RVH')
     Site.create(acronym='MGH')
-    LegacyHospitalIdentifierType.create(code='RVH')
-    LegacyHospitalIdentifierType.create(code='MGH')
     caregiver_profile = CaregiverProfile.create()
     relationship_type = RelationshipType.objects.get(role_type=role_type)
     patient_data = PatientSchema.model_copy(PATIENT_DATA)
@@ -873,8 +863,8 @@ def test_create_access_request_legacy_data_self(mocker: MockerFixture, role_type
         assert legacy_patient.email == ''
         assert legacy_patient.language == 'FR'
 
-    assert legacy_mrn_list.filter(mrn='9999993', hospital__code='RVH', is_active=True).count() == 1
-    assert legacy_mrn_list.filter(mrn='9999996', hospital__code='MGH', is_active=False).count() == 1
+    assert legacy_mrn_list.filter(mrn='9999993', hospital='RVH', is_active=True).count() == 1
+    assert legacy_mrn_list.filter(mrn='9999996', hospital='MGH', is_active=False).count() == 1
 
     assert LegacyPatientControl.objects.filter(patient=legacy_patient).count() == 1
 

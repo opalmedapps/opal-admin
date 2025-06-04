@@ -505,7 +505,7 @@ class LegacyPatientHospitalIdentifier(models.Model):
 
     patienthospitalidentifierid = models.AutoField(db_column='Patient_Hospital_Identifier_Id', primary_key=True)
     patient = models.ForeignKey('LegacyPatient', models.DO_NOTHING, db_column='PatientSerNum')
-    hospital = models.CharField(db_column='Code', max_length=20)
+    hospital = models.CharField(db_column='Hospital_Identifier_Type_Code', max_length=20)
     mrn = models.CharField(db_column='MRN', max_length=20)
     is_active = models.BooleanField(db_column='is_Active')
 
