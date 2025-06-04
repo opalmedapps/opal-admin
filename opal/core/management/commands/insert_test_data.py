@@ -381,7 +381,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         user_cara = _create_caregiver(
             first_name=cara.first_name,
             last_name=cara.last_name,
-            username='4X1j2b3c4d5e6f7g8h9i0j1k2l3m4n5',  # TODO
+            username='dR2Cb1Yf0vQb4ywvMoAXw1SxbY93',
             email='cara@opalmedapps.ca',
             language='en',
             phone_number='',
@@ -399,7 +399,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         user_richard = _create_caregiver(
             first_name=richard.first_name,
             last_name=richard.last_name,
-            username='5X6Y7Z8A9B0C1D2E3F4G5H6I7J8K9L0',  # TODO
+            username='2WhxeTpYF8aHlfSQX8oGeq4LFhw2',
             email='richard@opalmedapps.ca',
             language='en',
             phone_number='',
@@ -408,7 +408,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         user_mike = _create_caregiver(
             first_name=mike.first_name,
             last_name=mike.last_name,
-            username='mike_brown_12345',  # TODO
+            username='hSJdAae7xWNwnemd2YypQSVfoOb2',
             email='mike@opalmedapps.ca',
             language='en',
             phone_number='',
@@ -417,7 +417,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         user_kathy = _create_caregiver(
             first_name=kathy.first_name,
             last_name=kathy.last_name,
-            username='kathy_brown_12345',  # TODO
+            username='OPWj4Cj5iRfgva4b3HGtVGjvuk13',
             email='kathy@opalmedapps.ca',
             language='en',
             phone_number='',
@@ -426,7 +426,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         user_valerie = _create_caregiver(
             first_name=valerie.first_name,
             last_name=valerie.last_name,
-            username='valerie_solanas_12345',  # TODO
+            username='dcBSK5qdoiOM2L9cEdShkqOadkG3',
             email='valerie@opalmedapps.ca',
             language='en',
             phone_number='',
@@ -435,7 +435,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         user_pete = _create_caregiver(
             first_name=pete.first_name,
             last_name=pete.last_name,
-            username='pete_boyd_12345',  # TODO
+            username='9kmS7qYQX8arnFFs4ZYJk1tqLFw1',
             email='pete@opalmedapps.ca',
             language='en',
             phone_number='',
@@ -444,7 +444,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         user_martin = _create_caregiver(
             first_name=martin.first_name,
             last_name=martin.last_name,
-            username='martin_curley_12345',  # TODO
+            username='2grqcCoyPlVucfAPD4NM1SuCk3i1',
             email='martin@opalmedapps.ca',
             language='en',
             phone_number='',
