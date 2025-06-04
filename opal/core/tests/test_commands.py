@@ -18,11 +18,20 @@ from rest_framework.authtoken.models import Token
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer, SecurityQuestion
 from opal.core import constants
+from opal.core.management.commands.insert_test_data import _create_date, _create_patient
 from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
 from opal.legacy import models as legacy_models
 from opal.patients import factories
-from opal.patients.models import HospitalPatient, Patient, Relationship, RelationshipType, RoleType
+from opal.patients.models import (
+    DataAccessType,
+    HospitalPatient,
+    Patient,
+    Relationship,
+    RelationshipType,
+    RoleType,
+    SexType,
+)
 from opal.test_results.models import GeneralTest, Note, PathologyObservation
 from opal.users.models import Caregiver, User
 
@@ -54,9 +63,9 @@ class TestInsertTestData(CommandTestMixin):
         assert RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).count() == 1
         assert Relationship.objects.count() == 13
         assert SecurityAnswer.objects.count() == 30
-        assert GeneralTest.objects.count() == 3
-        assert PathologyObservation.objects.count() == 3
-        assert Note.objects.count() == 3
+        assert GeneralTest.objects.count() == 2
+        assert PathologyObservation.objects.count() == 2
+        assert Note.objects.count() == 2
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_ohigph(self) -> None:
@@ -66,13 +75,13 @@ class TestInsertTestData(CommandTestMixin):
         assert Institution.objects.count() == 1
         assert Institution.objects.get().acronym == 'OHIGPH'
         assert Site.objects.count() == 1
-        assert Patient.objects.count() == 2
-        assert HospitalPatient.objects.count() == 2
-        assert CaregiverProfile.objects.count() == 1
+        assert Patient.objects.count() == 1
+        assert HospitalPatient.objects.count() == 1
+        assert CaregiverProfile.objects.count() == 0
         assert RelationshipType.objects.count() == 5
         assert RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).count() == 1
-        assert Relationship.objects.count() == 1
-        assert SecurityAnswer.objects.count() == 3
+        assert Relationship.objects.count() == 0
+        assert SecurityAnswer.objects.count() == 0
         assert GeneralTest.objects.count() == 0
         assert PathologyObservation.objects.count() == 0
         assert Note.objects.count() == 0
@@ -152,27 +161,43 @@ class TestInsertTestData(CommandTestMixin):
         # if changed, assert that the French caregiver has a French security question
         assert caregiver_fr is None
 
-    def test_birth_date_calculation_before(self, mocker: MockerFixture) -> None:
-        """Ensure that the birth date is calculated correctly when the current date is before the birth date."""
-        # set today before Bart's birth day in the year (Feb 22nd)
+    def test_create_data_calculation_before(self, mocker: MockerFixture) -> None:
+        """Ensure that the date is calculated correctly when the current date is before the date."""
+        # set today before Bart's birth day in the year (Feb 23rd)
         now = datetime(2024, 1, 18, tzinfo=timezone.get_current_timezone())
         mocker.patch.object(timezone, 'now', return_value=now)
 
-        self._call_command('insert_test_data', 'OMI')
+        calculated_date = _create_date(14, 2, 23)
 
-        bart = Patient.objects.get(first_name='Bart')
-        assert bart.date_of_birth == date(2009, 2, 23)
+        assert calculated_date == date(2009, 2, 23)
 
-    def test_birth_date_calculation_after(self, mocker: MockerFixture) -> None:
-        """Ensure that the birth date is calculated correctly when the current date is after the birth date."""
-        # set today after Bart's birth day in the year (Feb 22nd)
+    def test_create_date_calculation_after(self, mocker: MockerFixture) -> None:
+        """Ensure that the date is calculated correctly when the current date is after the date."""
+        # set today after Bart's birth day in the year (Feb 23rd)
         now = datetime(2024, 2, 23, tzinfo=timezone.get_current_timezone())
         mocker.patch.object(timezone, 'now', return_value=now)
 
-        self._call_command('insert_test_data', 'OMI')
+        calculated_date = _create_date(14, 2, 23)
 
-        bart = Patient.objects.get(first_name='Bart')
-        assert bart.date_of_birth == date(2010, 2, 23)
+        assert calculated_date == date(2010, 2, 23)
+
+    def test_create_patient_deceased(self) -> None:
+        """Ensure that the patient is created as deceased when the date of death is provided."""
+        _create_patient(
+            first_name='Mona',
+            last_name='Simpson',
+            date_of_birth=date(1940, 3, 15),
+            sex=SexType.FEMALE,
+            ramq='SIMM40531599',
+            legacy_id=42,
+            mrns=[],
+            date_of_death=date(2025, 6, 2),
+            data_access=DataAccessType.NEED_TO_KNOW,
+        )
+
+        patient = Patient.objects.get(first_name='Mona', last_name='Simpson')
+
+        assert patient.date_of_death == datetime(2025, 6, 2, 0, 0, 0, tzinfo=timezone.get_current_timezone())
 
 
 @pytest.mark.django_db(databases=['default', 'legacy'])

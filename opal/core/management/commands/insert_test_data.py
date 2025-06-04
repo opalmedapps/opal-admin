@@ -347,28 +347,17 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             legacy_id=100,
             mrns=mrn_data['Pete Boyd'],
         )
-
-    # Bart exists at both institutions
-    bart = _create_patient(
-        first_name='Bart',
-        last_name='Simpson',
-        date_of_birth=_create_date(14, 2, 23),
-        sex=SexType.OTHER,
-        ramq='SIMB13022399',
-        legacy_id=53,
-        mrns=mrn_data['Bart Simpson'],
-    )
+        martin = _create_patient(
+            first_name='Martin',
+            last_name='Curley',
+            date_of_birth=date(1965, 4, 23),
+            sex=SexType.MALE,
+            ramq='CURM04236599',
+            legacy_id=101,
+            mrns=mrn_data['Martin Curley'],
+        )
 
     # caregivers
-    user_bart = _create_caregiver(
-        first_name=bart.first_name,
-        last_name=bart.last_name,
-        username='SipDLZCcOyTYj7O3C8HnWLalb4G3',
-        email='bart@opalmedapps.ca',
-        language='en',
-        phone_number='+498999998123',
-        legacy_id=3,
-    )
 
     if not is_pediatric:
         user_laurie = _create_caregiver(
@@ -452,16 +441,22 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             phone_number='',
             legacy_id=994,  # TODO
         )
+        user_martin = _create_caregiver(
+            first_name=martin.first_name,
+            last_name=martin.last_name,
+            username='martin_curley_12345',  # TODO
+            email='martin@opalmedapps.ca',
+            language='en',
+            phone_number='',
+            legacy_id=993,  # TODO
+        )
 
     # get relationship types
     type_self = RelationshipType.objects.self_type()
 
     # relationships
-    date_bart_fourteen = _relative_date(bart.date_of_birth, 14)
 
-    if is_pediatric:
-        pass
-    else:
+    if not is_pediatric:
         # Laurie --> Laurie: Self
         _create_relationship(
             patient=laurie,
@@ -582,17 +577,18 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             start_date=_relative_date(today, -14),  # TBC
         )
 
-    # The rest of the relationships exist at both institutions
+        # Martin --> Martin: Self
+        _create_relationship(
+            patient=martin,
+            caregiver=user_martin,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -14),  # TBC
+            start_date=_relative_date(today, -14),  # TBC
+        )
 
-    # Bart --> Bart
-    _create_relationship(
-        patient=bart,
-        caregiver=user_bart,
-        relationship_type=type_self,
-        status=RelationshipStatus.CONFIRMED,
-        request_date=date_bart_fourteen,
-        start_date=date_bart_fourteen,
-    )
+    # The rest of the relationships exist at both institutions
+    # To be added if necessary
 
     # create the same security question and answers for the caregivers
     if not is_pediatric:
@@ -605,21 +601,11 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         _create_security_answers(user_kathy)
         _create_security_answers(user_valerie)
         _create_security_answers(user_pete)
-
-    _create_security_answers(user_bart)
+        _create_security_answers(user_martin)
 
     # Pathology reports for patients
     # Pathology reports are currently not intended to be rolled out at Sainte-Justine which is a pediatric hospital
     if not is_pediatric:
-        # Bart received his pathology 5 days ago
-        _create_pathology_result(
-            patient=bart,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=5),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=5),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=5),
-            legacy_document_id=5,
-        )
         # Create a fake pathology for laurie as well to complete her dataset
         # Laurie received her pathology 15 days ago
         _create_pathology_result(
