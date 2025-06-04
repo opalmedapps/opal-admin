@@ -260,7 +260,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
 
     # patients
     if is_pediatric:
-        lisa = _create_patient(
+        _create_patient(
             first_name='Lisa',
             last_name='Simpson',
             date_of_birth=_create_date(8, 5, 9),
@@ -333,14 +333,14 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             legacy_id=102,
             mrns=mrn_data['Kathy Brown'],
         )
-        marge = _create_patient(
-            first_name='Marge',
-            last_name='Simpson',
-            date_of_birth=_create_date(36, 10, 1),
-            sex=SexType.FEMALE,
-            ramq='SIMM86600199',
-            legacy_id=51,
-            mrns=mrn_data['Marge Simpson'],
+        valerie = _create_patient(
+            first_name='Valerie',
+            last_name='Solanas',
+            date_of_birth=date(1979, 6, 21),
+            sex=SexType.MALE,
+            ramq='SOLV06217999',
+            legacy_id=99,
+            mrns=mrn_data['Valerie Solanas'],
         )
 
         wednesday = _create_patient(
@@ -364,17 +364,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
     )
 
     # caregivers
-    user_marge = _create_caregiver(
-        # hard-coded name since the patient Marge might not exist
-        first_name='Marge',
-        last_name='Simpson',
-        username='QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2',
-        email='marge@opalmedapps.ca',
-        language='en',
-        phone_number='+15142345678',
-        legacy_id=1,
-    )
-
     user_bart = _create_caregiver(
         first_name=bart.first_name,
         last_name=bart.last_name,
@@ -449,26 +438,24 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             phone_number='',
             legacy_id=996,  # TODO
         )
+        user_valerie = _create_caregiver(
+            first_name=valerie.first_name,
+            last_name=valerie.last_name,
+            username='valerie_solanas_12345',  # TODO
+            email='valerie@opalmedapps.ca',
+            language='en',
+            phone_number='',
+            legacy_id=995,  # TODO
+        )
 
     # get relationship types
     type_self = RelationshipType.objects.self_type()
-    type_parent = RelationshipType.objects.parent_guardian()
-    type_caregiver = RelationshipType.objects.guardian_caregiver()
 
     # relationships
     date_bart_fourteen = _relative_date(bart.date_of_birth, 14)
 
     if is_pediatric:
-        # Marge --> Lisa: Guardian/Parent
-        _create_relationship(
-            patient=lisa,
-            caregiver=user_marge,
-            relationship_type=type_parent,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -1),
-            start_date=_relative_date(today, -3),
-            end_date=_relative_date(lisa.date_of_birth, 14),
-        )
+        pass
     else:
         # Laurie --> Laurie: Self
         _create_relationship(
@@ -549,6 +536,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             request_date=_relative_date(today, -14),  # TBC
             start_date=_relative_date(today, -14),  # TBC
         )
+
         # Kathy --> Kathy: Self
         _create_relationship(
             patient=kathy,
@@ -558,6 +546,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             request_date=_relative_date(today, -14),  # TBC
             start_date=_relative_date(today, -14),  # TBC
         )
+
         # Mike --> Kathy: Family & Friends
         _create_relationship(
             patient=kathy,
@@ -568,38 +557,16 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             start_date=_relative_date(today, -14),  # TBC
         )
 
-        # Marge --> Marge: Self
+        # Valerie --> Valerie: Self
         _create_relationship(
-            patient=marge,
-            caregiver=user_marge,
+            patient=valerie,
+            caregiver=user_valerie,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -4),
-            start_date=_relative_date(today, -6),
-        )
-
-        # Marge --> Bart: Guardian/Parent
-        _create_relationship(
-            patient=bart,
-            caregiver=user_marge,
-            relationship_type=type_parent,
-            status=RelationshipStatus.EXPIRED,
-            request_date=_relative_date(today, -9),
-            start_date=bart.date_of_birth,
-            end_date=date_bart_fourteen,
+            request_date=_relative_date(today, -14),  # TBC
+            start_date=_relative_date(today, -14),  # TBC
         )
     # The rest of the relationships exist at both institutions
-
-    # Marge --> Bart: Guardian-Caregiver
-    _create_relationship(
-        patient=bart,
-        caregiver=user_marge,
-        relationship_type=type_caregiver,
-        status=RelationshipStatus.PENDING,
-        request_date=date_bart_fourteen,
-        start_date=date_bart_fourteen,
-        end_date=_relative_date(bart.date_of_birth, 18),
-    )
 
     # Bart --> Bart
     _create_relationship(
@@ -620,30 +587,13 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         _create_security_answers(user_richard)
         _create_security_answers(user_mike)
         _create_security_answers(user_kathy)
+        _create_security_answers(user_valerie)
 
-    _create_security_answers(user_marge)
     _create_security_answers(user_bart)
 
     # Pathology reports for Marge, Bart, Homer, Fred, Pebbles, and Wednesday
     # Pathology reports are currently not intended to be rolled out at Sainte-Justine which is a pediatric hospital
     if not is_pediatric:
-        # Marge has 2 pathology reports received 2 and 12 days ago respectively
-        _create_pathology_result(
-            patient=marge,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=2),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=2),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=2),
-            legacy_document_id=7,
-        )
-        _create_pathology_result(
-            patient=marge,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=12),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=12),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=12),
-            legacy_document_id=8,
-        )
         # Bart received his pathology 5 days ago
         _create_pathology_result(
             patient=bart,

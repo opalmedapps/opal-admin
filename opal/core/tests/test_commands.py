@@ -52,11 +52,11 @@ class TestInsertTestData(CommandTestMixin):
         assert CaregiverProfile.objects.count() == 9
         assert RelationshipType.objects.count() == 5
         assert RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).count() == 1
-        assert Relationship.objects.count() == 14
+        assert Relationship.objects.count() == 12
         assert SecurityAnswer.objects.count() == 27
-        assert GeneralTest.objects.count() == 6
-        assert PathologyObservation.objects.count() == 6
-        assert Note.objects.count() == 6
+        assert GeneralTest.objects.count() == 4
+        assert PathologyObservation.objects.count() == 4
+        assert Note.objects.count() == 4
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_ohigph(self) -> None:
@@ -68,11 +68,11 @@ class TestInsertTestData(CommandTestMixin):
         assert Site.objects.count() == 1
         assert Patient.objects.count() == 2
         assert HospitalPatient.objects.count() == 2
-        assert CaregiverProfile.objects.count() == 2
+        assert CaregiverProfile.objects.count() == 1
         assert RelationshipType.objects.count() == 5
         assert RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).count() == 1
-        assert Relationship.objects.count() == 3
-        assert SecurityAnswer.objects.count() == 6
+        assert Relationship.objects.count() == 1
+        assert SecurityAnswer.objects.count() == 3
         assert GeneralTest.objects.count() == 0
         assert PathologyObservation.objects.count() == 0
         assert Note.objects.count() == 0
@@ -124,7 +124,7 @@ class TestInsertTestData(CommandTestMixin):
         assert Patient.objects.count() == 10
         assert HospitalPatient.objects.count() == 10
         assert CaregiverProfile.objects.count() == 9
-        assert Relationship.objects.count() == 14
+        assert Relationship.objects.count() == 12
         assert RelationshipType.objects.count() == 5
         assert SecurityAnswer.objects.count() == 27
 
@@ -143,7 +143,7 @@ class TestInsertTestData(CommandTestMixin):
         """Ensure that the security answer's question depends on the user's language."""
         self._call_command('insert_test_data', 'OMI')
 
-        caregiver_en = CaregiverProfile.objects.get(user__first_name='Marge')
+        caregiver_en = CaregiverProfile.objects.get(user__first_name='John')
         question_en = SecurityAnswer.objects.filter(user=caregiver_en)[0].question
         caregiver_fr = CaregiverProfile.objects.filter(user__language='fr').first()
 
