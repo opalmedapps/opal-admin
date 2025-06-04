@@ -4,6 +4,7 @@
 
 """Management command for inserting test data."""
 
+import hashlib
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
@@ -981,17 +982,17 @@ def _create_security_answers(caregiver: CaregiverProfile) -> None:
     _create_security_answer(
         caregiver,
         question1,
-        '5ed4c7167f059c5b864fd775f527c5a88794f9f823fea73c6284756b31a08faf6f9f950473c5aa7cdb99c56bc7807517fe4c4a0bd67318bcaec508592dd6d917',
+        hashlib.sha512(b'meg').hexdigest(),
     )
     _create_security_answer(
         caregiver,
         question2,
-        'f3b49c229cc474b3334dd4a3bbe827a866cbf6d6775cde7a5c42da24b4f15db8c0e564c4ff20754841c2baa9dafffc2caa02341010456157b1de9b927f24a1e6',
+        hashlib.sha512(b'superman').hexdigest(),
     )
     _create_security_answer(
         caregiver,
         question3,
-        'a7dbabba9a0371fbdb92724a5ca66401e02069089b1f3a100374e61f934fe9e959215ae0327de2bc064a9dfc351c4d64ef89bd47e95be0198a1f466c3518cc1d',
+        hashlib.sha512(b'red').hexdigest(),
     )
 
 
