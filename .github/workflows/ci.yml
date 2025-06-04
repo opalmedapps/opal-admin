@@ -55,8 +55,8 @@ jobs:
         env:
           SKIP: ruff,ruff-format,mypy,markdownlint-cli2,reuse-lint-file
       - uses: gregsdennis/dependencies-action@v1.4.1
-        # env:
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   django-checks:
     runs-on: ubuntu-latest
