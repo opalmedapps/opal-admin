@@ -497,6 +497,16 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
 
         # John --> John: Self
+        _create_relationship(
+            patient=cara,
+            caregiver=user_rory,
+            relationship_type=type_family,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=_relative_date(today, -14),  # TBC
+            start_date=_relative_date(today, -14),  # TBC
+        )
+
+        # John --> John: Self
         john_self = _create_relationship(
             patient=john,
             caregiver=user_john,
@@ -924,14 +934,14 @@ def _create_security_answers(caregiver: CaregiverProfile) -> None:
         else 'Quel est le nom de votre premier animal de compagnie?'
     )
     question2 = (
-        'What was the name of your favorite superhero as a child?'
+        'Where did you go to on your first vacation?'
         if language == 'en'
-        else 'Quel était le nom de votre super-héros préféré durant votre enfance?'
+        else 'Où êtes-vous allé lors de vos premières vacances?'
     )
     question3 = (
-        'What was the color of your first car?'
+        'What is the first name of your childhood best friend?'
         if language == 'en'
-        else 'Quelle était la couleur de votre première voiture?'
+        else "Quel est le prénom de votre meilleur ami d'enfance?"
     )
     _create_security_answer(
         caregiver,
@@ -941,12 +951,12 @@ def _create_security_answers(caregiver: CaregiverProfile) -> None:
     _create_security_answer(
         caregiver,
         question2,
-        hashlib.sha512(b'superman').hexdigest(),
+        hashlib.sha512(b'florida').hexdigest(),
     )
     _create_security_answer(
         caregiver,
         question3,
-        hashlib.sha512(b'red').hexdigest(),
+        hashlib.sha512(b'diana').hexdigest(),
     )
 
 
