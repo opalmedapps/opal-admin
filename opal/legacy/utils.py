@@ -98,6 +98,7 @@ def create_patient(  # noqa: PLR0913, PLR0917
     language: LegacyLanguage,
     ramq: str,
     access_level: LegacyAccessLevel,
+    legacy_id: int | None = None,
 ) -> LegacyPatient:
     """
     Create a patient with the given properties.
@@ -111,6 +112,7 @@ def create_patient(  # noqa: PLR0913, PLR0917
         language: the language of the patient
         ramq: the RAMQ of the patient
         access_level: the access level of the patient
+        legacy_id: the desired legacy ID of the patient, if a specific ID is required
 
     Returns:
         the legacy patient instance
@@ -125,6 +127,7 @@ def create_patient(  # noqa: PLR0913, PLR0917
     )
 
     patient = LegacyPatient(
+        patientsernum=legacy_id,
         first_name=first_name,
         last_name=last_name,
         sex=sex,
@@ -262,6 +265,7 @@ def initialize_new_patient(
         language=language,
         ramq=patient.ramq,
         access_level=ACCESS_LEVEL_MAPPING[patient.data_access],
+        legacy_id=patient.legacy_id,
     )
 
     insert_hospital_identifiers(legacy_patient, mrns)

@@ -68,6 +68,26 @@ def test_create_patient() -> None:
     assert legacy_patient.access_level == models.LegacyAccessLevel.NEED_TO_KNOW
 
 
+def test_create_patient_legacy_id() -> None:
+    """The patient is created successfully with the desired legacy ID."""
+    legacy_patient = legacy_utils.create_patient(
+        'Marge',
+        'Simpson',
+        models.LegacySexType.FEMALE,
+        dt.date(1986, 10, 5),
+        'marge@opalmedapps.ca',
+        models.LegacyLanguage.FRENCH,
+        'SIMM86600599',
+        models.LegacyAccessLevel.NEED_TO_KNOW,
+        legacy_id=12345,
+    )
+
+    legacy_patient.full_clean()
+
+    assert legacy_patient.pk == 12345
+    assert models.LegacyPatient.objects.filter(pk=12345).exists()
+
+
 def test_create_dummy_patient() -> None:
     """The dummy patient is created successfully."""
     legacy_patient = legacy_utils.create_dummy_patient(
