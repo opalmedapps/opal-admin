@@ -19,6 +19,7 @@ from django.utils import timezone
 
 from dateutil.relativedelta import relativedelta
 
+import opal.legacy.utils as legacy_utils
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer
 from opal.hospital_settings.models import Institution, Site
 from opal.patients.models import (
@@ -243,17 +244,18 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         form_required=False,
     )
 
-    mrn_data: dict[str, list[tuple[Site, str]]] = {}
+    # the third item in the tuple is whether the MRN is active (only needed for creating a legacy patient)
+    mrn_data: dict[str, list[tuple[Site, str, bool]]] = {}
 
     for key, value in MRN_DATA[institution_option].items():
-        new_value = [(sites[site], mrn) for site, mrn in value]
+        new_value = [(sites[site], mrn, True) for site, mrn in value]
         mrn_data[key] = new_value
 
     is_pediatric = institution_option == InstitutionOption.ohigph
 
     # patients
     if is_pediatric:
-        _create_patient(
+        lisa = _create_patient(
             first_name='Lisa',
             last_name='Simpson',
             date_of_birth=_create_date(8, 5, 9),
@@ -455,7 +457,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
 
     if not is_pediatric:
         # Laurie --> Laurie: Self
-        _create_relationship(
+        laurie_self = _create_relationship(
             patient=laurie,
             caregiver=user_laurie,
             relationship_type=type_self,
@@ -465,7 +467,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
 
         # Rory --> Rory: Self
-        _create_relationship(
+        rory_self = _create_relationship(
             patient=rory,
             caregiver=user_rory,
             relationship_type=type_self,
@@ -475,7 +477,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
 
         # Cara --> Cara: Self
-        _create_relationship(
+        cara_self = _create_relationship(
             patient=cara,
             caregiver=user_cara,
             relationship_type=type_self,
@@ -495,7 +497,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
 
         # John --> John: Self
-        _create_relationship(
+        john_self = _create_relationship(
             patient=john,
             caregiver=user_john,
             relationship_type=type_self,
@@ -505,7 +507,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
 
         # Richard --> Richard: Self
-        _create_relationship(
+        richard_self = _create_relationship(
             patient=richard,
             caregiver=user_richard,
             relationship_type=type_self,
@@ -525,7 +527,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
 
         # Mike --> Mike: Self
-        _create_relationship(
+        mike_self = _create_relationship(
             patient=mike,
             caregiver=user_mike,
             relationship_type=type_self,
@@ -535,7 +537,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
 
         # Kathy --> Kathy: Self
-        _create_relationship(
+        kathy_self = _create_relationship(
             patient=kathy,
             caregiver=user_kathy,
             relationship_type=type_self,
@@ -555,7 +557,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
 
         # Valerie --> Valerie: Self
-        _create_relationship(
+        valerie_self = _create_relationship(
             patient=valerie,
             caregiver=user_valerie,
             relationship_type=type_self,
@@ -565,7 +567,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
 
         # Pete --> Pete: Self
-        _create_relationship(
+        pete_self = _create_relationship(
             patient=pete,
             caregiver=user_pete,
             relationship_type=type_self,
@@ -575,7 +577,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         )
 
         # Martin --> Martin: Self
-        _create_relationship(
+        martin_self = _create_relationship(
             patient=martin,
             caregiver=user_martin,
             relationship_type=type_self,
@@ -613,6 +615,21 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             reported_at=timezone.now() - relativedelta(years=6, months=0, days=15),
             legacy_document_id=31,
         )
+
+    # legacy data
+    if is_pediatric:
+        legacy_utils.initialize_new_patient(lisa, mrn_data['Lisa Simpson'], self_caregiver=None)
+    else:
+        _create_legacy_patient_caregiver(laurie_self, mrn_data['Laurie Opal'])
+        _create_legacy_patient_caregiver(rory_self, mrn_data["Rory O'Brien"])
+        _create_legacy_patient_caregiver(cara_self, mrn_data["Cara O'Brien"])
+        _create_legacy_patient_caregiver(john_self, mrn_data['John Smith'])
+        _create_legacy_patient_caregiver(richard_self, mrn_data['Richard Smith'])
+        _create_legacy_patient_caregiver(mike_self, mrn_data['Mike Brown'])
+        _create_legacy_patient_caregiver(kathy_self, mrn_data['Kathy Brown'])
+        _create_legacy_patient_caregiver(valerie_self, mrn_data['Valerie Solanas'])
+        _create_legacy_patient_caregiver(pete_self, mrn_data['Pete Boyd'])
+        _create_legacy_patient_caregiver(martin_self, mrn_data['Martin Curley'])
 
 
 def create_institution(institution_option: InstitutionOption) -> Institution:
@@ -743,7 +760,7 @@ def _create_patient(  # noqa: PLR0913, PLR0917
     sex: SexType,
     ramq: str,
     legacy_id: int,
-    mrns: list[tuple[Site, str]],
+    mrns: list[tuple[Site, str, bool]],
     date_of_death: date | None = None,
     data_access: DataAccessType = DataAccessType.ALL,
 ) -> Patient:
@@ -858,7 +875,7 @@ def _create_relationship(  # noqa: PLR0913, PLR0917
     start_date: date,
     end_date: date | None = None,
     reason: str = '',
-) -> None:
+) -> Relationship:
     """
     Create, validate and save a relationship instance with the given properties.
 
@@ -871,6 +888,9 @@ def _create_relationship(  # noqa: PLR0913, PLR0917
         start_date: the start date of the relationship
         end_date: the optional end date of the relationship, `None` if there is no end date
         reason: the optional reason for the relationship status
+
+    Returns:
+        the newly created relationship instance
     """
     relationship = Relationship(
         patient=patient,
@@ -885,6 +905,8 @@ def _create_relationship(  # noqa: PLR0913, PLR0917
 
     relationship.full_clean()
     relationship.save()
+
+    return relationship
 
 
 def _create_security_answer(caregiver: CaregiverProfile, question: str, answer: str) -> None:
@@ -1024,3 +1046,19 @@ def _create_pathology_result(  # noqa: PLR0913, PLR0917
 
     note.full_clean()
     note.save()
+
+
+def _create_legacy_patient_caregiver(relationship: Relationship, mrns: list[tuple[Site, str, bool]]) -> None:
+    """
+    Create the legacy patient and corresponding user for the self relationship.
+
+    Args:
+        relationship: the self relationship
+        mrns: a list of tuples containing the site and MRN of the patient
+    """
+    patient = relationship.patient
+    caregiver = relationship.caregiver
+    user = caregiver.user
+
+    legacy_utils.initialize_new_patient(patient, mrns, caregiver)
+    legacy_utils.create_caregiver_user(relationship, user.username, user.language, user.email)
