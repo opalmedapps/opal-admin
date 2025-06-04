@@ -63,9 +63,9 @@ class TestInsertTestData(CommandTestMixin):
         assert RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).count() == 1
         assert Relationship.objects.count() == 13
         assert SecurityAnswer.objects.count() == 30
-        assert GeneralTest.objects.count() == 2
-        assert PathologyObservation.objects.count() == 2
-        assert Note.objects.count() == 2
+        assert GeneralTest.objects.count() == 1
+        assert PathologyObservation.objects.count() == 1
+        assert Note.objects.count() == 1
         assert stdout == 'Test data successfully created\n'
 
     def test_insert_ohigph(self) -> None:

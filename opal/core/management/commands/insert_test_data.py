@@ -616,15 +616,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             reported_at=timezone.now() - relativedelta(years=6, months=0, days=15),
             legacy_document_id=31,
         )
-        # Rory pathology 12 days ago
-        _create_pathology_result(
-            patient=rory,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=12),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=12),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=12),
-            legacy_document_id=32,
-        )
 
 
 def create_institution(institution_option: InstitutionOption) -> Institution:
