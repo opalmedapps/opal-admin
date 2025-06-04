@@ -49,6 +49,7 @@ class TestInsertTestData(CommandTestMixin):
         with pytest.raises(CommandError, match="argument institution: invalid InstitutionOption value: 'muhc'"):
             self._call_command('insert_test_data', 'muhc')
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert(self) -> None:
         """Ensure that test data is inserted when there is no existing data."""
         stdout, _stderr = self._call_command('insert_test_data', 'OMI')
@@ -68,6 +69,12 @@ class TestInsertTestData(CommandTestMixin):
         assert Note.objects.count() == 1
         assert stdout == 'Test data successfully created\n'
 
+        assert legacy_models.LegacyPatient.objects.count() == 10
+        assert legacy_models.LegacyPatientControl.objects.count() == 10
+        assert legacy_models.LegacyPatientHospitalIdentifier.objects.count() == 10
+        assert legacy_models.LegacyUsers.objects.count() == 10
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert_ohigph(self) -> None:
         """Ensure that test data for the Opal Pediatric Institute is inserted when there is no existing data."""
         stdout, _stderr = self._call_command('insert_test_data', 'OHIGPH')
@@ -87,6 +94,11 @@ class TestInsertTestData(CommandTestMixin):
         assert Note.objects.count() == 0
         assert stdout == 'Test data successfully created\n'
 
+        assert legacy_models.LegacyPatient.objects.count() == 1
+        assert legacy_models.LegacyPatientControl.objects.count() == 1
+        assert legacy_models.LegacyPatientHospitalIdentifier.objects.count() == 1
+        assert legacy_models.LegacyUsers.objects.count() == 0
+
     def test_insert_existing_data_cancel(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """The insertion can be cancelled when there is already data."""
         monkeypatch.setattr('builtins.input', lambda _: 'foo')
@@ -97,6 +109,7 @@ class TestInsertTestData(CommandTestMixin):
         assert stdout == 'Test data insertion cancelled\n'
         relationship.refresh_from_db()
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert_existing_data_delete(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """The existing data is deleted when confirmed and new data added."""
         monkeypatch.setattr('builtins.input', lambda _: 'yes')
@@ -137,6 +150,7 @@ class TestInsertTestData(CommandTestMixin):
         assert RelationshipType.objects.count() == 5
         assert SecurityAnswer.objects.count() == 30
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert_existing_data_force_delete(self) -> None:
         """The existing data is deleted without confirmation."""
         relationship = factories.Relationship.create()
@@ -148,6 +162,7 @@ class TestInsertTestData(CommandTestMixin):
         assert 'Existing test data deleted' in stdout
         assert 'Test data successfully created' in stdout
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_create_security_answers(self) -> None:
         """Ensure that the security answer's question depends on the user's language."""
         self._call_command('insert_test_data', 'OMI')
