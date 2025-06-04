@@ -7,7 +7,7 @@ name = "admin"
 version = "0"
 description = "New administrative web application used to configure Opal and its content"
 readme = "README.md"
-requires-python = "==3.12.10"
+requires-python = "==3.12.11"
 dependencies = [
     "argon2-cffi==25.1.0",
     "crispy-bootstrap5==2025.4",
