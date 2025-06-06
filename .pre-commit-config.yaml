@@ -40,7 +40,7 @@ repos:
 
 # https://docs.astral.sh/ruff/integrations/#pre-commit
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.11.12
+  rev: v0.11.13
   hooks:
     # Run the linter with fixes
     - id: ruff
