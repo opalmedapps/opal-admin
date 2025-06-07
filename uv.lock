@@ -90,7 +90,7 @@ requires-dist = [
     { name = "django-extensions", specifier = "==4.1" },
     { name = "django-filter", specifier = "==25.1" },
     { name = "django-forms-dynamic", specifier = "==1.0.0" },
-    { name = "django-modeltranslation", specifier = "==0.19.14" },
+    { name = "django-modeltranslation", specifier = "==0.19.15" },
     { name = "django-phonenumber-field", extras = ["phonenumberslite"], specifier = "==8.1.0" },
     { name = "django-structlog", specifier = "==9.1.1" },
     { name = "django-stubs-ext", specifier = "==5.2.0" },
@@ -610,14 +610,14 @@ wheels = [
 
 [[package]]
 name = "django-modeltranslation"
-version = "0.19.14"
+version = "0.19.15"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/54/53/1aa5ca46c29c8c97b23737ccd0693144b79a4097034ab813cc4cdebb7f8b/django_modeltranslation-0.19.14.tar.gz", hash = "sha256:1ba875b51296f41105587e6c1c6b161c32c7c81b7cbab23111ffdb8310471db8", size = 90904, upload-time = "2025-04-20T14:24:27.926Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/05/cb/a1c71e13eeec56ce782580a58638703cb49f83b3741aa4333732b10c9259/django_modeltranslation-0.19.15.tar.gz", hash = "sha256:2e41e09e916ea23efee8d14cffcd12945e356784929e6d62cc7ca0537c04d1c8", size = 77577, upload-time = "2025-06-07T03:12:21.434Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f9/0c/1d3c8d562138e48c1f691b86efbc74afae63d79fc19e9f844dcd6723ca73/django_modeltranslation-0.19.14-py3-none-any.whl", hash = "sha256:2b7d6fe0b26b5050f1fd38960162df84ea6a9eaf7b690f428b55eb0e87720c57", size = 54009, upload-time = "2025-04-20T14:24:25.708Z" },
+    { url = "https://files.pythonhosted.org/packages/52/fb/5a243ca8acbf590e96f83a10e435d124214455e2a1998927e2d14c10a31f/django_modeltranslation-0.19.15-py3-none-any.whl", hash = "sha256:e748c825f88dfbdd5c866cf8152b8bad38385dda30b356fec4233640f9a24998", size = 93257, upload-time = "2025-06-07T03:12:19.539Z" },
 ]
 
 [[package]]
