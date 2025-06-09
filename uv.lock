@@ -99,7 +99,7 @@ requires-dist = [
     { name = "drf-spectacular", specifier = "==0.28.0" },
     { name = "fpdf2", specifier = "==2.8.2" },
     { name = "hl7apy", specifier = "==1.3.5" },
-    { name = "kaleido", specifier = "==1.0.0rc13" },
+    { name = "kaleido", specifier = "==1.0.0rc15" },
     { name = "mysqlclient", specifier = "==2.2.7" },
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "pandas", specifier = "==2.3.0" },
@@ -959,16 +959,16 @@ wheels = [
 
 [[package]]
 name = "kaleido"
-version = "1.0.0rc13"
+version = "1.0.0rc15"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "choreographer" },
     { name = "logistro" },
     { name = "orjson" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/af/8b/1c76fb839274b506b9d35bd00f46e49d3c32ca3179579452ca016f67f955/kaleido-1.0.0rc13.tar.gz", hash = "sha256:81ee99cc6c7c243b5832a2555bf75b8118173b7bcb9f94fb762c7b9b8a7eac60", size = 49819, upload-time = "2025-04-30T17:51:30.256Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ad/2b/9c418cd10d8019594510bd8803f4c478557b90eea292ad1347fd4ef1a346/kaleido-1.0.0rc15.tar.gz", hash = "sha256:b05e883ea2e45f98c276a9dcfb173ecdd579f7654055bb4c5828de413a833248", size = 48657, upload-time = "2025-06-03T22:21:47.301Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/90/9d/415b612800d72d4c5ddd0c98f8016063ed969ae43236ae50e2e2b09483fd/kaleido-1.0.0rc13-py3-none-any.whl", hash = "sha256:aa4a7adc4f9ac252695bfb0d107029c351a59543f6ace86331648b1ce616201d", size = 51945, upload-time = "2025-04-30T17:51:29.222Z" },
+    { url = "https://files.pythonhosted.org/packages/a0/a4/dadcf07730568aca043afbd7dd27cf5af987cb403cf3be290f96f086e9fc/kaleido-1.0.0rc15-py3-none-any.whl", hash = "sha256:f432dbef249c4db20568dfd88de0f16b4ccb7037cc2088318d9338f1c56e175a", size = 50689, upload-time = "2025-06-03T22:21:45.791Z" },
 ]
 
 [[package]]
