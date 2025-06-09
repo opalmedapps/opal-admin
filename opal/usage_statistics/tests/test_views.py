@@ -1732,7 +1732,7 @@ def _create_demographic_diagnosis_records() -> None:
     )
     legacy_factories.LegacyPatientHospitalIdentifierFactory.create(
         patient=legacy_marge_patient,
-        hospital__code='RVH',
+        hospital='RVH',
         mrn=1234567,
     )
 
@@ -1744,7 +1744,7 @@ def _create_demographic_diagnosis_records() -> None:
     )
     legacy_factories.LegacyPatientHospitalIdentifierFactory.create(
         patient=legacy_homer_patient,
-        hospital__code='MGH',
+        hospital='MGH',
         mrn=1234568,
     )
     # Bart
@@ -1755,7 +1755,7 @@ def _create_demographic_diagnosis_records() -> None:
     )
     legacy_factories.LegacyPatientHospitalIdentifierFactory.create(
         patient=legacy_bart_patient,
-        hospital__code='SJH',
+        hospital='SJH',
         mrn=1234569,
     )
     # Lisa
@@ -1766,7 +1766,7 @@ def _create_demographic_diagnosis_records() -> None:
     )
     legacy_factories.LegacyPatientHospitalIdentifierFactory.create(
         patient=legacy_lisa_patient,
-        hospital__code='OMI',
+        hospital='OMI',
         mrn=1234570,
     )
 

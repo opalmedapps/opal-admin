@@ -2995,17 +2995,13 @@ def test_fetch_patient_demographic_diagnosis_summary_success(mocker: MockerFixtu
     legacy_factories.LegacyPatientControlFactory.create(
         patient=legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat1.legacy_id),
     )
-    legacy_factories.LegacyPatientHospitalIdentifierFactory.create(
-        patient=legacy_pat1, hospital__code='RVH', mrn=1234567
-    )
+    legacy_factories.LegacyPatientHospitalIdentifierFactory.create(patient=legacy_pat1, hospital='RVH', mrn=1234567)
     django_pat2 = patient_factories.Patient.create(ramq='SIMM12345679', legacy_id=52)
     legacy_pat2 = legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat2.legacy_id)
     legacy_factories.LegacyPatientControlFactory.create(
         patient=legacy_factories.LegacyPatientFactory.create(patientsernum=django_pat2.legacy_id),
     )
-    legacy_factories.LegacyPatientHospitalIdentifierFactory.create(
-        patient=legacy_pat2, hospital__code='MGH', mrn=1234566
-    )
+    legacy_factories.LegacyPatientHospitalIdentifierFactory.create(patient=legacy_pat2, hospital='MGH', mrn=1234566)
     # Create a dummy patient to ensure it is not included in the report
     legacy_factories.LegacyPatientFactory.create(patientsernum=53)
     legacy_factories.LegacyDiagnosisFactory.create(

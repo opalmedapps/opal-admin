@@ -30,7 +30,6 @@ from opal.caregivers import models as caregiver_models
 from opal.core.test_utils import RequestMockerTest
 from opal.hospital_settings import factories as hospital_factories
 from opal.hospital_settings.factories import Institution
-from opal.legacy import factories as legacy_factories
 from opal.legacy import utils as legacy_utils
 from opal.legacy.models import (
     LegacyAccessLevel,
@@ -1317,8 +1316,6 @@ class TestRegistrationCompletionView:
 
         rvh = hospital_factories.Site.create(acronym='RVH')
         mch = hospital_factories.Site.create(acronym='MCH')
-        legacy_factories.LegacyHospitalIdentifierTypeFactory.create(code='RVH')
-        legacy_factories.LegacyHospitalIdentifierTypeFactory.create(code='MCH')
         patient_factories.HospitalPatient.create(patient=patient, site=rvh, mrn='9999996')
         patient_factories.HospitalPatient.create(patient=patient, site=mch, mrn='9999996', is_active=False)
 

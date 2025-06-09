@@ -104,7 +104,7 @@ class Command(BaseCommand):
             # Check if new backend model HospitalPatient already has a record for the added patient
             hospital_patient = HospitalPatient.objects.filter(
                 mrn=legacy_patient_identifier.mrn,
-                site__acronym=legacy_patient_identifier.hospital.code,
+                site__acronym=legacy_patient_identifier.hospital,
                 patient__legacy_id=legacy_patient.patientsernum,
             ).first()
             if hospital_patient:
@@ -135,7 +135,7 @@ class Command(BaseCommand):
             HospitalPatient.objects.create(
                 patient=migrated_patient,
                 site=Site.objects.get(
-                    acronym=legacy_patient_identifier.hospital.code,
+                    acronym=legacy_patient_identifier.hospital,
                 ),
                 mrn=legacy_patient_identifier.mrn,
                 is_active=legacy_patient_identifier.is_active,
@@ -148,6 +148,6 @@ class Command(BaseCommand):
                 ).format(
                     patient_id=legacy_patient.patientsernum,
                     mrn=legacy_patient_identifier.mrn,
-                    site=legacy_patient_identifier.hospital.code,
+                    site=legacy_patient_identifier.hospital,
                 )
             )
