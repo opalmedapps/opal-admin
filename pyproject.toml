@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = "==3.12.10"
 dependencies = [
     "argon2-cffi==25.1.0",
-    "crispy-bootstrap5==2025.4",
+    "crispy-bootstrap5==2025.6",
     "dj-rest-auth==7.0.1",
     "django==4.2.22",
     "django-auditlog==3.1.2",
