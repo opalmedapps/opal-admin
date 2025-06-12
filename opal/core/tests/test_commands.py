@@ -151,6 +151,12 @@ class TestInsertTestData(CommandTestMixin):
         assert SecurityAnswer.objects.count() == 30
 
     @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_insert_existing_data_delete_complete(self) -> None:
+        """The insert test data command can be called twice."""
+        self._call_command('insert_test_data', 'OMI')
+        self._call_command('insert_test_data', 'OMI', '--force-delete')
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert_existing_data_force_delete(self) -> None:
         """The existing data is deleted without confirmation."""
         relationship = factories.Relationship.create()
