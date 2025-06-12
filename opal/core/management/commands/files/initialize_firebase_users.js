@@ -9,7 +9,7 @@
  *
  * This file is included in this project for ease of maintenance in tandem with the insert_test_data management command.
  * You can use the listener container to execute this file via:
- * docker compose exec listener sh -c "cd src/firebase && node -e \"$(cat initialize_firebase_users.js)\""
+ * cat initialize_firebase_users.js | docker compose exec --no-TTY listener node
  */
 /* eslint-disable import/no-unresolved */
 const { getAuth } = require('firebase-admin/auth');
