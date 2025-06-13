@@ -14,8 +14,8 @@
 /* eslint-disable import/no-unresolved */
 const { getAuth } = require('firebase-admin/auth');
 
-const { FIREBASE_CONFIG } = require('../environment');
-const { Firebase } = require('./firebase');
+const { FIREBASE_CONFIG } = require('./src/environment');
+const { Firebase } = require('./src/firebase/firebase');
 
 const USER_RECORDS = [
     {

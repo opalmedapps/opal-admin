@@ -939,20 +939,21 @@ def _create_security_answers(caregiver: CaregiverProfile) -> None:
         if language == 'en'
         else "Quel est le prénom de votre meilleur ami d'enfance?"
     )
+    # security answers need to be in uppercase
     _create_security_answer(
         caregiver,
         question1,
-        hashlib.sha512(b'meg').hexdigest(),
+        hashlib.sha512(b'MEG').hexdigest(),
     )
     _create_security_answer(
         caregiver,
         question2,
-        hashlib.sha512(b'florida').hexdigest(),
+        hashlib.sha512(b'FLORIDA').hexdigest(),
     )
     _create_security_answer(
         caregiver,
         question3,
-        hashlib.sha512(b'diana').hexdigest(),
+        hashlib.sha512(b'DIANA').hexdigest(),
     )
 
 
