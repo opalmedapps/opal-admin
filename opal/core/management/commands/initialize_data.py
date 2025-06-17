@@ -215,6 +215,12 @@ class Command(BaseCommand):
         interface_engine, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_INTERFACE_ENGINE)
         interface_engine.set_unusable_password()
         interface_engine.save()
+        # the interface engine needs a legacy user to be able to access the legacy OpalAdmin API
+        self._create_legacy_user(
+            constants.USERNAME_INTERFACE_ENGINE,
+            legacy_models.LegacyOAUserType.SYSTEM,
+            'External System',
+        )
         legacy_backend, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_BACKEND_LEGACY)
         legacy_backend.set_unusable_password()
         legacy_backend.save()
