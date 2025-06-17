@@ -478,8 +478,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_rory,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),
-            start_date=_relative_date(today, -14),
+            request_date=today,
+            start_date=today,
         )
 
         # Cara --> Cara: Self
@@ -488,8 +488,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_cara,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Rory --> Cara: Family & Friends
@@ -498,8 +498,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_rory,
             relationship_type=type_family,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # John --> John: Self
@@ -508,8 +508,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_john,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),
-            start_date=_relative_date(today, -14),
+            request_date=today,
+            start_date=today,
         )
 
         # Richard --> Richard: Self
@@ -518,8 +518,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_richard,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # John --> Richard: Family & Friends
@@ -528,8 +528,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_john,
             relationship_type=type_family,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Mike --> Mike: Self
@@ -538,8 +538,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_mike,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Kathy --> Kathy: Self
@@ -548,8 +548,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_kathy,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Mike --> Kathy: Family & Friends
@@ -558,8 +558,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_mike,
             relationship_type=type_family,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Valerie --> Valerie: Self
@@ -568,8 +568,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_valerie,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Pete --> Pete: Self
@@ -578,8 +578,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_pete,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Martin --> Martin: Self
@@ -588,8 +588,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_martin,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
     # The rest of the relationships exist at both institutions
