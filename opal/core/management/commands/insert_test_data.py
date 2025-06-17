@@ -60,13 +60,13 @@ INSTITUTION_DATA = MappingProxyType({
         'name': 'Opal Demo',
         'name_fr': 'Démo de Opal',
         'acronym_fr': 'DO1',
-        'support_email': 'info@opalmedapps.ca',
+        'support_email': 'support@opalmedapps.ca',
     },
     InstitutionOption.ohigph: {
         'name': 'Opal Demo 2',
         'name_fr': 'Démo de Opal 2',
         'acronym_fr': 'DO2',
-        'support_email': 'info@opalmedapps.ca',
+        'support_email': 'support@opalmedapps.ca',
     },
 })
 
@@ -303,7 +303,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             last_name='Smith',
             date_of_birth=date(1985, 1, 1),
             sex=SexType.MALE,
-            ramq='',
+            ramq='ABCD99988877',
             legacy_id=93,
             mrns=mrn_data['John Smith'],
         )
@@ -372,7 +372,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             email='laurie@opalmedapps.ca',
             language='en',
             phone_number='',
-            legacy_id=6,
+            legacy_id=1,
         )
         user_rory = _create_caregiver(
             first_name='Rory',
@@ -381,7 +381,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             email='rory@opalmedapps.ca',
             language='en',
             phone_number='+15145554321',
-            legacy_id=7,
+            legacy_id=2,
         )
         user_cara = _create_caregiver(
             first_name=cara.first_name,
@@ -390,7 +390,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             email='cara@opalmedapps.ca',
             language='en',
             phone_number='',
-            legacy_id=999,  # TODO
+            legacy_id=3,
         )
         user_john = _create_caregiver(
             first_name=john.first_name,
@@ -399,7 +399,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             email='john@opalmedapps.ca',
             language='en',
             phone_number='',
-            legacy_id=8,
+            legacy_id=4,
         )
         user_richard = _create_caregiver(
             first_name=richard.first_name,
@@ -408,7 +408,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             email='richard@opalmedapps.ca',
             language='en',
             phone_number='',
-            legacy_id=998,  # TODO
+            legacy_id=5,
         )
         user_mike = _create_caregiver(
             first_name=mike.first_name,
@@ -417,7 +417,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             email='mike@opalmedapps.ca',
             language='en',
             phone_number='',
-            legacy_id=997,  # TODO
+            legacy_id=6,
         )
         user_kathy = _create_caregiver(
             first_name=kathy.first_name,
@@ -426,7 +426,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             email='kathy@opalmedapps.ca',
             language='en',
             phone_number='',
-            legacy_id=996,  # TODO
+            legacy_id=7,
         )
         user_valerie = _create_caregiver(
             first_name=valerie.first_name,
@@ -435,7 +435,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             email='valerie@opalmedapps.ca',
             language='en',
             phone_number='',
-            legacy_id=995,  # TODO
+            legacy_id=8,
         )
         user_pete = _create_caregiver(
             first_name=pete.first_name,
@@ -444,7 +444,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             email='pete@opalmedapps.ca',
             language='en',
             phone_number='',
-            legacy_id=994,  # TODO
+            legacy_id=9,
         )
         user_martin = _create_caregiver(
             first_name=martin.first_name,
@@ -453,7 +453,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             email='martin@opalmedapps.ca',
             language='en',
             phone_number='',
-            legacy_id=993,  # TODO
+            legacy_id=10,
         )
 
     # get relationship types
@@ -478,8 +478,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_rory,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),
-            start_date=_relative_date(today, -14),
+            request_date=today,
+            start_date=today,
         )
 
         # Cara --> Cara: Self
@@ -488,8 +488,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_cara,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Rory --> Cara: Family & Friends
@@ -498,8 +498,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_rory,
             relationship_type=type_family,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # John --> John: Self
@@ -508,8 +508,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_john,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),
-            start_date=_relative_date(today, -14),
+            request_date=today,
+            start_date=today,
         )
 
         # Richard --> Richard: Self
@@ -518,8 +518,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_richard,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # John --> Richard: Family & Friends
@@ -528,8 +528,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_john,
             relationship_type=type_family,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Mike --> Mike: Self
@@ -538,8 +538,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_mike,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Kathy --> Kathy: Self
@@ -548,8 +548,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_kathy,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Mike --> Kathy: Family & Friends
@@ -558,8 +558,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_mike,
             relationship_type=type_family,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Valerie --> Valerie: Self
@@ -568,8 +568,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_valerie,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Pete --> Pete: Self
@@ -578,8 +578,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_pete,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
         # Martin --> Martin: Self
@@ -588,8 +588,8 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_martin,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),  # TBC
-            start_date=_relative_date(today, -14),  # TBC
+            request_date=today,
+            start_date=today,
         )
 
     # The rest of the relationships exist at both institutions
