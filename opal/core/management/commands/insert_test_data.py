@@ -19,6 +19,7 @@ from django.utils import timezone
 
 from dateutil.relativedelta import relativedelta
 
+import opal.legacy.models as legacy_models
 import opal.legacy.utils as legacy_utils
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer
 from opal.hospital_settings.models import Institution, Site
@@ -209,6 +210,11 @@ def _delete_existing_data() -> None:
     Note.objects.all().delete()
     PathologyObservation.objects.all().delete()
     GeneralTest.objects.all().delete()
+
+    legacy_models.LegacyPatientHospitalIdentifier.objects.all().delete()
+    legacy_models.LegacyPatientControl.objects.all().delete()
+    legacy_models.LegacyPatient.objects.all().delete()
+    legacy_models.LegacyUsers.objects.all().delete()
 
 
 def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: PLR0914, PLR0915
@@ -933,20 +939,21 @@ def _create_security_answers(caregiver: CaregiverProfile) -> None:
         if language == 'en'
         else "Quel est le prénom de votre meilleur ami d'enfance?"
     )
+    # security answers need to be in uppercase
     _create_security_answer(
         caregiver,
         question1,
-        hashlib.sha512(b'meg').hexdigest(),
+        hashlib.sha512(b'MEG').hexdigest(),
     )
     _create_security_answer(
         caregiver,
         question2,
-        hashlib.sha512(b'florida').hexdigest(),
+        hashlib.sha512(b'FLORIDA').hexdigest(),
     )
     _create_security_answer(
         caregiver,
         question3,
-        hashlib.sha512(b'diana').hexdigest(),
+        hashlib.sha512(b'DIANA').hexdigest(),
     )
 
 
