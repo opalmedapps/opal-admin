@@ -226,8 +226,9 @@ class TestInitializeData(CommandTestMixin):
     """Test class to group the `initialize_data` command tests."""
 
     @pytest.fixture(autouse=True)
-    def _add_legacy_role(self) -> None:
+    def _add_legacy_roles(self) -> None:
         legacy_models.LegacyOARole.objects.create(name_en='System Administrator')
+        legacy_models.LegacyOARole.objects.create(name_en='External System')
 
     def test_insert(self) -> None:
         """Ensure that initial data is inserted when there is no existing data."""
@@ -510,8 +511,16 @@ class TestInitializeData(CommandTestMixin):
 
         assert token.key == random_token
 
+    def test_insert_legacy_interface_engine(self) -> None:
+        """A legacy interface engine user is generated."""
+        self._call_command('initialize_data')
+
+        User.objects.get(username='interface-engine')
+
+        legacy_models.LegacyOAUser.objects.get(username='interface-engine')
+
     def test_insert_superuser_random_password(self) -> None:
-        """An admin user with a random password us generated."""
+        """An admin user with a random password is generated."""
         stdout, _stderr = self._call_command('initialize_data')
 
         user = User.objects.get(username='admin')
