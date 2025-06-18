@@ -39,7 +39,7 @@ dependencies = [
     # required for ImageFields
     "pillow==11.2.1",
     "plotly==6.1.2",
-    "pydantic==2.11.5",
+    "pydantic==2.11.7",
     "qrcode==8.2",
     "requests==2.32.4",
     "slippers==0.6.2",
