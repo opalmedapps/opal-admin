@@ -83,7 +83,7 @@ requires-dist = [
     { name = "crispy-bootstrap5", specifier = "==2025.6" },
     { name = "dj-rest-auth", specifier = "==7.0.1" },
     { name = "django", specifier = "==4.2.23" },
-    { name = "django-auditlog", specifier = "==3.1.2" },
+    { name = "django-auditlog", specifier = "==3.2.0" },
     { name = "django-cors-headers", specifier = "==4.7.0" },
     { name = "django-crispy-forms", specifier = "==2.4" },
     { name = "django-environ", specifier = "==0.12.0" },
@@ -506,15 +506,15 @@ wheels = [
 
 [[package]]
 name = "django-auditlog"
-version = "3.1.2"
+version = "3.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "python-dateutil" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0e/3a/61bfb180019d08db3f7a2e4097bda14ee32bd57f5dffda0c84b2d4c26304/django_auditlog-3.1.2.tar.gz", hash = "sha256:435345b4055d16abfb4ada4bf11320f9e2f6d343874464471fa0041f13f3a474", size = 69359, upload-time = "2025-04-26T11:01:56.553Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3e/d3/16b3a4b4fc2974067263182065d90c04770d6bcf4e6cfa45af196c2a7ed5/django_auditlog-3.2.0.tar.gz", hash = "sha256:66cf3945977ba60e0687fc264ac178f0c7b0eee013f25e1c63561d8ceb6a5c41", size = 72579, upload-time = "2025-06-26T11:32:20.038Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/af/34/47edd758abcb4426953b5ff2fa4dd9956c2304e96160ab1b95c3a1ab6e61/django_auditlog-3.1.2-py3-none-any.whl", hash = "sha256:6432a83fdf4397a726488d101fedcb62daafd6d4b825a0fc4c50e3657f5883cd", size = 37312, upload-time = "2025-04-26T11:01:16.776Z" },
+    { url = "https://files.pythonhosted.org/packages/41/11/f5a7323b7fc88e7248bbc26c80fc7dfed98d7deef4ef7f70b7a7c57f5797/django_auditlog-3.2.0-py3-none-any.whl", hash = "sha256:63d02326c5b069cd5ae390c4729076f1d935c3a9cefc27893e79a01c42cd1a78", size = 38279, upload-time = "2025-06-26T11:32:30.542Z" },
 ]
 
 [[package]]

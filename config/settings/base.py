@@ -453,6 +453,8 @@ structlog.configure(
 # ------------------------------------------------------------------------------
 # See https://django-auditlog.readthedocs.io/en/latest/usage.html#settings
 AUDITLOG_INCLUDE_ALL_MODELS = True
+# Store changes in JSON format
+AUDITLOG_STORE_JSON_CHANGES = True
 # Use the Appuserid header to correlate changes with app users
 # https://django-auditlog.readthedocs.io/en/latest/usage.html#correlation-id
 AUDITLOG_CID_HEADER = 'Appuserid'
