@@ -274,7 +274,9 @@ def initialize_new_patient(
     return legacy_patient
 
 
-def create_user(user_type: LegacyUserType, user_type_id: int, username: str) -> LegacyUsers:
+def create_user(
+    user_type: LegacyUserType, user_type_id: int, username: str, legacy_id: int | None = None
+) -> LegacyUsers:
     """
     Create a user with the given properties.
 
@@ -282,11 +284,13 @@ def create_user(user_type: LegacyUserType, user_type_id: int, username: str) -> 
         user_type: the type of the user
         user_type_id: the legacy ID of the type of the user (e.g., the patient ID for a patient)
         username: the username of the user
+        legacy_id: the desired legacy ID of the patient, if a specific ID is required
 
     Returns:
         the created user instance
     """
     user = LegacyUsers(
+        usersernum=legacy_id,
         usertype=user_type,
         usertypesernum=user_type_id,
         username=username,
@@ -340,6 +344,7 @@ def create_caregiver_user(
     user_patient_legacy_id: int = relationship.patient.legacy_id  # type: ignore[assignment]
     user_type = LegacyUserType.PATIENT
     language = LegacyLanguage(language.upper())
+    legacy_id = relationship.caregiver.legacy_id
 
     if relationship.type.is_self:
         legacy_patient = LegacyPatient.objects.get(patientsernum=user_patient_legacy_id)
@@ -360,7 +365,7 @@ def create_caregiver_user(
         user_patient_legacy_id = dummy_patient.patientsernum
         user_type = LegacyUserType.CAREGIVER
 
-    return create_user(user_type, user_patient_legacy_id, username)
+    return create_user(user_type, user_patient_legacy_id, username, legacy_id)
 
 
 def change_caregiver_user_to_patient(caregiver_legacy_id: int, patient: Patient) -> None:

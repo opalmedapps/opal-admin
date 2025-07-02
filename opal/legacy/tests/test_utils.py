@@ -243,6 +243,16 @@ def test_create_user() -> None:
     assert legacy_user.username == 'test-username'
 
 
+def test_create_user_legacy_id() -> None:
+    """The legacy user is created successfully with the desired legacy ID."""
+    legacy_user = legacy_utils.create_user(models.LegacyUserType.CAREGIVER, 123, 'test-username', 321)
+
+    legacy_user.full_clean()
+    legacy_user.refresh_from_db()
+
+    assert legacy_user.usersernum == 321
+
+
 def test_update_legacy_user_type() -> None:
     """Ensure that a legacy user's type can be updated."""
     legacy_user = factories.LegacyUserFactory.create(usertype=models.LegacyUserType.CAREGIVER)
@@ -303,6 +313,20 @@ def test_create_caregiver_user_caregiver() -> None:
     assert legacy_user.usertype == models.LegacyUserType.CAREGIVER
     assert legacy_user.usertypesernum == legacy_patient.patientsernum
     assert legacy_user.username == 'test-username'
+
+
+def test_create_caregiver_user_caregiver_legacy_id() -> None:
+    """The caregiver user is created with the desired legacy ID."""
+    relationship = patient_factories.Relationship.create(
+        patient__legacy_id=None,
+        caregiver__user__first_name='John',
+        caregiver__user__last_name='Wayne',
+        caregiver__legacy_id=123,
+    )
+
+    legacy_user = legacy_utils.create_caregiver_user(relationship, 'test-username', 'fr', 'marge@opalmedapps.ca')
+
+    assert legacy_user.usersernum == 123
 
 
 def test_change_caregiver_user_to_patient() -> None:
