@@ -25,7 +25,7 @@ dependencies = [
     "django-structlog==9.1.1",
     # required as a runtime dependency due to the need to monkeypatch at runtime for generics
     # see: https://github.com/typeddjango/django-stubs/tree/master/ext
-    "django-stubs-ext==5.2.0",
+    "django-stubs-ext==5.2.1",
     "django-tables2==2.7.5",
     "djangorestframework==3.16.0",
     "drf-spectacular==0.28.0",
@@ -53,7 +53,7 @@ dev = [
     "beautifulsoup4==4.13.4",
     "coverage==7.9.1",
     "django-coverage-plugin==3.1.1",
-    "django-stubs==5.2.0",
+    "django-stubs==5.2.1",
     "django-test-migrations==1.5.0",
     "djangorestframework-stubs==3.16.0",
     "factory-boy==3.3.3",
