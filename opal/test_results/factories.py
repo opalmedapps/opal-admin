@@ -22,7 +22,7 @@ class GeneralTest(DjangoModelFactory[models.GeneralTest]):
     """
 
     patient = factory.SubFactory(Patient)
-    type = factory.Iterator(models.TestType.values)  # type: ignore[misc]
+    type = factory.Iterator(models.TestType.values)
     collected_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     received_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     reported_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
@@ -63,7 +63,7 @@ class LabObservationFactory(DjangoModelFactory[models.LabObservation]):
     identifier_text = 'WHITE BLOOD CELL'
     value = 30.02
     value_units = '10^9/L'
-    value_abnormal = factory.Iterator(models.AbnormalFlag.values)  # type: ignore[misc]
+    value_abnormal = factory.Iterator(models.AbnormalFlag.values)
     value_min_range = 3.0
     value_max_range = 15.0
     observed_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())

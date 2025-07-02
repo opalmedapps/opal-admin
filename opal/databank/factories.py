@@ -39,7 +39,7 @@ class SharedData(DjangoModelFactory[models.SharedData]):
     databank_consent = factory.SubFactory(DatabankConsent)
     sent_at = factory.Faker('date_time', tzinfo=timezone.get_current_timezone())
     data_id = factory.Sequence(lambda number: number + 1)
-    data_type = factory.Iterator(models.DataModuleType.values)  # type: ignore[misc]
+    data_type = factory.Iterator(models.DataModuleType.values)
 
     class Meta:
         model = models.SharedData

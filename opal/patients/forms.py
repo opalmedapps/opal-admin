@@ -872,7 +872,7 @@ class RelationshipAccessForm(forms.ModelForm[Relationship]):
         self.fields['type'].queryset = available_choices  # type: ignore[attr-defined]
 
         self.fields['status'].choices = [  # type: ignore[attr-defined]
-            (choice.value, choice.label)  # type: ignore[misc]
+            (choice.value, choice.label)
             for choice in Relationship.valid_statuses(
                 RelationshipStatus(self.instance.status),
             )
