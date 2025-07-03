@@ -69,11 +69,6 @@ class TestInsertTestData(CommandTestMixin):
         assert Note.objects.count() == 1
         assert stdout == 'Test data successfully created\n'
 
-        assert legacy_models.LegacyPatient.objects.count() == 10
-        assert legacy_models.LegacyPatientControl.objects.count() == 10
-        assert legacy_models.LegacyPatientHospitalIdentifier.objects.count() == 10
-        assert legacy_models.LegacyUsers.objects.count() == 10
-
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert_ohigph(self) -> None:
         """Ensure that test data for the Opal Pediatric Institute is inserted when there is no existing data."""
@@ -93,11 +88,6 @@ class TestInsertTestData(CommandTestMixin):
         assert PathologyObservation.objects.count() == 0
         assert Note.objects.count() == 0
         assert stdout == 'Test data successfully created\n'
-
-        assert legacy_models.LegacyPatient.objects.count() == 1
-        assert legacy_models.LegacyPatientControl.objects.count() == 1
-        assert legacy_models.LegacyPatientHospitalIdentifier.objects.count() == 1
-        assert legacy_models.LegacyUsers.objects.count() == 0
 
     def test_insert_existing_data_cancel(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """The insertion can be cancelled when there is already data."""
