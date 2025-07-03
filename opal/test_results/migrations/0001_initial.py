@@ -169,7 +169,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='generaltest',
             constraint=models.CheckConstraint(
-                check=models.Q(('type__in', ['P', 'L'])), name='test_results_generaltest_type_valid'
+                condition=models.Q(('type__in', ['P', 'L'])), name='test_results_generaltest_type_valid'
             ),
         ),
     ]
