@@ -15,6 +15,7 @@ from typing import Any
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
+from opal.legacy import models as legacy_models
 from django.utils import timezone
 
 from dateutil.relativedelta import relativedelta
