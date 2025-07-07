@@ -212,11 +212,6 @@ def _delete_existing_data() -> None:
     GeneralTest.objects.all().delete()
 
     legacy_models.LegacyOAUser.objects.filter(username='DemoAdmin').delete()
-    legacy_models.LegacyPatientHospitalIdentifier.objects.all().delete()
-    legacy_models.LegacyPatientControl.objects.all().delete()
-    legacy_models.LegacyPatient.objects.all().delete()
-    legacy_models.LegacyUsers.objects.all().delete()
-
 
 def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: PLR0914, PLR0915
     """
