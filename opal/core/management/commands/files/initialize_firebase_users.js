@@ -1,9 +1,7 @@
-// eslint-disable-next-line max-len
 // SPDX-FileCopyrightText: Copyright 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-/* eslint-disable no-console */
 /**
  * @file Utility for Firebase to initialize users for our test/demo data.
  *
@@ -11,11 +9,9 @@
  * You can use the listener container to execute this file via:
  * cat initialize_firebase_users.js | docker compose exec --no-TTY listener node
  */
-/* eslint-disable import/no-unresolved */
-const { getAuth } = require('firebase-admin/auth');
-
-const { FIREBASE_CONFIG } = require('./src/environment');
-const { Firebase } = require('./src/firebase/firebase');
+import Firebase from './src/firebase/firebase.js';
+import { FIREBASE_CONFIG } from './src/environment.js';
+import { getAuth } from 'firebase-admin/auth';
 
 const USER_RECORDS = [
     {
