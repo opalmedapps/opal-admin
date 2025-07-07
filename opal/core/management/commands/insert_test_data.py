@@ -15,13 +15,13 @@ from typing import Any
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
-from opal.legacy import models as legacy_models
 from django.utils import timezone
 
 from dateutil.relativedelta import relativedelta
 
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer
 from opal.hospital_settings.models import Institution, Site
+from opal.legacy import models as legacy_models
 from opal.patients.models import (
     DataAccessType,
     HospitalPatient,
