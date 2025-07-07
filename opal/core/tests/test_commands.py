@@ -74,6 +74,7 @@ class TestInsertTestData(CommandTestMixin):
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert_ohigph(self) -> None:
         """Ensure that test data for the Opal Pediatric Institute is inserted when there is no existing data."""
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         stdout, _stderr = self._call_command('insert_test_data', 'OHIGPH')
 
         assert Institution.objects.count() == 1
@@ -96,7 +97,6 @@ class TestInsertTestData(CommandTestMixin):
         monkeypatch.setattr('builtins.input', lambda _: 'foo')
         relationship = factories.Relationship.create()
 
-        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert stdout == 'Test data insertion cancelled\n'
