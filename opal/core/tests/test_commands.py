@@ -21,6 +21,7 @@ from opal.core import constants
 from opal.core.management.commands.insert_test_data import _create_date, _create_patient
 from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
+from opal.legacy import factories as legacy_factories
 from opal.legacy import models as legacy_models
 from opal.patients import factories
 from opal.patients.models import (
@@ -52,6 +53,7 @@ class TestInsertTestData(CommandTestMixin):
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert(self) -> None:
         """Ensure that test data is inserted when there is no existing data."""
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert Institution.objects.count() == 1
@@ -94,6 +96,7 @@ class TestInsertTestData(CommandTestMixin):
         monkeypatch.setattr('builtins.input', lambda _: 'foo')
         relationship = factories.Relationship.create()
 
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert stdout == 'Test data insertion cancelled\n'
@@ -114,6 +117,7 @@ class TestInsertTestData(CommandTestMixin):
         caregiver_profile = CaregiverProfile.objects.get()
         caregiver = Caregiver.objects.get()
 
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert 'Existing test data deleted' in stdout
@@ -143,6 +147,7 @@ class TestInsertTestData(CommandTestMixin):
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert_existing_data_delete_complete(self) -> None:
         """The insert test data command can be called twice."""
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         self._call_command('insert_test_data', 'OMI')
         self._call_command('insert_test_data', 'OMI', '--force-delete')
 
@@ -153,6 +158,7 @@ class TestInsertTestData(CommandTestMixin):
         factories.HospitalPatient.create()
         caregiver_factories.SecurityAnswer.create(user=relationship.caregiver)
 
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         stdout, _stderr = self._call_command('insert_test_data', 'OMI', '--force-delete')
 
         assert 'Existing test data deleted' in stdout
@@ -161,6 +167,7 @@ class TestInsertTestData(CommandTestMixin):
     @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_create_security_answers(self) -> None:
         """Ensure that the security answer's question depends on the user's language."""
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         self._call_command('insert_test_data', 'OMI')
 
         caregiver_en = CaregiverProfile.objects.get(user__first_name='John')
