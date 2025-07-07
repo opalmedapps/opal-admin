@@ -213,6 +213,7 @@ def _delete_existing_data() -> None:
 
     legacy_models.LegacyOAUser.objects.filter(username='DemoAdmin').delete()
 
+
 def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: PLR0914, PLR0915
     """
     Create all test data.
