@@ -21,6 +21,7 @@ from dateutil.relativedelta import relativedelta
 
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer
 from opal.hospital_settings.models import Institution, Site
+from opal.legacy import models as legacy_models
 from opal.patients.models import (
     DataAccessType,
     HospitalPatient,
@@ -32,7 +33,7 @@ from opal.patients.models import (
     SexType,
 )
 from opal.test_results.models import GeneralTest, Note, PathologyObservation, TestType
-from opal.users.models import Caregiver
+from opal.users.models import Caregiver, ClinicalStaff
 
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
 
@@ -196,6 +197,7 @@ class Command(BaseCommand):
 
 def _delete_existing_data() -> None:
     """Delete all the existing test data."""
+    ClinicalStaff.objects.filter(username='DemoAdmin').delete()
     Relationship.objects.all().delete()
     # delete any custom relationship types
     RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).delete()
@@ -208,6 +210,8 @@ def _delete_existing_data() -> None:
     Note.objects.all().delete()
     PathologyObservation.objects.all().delete()
     GeneralTest.objects.all().delete()
+
+    legacy_models.LegacyOAUser.objects.filter(username='DemoAdmin').delete()
 
 
 def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: PLR0914, PLR0915
@@ -231,6 +235,14 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
     # hospital settings
     institution = create_institution(institution_option)
     sites = create_sites(institution_option, institution)
+
+    # create demo admin user
+    _create_user(
+        username='DemoAdmin',
+        password='Silk7-Artificial-Floral',  # noqa: S106
+        user_type=legacy_models.LegacyOAUserType.HUMAN,
+        user_role='System Administrator',
+    )
 
     # create Family & Friends relationship type
     type_family = RelationshipType.objects.create(
@@ -735,6 +747,38 @@ def _create_site(  # noqa: PLR0913, PLR0917
     site.save()
 
     return site
+
+
+def _create_user(
+    username: str,
+    password: str,
+    user_type: legacy_models.LegacyOAUserType,
+    user_role: str,
+    user_email: str | None = None,
+) -> None:
+    """
+    Create, validate and save an user account instance with the given properties.
+
+    Args:
+        username: the user's username
+        password: the user's password
+        user_type: the user's type (human or system)
+        user_role: the user's role
+        user_email: the user's email (optional, default is None)
+
+    """
+    role = legacy_models.LegacyOARole.objects.get(name_en=user_role)
+    legacy_models.LegacyOAUser.objects.create(
+        username=username,
+        # the password does not matter since legacy OpalAdmin
+        # does not support logging in with AD or regular login at the same time
+        # i.e., if AD login is enabled a regular log in is not possible
+        password=password,
+        oa_role=role,
+        user_type=user_type,
+    )
+
+    ClinicalStaff.objects.create_superuser(username=username, email=user_email, password=password)
 
 
 def _create_patient(  # noqa: PLR0913, PLR0917
