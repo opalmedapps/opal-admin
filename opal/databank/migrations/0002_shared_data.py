@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='shareddata',
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     ('data_type__in', ['APPT', 'DIAG', 'DEMO', 'LABS', 'QSTN']),
                 ),
                 name='databank_shareddata_data_type_valid',

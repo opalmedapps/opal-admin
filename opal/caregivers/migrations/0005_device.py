@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='device',
             constraint=models.CheckConstraint(
-                check=models.Q(('type__in', ['WEB', 'IOS', 'AND'])), name='caregivers_device_type_valid'
+                condition=models.Q(('type__in', ['WEB', 'IOS', 'AND'])), name='caregivers_device_type_valid'
             ),
         ),
         migrations.AddConstraint(
