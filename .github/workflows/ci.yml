@@ -54,6 +54,10 @@ jobs:
         if: '!cancelled()'
         env:
           SKIP: ruff,ruff-format,mypy,markdownlint-cli2,reuse-lint-file
+      - uses: opalmedapps/actions/actions/check-thirdparty-notice@main
+        if: '!cancelled()'
+        with:
+          package-file: './opal/static/thirdparty/package.json'
 
   django-checks:
     runs-on: ubuntu-latest
