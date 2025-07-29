@@ -68,3 +68,22 @@ class TestGetPatientSummary:
         pprint(vars(response))
 
         assert 2 + 2 == 5
+
+class TestManifestRequest:
+    """Class wrapper for SHLink Manifest Request endpoint tests."""
+
+    # TODO update with real content
+    def test_post_manifest_request_success(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint can issue a manifest request with no errors."""
+        uuid = uuid4()
+        patient = patient_factories.Patient.create(uuid=uuid)
+
+        response = api_client.post(reverse('api:patient-summary-manifest-request', kwargs={'uuid': uuid}))
+
+        print(response)
+        pprint(vars(response))
+
+        assert 2 + 2 == 5

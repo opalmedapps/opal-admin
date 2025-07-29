@@ -44,9 +44,15 @@ class GetPatientSummary(APIView):
             #     'key': 'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q',
             #     'label': 'Demo SHL for IPS_IG-bundle-01',
             # }
+            # link_content = {
+            #     'url': 'https://dev.app.opalmedapps.ca/content/test-ips-bundle.txt',
+            #     'flag': 'LU',
+            #     'key': 'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q',
+            #     'label': 'Opal-App Demo',
+            # }
             link_content = {
-                'url': 'https://dev.app.opalmedapps.ca/content/test-ips-bundle.txt',
-                'flag': 'LU',
+                'url': f'http://localhost:8000/api/patients/{uuid}/ips/manifest-request',
+                'flag': 'L',
                 'key': 'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q',
                 'label': 'Opal-App Demo',
             }
@@ -57,9 +63,15 @@ class GetPatientSummary(APIView):
             #     'key': 'nwIE4X0lcaMno9zPwaDruv5dP9TD6E7bHrau9r9KlDQ',
             #     'label': 'SHL from 2023-09-10 ePatientDave #2b',
             # }
+            # link_content = {
+            #     'url': 'https://dev.app.opalmedapps.ca/content/test-ips-bundle.txt',
+            #     'flag': 'LU',
+            #     'key': 'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q',
+            #     'label': 'Opal-App Demo',
+            # }
             link_content = {
-                'url': 'https://dev.app.opalmedapps.ca/content/test-ips-bundle.txt',
-                'flag': 'LU',
+                'url': f'http://localhost:8000/api/patients/{uuid}/ips/manifest-request',
+                'flag': 'L',
                 'key': 'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q',
                 'label': 'Opal-App Demo',
             }
@@ -74,4 +86,26 @@ class GetPatientSummary(APIView):
 
         return Response(
             link_data,
+        )
+
+class ManifestRequest(APIView):
+
+    # Allow unauthenticated access
+    permission_classes = ()
+
+    # Manifest request: https://docs.smarthealthit.org/smart-health-links/spec/#shlink-manifest-request
+    def post(self, request: Request, uuid: str) -> Response:
+
+        response = {
+            'files': [
+                {
+                    'contentType': 'application/fhir+json',
+                    # TODO supposed to be short-lived
+                    'location': 'https://dev.app.opalmedapps.ca/content/test-ips-bundle.txt',
+                },
+            ]
+        }
+
+        return Response(
+            response,
         )
