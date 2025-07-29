@@ -188,13 +188,12 @@ urlpatterns = [
         name='patient-viewed-health-data-update',
     ),
     path(
-        # TODO temp index
-        'patients/<uuid:uuid>/ips/<int:index>',
+        'patients/<uuid:uuid>/ips/',
         ips_views.GetPatientSummary.as_view(),
         name='patient-summary',
     ),
     path(
-        'patients/<uuid:uuid>/ips/manifest-request',
+        'patients/<uuid:uuid>/ips/manifest-request/',
         ips_views.ManifestRequest.as_view(),
         name='patient-summary-manifest-request',
     ),
