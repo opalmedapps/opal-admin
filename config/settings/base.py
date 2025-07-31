@@ -516,6 +516,11 @@ PATHOLOGY_REPORTS_PATH = Path(env.str('PATHOLOGY_REPORTS_PATH'))
 # Databank Enabled
 DATABANK_ENABLED = env.bool('DATABANK_ENABLED')
 
+# FTP settings
+FTP_HOST = env.str('FTP_HOST')
+FTP_USER = env.str('FTP_USER')
+FTP_PASSWORD = env.str('FTP_PASSWORD')
+
 # Third party apps settings
 # ------------------------------------------------------------------------------
 #
