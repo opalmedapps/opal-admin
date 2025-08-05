@@ -32,14 +32,18 @@ class GetPatientSummary(APIView):
             Http response with the data to build a SMART health link that can be parsed by IPS viewers.
         """
         # Validate the patient's existence
-        get_object_or_404(Patient, uuid=uuid)
+        patient = get_object_or_404(Patient, uuid=uuid)
 
-        # TODO testing - upload IPS bundle to the FTP server used to serve these bundles
-        encryption_key = b'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q'
+        # Request and assemble IPS data into a bundle
         fhir = FhirCommunication('OpenEMR')
         fhir.connect()
-        ips = fhir.assemble_ips()
-        encrypted_ips = fhir.encrypt_shlink_file(ips, encryption_key)
+        ips = fhir.assemble_ips(ramq=patient.ramq)
+        # TODO generate key
+        encryption_key = 'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q'
+        encryption_key_bytes = b'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q'
+        encrypted_ips = fhir.encrypt_shlink_file(ips, encryption_key_bytes)
+
+        # Upload the IPS bundle to the FTP server used to serve these bundles
         uploader = DataUpload()
         uploader.upload('app/dev/ips', 'test-ips-bundle.txt', encrypted_ips)
 
@@ -47,7 +51,6 @@ class GetPatientSummary(APIView):
         link_content = {
             'url': f'http://localhost:8000/api/patients/{uuid}/ips/manifest-request/',
             'flag': 'L',
-            # TODO generate key
             'key': encryption_key,
             'label': 'Opal-App Demo',
         }
@@ -87,7 +90,6 @@ class ManifestRequest(APIView):
                 {
                     'contentType': 'application/fhir+json',
                     # TODO supposed to be short-lived
-                    'location': 'https://dev.app.opalmedapps.ca/content/test-ips-bundle.txt',
                     'location': 'https://dev.app.opalmedapps.ca/ips/test-ips-bundle.txt',
                 },
             ]

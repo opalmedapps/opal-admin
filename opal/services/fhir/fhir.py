@@ -70,9 +70,9 @@ class FhirCommunication:
 
         self.oauth.get(f'{self.fhir_url}/metadata')
 
-    def assemble_ips(self):
-        patient_bundle = self.get_patient()
-        patient_uuid = patient_bundle['entry'][7]['resource']['id']
+    def assemble_ips(self, ramq: str):
+        patient_bundle = self.get_patient(ramq)
+        patient_uuid = patient_bundle['entry'][0]['resource']['id']
         conditions_bundle = self.get_conditions(patient_uuid)
         medication_requests_bundle = self.get_medication_requests(patient_uuid)
         allergies_bundle = self.get_allergies(patient_uuid)
@@ -80,15 +80,15 @@ class FhirCommunication:
         immunizations_bundle = self.get_immunizations(patient_uuid)
 
         patient_bundle = Bundle.model_validate(patient_bundle)
-        patient: Patient = patient_bundle.entry[7].resource
+        patient: Patient = patient_bundle.entry[0].resource
 
         if self.debug:
             print(f'Patient: {patient.name[0].family} {patient.name[0].given[0]} ({patient.id})')
 
         conditions_bundle = Bundle.model_validate(conditions_bundle)
-        conditions = [condition.resource for condition in conditions_bundle.entry]
+        conditions = [condition.resource for condition in conditions_bundle.entry] if conditions_bundle.entry else []
 
-        medication_requests = [
+        medication_requests = [] if medication_requests_bundle['total'] == 0 else [
             MedicationRequest.model_validate(medication_request['resource']) for medication_request in medication_requests_bundle['entry']
         ]
 
@@ -101,23 +101,25 @@ class FhirCommunication:
         # ]
 
         allergies_bundle = Bundle.model_validate(allergies_bundle)
-        allergies = [allergy.resource for allergy in allergies_bundle.entry]
+        allergies = [allergy.resource for allergy in allergies_bundle.entry] if allergies_bundle.entry else []
 
         observations_bundle = Bundle.model_validate(observations_bundle)
         vital_signs = [
             observation.resource
             for observation in observations_bundle.entry
             if observation.resource.category[0].coding[0].code == 'vital-signs'
-        ]
+        ] if observations_bundle.entry else []
         labs = [
             observation.resource
             for observation in observations_bundle.entry
             if observation.resource.category[0].coding[0].code == 'laboratory'
-        ]
+        ] if observations_bundle.entry else []
 
         # For some reason does not validate with Bundle, even when it is the R4B bundle
         # immunizations_bundle = Bundle.model_validate(immunizations_bundle)
-        immunizations = [Immunization.model_validate(immunization['resource']) for immunization in immunizations_bundle['entry']]
+        immunizations = [] if immunizations_bundle['total'] == 0 else [
+            Immunization.model_validate(immunization['resource']) for immunization in immunizations_bundle['entry']
+        ]
 
         generator = Device(
             id=f'{uuid.uuid4()}',
@@ -258,9 +260,9 @@ class FhirCommunication:
         print('BYTES', len(key_bytes), key_bytes)
         return jwe.encrypt(contents, key_bytes, algorithm='dir', encryption='A256GCM', cty='application/fhir+json')
 
-    def get_patient(self):
-        response = self.oauth.get(f'{self.fhir_url}/Patient').json()
-        patient = response['entry'][7]['resource']
+    def get_patient(self, ramq: str):
+        response = self.oauth.get(f'{self.fhir_url}/Patient?identifier={ramq}').json()
+        patient = response['entry'][0]['resource']
 
         if self.debug:
             print(f'Patient: UUID={patient['id']}, Name={patient["name"][0]["family"]}, {patient["name"][0]["given"][0]}')
@@ -270,6 +272,7 @@ class FhirCommunication:
     def get_conditions(self, uuid):
         response = self.oauth.get(f'{self.fhir_url}/Condition?patient={uuid}').json()
         self.strip_whitespace(response)
+        self.sanitize_empty_strings(response)
 
         if self.debug:
             print(f'Conditions: {response['total']}')
@@ -332,3 +335,17 @@ class FhirCommunication:
         elif type(item) is list:
             for x in item:
                 self.sanitize_invalid_dates(x)
+
+    # Validation error for Condition Bundle
+    # entry.0.resource.code.coding.0.display - String should match pattern '[\S]+' [type=string_pattern_mismatch, input_value='', input_type=str]
+    def sanitize_empty_strings(self, item):
+        if type(item) is dict:
+            for key, value in list(item.items()):
+                if type(value) is str and not value:
+                    # Remove keys that have empty string values
+                    item.pop(key)
+                else:
+                    self.sanitize_empty_strings(item[key])
+        elif type(item) is list:
+            for x in item:
+                self.sanitize_empty_strings(x)
