@@ -16,6 +16,7 @@ Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/l
 
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from django.utils.translation import gettext_lazy as _
 
@@ -494,6 +495,19 @@ ORMS_ENABLED = env.bool('ORMS_ENABLED', default=False)
 if ORMS_ENABLED:
     # base URL to ORMS (no trailing slash)
     ORMS_HOST = env.url('ORMS_HOST').geturl()
+
+# OPENEMR SETTINGS
+OPENEMR_ENABLED = env.bool('OPENEMR_ENABLED', default=False)
+
+if OPENEMR_ENABLED:
+    # base URL to OpenEMR (no trailing slash)
+    OPENEMR_HOST = env.url('OPENEMR_HOST').geturl()
+    OPENEMR_OAUTH_URL = urlparse(env.str('OPENEMR_HOST') + '/oauth2/default').geturl()
+    OPENEMR_API_URL = urlparse(env.str('OPENEMR_HOST') + '/apis/default/api').geturl()
+    OPENEMR_FHIR_URL = urlparse(env.str('OPENEMR_HOST') + '/apis/default/fhir').geturl()
+    OPENEMR_CLIENT_ID = env.str('OPENEMR_CLIENT_ID')
+    OPENEMR_USERNAME = env.str('OPENEMR_USERNAME')
+    OPENEMR_PASSWORD = env.str('OPENEMR_PASSWORD')
 
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'
