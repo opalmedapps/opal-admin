@@ -192,11 +192,6 @@ urlpatterns = [
         ips_views.GetPatientSummary.as_view(),
         name='patient-summary',
     ),
-    path(
-        'patients/<uuid:uuid>/ips/manifest-request/',
-        ips_views.ManifestRequest.as_view(),
-        name='patient-summary-manifest-request',
-    ),
     # Patient checkin update endpoint to replace legacy OA endpoint
     # TODO: Move and update the checkin api view to the new appointments app after it has been lift-shifted to django
     path(

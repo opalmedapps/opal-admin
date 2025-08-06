@@ -49,7 +49,7 @@ class GetPatientSummary(APIView):
 
         # See: https://docs.smarthealthit.org/smart-health-links/spec/#construct-a-shlink-payload
         link_content = {
-            'url': f'http://localhost:8000/api/patients/{uuid}/ips/manifest-request/',
+            'url': 'https://dev.app.opalmedapps.ca/ips/manifest-request/',
             'flag': 'L',
             'key': encryption_key,
             'label': 'Opal-App Demo',
@@ -62,39 +62,4 @@ class GetPatientSummary(APIView):
 
         return Response(
             link_data,
-        )
-
-
-class ManifestRequest(APIView):
-    """Class to make a manifest request that will deliver an International Patient Summary (IPS) for a given patient."""
-
-    # Allow unauthenticated access
-    permission_classes = ()
-
-    # Manifest request: https://docs.smarthealthit.org/smart-health-links/spec/#shlink-manifest-request
-    def post(self, request: Request, uuid: str) -> Response:
-        """
-        Handle POST requests to `patients/<uuid:uuid>/ips/manifest-request/`.
-
-        Fulfill Smart Health Link Manifest Requests.
-
-        Args:
-            request: Http request made by third-party applications to display a patient's IPS.
-            uuid: The patient's UUID for whom to view the IPS.
-
-        Returns:
-            Http response with the data needed to request a patient's IPS bundle.
-        """
-        response = {
-            'files': [
-                {
-                    'contentType': 'application/fhir+json',
-                    # TODO supposed to be short-lived
-                    'location': 'https://dev.app.opalmedapps.ca/ips/test-ips-bundle.txt',
-                },
-            ]
-        }
-
-        return Response(
-            response,
         )
