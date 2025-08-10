@@ -77,7 +77,7 @@ docs = [
     "mkdocs-gen-files==0.5.0",
     "mkdocs-literate-nav==0.6.2",
     "mkdocs-material==9.6.15",
-    "mkdocstrings[python-legacy]==0.29.1",
+    "mkdocstrings[python-legacy]==0.30.0",
 ]
 prod = [
     "gunicorn==23.0.0",
