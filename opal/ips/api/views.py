@@ -45,14 +45,14 @@ class GetPatientSummary(APIView):
 
         # Upload the IPS bundle to the FTP server used to serve these bundles
         uploader = DataUpload()
-        uploader.upload('app/dev/ips', 'test-ips-bundle.txt', encrypted_ips)
+        uploader.upload('app/dev/ips/bundles', f'ips-bundle_{uuid}.txt', encrypted_ips)
 
         # See: https://docs.smarthealthit.org/smart-health-links/spec/#construct-a-shlink-payload
         link_content = {
-            'url': 'https://dev.app.opalmedapps.ca/ips/manifest-request/',
+            'url': f'https://dev.app.opalmedapps.ca/ips/manifest-request/{uuid}',
             'flag': 'L',
             'key': encryption_key,
-            'label': 'Opal-App Demo',
+            'label': 'Opal-App IPS Demo',
         }
 
         # Convert the link content into JSON, parse it as base64, and build the link data
