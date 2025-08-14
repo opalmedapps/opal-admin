@@ -1,5 +1,6 @@
 import base64
 import json
+import secrets
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -42,12 +43,12 @@ class GetPatientSummary(APIView):
             fhir.connect()
             ips = fhir.assemble_ips(ramq=patient.ramq)
 
-            # TODO generate key
-            encryption_key = 'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q'
-            encryption_key_bytes = b'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q'
+            # Generate an encryption key for the bundle, and encrypt it
+            encryption_key = secrets.token_urlsafe(32)
+            encryption_key_bytes = encryption_key.encode('utf-8')
             encrypted_ips = fhir.encrypt_shlink_file(ips, encryption_key_bytes)
 
-            # Upload the IPS bundle to the FTP server used to serve these bundles
+            # Upload the encrypted IPS bundle to the FTP server used to serve these bundles
             uploader = DataUpload()
             uploader.upload('app/dev/content/ips/bundles', f'ips-bundle_{uuid}.txt', encrypted_ips)
 
