@@ -16,6 +16,9 @@ class DataUpload:
 
     def upload(self, working_directory: str, filename: str, contents: bytes):
         """Uploads a file to an FTP server."""
+        if not settings.FTP_ENABLED:
+            raise NotImplementedError("DataUpload can't be used, because FTP isn't enabled")
+
         bytes_file = BytesIO(contents)
 
         ftps = FTP_TLS(host=settings.FTP_HOST, user=settings.FTP_USER, passwd=settings.FTP_PASSWORD)

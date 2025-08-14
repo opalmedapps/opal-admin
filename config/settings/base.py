@@ -509,6 +509,14 @@ if OPENEMR_ENABLED:
     OPENEMR_USERNAME = env.str('OPENEMR_USERNAME')
     OPENEMR_PASSWORD = env.str('OPENEMR_PASSWORD')
 
+# FTP SETTINGS
+FTP_ENABLED = env.bool('FTP_ENABLED', default=False)
+
+if FTP_ENABLED:
+    FTP_HOST = env.str('FTP_HOST')
+    FTP_USER = env.str('FTP_USER')
+    FTP_PASSWORD = env.str('FTP_PASSWORD')
+
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'
 USER_MANAGER_GROUP_NAME = 'User Managers'
@@ -529,11 +537,6 @@ PATHOLOGY_REPORTS_PATH = Path(env.str('PATHOLOGY_REPORTS_PATH'))
 
 # Databank Enabled
 DATABANK_ENABLED = env.bool('DATABANK_ENABLED')
-
-# FTP settings
-FTP_HOST = env.str('FTP_HOST')
-FTP_USER = env.str('FTP_USER')
-FTP_PASSWORD = env.str('FTP_PASSWORD')
 
 # Third party apps settings
 # ------------------------------------------------------------------------------

@@ -1,8 +1,10 @@
 import base64
 import json
 
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 
+from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -18,7 +20,7 @@ class GetPatientSummary(APIView):
 
     permission_classes = (IsListener,)
 
-    def get(self, request: Request, uuid: str) -> Response:
+    def get(self, request: Request, uuid: str) -> HttpResponse | Response:
         """
         Handle GET requests from `patients/<uuid:uuid>/ips/`.
 
@@ -34,22 +36,27 @@ class GetPatientSummary(APIView):
         # Validate the patient's existence
         patient = get_object_or_404(Patient, uuid=uuid)
 
-        # Request and assemble IPS data into a bundle
-        fhir = FhirCommunication('OpenEMR')
-        fhir.connect()
-        ips = fhir.assemble_ips(ramq=patient.ramq)
-        # TODO generate key
-        encryption_key = 'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q'
-        encryption_key_bytes = b'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q'
-        encrypted_ips = fhir.encrypt_shlink_file(ips, encryption_key_bytes)
+        try:
+            # Request and assemble IPS data into a bundle
+            fhir = FhirCommunication('OpenEMR')
+            fhir.connect()
+            ips = fhir.assemble_ips(ramq=patient.ramq)
 
-        # Upload the IPS bundle to the FTP server used to serve these bundles
-        uploader = DataUpload()
-        uploader.upload('app/dev/ips/bundles', f'ips-bundle_{uuid}.txt', encrypted_ips)
+            # TODO generate key
+            encryption_key = 'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q'
+            encryption_key_bytes = b'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q'
+            encrypted_ips = fhir.encrypt_shlink_file(ips, encryption_key_bytes)
+
+            # Upload the IPS bundle to the FTP server used to serve these bundles
+            uploader = DataUpload()
+            uploader.upload('app/dev/content/ips/bundles', f'ips-bundle_{uuid}.txt', encrypted_ips)
+
+        except NotImplementedError as error:
+            return HttpResponse(str(error), status=status.HTTP_501_NOT_IMPLEMENTED)
 
         # See: https://docs.smarthealthit.org/smart-health-links/spec/#construct-a-shlink-payload
         link_content = {
-            'url': f'https://dev.app.opalmedapps.ca/ips/manifest-request/{uuid}',
+            'url': f'https://dev.app.opalmedapps.ca/content/ips/manifest-request/{uuid}',
             'flag': 'L',
             'key': encryption_key,
             'label': 'Opal-App IPS Demo',

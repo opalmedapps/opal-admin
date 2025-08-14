@@ -36,13 +36,16 @@ class FhirCommunication:
         self.debug = True
 
         if server_type == 'OpenEMR':
-            self.client_id = settings.OPENEMR_CLIENT_ID
-            self.oauth_url = settings.OPENEMR_OAUTH_URL
-            self.username = settings.OPENEMR_USERNAME
-            self.password = settings.OPENEMR_PASSWORD
-            self.fhir_url = settings.OPENEMR_FHIR_URL
+            if settings.OPENEMR_ENABLED:
+                self.client_id = settings.OPENEMR_CLIENT_ID
+                self.oauth_url = settings.OPENEMR_OAUTH_URL
+                self.username = settings.OPENEMR_USERNAME
+                self.password = settings.OPENEMR_PASSWORD
+                self.fhir_url = settings.OPENEMR_FHIR_URL
+            else:
+                raise NotImplementedError("FhirCommunication can't be instantiated for OpenEMR, because OpenEMR isn't enabled")
         else:
-            raise Exception(f'FhirCommunication server type not implemented: {server_type}')
+            raise NotImplementedError(f'FhirCommunication server type not implemented: {server_type}')
 
     def connect(self):
         """TODO"""
