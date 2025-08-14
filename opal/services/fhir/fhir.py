@@ -260,7 +260,6 @@ class FhirCommunication:
     # TODO move to a different service?
     def encrypt_shlink_file(self, contents, key):
         key_bytes = utils.base64url_decode(key)
-        print('BYTES', len(key_bytes), key_bytes)
         return jwe.encrypt(contents, key_bytes, algorithm='dir', encryption='A256GCM', cty='application/fhir+json')
 
     def get_patient(self, ramq: str):
