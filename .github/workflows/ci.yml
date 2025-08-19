@@ -117,7 +117,7 @@ jobs:
     container: python:3.12.11-alpine3.22
     services:
       db:
-        image: mariadb:10.11.13-jammy
+        image: mariadb:10.11.14-jammy
         env:
           MARIADB_ROOT_PASSWORD: ${{ env.DB_ROOT_PASSWORD }}
           # ensure that user has permissions for test DB to be used by pytest
