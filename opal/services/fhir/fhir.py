@@ -91,17 +91,12 @@ class FhirCommunication:
         conditions_bundle = Bundle.model_validate(conditions_bundle)
         conditions = [condition.resource for condition in conditions_bundle.entry] if conditions_bundle.entry else []
 
-        medication_requests = [] if medication_requests_bundle['total'] == 0 else [
-            MedicationRequest.model_validate(medication_request['resource']) for medication_request in medication_requests_bundle['entry']
-        ]
-
-        # For some reason does not validate with Bundle, even when it is the R4B bundle
-        # medication_requests_bundle = Bundle.model_validate(medication_requests_bundle)
-        # medication_requests = [
-        #     medication_request.resource
-        #     for medication_request in medication_requests_bundle.entry
-        #     if medication_request.resource.subject.reference == f'Patient/{patient.id}'
-        # ]
+        medication_requests_bundle = Bundle.model_validate(medication_requests_bundle)
+        medication_requests = [
+            medication_request.resource
+            for medication_request in medication_requests_bundle.entry
+            if medication_request.resource.subject.reference == f'Patient/{patient.id}'
+        ] if medication_requests_bundle.entry else []
 
         allergies_bundle = Bundle.model_validate(allergies_bundle)
         allergies = [allergy.resource for allergy in allergies_bundle.entry] if allergies_bundle.entry else []
