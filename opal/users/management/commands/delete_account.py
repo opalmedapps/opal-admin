@@ -64,18 +64,19 @@ class Command(BaseCommand):
         # Check if the patient and the self caregiver exist in the system
         patient = Patient.objects.filter(ramq=ramq).first()
         if not patient:
-            self.stdout.write(self.style.WARNING('Patient not found.'))
+            self.stderr.write(self.style.ERROR('Patient not found.'))
             return
 
-        self_relationship = Relationship.objects.filter(patient=patient, type=1).first()
+        self_relationship = Relationship.objects.filter(patient=patient, type__name='Self').first()
         if not self_relationship:
-            self.stdout.write(self.style.WARNING('The given patient is not an Opal User.'))
+            self.stderr.write(self.style.ERROR('The given patient is not an Opal user.'))
             return
 
         caregiver = self_relationship.caregiver
 
         self._backup_user_data(patient, caregiver)
         self._remove_user_data(patient, caregiver)
+        self.stdout.write(self.style.SUCCESS('The account deletion is completed!'))
 
     def _backup_user_data(self, patient: Patient, caregiver: CaregiverProfile) -> None:
         """
@@ -86,7 +87,7 @@ class Command(BaseCommand):
             caregiver: the self caregiver profile of the patient
         """
         # Backup the user information
-        self.stdout.write('Backuping user data.....')
+        self.stdout.write('Backuping user data...')
         user = caregiver.user
         patient_data = {}
         # Caregiver module and patient module
