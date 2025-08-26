@@ -18,7 +18,6 @@ from fhir.resources.R4B.coding import Coding
 from fhir.resources.R4B.composition import Composition, CompositionSection
 from fhir.resources.R4B.device import Device, DeviceDeviceName
 from fhir.resources.R4B.immunization import Immunization
-from fhir.resources.R4B.medicationrequest import MedicationRequest
 from fhir.resources.R4B.narrative import Narrative
 from fhir.resources.R4B.patient import Patient
 from fhir.resources.R4B.reference import Reference
