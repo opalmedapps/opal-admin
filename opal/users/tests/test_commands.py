@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from pathlib import Path
+
 from django.core.management.base import CommandError
 
 import pytest
@@ -53,6 +55,8 @@ class TestAccountDeletion(CommandTestMixin):
         assert caregiver_models.SecurityAnswer.objects.count() == 0
         assert caregiver_models.Device.objects.count() == 0
         assert patient_models.HospitalPatient.objects.count() == 0
+        assert Path.exists(Path('TEST.json'))
+        Path.unlink(Path('TEST.json'))
 
     def test_delete_nonexistent_patient(self) -> None:
         """Ensure the error message is returned when the nonexistent ramq is given."""
