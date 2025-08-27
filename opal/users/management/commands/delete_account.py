@@ -53,7 +53,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> None:
         """
-        Extract the caregiver user profile and patient data.
+        Backup and delete the caregiver user profile and patient data.
 
         Args:
             args: input arguments
@@ -80,7 +80,7 @@ class Command(BaseCommand):
 
     def _backup_user_data(self, patient: Patient, caregiver: CaregiverProfile) -> None:
         """
-        Backup the caregiver patient data completely from the database.
+        Backup the caregiver patient data completely from the database in form of json file.
 
         Args:
             patient: the selected patient
