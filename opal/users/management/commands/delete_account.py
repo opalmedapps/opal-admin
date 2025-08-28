@@ -140,5 +140,5 @@ class Command(BaseCommand):
             query_set_list: the list of query_set for the data to be deleted
         """
         # Removing patient data
-        for query_set in query_set_list[::-1]:
+        for query_set in reversed(query_set_list):
             query_set.delete()
