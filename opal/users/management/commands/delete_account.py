@@ -68,8 +68,7 @@ class Command(BaseCommand):
 
         user = caregiver.user
         # Prepare a list of query set for the data that will be backuped and deleted
-        query_set_list: list[QuerySet[Any, Any]] = []
-        query_set_list.extend([
+        query_set_list: list[QuerySet[Any, Any]] = [
             User.objects.filter(pk=user.pk),
             CaregiverProfile.objects.filter(pk=caregiver.pk),
             Relationship.objects.filter(caregiver=caregiver),
@@ -80,7 +79,7 @@ class Command(BaseCommand):
             # Usage statistics module data for user
             DailyUserAppActivity.objects.filter(action_by_user_id=user),
             DailyUserPatientActivity.objects.filter(action_by_user_id=user),
-        ])
+        ]
 
         # Prepare the query set for slef patient data if the user have a self relationship
         self_relationship = Relationship.objects.filter(caregiver=caregiver, type__name='Self').first()
