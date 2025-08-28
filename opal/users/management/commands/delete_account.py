@@ -11,7 +11,7 @@ from django.core.serializers import serialize
 from django.db.models.query import QuerySet
 
 from opal.caregivers.models import CaregiverProfile, Device, SecurityAnswer
-from opal.patients.models import HospitalPatient, Patient, Relationship
+from opal.patients.models import HospitalPatient, Patient, Relationship, RoleType
 from opal.pharmacy.models import (
     PharmacyComponent,
     PharmacyEncodedOrder,
@@ -47,7 +47,7 @@ class Command(BaseCommand):
         parser.add_argument(
             'email',
             type=str,
-            help='The medicalcare number of the user that will be deleted',
+            help='The email of the user that will be deleted',
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -88,6 +88,7 @@ class Command(BaseCommand):
             query_set_list.extend([
                 Patient.objects.filter(pk=patient.pk),
                 HospitalPatient.objects.filter(patient=patient),
+                Relationship.objects.filter(patient=patient),
             ])
             # Pharmacy module data
             prescription_order = PhysicianPrescriptionOrder.objects.filter(patient=patient)

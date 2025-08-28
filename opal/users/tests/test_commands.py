@@ -26,11 +26,11 @@ class TestAccountDeletion(CommandTestMixin):
             self._call_command('delete_account')
 
     @pytest.mark.django_db(databases=['default'])
-    def test_delete_user_with_sccuess(self) -> None:
+    def test_delete_user_with_success(self) -> None:
         """Ensure the input user is deleted successfully with the backup generated."""
         patient = patient_factories.Patient.create()
         caregiver = caregiver_factories.CaregiverProfile.create(user__email='test@test.com')
-        relationship = patient_factories.RelationshipType.create(name='Self')
+        relationship = patient_factories.RelationshipType.create(type__role=patient_models.RoleType.SELF)
         patient_factories.Relationship.create(patient=patient, caregiver=caregiver, type=relationship)
         caregiver_factories.SecurityAnswer.create(user=caregiver)
         caregiver_factories.Device.create(caregiver=caregiver)
@@ -64,8 +64,10 @@ class TestAccountDeletion(CommandTestMixin):
 
     def test_delete_nonexistent_self_relationship(self) -> None:
         """Ensure the error message is returned when the given user doesn't have a self relationship."""
-        patient_factories.Patient.create()
-        caregiver_factories.CaregiverProfile.create(user__email='test@test.com')
+        patient = patient_factories.Patient.create()
+        caregiver = caregiver_factories.CaregiverProfile.create(user__email='test@test.com')
+        relationship = patient_factories.RelationshipType.create()
+        patient_factories.Relationship.create(patient=patient, caregiver=caregiver, type=relationship)
 
         assert patient_models.Patient.objects.count() == 1
         assert caregiver_models.CaregiverProfile.objects.count() == 1
