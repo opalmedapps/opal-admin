@@ -67,7 +67,6 @@ class Command(BaseCommand):
             return
 
         user = caregiver.user
-
         # Prepare a list of query set for the data that will be backuped and deleted
         query_set_list: list[QuerySet[Any, Any]] = []
         query_set_list.extend([
@@ -85,9 +84,7 @@ class Command(BaseCommand):
 
         # Prepare the query set for slef patient data if the user have a self relationship
         self_relationship = Relationship.objects.filter(caregiver=caregiver, type__name='Self').first()
-        if not self_relationship:
-            self.stdout.write(self.style.WARNING("The given user doesn't have a self patient."))
-        else:
+        if self_relationship:
             patient = self_relationship.patient
             query_set_list.extend([
                 Patient.objects.filter(pk=patient.pk),

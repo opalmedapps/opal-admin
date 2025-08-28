@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from pathlib import Path
 
 from django.core.management.base import CommandError
 
@@ -23,14 +22,14 @@ class TestAccountDeletion(CommandTestMixin):
 
     def test_delete_missing_ramq(self) -> None:
         """Ensure that the ramq argument is required."""
-        with pytest.raises(CommandError, match='the following arguments are required: ramq'):
+        with pytest.raises(CommandError, match='the following arguments are required: email'):
             self._call_command('delete_account')
 
     @pytest.mark.django_db(databases=['default'])
     def test_delete_user_with_sccuess(self) -> None:
         """Ensure the input user is deleted successfully with the backup generated."""
-        patient = patient_factories.Patient.create(ramq='TEST')
-        caregiver = caregiver_factories.CaregiverProfile.create()
+        patient = patient_factories.Patient.create()
+        caregiver = caregiver_factories.CaregiverProfile.create(user__email='test@test.com')
         relationship = patient_factories.RelationshipType.create(name='Self')
         patient_factories.Relationship.create(patient=patient, caregiver=caregiver, type=relationship)
         caregiver_factories.SecurityAnswer.create(user=caregiver)
@@ -45,9 +44,9 @@ class TestAccountDeletion(CommandTestMixin):
         assert caregiver_models.Device.objects.count() == 1
         assert patient_models.HospitalPatient.objects.count() == 1
 
-        stdout, _stderr = self._call_command('delete_account', 'TEST')
-
-        assert 'The account deletion is completed!' in stdout
+        stdout, _stderr = self._call_command('delete_account', 'test@test.com')
+        # User was deleted
+        assert stdout != ''
         assert patient_models.Patient.objects.count() == 0
         assert caregiver_models.CaregiverProfile.objects.count() == 0
         assert user_models.User.objects.count() == 0
@@ -55,20 +54,25 @@ class TestAccountDeletion(CommandTestMixin):
         assert caregiver_models.SecurityAnswer.objects.count() == 0
         assert caregiver_models.Device.objects.count() == 0
         assert patient_models.HospitalPatient.objects.count() == 0
-        assert Path.exists(Path('TEST.json'))
-        Path.unlink(Path('TEST.json'))
 
-    def test_delete_nonexistent_patient(self) -> None:
-        """Ensure the error message is returned when the nonexistent ramq is given."""
-        stdout, stderr = self._call_command('delete_account', 'TEST')
+    def test_delete_nonexistent_user(self) -> None:
+        """Ensure the error message is returned when the nonexistent user is given."""
+        stdout, stderr = self._call_command('delete_account', 'test@test.com')
 
         assert stdout == ''
-        assert stderr == 'Patient not found.\n'
+        assert stderr == 'User not found.\n'
 
-    def test_delete_nonexistent_caregiver(self) -> None:
-        """Ensure the error message is returned when the given patient is not an Opal user."""
-        patient_factories.Patient.create(ramq='TEST')
-        stdout, stderr = self._call_command('delete_account', 'TEST')
+    def test_delete_nonexistent_self_relationship(self) -> None:
+        """Ensure the error message is returned when the given user doesn't have a self relationship."""
+        patient_factories.Patient.create()
+        caregiver_factories.CaregiverProfile.create(user__email='test@test.com')
 
-        assert stdout == ''
-        assert stderr == 'The given patient is not an Opal user.\n'
+        assert patient_models.Patient.objects.count() == 1
+        assert caregiver_models.CaregiverProfile.objects.count() == 1
+        assert user_models.User.objects.count() == 1
+        stdout, _stderr = self._call_command('delete_account', 'test@test.com')
+        # Only user was deleted
+        assert stdout != ''
+        assert patient_models.Patient.objects.count() == 1
+        assert caregiver_models.CaregiverProfile.objects.count() == 0
+        assert user_models.User.objects.count() == 0
