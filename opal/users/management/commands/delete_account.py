@@ -81,8 +81,8 @@ class Command(BaseCommand):
             DailyUserPatientActivity.objects.filter(action_by_user_id=user),
         ]
 
-        # Prepare the query set for slef patient data if the user have a self relationship
-        self_relationship = Relationship.objects.filter(caregiver=caregiver, type__name='Self').first()
+        # Prepare the query set for self patient data if the user have a self relationship
+        self_relationship = Relationship.objects.filter(caregiver=caregiver, type__role=RoleType.SELF).first()
         if self_relationship:
             patient = self_relationship.patient
             query_set_list.extend([
