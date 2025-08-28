@@ -71,7 +71,6 @@ class Command(BaseCommand):
         query_set_list: list[QuerySet[Any, Any]] = [
             User.objects.filter(pk=user.pk),
             CaregiverProfile.objects.filter(pk=caregiver.pk),
-            Relationship.objects.filter(caregiver=caregiver),
             SecurityAnswer.objects.filter(user=caregiver),
             Device.objects.filter(caregiver=caregiver),
             # Questionnaire module data
@@ -115,6 +114,8 @@ class Command(BaseCommand):
                 # Usage statistics module data for patient
                 DailyPatientDataReceived.objects.filter(patient=patient),
             ])
+        # Add the relationship in the end to facilitate the recover
+        query_set_list.append(Relationship.objects.filter(caregiver=caregiver))
 
         self._backup_user_data(query_set_list)
         self._remove_user_data(query_set_list)
