@@ -82,7 +82,7 @@ class Command(BaseCommand):
         ]
 
         # Prepare the query set for self patient data if the user have a self relationship
-        self_relationship = Relationship.objects.filter(caregiver=caregiver, type__role=RoleType.SELF).first()
+        self_relationship = Relationship.objects.filter(caregiver=caregiver, type__role_type=RoleType.SELF).first()
         if self_relationship:
             patient = self_relationship.patient
             query_set_list.extend([

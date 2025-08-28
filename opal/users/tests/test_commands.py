@@ -30,7 +30,7 @@ class TestAccountDeletion(CommandTestMixin):
         """Ensure the input user is deleted successfully with the backup generated."""
         patient = patient_factories.Patient.create()
         caregiver = caregiver_factories.CaregiverProfile.create(user__email='test@test.com')
-        relationship = patient_factories.RelationshipType.create(type__role=patient_models.RoleType.SELF)
+        relationship = patient_factories.RelationshipType.create(role_type=patient_models.RoleType.SELF)
         patient_factories.Relationship.create(patient=patient, caregiver=caregiver, type=relationship)
         caregiver_factories.SecurityAnswer.create(user=caregiver)
         caregiver_factories.Device.create(caregiver=caregiver)
