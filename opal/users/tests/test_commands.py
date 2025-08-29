@@ -84,7 +84,7 @@ class TestAccountDeletion(CommandTestMixin):
 
 
 class TestAccountRecover(CommandTestMixin):
-    """Test class to group the `delete_account` command tests."""
+    """Test class to group the `recover_account` command tests."""
 
     def test_recover_missing_file_path(self) -> None:
         """Ensure that the file_path argument is required."""
