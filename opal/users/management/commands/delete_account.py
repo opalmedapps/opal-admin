@@ -54,12 +54,14 @@ class Command(BaseCommand):
         """
         Backup and delete the caregiver user profile and patient data.
 
+        i.e.,The list is created in the regular order (which is used for recovery),
+        the deletion needs to happen in reverse order due to constraints between the model instances.
+
         Args:
             args: input arguments
             options:  additional keyword arguments
         """
         email = options['email']
-
         # Check if the patient and the self caregiver exist in the system
         caregiver = CaregiverProfile.objects.filter(user__email=email).first()
         if not caregiver:

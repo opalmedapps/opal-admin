@@ -66,15 +66,17 @@ class TestAccountDeletion(CommandTestMixin):
         """Ensure the error message is returned when the given user doesn't have a self relationship."""
         patient = patient_factories.Patient.create()
         caregiver = caregiver_factories.CaregiverProfile.create(user__email='test@test.com')
-        relationship = patient_factories.RelationshipType.create()
-        patient_factories.Relationship.create(patient=patient, caregiver=caregiver, type=relationship)
+        relationship_type = patient_factories.RelationshipType.create()
+        patient_factories.Relationship.create(patient=patient, caregiver=caregiver, type=relationship_type)
 
         assert patient_models.Patient.objects.count() == 1
         assert caregiver_models.CaregiverProfile.objects.count() == 1
         assert user_models.User.objects.count() == 1
+        assert patient_models.Relationship.objects.count() == 1
         stdout, _stderr = self._call_command('delete_account', 'test@test.com')
         # Only user was deleted
         assert stdout != ''
         assert patient_models.Patient.objects.count() == 1
         assert caregiver_models.CaregiverProfile.objects.count() == 0
         assert user_models.User.objects.count() == 0
+        assert patient_models.Relationship.objects.count() == 0
