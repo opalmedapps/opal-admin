@@ -20,8 +20,8 @@ pytestmark = pytest.mark.django_db()
 class TestAccountDeletion(CommandTestMixin):
     """Test class to group the `delete_account` command tests."""
 
-    def test_delete_missing_ramq(self) -> None:
-        """Ensure that the ramq argument is required."""
+    def test_delete_missing_email(self) -> None:
+        """Ensure that the email argument is required."""
         with pytest.raises(CommandError, match='the following arguments are required: email'):
             self._call_command('delete_account')
 
