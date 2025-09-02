@@ -93,7 +93,7 @@ requires-dist = [
     { name = "django-modeltranslation", specifier = "==0.19.16" },
     { name = "django-phonenumber-field", extras = ["phonenumberslite"], specifier = "==8.1.0" },
     { name = "django-structlog", specifier = "==9.1.1" },
-    { name = "django-stubs-ext", specifier = "==5.2.1" },
+    { name = "django-stubs-ext", specifier = "==5.2.2" },
     { name = "django-tables2", specifier = "==2.7.5" },
     { name = "djangorestframework", specifier = "==3.16.0" },
     { name = "drf-spectacular", specifier = "==0.28.0" },
@@ -119,9 +119,9 @@ dev = [
     { name = "beautifulsoup4", specifier = "==4.13.4" },
     { name = "coverage", specifier = "==7.9.2" },
     { name = "django-coverage-plugin", specifier = "==3.1.1" },
-    { name = "django-stubs", specifier = "==5.2.1" },
+    { name = "django-stubs", specifier = "==5.2.2" },
     { name = "django-test-migrations", specifier = "==1.5.0" },
-    { name = "djangorestframework-stubs", specifier = "==3.16.0" },
+    { name = "djangorestframework-stubs", specifier = "==3.16.2" },
     { name = "factory-boy", specifier = "==3.3.3" },
     { name = "mypy", extras = ["faster-cache"], specifier = "==1.16.1" },
     { name = "pandas-stubs", specifier = "==2.3.0.250703" },
@@ -654,7 +654,7 @@ wheels = [
 
 [[package]]
 name = "django-stubs"
-version = "5.2.1"
+version = "5.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
@@ -662,22 +662,22 @@ dependencies = [
     { name = "types-pyyaml" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/30/3e/33f2e6a5dc116c8cfdd113e22d32d4c56e7ba08c8f9c683609b50047fa29/django_stubs-5.2.1.tar.gz", hash = "sha256:e58260958e58f7b6a8da6bba56d6b31d16c0414079a4aa6baa01c668bd08d39d", size = 242725, upload-time = "2025-06-17T18:07:36.561Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/27/ab9813da817a29ae69ec92af31ad8fc58ce3c904f23ea604bd3bdd9adc37/django_stubs-5.2.2.tar.gz", hash = "sha256:2a04b510c7a812f88223fd7e6d87fb4ea98717f19c8e5c8b59691d83ad40a8a6", size = 243049, upload-time = "2025-07-17T08:35:02.747Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e2/10/c9020f6e5b293e4c24aa72cab7966bcd7f03b1196da9c5cf916da9873c48/django_stubs-5.2.1-py3-none-any.whl", hash = "sha256:c0e170d70329c27e737a5b80c5518fb6161d0c4792321d11a4a93dcda120f4ef", size = 484761, upload-time = "2025-06-17T18:07:34.554Z" },
+    { url = "https://files.pythonhosted.org/packages/55/cb/bb387a1d40691ad54fec2be9e5093becebd63cca0ccb9348cbb27602e1d1/django_stubs-5.2.2-py3-none-any.whl", hash = "sha256:79bd0fdbc78958a8f63e0b062bd9d03f1de539664476c0be62ade5f063c9e41e", size = 485188, upload-time = "2025-07-17T08:35:00.356Z" },
 ]
 
 [[package]]
 name = "django-stubs-ext"
-version = "5.2.1"
+version = "5.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f9/19/bf8cc0e6c48b4bf4fb72274cecc6b575a4789effecdd95d9ccc7ba9380bb/django_stubs_ext-5.2.1.tar.gz", hash = "sha256:fc0582cb3289306c43ce4a0a15af86922ce1dbec3c19eab80980ee70c04e0392", size = 6550, upload-time = "2025-06-17T18:06:59.133Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fc/06/5e94715d103e6cc72380cb0d0b6682a7d5ad2c366cee478c94d77aad777d/django_stubs_ext-5.2.2.tar.gz", hash = "sha256:d9d151b919fe2438760f5bd938f03e1cb08c84d0651f9e5917f1313907e42683", size = 6244, upload-time = "2025-07-17T08:34:35.054Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a4/82/9fab66569b3e682205b52c2b203058a816c0755bc54e2adcd5d3f6018c43/django_stubs_ext-5.2.1-py3-none-any.whl", hash = "sha256:98fb0646f1a1ef07708eec5f6f7d27523f12c0c8714abae8db981571ff957588", size = 9153, upload-time = "2025-06-17T18:06:57.986Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/38/2903676f97f7902ee31984a06756b0e8836e897f4b617e1a03be4a43eb4f/django_stubs_ext-5.2.2-py3-none-any.whl", hash = "sha256:8833bbe32405a2a0ce168d3f75a87168f61bd16939caf0e8bf173bccbd8a44c5", size = 8816, upload-time = "2025-07-17T08:34:33.715Z" },
 ]
 
 [[package]]
@@ -718,7 +718,7 @@ wheels = [
 
 [[package]]
 name = "djangorestframework-stubs"
-version = "3.16.0"
+version = "3.16.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django-stubs" },
@@ -727,9 +727,9 @@ dependencies = [
     { name = "types-requests" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/47/2b/45a1c9ccb7c4a1f79112a2b4b65a1abd3ee9d4ed1a80d21736bd8f999750/djangorestframework_stubs-3.16.0.tar.gz", hash = "sha256:8c5ccdfe9271b1a37946a3564dc3714d521cd3f2f8695e528808e0c700538243", size = 34818, upload-time = "2025-04-27T12:19:22.706Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fb/e7/05f03d93264df3b366e61b04f4dc60cdb743a67fcb74604e9d843cb75914/djangorestframework_stubs-3.16.2.tar.gz", hash = "sha256:db57341e52f002fee2980d01e42f078d54f5df74cceacaff7be8a506099475e1", size = 34801, upload-time = "2025-08-14T17:57:51.507Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/23/f8/50be82c084173adb95f2a925f6336aa53b97ea7ce6fe1dc943ddc20b1193/djangorestframework_stubs-3.16.0-py3-none-any.whl", hash = "sha256:2085a6e023de65843d4d53fe5abc73fbbc3ef380a59919ad9801182f6bb435de", size = 54703, upload-time = "2025-04-27T12:19:18.098Z" },
+    { url = "https://files.pythonhosted.org/packages/e6/0d/ca9c6cecc538e558131da30329215d877161c2dbe0bd97ee354490305526/djangorestframework_stubs-3.16.2-py3-none-any.whl", hash = "sha256:f2709bace240be384f0f29af7656c199c4dd5d17fd6cc6f0618c62ec77315be8", size = 54618, upload-time = "2025-08-14T17:57:50.109Z" },
 ]
 
 [[package]]
