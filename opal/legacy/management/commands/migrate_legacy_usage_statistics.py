@@ -99,7 +99,7 @@ class Command(BaseCommand):
         batch_patient_activity = []
         last_record = DailyUserPatientActivity.objects.all().last()
         legacy_activity_log_count = 0
-        with file_path.open() as data_received_file:
+        with file_path.open(encoding='utf-8') as data_received_file:
             legacy_activity_logs = csv.DictReader(data_received_file, delimiter=';')
             for row in legacy_activity_logs:
                 if (
@@ -176,7 +176,7 @@ class Command(BaseCommand):
         batch = []
         last_record = DailyPatientDataReceived.objects.all().last()
         legacy_data_received_log_count = 0
-        with file_path.open() as data_received_file:
+        with file_path.open(encoding='utf-8') as data_received_file:
             legacy_data_received_logs = csv.DictReader(data_received_file, delimiter=';')
             for row in legacy_data_received_logs:
                 if (
