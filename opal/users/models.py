@@ -68,7 +68,7 @@ class User(AbstractUser):
     type = models.CharField(
         verbose_name=_('Type'),
         max_length=10,
-        choices=UserType.choices,  # type: ignore[misc]
+        choices=UserType.choices,
         default=base_type,
     )
 
