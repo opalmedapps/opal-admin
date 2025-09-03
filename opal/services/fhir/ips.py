@@ -1,6 +1,8 @@
 import datetime as dt
 import uuid
 
+from django.utils import timezone
+
 from fhir.resources.R4B.allergyintolerance import AllergyIntolerance
 from fhir.resources.R4B.bundle import Bundle, BundleEntry
 from fhir.resources.R4B.codeableconcept import CodeableConcept
@@ -35,6 +37,7 @@ def build_patient_summary(
         deviceName=[DeviceDeviceName(name='Opal IPS Generator', type='user-friendly-name')],
     )
 
+    last_updated = timezone.now().astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S %Z')
     composition = Composition(
         id=f'{uuid.uuid4()}',
         status='final',
@@ -43,7 +46,7 @@ def build_patient_summary(
         ),
         author=[Reference(reference=f'urn:uuid:{generator.id}')],
         date=dt.datetime.now(tz=dt.UTC).replace(microsecond=0),
-        title='International Patient Summary',
+        title=f'International Patient Summary as of {last_updated}',
         subject=Reference(reference=f'urn:uuid:{patient.id}'),
         section=[
             CompositionSection(
