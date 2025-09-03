@@ -1,19 +1,19 @@
 import base64
 import json
-import secrets
+from io import BytesIO
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils.module_loading import import_string
 
-from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from opal.core.drf_permissions import IsListener
 from opal.patients.models import Patient
-from opal.services.data_upload.data_upload import DataUpload
-from opal.services.fhir.fhir import FhirCommunication
+from opal.services.fhir.utils import build_patient_summary, jwe_sh_link_encrypt
 
 
 class GetPatientSummary(APIView):
@@ -34,30 +34,28 @@ class GetPatientSummary(APIView):
         Returns:
             Http response with the data to build a SMART health link that can be parsed by IPS viewers.
         """
-        # Validate the patient's existence
         patient = get_object_or_404(Patient, uuid=uuid)
 
-        try:
-            # Request and assemble IPS data into a bundle
-            fhir = FhirCommunication('OpenEMR')
-            fhir.connect()
-            ips = fhir.assemble_ips(ramq=patient.ramq)
+        # Request and assemble IPS data into a bundle
+        private_key = settings.FHIR_API_PRIVATE_KEY
+        ips = build_patient_summary(
+            settings.FHIR_API_OAUTH_URL,
+            settings.FHIR_API_URL,
+            settings.FHIR_API_CLIENT_ID,
+            private_key,
+            patient.ramq,
+        )
 
-            # Generate an encryption key for the bundle, and encrypt it
-            encryption_key = secrets.token_urlsafe(32)
-            encryption_key_bytes = encryption_key.encode('utf-8')
-            encrypted_ips = fhir.encrypt_shlink_file(ips, encryption_key_bytes)
+        # Generate an encryption key for the bundle, and encrypt it
+        encryption_key, encrypted_ips = jwe_sh_link_encrypt(ips)
 
-            # Upload the encrypted IPS bundle to the FTP server used to serve these bundles
-            uploader = DataUpload()
-            uploader.upload('app/dev/content/ips/bundles', f'ips-bundle_{uuid}.txt', encrypted_ips)
-
-        except NotImplementedError as error:
-            return HttpResponse(str(error), status=status.HTTP_501_NOT_IMPLEMENTED)
+        storage_backend_class = import_string(settings.IPS_STORAGE_BACKEND)
+        storage_backend = storage_backend_class()
+        storage_backend.save(f'ips-bundle_{uuid}.txt', BytesIO(encrypted_ips))
 
         # See: https://docs.smarthealthit.org/smart-health-links/spec/#construct-a-shlink-payload
         link_content = {
-            'url': f'https://dev.app.opalmedapps.ca/content/ips/manifest-request/{uuid}',
+            'url': f'{settings.IPS_PUBLIC_BASE_URL}/{uuid}',
             'flag': 'L',
             'key': encryption_key,
             'label': 'Opal-App IPS Demo',

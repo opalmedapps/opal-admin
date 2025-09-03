@@ -16,7 +16,6 @@ Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/l
 
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
 
 from django.utils.translation import gettext_lazy as _
 
@@ -496,26 +495,16 @@ if ORMS_ENABLED:
     # base URL to ORMS (no trailing slash)
     ORMS_HOST = env.url('ORMS_HOST').geturl()
 
-# OPENEMR SETTINGS
-OPENEMR_ENABLED = env.bool('OPENEMR_ENABLED', default=False)
+# FHIR API and IPS settings
+FHIR_API_URL = env.url('FHIR_API_URL').geturl()
+FHIR_API_OAUTH_URL = env.url('FHIR_API_OAUTH_URL').geturl()
+FHIR_API_CLIENT_ID = env.str('FHIR_API_CLIENT_ID')
+# ensure that newlines are converted to actual newlines
+FHIR_API_PRIVATE_KEY = env.str('FHIR_API_PRIVATE_KEY').replace('\\n', '\n')
 
-if OPENEMR_ENABLED:
-    # base URL to OpenEMR (no trailing slash)
-    OPENEMR_HOST = env.url('OPENEMR_HOST').geturl()
-    OPENEMR_OAUTH_URL = urlparse(env.str('OPENEMR_HOST') + '/oauth2/default').geturl()
-    OPENEMR_API_URL = urlparse(env.str('OPENEMR_HOST') + '/apis/default/api').geturl()
-    OPENEMR_FHIR_URL = urlparse(env.str('OPENEMR_HOST') + '/apis/default/fhir').geturl()
-    OPENEMR_CLIENT_ID = env.str('OPENEMR_CLIENT_ID')
-    OPENEMR_USERNAME = env.str('OPENEMR_USERNAME')
-    OPENEMR_PASSWORD = env.str('OPENEMR_PASSWORD')
-
-# FTP SETTINGS
-FTP_ENABLED = env.bool('FTP_ENABLED', default=False)
-
-if FTP_ENABLED:
-    FTP_HOST = env.str('FTP_HOST')
-    FTP_USER = env.str('FTP_USER')
-    FTP_PASSWORD = env.str('FTP_PASSWORD')
+IPS_STORAGE_BACKEND = env.str('IPS_STORAGE_BACKEND')
+IPS_PUBLIC_BASE_URL = env.url('IPS_PUBLIC_BASE_URL').geturl()
+FTP_STORAGE_LOCATION = env.str('FTP_STORAGE_LOCATION', default='')
 
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'

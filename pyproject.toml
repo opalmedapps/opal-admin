@@ -10,6 +10,7 @@ readme = "README.md"
 requires-python = "==3.12.11"
 dependencies = [
     "argon2-cffi==25.1.0",
+    "authlib==1.6.3",
     "crispy-bootstrap5==2025.6",
     "dj-rest-auth==7.0.1",
     "django==4.2.23",
@@ -22,6 +23,7 @@ dependencies = [
     "django-forms-dynamic==1.0.0",
     "django-modeltranslation==0.19.16",
     "django-phonenumber-field[phonenumberslite]==8.1.0",
+    "django-storages==1.14.6",
     "django-structlog==9.1.1",
     # required as a runtime dependency due to the need to monkeypatch at runtime for generics
     # see: https://github.com/typeddjango/django-stubs/tree/master/ext
@@ -44,7 +46,6 @@ dependencies = [
     "python-jose[cryptography]==3.5.0",
     "qrcode==8.2",
     "requests==2.32.4",
-    "requests-oauthlib==2.0.0",
     "slippers==0.6.2",
     "twilio==9.6.5",
     "unidecode==1.4.0",

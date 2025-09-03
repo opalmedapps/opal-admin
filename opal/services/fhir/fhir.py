@@ -5,343 +5,146 @@
 """Functions in this module provide the ability to communicate with other FHIR-enabled servers."""
 
 import datetime as dt
-import json  # noqa: F401, RUF100
-import uuid
-from pathlib import Path  # noqa: F401, RUF100
+from datetime import datetime
 
-from django.conf import settings
-
-import requests  # noqa: F401, RUF100
-from fhir.resources.R4B.bundle import Bundle, BundleEntry
-from fhir.resources.R4B.codeableconcept import CodeableConcept
-from fhir.resources.R4B.coding import Coding
-from fhir.resources.R4B.composition import Composition, CompositionSection
-from fhir.resources.R4B.device import Device, DeviceDeviceName
+from authlib.integrations.requests_client import OAuth2Session
+from authlib.oauth2.rfc7523 import PrivateKeyJWT
+from fhir.resources.R4B.allergyintolerance import AllergyIntolerance
+from fhir.resources.R4B.bundle import Bundle
+from fhir.resources.R4B.condition import Condition
 from fhir.resources.R4B.immunization import Immunization
-from fhir.resources.R4B.narrative import Narrative
+from fhir.resources.R4B.medicationrequest import MedicationRequest
+from fhir.resources.R4B.observation import Observation
 from fhir.resources.R4B.patient import Patient
-from fhir.resources.R4B.reference import Reference
-from jose import jwe, utils
-from oauthlib.oauth2 import LegacyApplicationClient
-from requests_oauthlib import OAuth2Session
+
+SCOPES = [
+    'system/Patient.read',
+    'system/Condition.read',
+    'system/MedicationRequest.read',
+    'system/AllergyIntolerance.read',
+    'system/Observation.read',
+    'system/Immunization.read',
+    'system/DiagnosticReport.read',
+]
 
 
-class FhirCommunication:
-    """Class that manages interactions with a FHIR server."""
+class FHIRConnector:
+    def __init__(self, oauth_url: str, fhir_url: str, client_id: str, private_key: str):
+        self.fhir_url = fhir_url
+        token_endpoint = f'{oauth_url}/token'
 
-    def __init__(self, server_type: str):
-        """Constructor."""
-        self.oauth = None
-        self.debug = True
-
-        if server_type == 'OpenEMR':
-            if settings.OPENEMR_ENABLED:
-                self.client_id = settings.OPENEMR_CLIENT_ID
-                self.oauth_url = settings.OPENEMR_OAUTH_URL
-                self.username = settings.OPENEMR_USERNAME
-                self.password = settings.OPENEMR_PASSWORD
-                self.fhir_url = settings.OPENEMR_FHIR_URL
-            else:
-                raise NotImplementedError("FhirCommunication can't be instantiated for OpenEMR, because OpenEMR isn't enabled")
-        else:
-            raise NotImplementedError(f'FhirCommunication server type not implemented: {server_type}')
-
-    def connect(self):
-        """TODO"""
-        scopes = [
-            # to get a refresh token
-            'offline_access',
-            'user/Patient.read',
-            'user/Condition.read',
-            'user/MedicationRequest.read',
-            'user/AllergyIntolerance.read',
-            'user/Observation.read',
-            'user/Immunization.read',
-            'user/DiagnosticReport.read',
-        ]
-
-        self.oauth = OAuth2Session(client=LegacyApplicationClient(client_id=self.client_id, refresh_token=''))
-        self.oauth.fetch_token(
-            token_url=f'{self.oauth_url}/token',
-            username=self.username,
-            password=self.password,
-            client_id=self.client_id,
-            user_role='users',
-            scope=' '.join(scopes),
-        )
-
-        self.oauth.get(f'{self.fhir_url}/metadata')
-
-    def assemble_ips(self, ramq: str):
-        patient_bundle = self.get_patient(ramq)
-        patient_uuid = patient_bundle['entry'][0]['resource']['id']
-        conditions_bundle = self.get_conditions(patient_uuid)
-        medication_requests_bundle = self.get_medication_requests(patient_uuid)
-        allergies_bundle = self.get_allergies(patient_uuid)
-        observations_bundle = self.get_observations(patient_uuid)
-        immunizations_bundle = self.get_immunizations(patient_uuid)
-
-        patient_bundle = Bundle.model_validate(patient_bundle)
-        patient: Patient = patient_bundle.entry[0].resource
-
-        if self.debug:
-            print(f'Patient: {patient.name[0].family} {patient.name[0].given[0]} ({patient.id})')
-
-        conditions_bundle = Bundle.model_validate(conditions_bundle)
-        conditions = [condition.resource for condition in conditions_bundle.entry] if conditions_bundle.entry else []
-
-        medication_requests_bundle = Bundle.model_validate(medication_requests_bundle)
-        medication_requests = [
-            medication_request.resource
-            for medication_request in medication_requests_bundle.entry
-            if medication_request.resource.subject.reference == f'Patient/{patient.id}'
-        ] if medication_requests_bundle.entry else []
-
-        allergies_bundle = Bundle.model_validate(allergies_bundle)
-        allergies = [allergy.resource for allergy in allergies_bundle.entry] if allergies_bundle.entry else []
-
-        observations_bundle = Bundle.model_validate(observations_bundle)
-        vital_signs = [
-            observation.resource
-            for observation in observations_bundle.entry
-            if observation.resource.category[0].coding[0].code == 'vital-signs'
-        ] if observations_bundle.entry else []
-        labs = [
-            observation.resource
-            for observation in observations_bundle.entry
-            if observation.resource.category[0].coding[0].code == 'laboratory'
-        ] if observations_bundle.entry else []
-
-        # For some reason does not validate with Bundle, even when it is the R4B bundle
-        # immunizations_bundle = Bundle.model_validate(immunizations_bundle)
-        immunizations = [] if immunizations_bundle['total'] == 0 else [
-            Immunization.model_validate(immunization['resource']) for immunization in immunizations_bundle['entry']
-        ]
-
-        generator = Device(
-            id=f'{uuid.uuid4()}',
-            manufacturer='Opal Health Informatics Group',
-            deviceName=[DeviceDeviceName(name='Opal IPS Generator', type='user-friendly-name')],
-        )
-
-        composition = Composition(
-            id=f'{uuid.uuid4()}',
-            status='final',
-            type=CodeableConcept(
-                coding=[Coding(system='http://loinc.org', code='60591-5', display='Patient summary document')],
+        self.session = OAuth2Session(
+            client_id=client_id,
+            client_secret=private_key,
+            scope=SCOPES,
+            token_endpoint_auth_method=PrivateKeyJWT(
+                token_endpoint=token_endpoint,
+                alg='RS384',
             ),
-            author=[Reference(reference=f'urn:uuid:{generator.id}')],
-            date=dt.datetime.now(tz=dt.UTC).replace(microsecond=0),
-            title='International Patient Summary',
-            subject=Reference(reference=f'urn:uuid:{patient.id}'),
-            section=[
-                CompositionSection(
-                    title='Active Problems',
-                    code=CodeableConcept(
-                        coding=[Coding(system='http://loinc.org', code='11450-4', display='Problem list reported')]
-                    ),
-                    entry=[
-                        Reference(reference=f'urn:uuid:{condition.id}')
-                        for condition in conditions
-                        if condition.clinicalStatus.coding[0].code == 'active'
-                    ],
-                ),
-                CompositionSection(
-                    title='Past Medical History',
-                    code=CodeableConcept(
-                        coding=[Coding(system='http://loinc.org', code='11348-0',
-                                       display='History of Past illness Narrative')]
-                    ),
-                    entry=[
-                        Reference(reference=f'Condition/{condition.id}')
-                        for condition in conditions
-                        if condition.clinicalStatus.coding[0].code != 'active'
-                    ],
-                ),
-                CompositionSection(
-                    title='Medication',
-                    code=CodeableConcept(
-                        coding=[
-                            Coding(system='http://loinc.org', code='10160-0',
-                                   display='History of Medication use Narrative')
-                        ],
-                    ),
-                    entry=[
-                        Reference(reference=f'urn:uuid:{medication_request.id}') for medication_request in
-                        medication_requests
-                    ],
-                ),
-                CompositionSection(
-                    title='Allergies and Intolerances',
-                    code=CodeableConcept(
-                        coding=[
-                            Coding(
-                                system='http://loinc.org', code='48765-2',
-                                display='Allergies and adverse reactions Document'
-                            )
-                        ]
-                    ),
-                    entry=[Reference(reference=f'urn:uuid:{allergy.id}') for allergy in allergies],
-                ),
-                CompositionSection(
-                    title='Vital Signs',
-                    code=CodeableConcept(
-                        coding=[Coding(system='http://loinc.org', code='8716-3', display='Vital signs')]),
-                    entry=[Reference(reference=f'urn:uuid:{vital_sign.id}') for vital_sign in vital_signs],
-                ),
-                CompositionSection(
-                    title='Laboratory Results',
-                    code=CodeableConcept(
-                        coding=[
-                            Coding(
-                                system='http://loinc.org',
-                                code='30954-2',
-                                display='Relevant diagnostic tests/laboratory data Narrative',
-                            )
-                        ]
-                    ),
-                    entry=[Reference(reference=f'urn:uuid:{lab.id}') for lab in labs],
-                ),
-                CompositionSection(
-                    title='Immunizations',
-                    code=CodeableConcept(
-                        coding=[Coding(system='http://loinc.org', code='11369-6',
-                                       display='History of Immunization Narrative')]
-                    ),
-                    entry=[Reference(reference=f'urn:uuid:{immunization.id}') for immunization in immunizations],
-                ),
-            ],
         )
 
-        ips = Bundle(
-            identifier={'system': 'urn:oid:2.16.724.4.8.10.200.10', 'value': f'{uuid.uuid4()}'},
-            type='document',
-            timestamp=dt.datetime.now(tz=dt.UTC).replace(microsecond=0),
-            entry=[
-                BundleEntry(resource=composition, fullUrl=f'urn:uuid:{composition.id}'),
-                BundleEntry(resource=patient, fullUrl=f'urn:uuid:{patient.id}'),
-                BundleEntry(resource=generator, fullUrl=f'urn:uuid:{generator.id}'),
-            ],
-        )
+        self.session.fetch_token(token_endpoint)
 
-        ips.entry.extend(
-            BundleEntry(resource=condition, fullUrl=f'urn:uuid:{condition.id}') for condition in conditions)
-        ips.entry.extend(BundleEntry(resource=allergy, fullUrl=f'urn:uuid:{allergy.id}') for allergy in allergies)
-        ips.entry.extend(
-            BundleEntry(resource=medication_request, fullUrl=f'urn:uuid:{medication_request.id}')
-            for medication_request in medication_requests
-        )
-        ips.entry.extend(
-            BundleEntry(resource=vital_sign, fullUrl=f'urn:uuid:{vital_sign.id}') for vital_sign in vital_signs)
-        ips.entry.extend(BundleEntry(resource=lab, fullUrl=f'urn:uuid:{lab.id}') for lab in labs)
-        ips.entry.extend(
-            BundleEntry(resource=immunization, fullUrl=f'urn:uuid:{immunization.id}') for immunization in immunizations
-        )
+    def find_patient(self, identifier: str) -> Patient:
+        response = self.session.get(f'{self.fhir_url}/Patient?identifier={identifier}')
+        response.raise_for_status()
 
-        # add narrative for empty entries
-        for section in composition.section:
-            if not section.entry:
-                section.text = Narrative(
-                    status='generated',
-                    div=f'<div xmlns="http://www.w3.org/1999/xhtml">There is no information available about the subject\'s {section.title.lower()}.</div>',
+        data = response.json()
+
+        if 'entry' not in data or len(data['entry']) == 0:
+            raise ValueError(f'No patient found with identifier {identifier}')
+
+        if len(data['entry']) > 1:
+            raise ValueError(f'Multiple patients found with identifier {identifier}')
+
+        return Patient.model_validate(response.json()['entry'][0]['resource'])
+
+    def patient_conditions(self, uuid: str) -> list[Condition]:
+        response = self.session.get(f'{self.fhir_url}/Condition?patient={uuid}')
+        response.raise_for_status()
+
+        data = response.json()
+
+        # sanitize some known data issues
+        # these should eventually be fixed at the source
+        for entry in data.get('entry', []):
+            resource = entry.get('resource', {})
+            if 'code' in resource:
+                for coding in resource['code'].get('coding', []):
+                    # strip whitespace from code fields to avoid validation errors
+                    coding['code'] = coding['code'].rstrip()
+                    # replace empty code display fields to avoid validation errors
+                    coding['display'] = coding['display'] or 'No display provided'
+
+        conditions_bundle = Bundle.model_validate(data)
+        return [condition.resource for condition in conditions_bundle.entry or []]
+
+    def patient_medication_requests(self, uuid: str) -> list[MedicationRequest]:
+        response = self.session.get(f'{self.fhir_url}/MedicationRequest?patient={uuid}')
+        response.raise_for_status()
+
+        data = response.json()
+
+        medications_bundle = Bundle.model_validate(data)
+
+        return [medication.resource for medication in medications_bundle.entry or []]
+
+    def patient_allergies(self, uuid: str) -> list[AllergyIntolerance]:
+        response = self.session.get(f'{self.fhir_url}/AllergyIntolerance?patient={uuid}')
+        response.raise_for_status()
+
+        data = response.json()
+
+        allergies_bundle = Bundle.model_validate(data)
+        return [allergy.resource for allergy in allergies_bundle.entry or []]
+
+    def patient_immunizations(self, uuid: str) -> list[Immunization]:
+        response = self.session.get(f'{self.fhir_url}/Immunization?patient={uuid}')
+        response.raise_for_status()
+
+        data = response.json()
+
+        for entry in data.get('entry', []):
+            resource = entry.get('resource', {})
+            if 'meta' in resource and 'lastUpdated' in resource['meta']:
+                # sanitize invalid dates
+                resource['meta']['lastUpdated'] = resource['meta']['lastUpdated'].replace(
+                    '-0001', str(datetime.now(tz=dt.UTC).year - 1)
                 )
-                section.entry = None
 
-        formatted_ips = ips.model_dump_json(indent=2)
-        print(formatted_ips)
-        return formatted_ips
+        immunizations_bundle = Bundle.model_validate(data)
 
-    # TODO move to a different service?
-    def encrypt_shlink_file(self, contents, key):
-        key_bytes = utils.base64url_decode(key)
-        return jwe.encrypt(contents, key_bytes, algorithm='dir', encryption='A256GCM', cty='application/fhir+json')
+        return [immunization.resource for immunization in immunizations_bundle.entry or []]
 
-    def get_patient(self, ramq: str):
-        response = self.oauth.get(f'{self.fhir_url}/Patient?identifier={ramq}').json()
-        patient = response['entry'][0]['resource']
+    def patient_observations(self, uuid: str) -> list[Observation]:
+        response = self.session.get(f'{self.fhir_url}/Observation?patient={uuid}')
+        response.raise_for_status()
 
-        if self.debug:
-            print(f'Patient: UUID={patient['id']}, Name={patient["name"][0]["family"]}, {patient["name"][0]["given"][0]}')
+        data = response.json()
 
-        return response
+        observations_bundle = Bundle.model_validate(data)
+        return [observation.resource for observation in observations_bundle.entry or []]
 
-    def get_conditions(self, uuid):
-        response = self.oauth.get(f'{self.fhir_url}/Condition?patient={uuid}').json()
-        self.strip_whitespace(response)
-        self.sanitize_empty_strings(response)
 
-        if self.debug:
-            print(f'Conditions: {response['total']}')
-            for condition in response['entry']:
-                print(f'Condition: "{condition["resource"]["code"]["coding"][0]["code"]}"')
+if __name__ == '__main__':
+    private_key = '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCEkJWEA6cOQldL\nNtKOmbJDyobgTP9SXXp4QheliowY7Bz78Q9SkZ98OJ+Q+Gd7C0YlgwcYgt4V2Tjd\ne5HNd0Y9cEwI5W9M6AIfjRi6uyYbdmL7ZX5vnDzgkMvz7d9OCSQpL3t4zCZSwmn2\nJqhpOBngxZmGHOx2x/uVbcIug6wPrT7lAJYHN+gCldqw0hNtsqq97q0FG7q90e0H\nveiudmTOF52YQ56y0QvKgMSkONPCpbg2t4+ubSB0OU/jFSPNz6W3Fo2NetbmTRso\n921wPerFg4GiGTT17mrbq8pcHCgVLrfNcB5uJcbkKZ3MRT2JBlhK7xj+w8OpjKll\nN++j2mCBAgMBAAECggEALy9DeMTQDnxAlA4Ebit4zzZkQaxGaOvK7skfn5Wr/ib0\nvhx0hsA8kzuYWEKCmsJNioaT3P6fzAkQe41DPW4J+05gUf5QWoBuWQqg1b5NdxLx\ncmgS0+k5pfkED2QIyr7oNxymhz2rGmQG0U27PhBw7ZeH6Luc0z6lZu+1YVcOxFku\nUE7lp1QIn9nAleM1pUOORb6/vQxAx693LfQyL5wpxT7BiSQgqG2ji7tuj/H6tUTv\n9apY490XABOy6nHQmaTKZJxhz45aGq41gmzj0upSLcxWuUWAgjhHvL9lGA3wTmL2\n6Qvb5yPbRoK4rf1WbUoNYfZvHVhkm3O94+wDHyyCUQKBgQD2DnG2fSm10TM3exH8\nruoQm9VOw5EGmaRGqUFoLHJBbAck6K6iRnVdi22/e1tGBuyZwj0Ls0Ytlrf4424/\nXIUrrJd6ifU3uS2JQdaMr1Ew3CPiWw70TpVabnsHog0+QM9Jf5jhjZj7712T43IH\nPW+EFbmsGPnxWYBcM6Rn0T5YtQKBgQCJ7AWP1GZG9S/BYe+A36C3F2NJV03dCyo6\nM2K+Vv4evIVGQnTHQdQ8G8UWcK/e+V7JPjqM9LA9cgwRQTR70Yg9g0LgAWFSecxO\nFcPpN450fHgDNviWD0GDeI76SQhQVoPq4qrQX4mYPU4Shw3J9cOY3nre3odZnivI\niekNuvmEHQKBgC//QU9Huwssc8Eu0KNpu17iBwoGPBP9hH4EJi4b/W2llP8uJGKj\nO+GzgQUJGxTd5OlZam8N2XKrI9f5BVh2w8NxN1s/7gWgqbFMln169WuChb1x5cji\nS2AIjRdAFTU/jy/XJAtbg6whVS+z/lpLMaWiV0Wq2Zaqzs8tg7R8rJzBAoGABuPd\nm0PXIDBbhGOqHVwOoVbvxNgxsZs/Ls0mX6/k3hA48Dudrd6iBaa1f9t9TbxTeeY7\n8pK+wzMRW0NQpebf0YLfMmWfQQmIpVX9BYea/ELDlBWI8aYtda3uJp7DZZAM4w0T\nz3kWXJ6jadWJYM+ASADFTqD7TgTS1x/cnqz6jhkCgYEAsciJEizxRB0SbVv/VQHy\nCr8OOIQmrD54c5yhGzVVQ+1za2Vz33Aih+UQHXw6vxwYCjQjBj+bxio8bipiS7dv\nDRdLJnS6aiRyz+r9l0K8fmWRpHUQLrxptfEDgJqYkXSCSh98d4oSr1TN9bJ8zdh0\nSYaG5jlvuQmyryBWBmFqISA=\n-----END PRIVATE KEY-----\n'
+    test = FHIRConnector(
+        oauth_url='https://openemr.opalmedapps.dev/oauth2/default',
+        fhir_url='https://openemr.opalmedapps.dev/apis/default/fhir',
+        client_id='BZWuvA5INTksQbPxqrrRSU_DMhlFjeP3yk_V9Qo9Q0o',
+        private_key=private_key,
+    )
+    patient = test.find_patient('OBRR72061199')
+    patient_uuid = patient.id
+    conditions = test.patient_conditions(patient_uuid)
+    medication_requests = test.patient_medication_requests(patient_uuid)
+    allergies = test.patient_allergies(patient_uuid)
+    observations = test.patient_observations(patient_uuid)
+    immunizations = test.patient_immunizations(patient_uuid)
 
-        return response
+    from . import ips
 
-    def get_medication_requests(self, uuid):
-        response = self.oauth.get(f'{self.fhir_url}/MedicationRequest?patient={uuid}').json()
-
-        if self.debug:
-            print(f'MedicationRequests: {response["total"]}')
-
-        return response
-
-    def get_allergies(self, uuid):
-        response = self.oauth.get(f'{self.fhir_url}/AllergyIntolerance?patient={uuid}').json()
-
-        if self.debug:
-            print(f'Allergies: {response["total"]}')
-
-        return response
-
-    def get_observations(self, uuid):
-        response = self.oauth.get(f'{self.fhir_url}/Observation?patient={uuid}').json()
-
-        print(f'Observations: {response["total"]}')
-
-        return response
-
-    def get_immunizations(self, uuid):
-        response = self.oauth.get(f'{self.fhir_url}/Immunization?patient={uuid}').json()
-        self.sanitize_invalid_dates(response)
-
-        print(f'Immunizations: {response["total"]}')
-
-        return response
-
-    def strip_whitespace(self, item):
-        if type(item) is dict:
-            for key, value in item.items():
-                if key == 'code' and type(value) is str:
-                    item[key] = value.strip()
-                else:
-                    self.strip_whitespace(item[key])
-        elif type(item) is list:
-            for x in item:
-                self.strip_whitespace(x)
-
-    # Validation error for Immunization
-    # meta.lastUpdated - Input should be a valid datetime or date, invalid character in year [type=datetime_from_date_parsing, input_value='-0001-11-30T00:00:00-04:00', input_type=str]
-    def sanitize_invalid_dates(self, item):
-        if type(item) is dict:
-            for key, value in item.items():
-                if key == 'lastUpdated' and type(value) is str:
-                    item[key] = value.replace('-0001', '1900')
-                else:
-                    self.sanitize_invalid_dates(item[key])
-        elif type(item) is list:
-            for x in item:
-                self.sanitize_invalid_dates(x)
-
-    # Validation error for Condition Bundle
-    # entry.0.resource.code.coding.0.display - String should match pattern '[\S]+' [type=string_pattern_mismatch, input_value='', input_type=str]
-    def sanitize_empty_strings(self, item):
-        if type(item) is dict:
-            for key, value in list(item.items()):
-                if type(value) is str and not value:
-                    # Remove keys that have empty string values
-                    item.pop(key)
-                else:
-                    self.sanitize_empty_strings(item[key])
-        elif type(item) is list:
-            for x in item:
-                self.sanitize_empty_strings(x)
+    ips_bundle = ips.build_patient_summary(
+        patient, conditions, medication_requests, allergies, observations, immunizations
+    )
+    print(ips_bundle.model_dump_json(indent=2))
