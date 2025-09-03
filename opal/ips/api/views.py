@@ -51,7 +51,12 @@ class GetPatientSummary(APIView):
 
         storage_backend_class = import_string(settings.IPS_STORAGE_BACKEND)
         storage_backend = storage_backend_class()
-        storage_backend.save(f'ips-bundle_{uuid}.txt', BytesIO(encrypted_ips))
+        file_name = f'ips-bundle_{uuid}.txt'
+
+        if storage_backend.exists(file_name):
+            storage_backend.delete(file_name)
+
+        storage_backend.save(file_name, BytesIO(encrypted_ips))
 
         # See: https://docs.smarthealthit.org/smart-health-links/spec/#construct-a-shlink-payload
         link_content = {
