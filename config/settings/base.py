@@ -414,7 +414,7 @@ LOGGING = {
         },
         'opal': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'DEBUG',
         },
         # Suppress default django runserver logs
         'django.request': {

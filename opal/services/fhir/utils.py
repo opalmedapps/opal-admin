@@ -1,9 +1,12 @@
 import secrets
 
+import structlog
 from jose import jwe, utils
 
 from . import ips
 from .fhir import FHIRConnector
+
+LOGGER = structlog.get_logger(__name__)
 
 
 # https://docs.smarthealthit.org/smart-health-links/spec/#encrypting-and-decrypting-files
@@ -19,6 +22,13 @@ def jwe_sh_link_encrypt(data: str) -> tuple[str, bytes]:
 
 
 def build_patient_summary(oauth_url: str, fhir_url: str, client_id: str, private_key: str, identifier: str) -> str:
+    LOGGER.debug(
+        'Building patient summary for patient with identifier %s, using OAuth2 URL: %s, FHIR API: %s, client ID: %s',
+        identifier,
+        oauth_url,
+        fhir_url,
+        client_id,
+    )
     fhir = FHIRConnector(
         oauth_url=oauth_url,
         fhir_url=fhir_url,
@@ -33,8 +43,22 @@ def build_patient_summary(oauth_url: str, fhir_url: str, client_id: str, private
     observations = fhir.patient_observations(patient_uuid)
     immunizations = fhir.patient_immunizations(patient_uuid)
 
+    LOGGER.debug(
+        'Retrieved data for patient %s: %d conditions, %d medication requests, %d allergies, %d observations, %d immunizations',
+        patient_uuid,
+        len(conditions),
+        len(medication_requests),
+        len(allergies),
+        len(observations),
+        len(immunizations),
+    )
+
+    LOGGER.debug('Building IPS bundle for patient with UUID %s', patient_uuid)
+
     ips_bundle = ips.build_patient_summary(
         patient, conditions, medication_requests, allergies, observations, immunizations
     )
+
+    LOGGER.debug('Successfully built IPS bundle for patient with UUID %s', patient_uuid)
 
     return ips_bundle.model_dump_json(indent=2)  # type: ignore[no-any-return]
