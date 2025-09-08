@@ -18,9 +18,7 @@ dependencies.set('@fortawesome/fontawesome-free/css/fontawesome.min.css', 'fonta
 dependencies.set('@fortawesome/fontawesome-free/css/solid.min.css', 'fontawesomefree/css/solid.min.css')
 dependencies.set('@fortawesome/fontawesome-free/css/regular.min.css', 'fontawesomefree/css/regular.min.css')
 // the CSS files reference the webfonts
-dependencies.set('@fortawesome/fontawesome-free/webfonts/fa-solid-900.ttf', 'fontawesomefree/webfonts/fa-solid-900.ttf')
 dependencies.set('@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2', 'fontawesomefree/webfonts/fa-solid-900.woff2')
-dependencies.set('@fortawesome/fontawesome-free/webfonts/fa-regular-400.ttf', 'fontawesomefree/webfonts/fa-regular-400.ttf')
 dependencies.set('@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2', 'fontawesomefree/webfonts/fa-regular-400.woff2')
 // Unpoly
 dependencies.set('unpoly/unpoly.min.css', 'unpoly/css/unpoly.min.css')
