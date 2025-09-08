@@ -22,7 +22,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.3.0
+      - uses: actions/checkout@v5.0.0
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@v6.6.1
@@ -58,7 +58,7 @@ jobs:
   django-checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.3.0
+      - uses: actions/checkout@v5.0.0
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@v6.6.1
@@ -129,7 +129,7 @@ jobs:
       - name: Install Git
         run: |
           apk add --no-cache git git-lfs
-      - uses: actions/checkout@v4.3.0
+      - uses: actions/checkout@v5.0.0
         with:
           persist-credentials: false
           lfs: true
@@ -192,7 +192,7 @@ jobs:
     needs:
       - lint
     steps:
-      - uses: actions/checkout@v4.3.0
+      - uses: actions/checkout@v5.0.0
         with:
           persist-credentials: false
           # fetch the full git history to be able to determine creation dates for pages
