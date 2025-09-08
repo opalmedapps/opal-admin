@@ -155,7 +155,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ROOT_URLCONF = 'config.urls'
 # https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = 'config.wsgi.application'
-# Root path for API URLs
+# Root path for API URLs for convenience in tests
 # Note: without a trailing slash
 API_ROOT = 'api'
 
@@ -217,8 +217,6 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_REDIRECT_URL = 'start'
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = 'login'
-# routes ignored by LoginRequiredMiddleware
-AUTH_EXEMPT_ROUTES = ['login', 'admin:login', 'admin:index', 'favicon.ico']
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 # also: https://docs.djangoproject.com/en/dev/topics/auth/customizing/#substituting-a-custom-user-model
 AUTH_USER_MODEL = 'users.User'
@@ -274,7 +272,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'opal.core.middleware.LoginRequiredMiddleware',
+    'django.contrib.auth.middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_structlog.middlewares.RequestMiddleware',
