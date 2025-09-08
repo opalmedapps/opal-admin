@@ -15,7 +15,7 @@
     ":enablePreCommit",
     "github>mschoettle/renovate-presets//presets/docker-alpine.json5",
     "github>mschoettle/renovate-presets//presets/actions-dependency-version.json5",
-    "github>mschoettle/renovate-presets//presets/requires-python.json5",
+    "github>mschoettle/renovate-presets//presets/packages/typos.json5",
   ],
   // https://docs.renovatebot.com/configuration-options/#assignees
   "assignees": ["mschoettle"],
