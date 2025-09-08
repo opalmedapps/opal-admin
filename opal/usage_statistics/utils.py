@@ -310,9 +310,9 @@ def export_data(
     if not data_set:
         raise ValueError('Invalid input, unable to export empty data')
     if isinstance(data_set, list):
-        data_set_columns = data_set[0].keys()
+        data_set_columns = list(data_set[0].keys())
     else:
-        data_set_columns = data_set.keys()
+        data_set_columns = list(data_set.keys())
         data_set = [data_set]
     dataframe = pd.DataFrame.from_records(data_set, columns=data_set_columns)
     dataframe = dataframe.map(
