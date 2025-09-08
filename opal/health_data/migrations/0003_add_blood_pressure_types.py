@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='quantitysample',
             constraint=models.CheckConstraint(
-                check=models.Q(('type__in', ['BM', 'TMP', 'HR', 'HRV', 'SPO2', 'BPS', 'BPD'])),
+                condition=models.Q(('type__in', ['BM', 'TMP', 'HR', 'HRV', 'SPO2', 'BPS', 'BPD'])),
                 name='health_data_quantitysample_type_valid',
             ),
         ),

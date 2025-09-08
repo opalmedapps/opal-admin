@@ -109,14 +109,14 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='relationship',
             constraint=models.CheckConstraint(
-                check=models.Q(('status__in', ['PEN', 'CON', 'DEN', 'EXP', 'REV'])),
+                condition=models.Q(('status__in', ['PEN', 'CON', 'DEN', 'EXP', 'REV'])),
                 name='patients_relationship_status_valid',
             ),
         ),
         migrations.AddConstraint(
             model_name='relationship',
             constraint=models.CheckConstraint(
-                check=models.Q(('start_date__lt', django.db.models.expressions.F('end_date'))),
+                condition=models.Q(('start_date__lt', django.db.models.expressions.F('end_date'))),
                 name='patients_relationship_date_valid',
             ),
         ),

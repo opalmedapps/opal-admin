@@ -95,7 +95,7 @@ class RelationshipType(models.Model):
     )
     role_type = models.CharField(
         verbose_name=_('Role Type'),
-        choices=RoleType.choices,
+        choices=RoleType,
         default=RoleType.CAREGIVER,
         max_length=14,
         help_text=_(
@@ -229,7 +229,7 @@ class Patient(AbstractLabDelayModel):
     sex = models.CharField(
         verbose_name=_('Sex'),
         max_length=1,
-        choices=SexType.choices,
+        choices=SexType,
     )
     ramq = models.CharField(
         verbose_name=_('RAMQ Number'),
@@ -243,7 +243,7 @@ class Patient(AbstractLabDelayModel):
     data_access = models.CharField(
         verbose_name=_('Data Access Level'),
         max_length=3,
-        choices=DataAccessType.choices,
+        choices=DataAccessType,
         default=DataAccessType.ALL,
     )
     caregivers: models.ManyToManyField[CaregiverProfile, 'Relationship'] = models.ManyToManyField(
@@ -272,15 +272,15 @@ class Patient(AbstractLabDelayModel):
         constraints = [
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_sex_valid',
-                check=models.Q(sex__in=SexType.values),
+                condition=models.Q(sex__in=SexType.values),
             ),
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_date_valid',
-                check=models.Q(date_of_birth__lte=models.F('date_of_death')),
+                condition=models.Q(date_of_birth__lte=models.F('date_of_death')),
             ),
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_access_level_valid',
-                check=models.Q(data_access__in=DataAccessType.values),
+                condition=models.Q(data_access__in=DataAccessType.values),
             ),
         ]
 
@@ -389,7 +389,7 @@ class Relationship(models.Model):
     status = models.CharField(
         verbose_name=_('Status'),
         max_length=3,
-        choices=RelationshipStatus.choices,
+        choices=RelationshipStatus,
         default=RelationshipStatus.PENDING,
     )
 
@@ -426,11 +426,11 @@ class Relationship(models.Model):
         constraints = [
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_status_valid',
-                check=models.Q(status__in=RelationshipStatus.values),
+                condition=models.Q(status__in=RelationshipStatus.values),
             ),
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_date_valid',
-                check=models.Q(start_date__lt=models.F('end_date')),
+                condition=models.Q(start_date__lt=models.F('end_date')),
             ),
             models.UniqueConstraint(
                 name='%(app_label)s_%(class)s_unique_constraint',

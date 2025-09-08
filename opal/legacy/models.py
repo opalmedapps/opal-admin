@@ -39,7 +39,7 @@ class LegacyUsers(models.Model):
     """User model from the legacy database OpalDB."""
 
     usersernum = models.AutoField(db_column='UserSerNum', primary_key=True)
-    usertype = models.CharField(db_column='UserType', max_length=255, choices=LegacyUserType.choices)
+    usertype = models.CharField(db_column='UserType', max_length=255, choices=LegacyUserType)
     usertypesernum = models.IntegerField(db_column='UserTypeSerNum')
     username = models.CharField(db_column='Username', max_length=255)
     password = models.CharField(db_column='Password', max_length=255, blank=True)
@@ -83,7 +83,7 @@ class LegacyPatient(models.Model):
     language = models.CharField(
         db_column='Language',
         max_length=2,
-        choices=LegacyLanguage.choices,
+        choices=LegacyLanguage,
     )
     tel_num = models.BigIntegerField(db_column='TelNum', blank=True, null=True)
     date_of_birth = models.DateTimeField(db_column='DateOfBirth')
@@ -93,9 +93,9 @@ class LegacyPatient(models.Model):
         db_column='AccessLevel',
         max_length=1,
         default=LegacyAccessLevel.NEED_TO_KNOW,
-        choices=LegacyAccessLevel.choices,
+        choices=LegacyAccessLevel,
     )
-    sex = models.CharField(db_column='Sex', max_length=25, choices=LegacySexType.choices)
+    sex = models.CharField(db_column='Sex', max_length=25, choices=LegacySexType)
     age = models.IntegerField(db_column='Age', blank=True, null=True)
     last_updated = models.DateTimeField(db_column='LastUpdated', auto_now=True)
     patient_aria_ser = models.IntegerField(db_column='PatientAriaSer', default=0)
@@ -800,7 +800,7 @@ class LegacyOAUser(models.Model):
     username = models.CharField(db_column='Username', max_length=1000)
     password = models.CharField(db_column='Password', max_length=1000)
     oa_role = models.ForeignKey('LegacyOARole', models.DO_NOTHING, db_column='OaRoleId', default=1)
-    user_type = models.IntegerField(db_column='type', choices=LegacyOAUserType.choices, default=LegacyOAUserType.HUMAN)
+    user_type = models.IntegerField(db_column='type', choices=LegacyOAUserType, default=LegacyOAUserType.HUMAN)
     language = models.CharField(db_column='Language', max_length=2, default='EN')
     is_deleted = models.IntegerField(db_column='deleted', default=0)
     date_added = models.DateTimeField(db_column='DateAdded', auto_now_add=True)
