@@ -337,7 +337,10 @@ TEMPLATES = [
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#form-renderer
-FORM_RENDERER = 'django.forms.renderers.DjangoDivFormRenderer'
+FORM_RENDERER = 'django.forms.renderers.DjangoTemplates'
+
+# transitional setting in preparation for Django 6
+FORMS_URLFIELD_ASSUME_HTTPS = True
 
 # Crispy forms
 # https://django-crispy-forms.readthedocs.io/en/latest/index.html
