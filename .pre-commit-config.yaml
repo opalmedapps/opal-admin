@@ -13,7 +13,7 @@ exclude: |
 
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v5.0.0
+  rev: v6.0.0
   hooks:
   - id: check-added-large-files
   - id: check-merge-conflict
@@ -63,12 +63,12 @@ repos:
   - id: markdownlint-cli2
 
 - repo: https://github.com/adamchainz/django-upgrade
-  rev: 1.27.0
+  rev: 1.28.0
   hooks:
   - id: django-upgrade
 
 - repo: https://github.com/fsfe/reuse-tool
-  rev: v5.1.0
+  rev: v5.1.1
   hooks:
     - id: reuse-lint-file
 

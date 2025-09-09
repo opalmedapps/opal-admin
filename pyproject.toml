@@ -14,7 +14,7 @@ dependencies = [
     "dj-rest-auth==7.0.1",
     "django==5.2.6",
     "django-auditlog==3.2.1",
-    "django-cors-headers==4.7.0",
+    "django-cors-headers==4.8.0",
     "django-crispy-forms==2.4",
     "django-environ==0.12.0",
     "django-extensions==4.1",
@@ -38,12 +38,12 @@ dependencies = [
     "pandas==2.3.2",
     # required for ImageFields
     "pillow==11.3.0",
-    "plotly==6.2.0",
+    "plotly==6.3.0",
     "pydantic==2.11.7",
     "qrcode==8.2",
     "requests==2.32.5",
     "slippers==0.6.2",
-    "twilio==9.7.2",
+    "twilio==9.8.0",
     "unidecode==1.4.0",
     "whitenoise[brotli]==6.9.0",
 ]
@@ -76,7 +76,7 @@ docs = [
     "mkdocs-autorefs==1.4.3",
     "mkdocs-gen-files==0.5.0",
     "mkdocs-literate-nav==0.6.2",
-    "mkdocs-material==9.6.18",
+    "mkdocs-material==9.6.19",
     "mkdocstrings[python-legacy]==0.30.0",
 ]
 prod = [
