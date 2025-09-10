@@ -2,9 +2,9 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-FROM python:3.12.10-alpine3.20 AS build
+FROM python:3.12.11-alpine3.22 AS build
 
-COPY --from=ghcr.io/astral-sh/uv:0.7.13 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.8.15 /uv /uvx /bin/
 
 # dependencies for building Python packages
 RUN apk add --no-cache build-base \
@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-editable --no-default-groups --group $ENV --compile-bytecode
 
 
-FROM python:3.12.10-alpine3.20
+FROM python:3.12.11-alpine3.22
 
 RUN apk upgrade --no-cache \
   # mysqlclient runtime dependencies

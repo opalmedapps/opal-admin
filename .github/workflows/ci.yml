@@ -22,23 +22,23 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@v6.1.0
+      - uses: astral-sh/setup-uv@v6.6.1
         id: setup-uv
         with:
           # renovate: datasource=pypi dependency=uv
-          version: "0.7.13"
+          version: "0.8.15"
       - name: Install dependencies
         # docs dependencies required to type check scripts in docs/
         run: uv sync --locked --group docs
       - name: Run ruff check
         if: '!cancelled()'
-        uses: astral-sh/ruff-action@v3.4.0
+        uses: astral-sh/ruff-action@v3.5.1
       - name: Run ruff format
         if: '!cancelled()'
-        uses: astral-sh/ruff-action@v3.4.0
+        uses: astral-sh/ruff-action@v3.5.1
         with:
           args: "format --check"
       - name: Run mypy
@@ -62,14 +62,14 @@ jobs:
   django-checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@v6.1.0
+      - uses: astral-sh/setup-uv@v6.6.1
         id: setup-uv
         with:
           # renovate: datasource=pypi dependency=uv
-          version: "0.7.13"
+          version: "0.8.15"
       - name: Install dependencies
         run: uv sync --locked --no-dev
       - name: Configure environment file
@@ -118,10 +118,10 @@ jobs:
       DB_ROOT_PASSWORD: "root-password"
       DB_PASSWORD: "user-password"
       DB_USER: citest
-    container: python:3.12.10-alpine3.21
+    container: python:3.12.11-alpine3.22
     services:
       db:
-        image: mariadb:10.11.13-jammy
+        image: mariadb:10.11.14-jammy
         env:
           MARIADB_ROOT_PASSWORD: ${{ env.DB_ROOT_PASSWORD }}
           # ensure that user has permissions for test DB to be used by pytest
@@ -133,7 +133,7 @@ jobs:
       - name: Install Git
         run: |
           apk add --no-cache git git-lfs
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
         with:
           persist-credentials: false
           lfs: true
@@ -196,17 +196,17 @@ jobs:
     needs:
       - lint
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v5.0.0
         with:
           persist-credentials: false
           # fetch the full git history to be able to determine creation dates for pages
           # see: https://github.com/timvink/mkdocs-git-revision-date-localized-plugin?tab=readme-ov-file#note-when-using-build-environments
           fetch-depth: 0
-      - uses: astral-sh/setup-uv@v6.1.0
+      - uses: astral-sh/setup-uv@v6.6.1
         id: setup-uv
         with:
           # renovate: datasource=pypi dependency=uv
-          version: "0.7.13"
+          version: "0.8.15"
       - name: Install dependencies
         run: |
           uv sync --locked --no-dev --group docs
@@ -220,7 +220,7 @@ jobs:
       # see: https://squidfunk.github.io/mkdocs-material/publishing-your-site/#with-github-actions
       # weekly cache updates
       - run: echo "cache_id=$(date --utc '+%V')" >> "$GITHUB_ENV"
-      - uses: actions/cache@v4.2.3
+      - uses: actions/cache@v4.2.4
         with:
           # weekly cache
           key: mkdocs-material-${{ env.cache_id }}
