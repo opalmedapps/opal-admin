@@ -57,6 +57,7 @@ jobs:
       - uses: opalmedapps/actions/actions/check-thirdparty-notice@main
         if: '!cancelled()'
         with:
+          pyproject-file: './pyproject.toml'
           package-file: './opal/static/thirdparty/package.json'
 
   django-checks:
