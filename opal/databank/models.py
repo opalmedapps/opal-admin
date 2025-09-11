@@ -124,7 +124,7 @@ class SharedData(models.Model):
     data_type = models.CharField(
         verbose_name=_('Data Type'),
         max_length=4,
-        choices=DataModuleType.choices,
+        choices=DataModuleType,
     )
 
     class Meta:
@@ -134,7 +134,7 @@ class SharedData(models.Model):
         constraints = [
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_data_type_valid',
-                check=models.Q(data_type__in=DataModuleType.values),
+                condition=models.Q(data_type__in=DataModuleType.values),
             ),
         ]
         # Filtering or sorting this table by sent_at, databank_consent, or both together will be faster

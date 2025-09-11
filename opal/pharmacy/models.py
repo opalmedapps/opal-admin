@@ -113,7 +113,7 @@ class PharmacyEncodedOrder(AbstractQuantityTiming):
     dispense_amount = models.DecimalField(max_digits=8, decimal_places=3)
     dispense_units = models.CharField(max_length=25, blank=True)
     refills = models.IntegerField(default=0)
-    formulary_status = models.CharField(max_length=4, choices=FormularyStatus.choices)
+    formulary_status = models.CharField(max_length=4, choices=FormularyStatus)
 
     class Meta:
         verbose_name = _('Pharmacy Encoding')
@@ -221,7 +221,7 @@ class PharmacyComponent(models.Model):
         on_delete=models.CASCADE,
         related_name='pharmacy_components',
     )
-    component_type = models.CharField(max_length=1, choices=ComponentType.choices)
+    component_type = models.CharField(max_length=1, choices=ComponentType)
     component_code = models.ForeignKey(
         'CodedElement',
         related_name='pharmacy_component_component_code',

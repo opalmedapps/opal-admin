@@ -57,7 +57,7 @@ class AbstractSample(models.Model):
     source = models.CharField(
         _('Source'),
         max_length=1,
-        choices=SampleSourceType.choices,
+        choices=SampleSourceType,
         help_text=_('The source that provided this sample, for example, the patient if it is patient-reported data'),
     )
     added_at = models.DateTimeField(
@@ -71,7 +71,7 @@ class AbstractSample(models.Model):
         constraints = [
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_source_valid',
-                check=models.Q(source__in=SampleSourceType.values),
+                condition=models.Q(source__in=SampleSourceType.values),
             ),
         ]
 
@@ -145,7 +145,7 @@ class QuantitySample(AbstractSample):
     )
     type = models.CharField(
         _('Type'),
-        choices=QuantitySampleType.choices,
+        choices=QuantitySampleType,
         max_length=4,
     )
 
@@ -166,7 +166,7 @@ class QuantitySample(AbstractSample):
             *AbstractSample.Meta.constraints,
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_type_valid',
-                check=models.Q(type__in=QuantitySampleType.values),
+                condition=models.Q(type__in=QuantitySampleType.values),
             ),
         ]
 

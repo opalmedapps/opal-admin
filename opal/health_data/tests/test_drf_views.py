@@ -13,7 +13,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 import pytest
-from pytest_django.asserts import assertContains, assertNumQueries
+from pytest_django.asserts import assertContains, assertJSONEqual, assertNumQueries
 from rest_framework import status
 from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
 
@@ -403,13 +403,12 @@ def test_unviewed_health_data_success(api_client: APIClient, orms_user: User) ->
 
     assert QuantitySample.objects.count() == 5
 
-    assertContains(
-        response=response,
-        text=f'{{"count":3,"patient_uuid":"{marge_patient.uuid}"}}',
-    )
-    assertContains(
-        response=response,
-        text=f'{{"count":1,"patient_uuid":"{homer_patient.uuid}"}}',
+    assertJSONEqual(
+        raw=response.content,
+        expected_data=[
+            {'count': 3, 'patient_uuid': f'{marge_patient.uuid}'},
+            {'count': 1, 'patient_uuid': f'{homer_patient.uuid}'},
+        ],
     )
 
 
@@ -479,7 +478,8 @@ def test_unviewed_health_data_no_duplicates(api_client: APIClient, orms_user: Us
     )
 
     assert QuantitySample.objects.count() == 3
-    assertContains(
-        response=response,
-        text=f'[{{"count":3,"patient_uuid":"{patient.uuid}"}}]',
+
+    assertJSONEqual(
+        raw=response.content,
+        expected_data=[{'count': 3, 'patient_uuid': f'{patient.uuid}'}],
     )

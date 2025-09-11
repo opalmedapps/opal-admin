@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='patient',
             constraint=models.CheckConstraint(
-                check=models.Q(('sex__in', ['F', 'M', 'O', 'U'])), name='patients_patient_sex_valid'
+                condition=models.Q(('sex__in', ['F', 'M', 'O', 'U'])), name='patients_patient_sex_valid'
             ),
         ),
     ]
