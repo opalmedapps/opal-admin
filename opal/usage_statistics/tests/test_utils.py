@@ -969,7 +969,7 @@ def _fetch_annotated_relationships() -> models.QuerySet[patient_models.Relations
             'id',
         )
         .annotate(
-            end_date=models.Max('end_date'),
+            end_date_max=models.Max('end_date'),
         )
     )
 
