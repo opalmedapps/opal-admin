@@ -402,7 +402,8 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:
         boolean value indicating success or failure, to help logging in registration endpoint
     """
     try:
-        legacy_patient = LegacyPatient.objects.get(patientsernum=django_patient.legacy_id)
+        # It is assumed that the legacy patient exists at this point
+        legacy_patient = LegacyPatient.objects.get(patientsernum=django_patient.legacy_id)  # type: ignore[misc]
 
         # Check for the existence of the consent form and educational materials before attempting to insert
         control_records = fetch_databank_control_records(django_patient)

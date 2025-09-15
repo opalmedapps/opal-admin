@@ -90,13 +90,13 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='quantitysample',
             constraint=models.CheckConstraint(
-                check=models.Q(('source__in', ['P', 'C'])), name='health_data_quantitysample_source_valid'
+                condition=models.Q(('source__in', ['P', 'C'])), name='health_data_quantitysample_source_valid'
             ),
         ),
         migrations.AddConstraint(
             model_name='quantitysample',
             constraint=models.CheckConstraint(
-                check=models.Q(('type__in', ['BM', 'TMP', 'HR', 'HRV', 'SPO2'])),
+                condition=models.Q(('type__in', ['BM', 'TMP', 'HR', 'HRV', 'SPO2'])),
                 name='health_data_quantitysample_type_valid',
             ),
         ),

@@ -133,7 +133,7 @@ class Device(models.Model):
     type = models.CharField(
         verbose_name=_('Device Type'),
         max_length=3,
-        choices=DeviceType.choices,
+        choices=DeviceType,
     )
 
     device_id = models.CharField(
@@ -164,7 +164,7 @@ class Device(models.Model):
         constraints = [
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_type_valid',
-                check=models.Q(type__in=DeviceType.values),
+                condition=models.Q(type__in=DeviceType.values),
             ),
             models.UniqueConstraint(
                 name='%(app_label)s_%(class)s_unique_caregiver_device',
@@ -211,7 +211,7 @@ class RegistrationCode(models.Model):
 
     status = models.CharField(
         verbose_name=_('Status'),
-        choices=RegistrationCodeStatus.choices,
+        choices=RegistrationCodeStatus,
         default=RegistrationCodeStatus.NEW,
         max_length=3,
     )
@@ -233,7 +233,7 @@ class RegistrationCode(models.Model):
         constraints = [
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_status_valid',
-                check=models.Q(status__in=RegistrationCodeStatus.values),
+                condition=models.Q(status__in=RegistrationCodeStatus.values),
             ),
         ]
 

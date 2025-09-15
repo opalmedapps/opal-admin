@@ -68,7 +68,7 @@ class User(AbstractUser):
     type = models.CharField(
         verbose_name=_('Type'),
         max_length=10,
-        choices=UserType.choices,  # type: ignore[misc]
+        choices=UserType,
         default=base_type,
     )
 
@@ -77,11 +77,11 @@ class User(AbstractUser):
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_language_valid',
                 # determine the language codes from the list of tuples
-                check=models.Q(language__in=[language[0] for language in Language]),
+                condition=models.Q(language__in=[language[0] for language in Language]),
             ),
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_type_valid',
-                check=models.Q(type__in=UserType.values),
+                condition=models.Q(type__in=UserType.values),
             ),
         ]
 

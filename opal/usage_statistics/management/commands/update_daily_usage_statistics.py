@@ -183,8 +183,10 @@ class Command(BaseCommand):
                 'caregiver__user__id',
                 'id',
             )
+            # NOTE: Not clear why this is needed: It does not limit to one record.
+            # There should always only be one confirmed relationship at a time, however.
             .annotate(
-                end_date=models.Max('end_date'),
+                end_date_max=models.Max('end_date'),
             )
         )
 

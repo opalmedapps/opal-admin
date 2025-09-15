@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='registrationcode',
             constraint=models.CheckConstraint(
-                check=models.Q(('status__in', ['NEW', 'REG', 'EXP', 'BLK'])),
+                condition=models.Q(('status__in', ['NEW', 'REG', 'EXP', 'BLK'])),
                 name='caregivers_registrationcode_status_valid',
             ),
         ),

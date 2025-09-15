@@ -10,17 +10,16 @@ from django.urls import reverse
 import pytest
 from pytest_django.asserts import assertRedirects
 from pytest_django.fixtures import SettingsWrapper
-from pytest_mock import MockerFixture
-
-from ..middleware import LoginRequiredMiddleware
 
 pytestmark = pytest.mark.django_db
 
 
+# Note: These tests were originally written for a custom LoginRequiredMiddleware
+# but they are still valid for Django's built-in LoginRequiredMiddleware (available since Django 5.1)
+
+
 def test_loginrequired_api_urls_excluded(client: Client, settings: SettingsWrapper) -> None:
     """Ensure that API URLs are not handled by the LoginRequiredMiddleware."""
-    assert 'api:rest_logout' not in settings.AUTH_EXEMPT_ROUTES
-
     response = client.get(reverse('api:rest_logout'))
     assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED
 
@@ -28,14 +27,10 @@ def test_loginrequired_api_urls_excluded(client: Client, settings: SettingsWrapp
 def test_loginrequired_partial_urls_not_excluded(
     client: Client,
     settings: SettingsWrapper,
-    mocker: MockerFixture,
 ) -> None:
     """Ensure that API URLs are not handled by the LoginRequiredMiddleware."""
-    mock_resolve_route = mocker.spy(LoginRequiredMiddleware, '_resolve_route')
-
     # ensure that the middleware excludes /{api_root}/ only
     response = client.get(f'/{settings.API_ROOT}test')
-    mock_resolve_route.assert_called_once()
 
     assert response.status_code == HTTPStatus.NOT_FOUND
 
