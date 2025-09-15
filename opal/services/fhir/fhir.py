@@ -44,7 +44,7 @@ class FHIRConnector:
         Initialize the FHIR connector.
 
         Args:
-            oauth_url: OAuth2 server URL
+            oauth_url: OAuth2 base URL
             fhir_url: FHIR API base URL
             client_id: OAuth2 client ID
             private_key: Private key in PEM format for PrivateKeyJWT authentication
@@ -70,16 +70,18 @@ class FHIRConnector:
 
     def find_patient(self, identifier: str) -> Patient:
         """
-        Find patient by identifier.
+        Find a patient by their identifier.
+
+        The identifier is usually the health insurance number.
 
         Args:
-            identifier: Patient identifier to search for
+            identifier: the patient identifier
 
         Returns:
             Patient resource.
 
         Raises:
-            ValueError: If no patient or multiple patients found.
+            ValueError: If no patient or multiple patients are found for the given identifier
         """
         LOGGER.debug('Searching for patient with identifier %s', identifier)
 
@@ -101,10 +103,10 @@ class FHIRConnector:
         Retrieve all conditions for a patient.
 
         Args:
-            uuid: Patient UUID
+            uuid: the UUID of the patient
 
         Returns:
-            List of Condition resources.
+            the list of Condition resources
         """
         LOGGER.debug('Retrieving conditions for patient with UUID %s', uuid)
 
@@ -132,10 +134,10 @@ class FHIRConnector:
         Retrieve all medication requests for a patient.
 
         Args:
-            uuid: Patient UUID
+            uuid: the UUID of the patient
 
         Returns:
-            List of MedicationRequest resources.
+            the list of MedicationRequest resources
         """
         LOGGER.debug('Retrieving medication requests for patient with UUID %s', uuid)
 
@@ -153,10 +155,10 @@ class FHIRConnector:
         Retrieve all allergies for a patient.
 
         Args:
-            uuid: Patient UUID
+            uuid: the UUID of the patient
 
         Returns:
-            List of AllergyIntolerance resources.
+            the list of AllergyIntolerance resources
         """
         LOGGER.debug('Retrieving allergies for patient with UUID %s', uuid)
 
@@ -173,10 +175,10 @@ class FHIRConnector:
         Retrieve all immunizations for a patient.
 
         Args:
-            uuid: Patient UUID
+            uuid: the UUID of the patient
 
         Returns:
-            List of Immunization resources.
+            the list of Immunization resources
         """
         LOGGER.debug('Retrieving immunizations for patient with UUID %s', uuid)
 
@@ -202,10 +204,10 @@ class FHIRConnector:
         Retrieve all observations for a patient.
 
         Args:
-            uuid: Patient UUID
+            uuid: the UUID of the patient
 
         Returns:
-            List of Observation resources.
+            the list of Observation resources
         """
         LOGGER.debug('Retrieving observations for patient with UUID %s', uuid)
 

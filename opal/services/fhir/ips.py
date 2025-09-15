@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2025 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+"""Functions related to building an International Patient Summary (IPS) document as a FHIR Bundle."""
+
 import datetime as dt
 import uuid
 
@@ -18,7 +24,7 @@ from fhir.resources.R4B.patient import Patient
 from fhir.resources.R4B.reference import Reference
 
 
-def build_patient_summary(
+def build_patient_summary(  # noqa: PLR0913, PLR0917
     patient: Patient,
     conditions: list[Condition],
     medication_requests: list[MedicationRequest],
@@ -26,6 +32,20 @@ def build_patient_summary(
     observations: list[Observation],
     immunizations: list[Immunization],
 ) -> Bundle:
+    """
+    Build an International Patient Summary (IPS) document as a FHIR Bundle.
+
+    Args:
+        patient: the Patient resource
+        conditions: the list of Condition resources
+        medication_requests: the list of MedicationRequest resources
+        allergies: the list of AllergyIntolerance resources
+        observations: the list of Observation resources
+        immunizations: the list of Immunization resources
+
+    Returns:
+        the IPS as a FHIR Bundle resource
+    """
     vital_signs = [
         observation for observation in observations if observation.category[0].coding[0].code == 'vital-signs'
     ]

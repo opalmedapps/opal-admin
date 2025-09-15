@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: Copyright (C) 2025 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+"""Utility functions for FHIR functionality, including building patient summaries and JWE encryption."""
+
 import secrets
 
 import structlog
@@ -11,6 +17,15 @@ LOGGER = structlog.get_logger(__name__)
 
 # https://docs.smarthealthit.org/smart-health-links/spec/#encrypting-and-decrypting-files
 def jwe_sh_link_encrypt(data: str) -> tuple[str, bytes]:
+    """
+    Encrypt data using JWE for SMART Health Links.
+
+    Args:
+        data: the data to encrypt
+
+    Returns:
+        a tuple of the encryption key (as a URL-safe base64 string) and the encrypted data (as bytes)
+    """
     # generate key with 32 bytes of randomness
     key = secrets.token_urlsafe(32)
     # base64 URL decode to have 32 bytes of data
@@ -22,6 +37,19 @@ def jwe_sh_link_encrypt(data: str) -> tuple[str, bytes]:
 
 
 def build_patient_summary(oauth_url: str, fhir_url: str, client_id: str, private_key: str, identifier: str) -> str:
+    """
+    Build a patient summary in IPS format for a patient identified by their identifier.
+
+    Args:
+        oauth_url: OAuth2 base URL
+        fhir_url: FHIR API base URL
+        client_id: OAuth2 client ID
+        private_key: Private key in PEM format for PrivateKeyJWT authentication
+        identifier: the patient identifier (usually the health insurance number)
+
+    Returns:
+        the patient summary in IPS format as a JSON string
+    """
     LOGGER.debug(
         'Building patient summary for patient with identifier %s, using OAuth2 URL: %s, FHIR API: %s, client ID: %s',
         identifier,
