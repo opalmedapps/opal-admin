@@ -31,7 +31,24 @@ LOGGER = structlog.get_logger(__name__)
 
 
 class FHIRConnector:
+    """
+    A FHIR connector to interact with a FHIR server using OAuth2 authentication.
+
+    The authentication method used is the client credentials grant.
+
+    See: https://www.hl7.org/fhir/smart-app-launch/backend-services.html
+    """
+
     def __init__(self, oauth_url: str, fhir_url: str, client_id: str, private_key: str):
+        """
+        Initialize the FHIR connector.
+
+        Args:
+            oauth_url: OAuth2 server URL
+            fhir_url: FHIR API base URL
+            client_id: OAuth2 client ID
+            private_key: Private key in PEM format for PrivateKeyJWT authentication
+        """
         self.fhir_url = fhir_url
         token_endpoint = f'{oauth_url}/token'
 
@@ -52,6 +69,18 @@ class FHIRConnector:
         LOGGER.debug('Successfully fetched new token', extra=self.session.token)
 
     def find_patient(self, identifier: str) -> Patient:
+        """
+        Find patient by identifier.
+
+        Args:
+            identifier: Patient identifier to search for
+
+        Returns:
+            Patient resource.
+
+        Raises:
+            ValueError: If no patient or multiple patients found.
+        """
         LOGGER.debug('Searching for patient with identifier %s', identifier)
 
         response = self.session.get(f'{self.fhir_url}/Patient?identifier={identifier}')
@@ -68,6 +97,15 @@ class FHIRConnector:
         return Patient.model_validate(response.json()['entry'][0]['resource'])
 
     def patient_conditions(self, uuid: str) -> list[Condition]:
+        """
+        Retrieve all conditions for a patient.
+
+        Args:
+            uuid: Patient UUID
+
+        Returns:
+            List of Condition resources.
+        """
         LOGGER.debug('Retrieving conditions for patient with UUID %s', uuid)
 
         response = self.session.get(f'{self.fhir_url}/Condition?patient={uuid}')
@@ -90,6 +128,15 @@ class FHIRConnector:
         return [condition.resource for condition in conditions_bundle.entry or []]
 
     def patient_medication_requests(self, uuid: str) -> list[MedicationRequest]:
+        """
+        Retrieve all medication requests for a patient.
+
+        Args:
+            uuid: Patient UUID
+
+        Returns:
+            List of MedicationRequest resources.
+        """
         LOGGER.debug('Retrieving medication requests for patient with UUID %s', uuid)
 
         response = self.session.get(f'{self.fhir_url}/MedicationRequest?patient={uuid}')
@@ -102,6 +149,15 @@ class FHIRConnector:
         return [medication.resource for medication in medications_bundle.entry or []]
 
     def patient_allergies(self, uuid: str) -> list[AllergyIntolerance]:
+        """
+        Retrieve all allergies for a patient.
+
+        Args:
+            uuid: Patient UUID
+
+        Returns:
+            List of AllergyIntolerance resources.
+        """
         LOGGER.debug('Retrieving allergies for patient with UUID %s', uuid)
 
         response = self.session.get(f'{self.fhir_url}/AllergyIntolerance?patient={uuid}')
@@ -113,6 +169,15 @@ class FHIRConnector:
         return [allergy.resource for allergy in allergies_bundle.entry or []]
 
     def patient_immunizations(self, uuid: str) -> list[Immunization]:
+        """
+        Retrieve all immunizations for a patient.
+
+        Args:
+            uuid: Patient UUID
+
+        Returns:
+            List of Immunization resources.
+        """
         LOGGER.debug('Retrieving immunizations for patient with UUID %s', uuid)
 
         response = self.session.get(f'{self.fhir_url}/Immunization?patient={uuid}')
@@ -133,6 +198,15 @@ class FHIRConnector:
         return [immunization.resource for immunization in immunizations_bundle.entry or []]
 
     def patient_observations(self, uuid: str) -> list[Observation]:
+        """
+        Retrieve all observations for a patient.
+
+        Args:
+            uuid: Patient UUID
+
+        Returns:
+            List of Observation resources.
+        """
         LOGGER.debug('Retrieving observations for patient with UUID %s', uuid)
 
         response = self.session.get(f'{self.fhir_url}/Observation?patient={uuid}')
