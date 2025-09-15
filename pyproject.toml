@@ -48,6 +48,11 @@ dependencies = [
     "whitenoise[brotli]==6.10.0",
 ]
 
+[project.optional-dependencies]
+prod = [
+    "gunicorn==23.0.0",
+]
+
 [dependency-groups]
 dev = [
     "beautifulsoup4==4.13.5",
@@ -78,7 +83,4 @@ docs = [
     "mkdocs-literate-nav==0.6.2",
     "mkdocs-material==9.6.20",
     "mkdocstrings[python-legacy]==0.30.0",
-]
-prod = [
-    "gunicorn==23.0.0",
 ]
