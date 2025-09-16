@@ -5,6 +5,7 @@
 """Tests for FHIR connector functionality."""
 
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from unittest.mock import Mock
@@ -282,7 +283,7 @@ class TestFHIRConnector:
         )
 
     def test_patient_allergies_empty(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
-        """Retrieving patient allergies returns empty list when no allergies found."""
+        """Retrieving patient allergies returns an empty list when no allergies found."""
         empty_data = {'resourceType': 'Bundle', 'type': 'collection', 'total': 0}
         mock_response = self._mock_response(mocker, empty_data)
         fhir_connector.session.get.return_value = mock_response
@@ -301,3 +302,58 @@ class TestFHIRConnector:
 
         with pytest.raises(ValidationError, match=r'entry.0.resource.patient\n\s+Field required'):
             fhir_connector.patient_allergies('test-patient-uuid')
+
+    def test_patient_immunizations(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Retrieving patient immunizations returns the correct Immunization resources."""
+        immunizations_data = self._load_fixture('immunizations.json')
+        mock_response = self._mock_response(mocker, immunizations_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        immunizations = fhir_connector.patient_immunizations('test-patient-uuid')
+
+        assert len(immunizations) == 2
+        assert immunizations[0].id == '9efb5312-a894-4f8f-9bb3-f2640e405247'
+        assert immunizations[1].id == '9efb5312-a8ed-4454-b6ee-b79b731ff31a'
+        fhir_connector.session.get.assert_called_once_with(
+            'https://example.com/fhir/Immunization?patient=test-patient-uuid'
+        )
+
+    def test_patient_immunizations_empty(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Retrieving patient immunizations returns an empty list when no immunizations found."""
+        empty_data = {'resourceType': 'Bundle', 'type': 'collection', 'total': 0}
+        mock_response = self._mock_response(mocker, empty_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        immunizations = fhir_connector.patient_immunizations('test-patient-uuid')
+
+        assert immunizations == []
+
+    def test_patient_immunizations_date_sanitization(
+        self, fhir_connector: FHIRConnector, mocker: MockerFixture
+    ) -> None:
+        """Patient immunizations date sanitization handles invalid dates with -0001."""
+        immunizations_data = self._load_fixture('immunizations.json')
+        # Add invalid date with -0001 year
+        immunizations_data['entry'][0]['resource']['meta']['lastUpdated'] = '-0001-11-30T00:00:00-04:00'
+        mock_response = self._mock_response(mocker, immunizations_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        immunizations = fhir_connector.patient_immunizations('test-patient-uuid')
+
+        assert len(immunizations) == 2
+
+        # Verify -0001 was replaced correctly
+        expected_datetime = datetime.fromisoformat(f'{datetime.now(tz=UTC).year - 1}-11-30T00:00:00-04:00')
+
+        assert expected_datetime == immunizations[0].meta.lastUpdated
+
+    def test_patient_immunizations_invalid_data(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Patient immunizations raises ValidationError when FHIR data is invalid."""
+        immunizations_data = self._load_fixture('immunizations.json')
+        # Remove required patient field to trigger validation error
+        immunizations_data['entry'][0]['resource'].pop('patient')
+        mock_response = self._mock_response(mocker, immunizations_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        with pytest.raises(ValidationError, match=r'entry.0.resource.patient\n\s+Field required'):
+            fhir_connector.patient_immunizations('test-patient-uuid')
