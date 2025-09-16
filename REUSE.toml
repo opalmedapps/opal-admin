@@ -4,6 +4,7 @@ version = 1
 [[annotations]]
 path = [
     "uv.lock",
+    "opal/static/thirdparty/package-lock.json",
 ]
 SPDX-FileCopyrightText = "NONE"
 SPDX-License-Identifier = "CC0-1.0"
@@ -20,7 +21,6 @@ path = [
     "opal/core/tests/fixtures/marge_RXR.hl7v2",
     "opal/core/tests/fixtures/marge_missing_CE_pharmacy.hl7v2",
     "opal/core/tests/fixtures/marge_pharmacy.hl7v2",
-    "opal/static/thirdparty/package-lock.json",
     "opal/static/thirdparty/package.json",
     "opal/services/data_processing/tests/fixtures/attributes_expected_signatures.csv",
     "opal/tests/fixtures/test_PDF.pdf",
@@ -29,6 +29,7 @@ path = [
     "opal/tests/fixtures/test_data_received_log.csv",
     "opal/tests/fixtures/test_data_received_log_large_data.csv",
     "opal/tests/fixtures/test_data_received_log_no_date.csv",
+    "opal/services/fhir/tests/fixtures/*.json",
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "Copyright (C) 2024 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>"

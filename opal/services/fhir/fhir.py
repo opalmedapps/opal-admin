@@ -41,7 +41,7 @@ class FHIRConnector:
 
     def __init__(self, oauth_url: str, fhir_url: str, client_id: str, private_key: str):
         """
-        Initialize the FHIR connector.
+        Initialize the FHIR connector and fetch the authentication token.
 
         Args:
             oauth_url: OAuth2 base URL
