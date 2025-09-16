@@ -357,3 +357,39 @@ class TestFHIRConnector:
 
         with pytest.raises(ValidationError, match=r'entry.0.resource.patient\n\s+Field required'):
             fhir_connector.patient_immunizations('test-patient-uuid')
+
+    def test_patient_observations(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Retrieving patient observations returns the correct Observation resources."""
+        observations_data = self._load_fixture('observations.json')
+        mock_response = self._mock_response(mocker, observations_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        observations = fhir_connector.patient_observations('test-patient-uuid')
+
+        assert len(observations) == 6
+        assert observations[0].id == '59ace158-3be6-11f0-9645-fa163e09c13a'
+        assert observations[1].id == '59acedd7-3be6-11f0-9645-fa163e09c13a'
+        fhir_connector.session.get.assert_called_once_with(
+            'https://example.com/fhir/Observation?patient=test-patient-uuid'
+        )
+
+    def test_patient_observations_empty(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Retrieving patient observations returns an empty list when no observations found."""
+        empty_data = {'resourceType': 'Bundle', 'type': 'collection', 'total': 0}
+        mock_response = self._mock_response(mocker, empty_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        observations = fhir_connector.patient_observations('test-patient-uuid')
+
+        assert observations == []
+
+    def test_patient_observations_invalid_data(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Patient observations raises a ValidationError when FHIR data is invalid."""
+        observations_data = self._load_fixture('observations.json')
+        # Remove required subject field to trigger validation error
+        observations_data['entry'][0]['resource'].pop('subject')
+        mock_response = self._mock_response(mocker, observations_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        with pytest.raises(ValidationError, match=r'entry.0.resource.subject\n\s+Field required'):
+            fhir_connector.patient_observations('test-patient-uuid')
