@@ -218,7 +218,7 @@ class TestFHIRConnector:
         assert conditions[1].code.coding[0].display == 'No display provided'
 
     def test_patient_conditions_invalid_data(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
-        """Patient conditions raises ValidationError when FHIR data is invalid."""
+        """Patient conditions raises a ValidationError when FHIR data is invalid."""
         conditions_data = self._load_fixture('conditions.json')
         # Remove required subject field to trigger ValidationError
         conditions_data['entry'][0]['resource'].pop('subject')
@@ -244,7 +244,7 @@ class TestFHIRConnector:
         )
 
     def test_patient_medication_requests_empty(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
-        """Retrieving patient medication requests returns empty list when no medication requests found."""
+        """Retrieving patient medication requests returns an empty list when no medication requests found."""
         empty_data = {'resourceType': 'Bundle', 'type': 'collection', 'total': 0}
         mock_response = self._mock_response(mocker, empty_data)
         fhir_connector.session.get.return_value = mock_response
@@ -256,7 +256,7 @@ class TestFHIRConnector:
     def test_patient_medication_requests_invalid_data(
         self, fhir_connector: FHIRConnector, mocker: MockerFixture
     ) -> None:
-        """Patient medication requests raises ValidationError when FHIR data is invalid."""
+        """Patient medication requests raises a ValidationError when FHIR data is invalid."""
         medication_requests_data = self._load_fixture('medicationrequests.json')
         # Remove required subject field to trigger validation error
         medication_requests_data['entry'][0]['resource'].pop('subject')
@@ -265,3 +265,39 @@ class TestFHIRConnector:
 
         with pytest.raises(ValidationError, match=r'entry.0.resource.subject\n\s+Field required'):
             fhir_connector.patient_medication_requests('test-patient-uuid')
+
+    def test_patient_allergies(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Retrieving patient allergies returns the correct AllergyIntolerance resources."""
+        allergies_data = self._load_fixture('allergies.json')
+        mock_response = self._mock_response(mocker, allergies_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        allergies = fhir_connector.patient_allergies('test-patient-uuid')
+
+        assert len(allergies) == 2
+        assert allergies[0].id == '9ef97779-4410-4ffb-a8b8-36ef546b2021'
+        assert allergies[1].id == 'a80b225b-1fa4-11f0-b78d-fa163e91b78d'
+        fhir_connector.session.get.assert_called_once_with(
+            'https://example.com/fhir/AllergyIntolerance?patient=test-patient-uuid'
+        )
+
+    def test_patient_allergies_empty(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Retrieving patient allergies returns empty list when no allergies found."""
+        empty_data = {'resourceType': 'Bundle', 'type': 'collection', 'total': 0}
+        mock_response = self._mock_response(mocker, empty_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        allergies = fhir_connector.patient_allergies('test-patient-uuid')
+
+        assert allergies == []
+
+    def test_patient_allergies_invalid_data(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Patient allergies raises a ValidationError when FHIR data is invalid."""
+        allergies_data = self._load_fixture('allergies.json')
+        # Remove required patient field to trigger validation error
+        allergies_data['entry'][0]['resource'].pop('patient')
+        mock_response = self._mock_response(mocker, allergies_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        with pytest.raises(ValidationError, match=r'entry.0.resource.patient\n\s+Field required'):
+            fhir_connector.patient_allergies('test-patient-uuid')
