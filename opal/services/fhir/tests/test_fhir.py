@@ -227,3 +227,41 @@ class TestFHIRConnector:
 
         with pytest.raises(ValidationError, match=r'entry.0.resource.subject\n\s+Field required'):
             fhir_connector.patient_conditions('test-patient-uuid')
+
+    def test_patient_medication_requests(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Retrieving patient medication requests returns the correct MedicationRequest resources."""
+        medication_requests_data = self._load_fixture('medicationrequests.json')
+        mock_response = self._mock_response(mocker, medication_requests_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        medication_requests = fhir_connector.patient_medication_requests('test-patient-uuid')
+
+        assert len(medication_requests) == 2
+        assert medication_requests[0].id == '9efb5312-c612-4dbd-9f1b-381d531f83d7'
+        assert medication_requests[1].id == '9ef98091-6d03-4e5c-ae98-f7826824db88'
+        fhir_connector.session.get.assert_called_once_with(
+            'https://example.com/fhir/MedicationRequest?patient=test-patient-uuid'
+        )
+
+    def test_patient_medication_requests_empty(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Retrieving patient medication requests returns empty list when no medication requests found."""
+        empty_data = {'resourceType': 'Bundle', 'type': 'collection', 'total': 0}
+        mock_response = self._mock_response(mocker, empty_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        medication_requests = fhir_connector.patient_medication_requests('test-patient-uuid')
+
+        assert medication_requests == []
+
+    def test_patient_medication_requests_invalid_data(
+        self, fhir_connector: FHIRConnector, mocker: MockerFixture
+    ) -> None:
+        """Patient medication requests raises ValidationError when FHIR data is invalid."""
+        medication_requests_data = self._load_fixture('medicationrequests.json')
+        # Remove required subject field to trigger validation error
+        medication_requests_data['entry'][0]['resource'].pop('subject')
+        mock_response = self._mock_response(mocker, medication_requests_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        with pytest.raises(ValidationError, match=r'entry.0.resource.subject\n\s+Field required'):
+            fhir_connector.patient_medication_requests('test-patient-uuid')
