@@ -4,10 +4,14 @@
 
 import base64
 import json
+from pathlib import Path
 
+from fhir.resources.R4B.bundle import Bundle
 from jose import jwe, utils
+from pytest_mock import MockerFixture
 
-from opal.services.fhir.utils import jwe_sh_link_encrypt
+from opal.services.fhir.fhir import FHIRConnector
+from opal.services.fhir.utils import build_patient_summary, jwe_sh_link_encrypt
 
 
 def test_jwe_sh_link_encrypt() -> None:
@@ -67,3 +71,28 @@ def test_jwe_sh_link_encrypt_smart_health_links_compliance() -> None:
 
     # Verify encrypted_key is empty (as required for "dir" algorithm)
     assert jwe_parts[1] == '', 'Encrypted key should be empty for direct encryption'
+
+
+def test_build_patient_summary(mocker: MockerFixture) -> None:
+    """The patient data is fetched and the patient summary built correctly."""
+    with Path(__file__).parent.joinpath('fixtures').joinpath('patient.json').open(encoding='utf-8') as f:
+        patient = Bundle.model_validate_json(f.read()).entry[0].resource
+
+    mock_fhir_connector = mocker.Mock(spec=FHIRConnector)
+    mock_fhir_connector.find_patient.return_value = patient
+    mock_fhir_connector.patient_conditions.return_value = []
+    mock_fhir_connector.patient_medication_requests.return_value = []
+    mock_fhir_connector.patient_allergies.return_value = []
+    mock_fhir_connector.patient_observations.return_value = []
+    mock_fhir_connector.patient_immunizations.return_value = []
+    mocker.patch('opal.services.fhir.utils.FHIRConnector', return_value=mock_fhir_connector)
+
+    summary_json = build_patient_summary(
+        oauth_url='https://example.com/oauth2',
+        fhir_url='https://example.com/fhir',
+        client_id='test-client-id',
+        private_key='private-key',
+        identifier='test-identifier',
+    )
+
+    Bundle.model_validate_json(summary_json)

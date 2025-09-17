@@ -18,7 +18,7 @@ from opal.services.fhir import ips
 
 
 def _load_fixture(filename: str) -> dict[str, Any]:
-    with Path(__file__).parent.joinpath('./fixtures').joinpath(filename).open(encoding='utf-8') as f:
+    with Path(__file__).parent.joinpath('fixtures').joinpath(filename).open(encoding='utf-8') as f:
         data: dict[str, Any] = json.load(f)
         return data
 

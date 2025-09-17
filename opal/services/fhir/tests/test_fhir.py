@@ -42,7 +42,7 @@ class TestFHIRConnector:
         return mock_response
 
     def _load_fixture(self, filename: str) -> dict[str, Any]:
-        with Path(__file__).parent.joinpath('./fixtures').joinpath(filename).open(encoding='utf-8') as f:
+        with Path(__file__).parent.joinpath('fixtures').joinpath(filename).open(encoding='utf-8') as f:
             data: dict[str, Any] = json.load(f)
             return data
 
@@ -364,7 +364,7 @@ class TestFHIRConnector:
 
         observations = fhir_connector.patient_observations('test-patient-uuid')
 
-        assert len(observations) == 6
+        assert len(observations) == 8
         assert observations[0].id == '59ace158-3be6-11f0-9645-fa163e09c13a'
         assert observations[1].id == '59acedd7-3be6-11f0-9645-fa163e09c13a'
         fhir_connector.session.get.assert_called_once_with(
