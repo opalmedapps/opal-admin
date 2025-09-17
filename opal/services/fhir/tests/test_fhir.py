@@ -2,8 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-"""Tests for FHIR connector functionality."""
-
 import json
 from datetime import UTC, datetime
 from pathlib import Path
