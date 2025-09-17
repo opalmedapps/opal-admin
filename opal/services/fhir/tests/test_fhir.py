@@ -393,3 +393,52 @@ class TestFHIRConnector:
 
         with pytest.raises(ValidationError, match=r'entry.0.resource.subject\n\s+Field required'):
             fhir_connector.patient_observations('test-patient-uuid')
+
+    @pytest.mark.parametrize(
+        'method_name',
+        [
+            'patient_conditions',
+            'patient_medication_requests',
+            'patient_allergies',
+            'patient_immunizations',
+            'patient_observations',
+        ],
+    )
+    def test_patient_methods_connection_error(
+        self,
+        fhir_connector: FHIRConnector,
+        method_name: str,
+    ) -> None:
+        """Patient methods raise a ConnectionError on connection errors."""
+        fhir_connector.session.get.side_effect = requests.ConnectionError('Connection failed')
+
+        method = getattr(fhir_connector, method_name)
+
+        with pytest.raises(requests.ConnectionError, match='Connection failed'):
+            method('test-patient-uuid')
+
+    @pytest.mark.parametrize(
+        'method_name',
+        [
+            'patient_conditions',
+            'patient_medication_requests',
+            'patient_allergies',
+            'patient_immunizations',
+            'patient_observations',
+        ],
+    )
+    def test_patient_methods_http_error(
+        self,
+        fhir_connector: FHIRConnector,
+        mocker: MockerFixture,
+        method_name: str,
+    ) -> None:
+        """Patient methods raise an HTTPError on HTTP errors."""
+        mock_response: Mock = mocker.Mock(spec=requests.Response)
+        mock_response.raise_for_status.side_effect = requests.HTTPError('500 Server Error')
+        fhir_connector.session.get.return_value = mock_response
+
+        method = getattr(fhir_connector, method_name)
+
+        with pytest.raises(requests.HTTPError, match='500 Server Error'):
+            method('test-patient-uuid')
