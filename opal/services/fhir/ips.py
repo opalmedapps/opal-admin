@@ -88,7 +88,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
                     ]
                 ),
                 entry=[
-                    Reference(reference=f'Condition/{condition.id}')
+                    Reference(reference=f'urn:uuid:{condition.id}')
                     for condition in conditions
                     if condition.clinicalStatus.coding[0].code != 'active'
                 ],

@@ -229,7 +229,7 @@ class TestFHIRConnector:
 
     def test_patient_medication_requests(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
         """Retrieving patient medication requests returns the correct MedicationRequest resources."""
-        medication_requests_data = self._load_fixture('medicationrequests.json')
+        medication_requests_data = self._load_fixture('medication_requests.json')
         mock_response = self._mock_response(mocker, medication_requests_data)
         fhir_connector.session.get.return_value = mock_response
 
