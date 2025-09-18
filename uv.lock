@@ -112,7 +112,7 @@ requires-dist = [
     { name = "qrcode", specifier = "==8.2" },
     { name = "requests", specifier = "==2.32.5" },
     { name = "slippers", specifier = "==0.6.2" },
-    { name = "twilio", specifier = "==9.8.0" },
+    { name = "twilio", specifier = "==9.8.1" },
     { name = "unidecode", specifier = "==1.4.0" },
     { name = "whitenoise", extras = ["brotli"], specifier = "==6.10.0" },
 ]
@@ -1985,7 +1985,7 @@ wheels = [
 
 [[package]]
 name = "twilio"
-version = "9.8.0"
+version = "9.8.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -1993,9 +1993,9 @@ dependencies = [
     { name = "pyjwt" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/27/da/e8b43c05c98bf639282af982b6afb452db946de48eebc4d10c79441c558f/twilio-9.8.0.tar.gz", hash = "sha256:2661241f279494e4b9e2ad88f4b5f57cb27c618c600d07ca44fe863a0ce6ce9a", size = 923393, upload-time = "2025-09-04T10:22:55.211Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/44/44/7220104ed67c1a2a99bf30ef79f658703bd17e3341601c844669fe7a0072/twilio-9.8.1.tar.gz", hash = "sha256:e1feeeeb5f12e59fa4788a1e5b9338cf521480dbb8352e5620b8f92493c2206d", size = 932464, upload-time = "2025-09-18T12:14:37.532Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/c9/424ff885d5903d3505dc2ac307aa4b7cd4c19fdc15e05f47e16adef720d9/twilio-9.8.0-py2.py3-none-any.whl", hash = "sha256:d8d34bd74125ea583eaebf29310c54136c2556e23dcc9efca4483691e921d895", size = 1804517, upload-time = "2025-09-04T10:22:53.6Z" },
+    { url = "https://files.pythonhosted.org/packages/a6/80/25dfcec263c47d6d04de0436bcc2064bcaaecfa05f65abad879e54e583c4/twilio-9.8.1-py2.py3-none-any.whl", hash = "sha256:764ccb00a6cd9cdf0217468e7a446cd3aa5df418981aaff8c5b54be9d89f13f2", size = 1820821, upload-time = "2025-09-18T12:14:35.537Z" },
 ]
 
 [[package]]
