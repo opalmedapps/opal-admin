@@ -36,9 +36,9 @@ def jwe_sh_link_encrypt(data: str) -> tuple[str, bytes]:
     return (key, encrypted)
 
 
-def build_patient_summary(oauth_url: str, fhir_url: str, client_id: str, private_key: str, identifier: str) -> str:
+def retrieve_patient_summary(oauth_url: str, fhir_url: str, client_id: str, private_key: str, identifier: str) -> str:
     """
-    Build a patient summary in IPS format for a patient identified by their identifier.
+    Retrieve patient data and build a patient summary in IPS format for a patient identified by their identifier.
 
     Args:
         oauth_url: OAuth2 base URL
