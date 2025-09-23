@@ -256,7 +256,7 @@ class TestFHIRConnector:
         self, fhir_connector: FHIRConnector, mocker: MockerFixture
     ) -> None:
         """Patient medication requests raises a ValidationError when FHIR data is invalid."""
-        medication_requests_data = self._load_fixture('medicationrequests.json')
+        medication_requests_data = self._load_fixture('medication_requests.json')
         # Remove required subject field to trigger validation error
         medication_requests_data['entry'][0]['resource'].pop('subject')
         mock_response = self._mock_response(mocker, medication_requests_data)
@@ -384,12 +384,12 @@ class TestFHIRConnector:
     def test_patient_observations_invalid_data(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
         """Patient observations raises a ValidationError when FHIR data is invalid."""
         observations_data = self._load_fixture('observations.json')
-        # Remove required subject field to trigger validation error
-        observations_data['entry'][0]['resource'].pop('subject')
+        # Remove required status field to trigger validation error
+        observations_data['entry'][0]['resource'].pop('status')
         mock_response = self._mock_response(mocker, observations_data)
         fhir_connector.session.get.return_value = mock_response
 
-        with pytest.raises(ValidationError, match=r'entry.0.resource.subject\n\s+Field required'):
+        with pytest.raises(ValidationError, match=r'entry.0.resource.status\n\s+Value for the field'):
             fhir_connector.patient_observations('test-patient-uuid')
 
     @pytest.mark.parametrize(
