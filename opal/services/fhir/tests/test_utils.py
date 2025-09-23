@@ -65,6 +65,7 @@ def test_jwe_sh_link_encrypt_smart_health_links_compliance() -> None:
     header = json.loads(header_json)
 
     # Verify SMART Health Links specification compliance
+    # https://build.fhir.org/ig/HL7/smart-health-cards-and-links/links-specification.html#encrypting-and-decrypting-files
     assert header['alg'] == 'dir', 'Algorithm should be "dir" (direct encryption)'
     assert header['enc'] == 'A256GCM', 'Encryption should be "A256GCM" (AES-256 GCM)'
     assert header['cty'] == 'application/fhir+json', 'Content type should be "application/fhir+json"'
@@ -87,7 +88,7 @@ def test_retrieve_patient_summary(mocker: MockerFixture) -> None:
     mock_fhir_connector.patient_immunizations.return_value = []
     mocker.patch('opal.services.fhir.utils.FHIRConnector', return_value=mock_fhir_connector)
 
-    summary_json = retrieve_patient_summary(
+    summary_json, summary_uuid = retrieve_patient_summary(
         oauth_url='https://example.com/oauth2',
         fhir_url='https://example.com/fhir',
         client_id='test-client-id',
@@ -95,4 +96,5 @@ def test_retrieve_patient_summary(mocker: MockerFixture) -> None:
         identifier='test-identifier',
     )
 
-    Bundle.model_validate_json(summary_json)
+    summary = Bundle.model_validate_json(summary_json)
+    assert summary.identifier.value == summary_uuid

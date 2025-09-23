@@ -5,6 +5,7 @@
 """Utility functions for FHIR functionality, including building patient summaries and JWE encryption."""
 
 import secrets
+import uuid
 
 import structlog
 from jose import jwe, utils
@@ -36,7 +37,9 @@ def jwe_sh_link_encrypt(data: str) -> tuple[str, bytes]:
     return (key, encrypted)
 
 
-def retrieve_patient_summary(oauth_url: str, fhir_url: str, client_id: str, private_key: str, identifier: str) -> str:
+def retrieve_patient_summary(
+    oauth_url: str, fhir_url: str, client_id: str, private_key: str, identifier: str
+) -> tuple[str, uuid.UUID]:
     """
     Retrieve patient data and build a patient summary in IPS format for a patient identified by their identifier.
 
@@ -48,7 +51,7 @@ def retrieve_patient_summary(oauth_url: str, fhir_url: str, client_id: str, priv
         identifier: the patient identifier (usually the health insurance number)
 
     Returns:
-        the patient summary in IPS format as a JSON string
+        a tuple of the patient summary in IPS format as a JSON string and the UUID of the IPS bundle
     """
     LOGGER.debug(
         'Building patient summary for patient with identifier %s, using OAuth2 URL: %s, FHIR API: %s, client ID: %s',
@@ -89,4 +92,4 @@ def retrieve_patient_summary(oauth_url: str, fhir_url: str, client_id: str, priv
 
     LOGGER.debug('Successfully built IPS bundle for patient with UUID %s', patient_uuid)
 
-    return ips_bundle.model_dump_json(indent=2)  # type: ignore[no-any-return]
+    return ips_bundle.model_dump_json(indent=2), ips_bundle.identifier.value
