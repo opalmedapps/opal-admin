@@ -5,13 +5,21 @@
 import base64
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+import pytest
+import requests
+from authlib.integrations.requests_client import OAuth2Session
+from authlib.oauth2 import OAuth2Error
 from fhir.resources.R4B.bundle import Bundle
 from jose import jwe, utils
 from pytest_mock import MockerFixture
 
 from opal.services.fhir.fhir import FHIRConnector
-from opal.services.fhir.utils import jwe_sh_link_encrypt, retrieve_patient_summary
+from opal.services.fhir.utils import FHIRDataRetrievalError, jwe_sh_link_encrypt, retrieve_patient_summary
+
+if TYPE_CHECKING:
+    from unittest.mock import Mock
 
 
 def test_jwe_sh_link_encrypt() -> None:
@@ -98,3 +106,38 @@ def test_retrieve_patient_summary(mocker: MockerFixture) -> None:
 
     summary = Bundle.model_validate_json(summary_json)
     assert summary.identifier.value == summary_uuid
+
+
+def test_retrieve_patient_summary_no_patient_error(mocker: MockerFixture) -> None:
+    """An error is raised if the patient cannot be found."""
+    mock_response: Mock = mocker.Mock(spec=requests.Response)
+    mock_response.status_code = requests.codes.ok
+    mock_response.json.return_value = []
+    mock_session = mocker.Mock(spec=OAuth2Session)
+    mock_session.get.return_value = mock_response
+    mocker.patch('opal.services.fhir.fhir.OAuth2Session', return_value=mock_session)
+
+    with pytest.raises(FHIRDataRetrievalError, match='Error finding patient with identifier test-identifier'):
+        retrieve_patient_summary(
+            oauth_url='https://example.com/oauth2',
+            fhir_url='https://example.com/fhir',
+            client_id='test-client-id',
+            private_key='private-key',
+            identifier='test-identifier',
+        )
+
+
+def test_retrieve_patient_summary_oauth2_error(mocker: MockerFixture) -> None:
+    """An error is raised if the OAuth2 authentication fails."""
+    mock_session = mocker.Mock(spec=OAuth2Session)
+    mock_session.fetch_token.side_effect = OAuth2Error('Invalid client credentials')
+    mocker.patch('opal.services.fhir.fhir.OAuth2Session', return_value=mock_session)
+
+    with pytest.raises(FHIRDataRetrievalError, match='Error retrieving data from FHIR server'):
+        retrieve_patient_summary(
+            oauth_url='https://example.com/oauth2',
+            fhir_url='https://example.com/fhir',
+            client_id='test-client-id',
+            private_key='private-key',
+            identifier='test-identifier',
+        )

@@ -4,16 +4,25 @@
 
 """Utility functions for FHIR functionality, including building patient summaries and JWE encryption."""
 
+import logging
 import secrets
 import uuid
 
 import structlog
+from authlib.oauth2 import OAuth2Error
 from jose import jwe, utils
+from requests import RequestException
 
 from . import ips
-from .fhir import FHIRConnector
+from .fhir import FHIRConnector, MultiplePatientsFoundError, PatientNotFoundError
 
-LOGGER = structlog.get_logger(__name__)
+LOGGER: logging.Logger = structlog.get_logger(__name__)
+
+
+class FHIRDataRetrievalError(Exception):
+    """Raised when there is an error retrieving data from the FHIR server."""
+
+    pass
 
 
 # https://docs.smarthealthit.org/smart-health-links/spec/#encrypting-and-decrypting-files
@@ -50,6 +59,9 @@ def retrieve_patient_summary(
         private_key: Private key in PEM format for PrivateKeyJWT authentication
         identifier: the patient identifier (usually the health insurance number)
 
+    Raises:
+        FHIRDataRetrievalError: if there is an error retrieving data from the FHIR server
+
     Returns:
         a tuple of the patient summary in IPS format as a JSON string and the UUID of the IPS bundle
     """
@@ -60,36 +72,45 @@ def retrieve_patient_summary(
         fhir_url,
         client_id,
     )
-    fhir = FHIRConnector(
-        oauth_url=oauth_url,
-        fhir_url=fhir_url,
-        client_id=client_id,
-        private_key=private_key,
-    )
-    patient = fhir.find_patient(identifier)
-    patient_uuid = patient.id
-    conditions = fhir.patient_conditions(patient_uuid)
-    medication_requests = fhir.patient_medication_requests(patient_uuid)
-    allergies = fhir.patient_allergies(patient_uuid)
-    observations = fhir.patient_observations(patient_uuid)
-    immunizations = fhir.patient_immunizations(patient_uuid)
 
-    LOGGER.debug(
-        'Retrieved data for patient %s: %d conditions, %d medication requests, %d allergies, %d observations, %d immunizations',
-        patient_uuid,
-        len(conditions),
-        len(medication_requests),
-        len(allergies),
-        len(observations),
-        len(immunizations),
-    )
+    try:
+        fhir = FHIRConnector(
+            oauth_url=oauth_url,
+            fhir_url=fhir_url,
+            client_id=client_id,
+            private_key=private_key,
+        )
 
-    LOGGER.debug('Building IPS bundle for patient with UUID %s', patient_uuid)
+        patient = fhir.find_patient(identifier)
+        patient_uuid = patient.id
+        conditions = fhir.patient_conditions(patient_uuid)
+        medication_requests = fhir.patient_medication_requests(patient_uuid)
+        allergies = fhir.patient_allergies(patient_uuid)
+        observations = fhir.patient_observations(patient_uuid)
+        immunizations = fhir.patient_immunizations(patient_uuid)
 
-    ips_bundle = ips.build_patient_summary(
-        patient, conditions, medication_requests, allergies, observations, immunizations
-    )
+        LOGGER.debug(
+            'Retrieved data for patient %s: %d conditions, %d medication requests, %d allergies, %d observations, %d immunizations',
+            patient_uuid,
+            len(conditions),
+            len(medication_requests),
+            len(allergies),
+            len(observations),
+            len(immunizations),
+        )
+    except (PatientNotFoundError, MultiplePatientsFoundError) as exc:
+        LOGGER.exception('Error finding patient with identifier %s', identifier)
+        raise FHIRDataRetrievalError(f'Error finding patient with identifier {identifier}') from exc
+    except (RequestException, OAuth2Error) as exc:
+        LOGGER.exception('Error retrieving data from FHIR server')
+        raise FHIRDataRetrievalError('Error retrieving data from FHIR server') from exc
+    else:
+        LOGGER.debug('Building IPS bundle for patient with UUID %s', patient_uuid)
 
-    LOGGER.debug('Successfully built IPS bundle for patient with UUID %s', patient_uuid)
+        ips_bundle = ips.build_patient_summary(
+            patient, conditions, medication_requests, allergies, observations, immunizations
+        )
 
-    return ips_bundle.model_dump_json(indent=2), ips_bundle.identifier.value
+        LOGGER.debug('Successfully built IPS bundle for patient with UUID %s', patient_uuid)
+
+        return ips_bundle.model_dump_json(indent=2), ips_bundle.identifier.value
