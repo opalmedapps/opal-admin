@@ -22,7 +22,6 @@ from opal.databank.api.views import CreateDatabankConsentView
 from opal.health_data.api import views as data_views
 from opal.hospital_settings.api import views as settings_views
 from opal.hospital_settings.api import viewsets as settings_viewsets
-from opal.ips.api import views as ips_views
 from opal.legacy.api.views.app_appointments import AppAppointmentsView, UpdateAppointmentCheckinView
 from opal.legacy.api.views.app_chart import AppChartView
 from opal.legacy.api.views.app_general import AppGeneralView
@@ -189,7 +188,7 @@ urlpatterns = [
     ),
     path(
         'patients/<uuid:uuid>/ips/',
-        ips_views.GetPatientSummary.as_view(),
+        patient_views.PatientSummaryView.as_view(),
         name='patient-summary',
     ),
     # Patient checkin update endpoint to replace legacy OA endpoint
