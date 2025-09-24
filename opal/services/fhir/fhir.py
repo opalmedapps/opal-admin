@@ -30,6 +30,18 @@ SCOPES = [
 LOGGER = structlog.get_logger(__name__)
 
 
+class PatientNotFoundError(Exception):
+    """Raised when a patient is not found in the FHIR server."""
+
+    pass
+
+
+class MultiplePatientsFoundError(Exception):
+    """Raised when multiple patients are found for a given identifier in the FHIR server."""
+
+    pass
+
+
 class FHIRConnector:
     """
     A FHIR connector to interact with a FHIR server using OAuth2 authentication.
@@ -81,7 +93,8 @@ class FHIRConnector:
             Patient resource.
 
         Raises:
-            ValueError: If no patient or multiple patients are found for the given identifier
+            PatientNotFoundError: If no patient is found for the given identifier
+            MultiplePatientsFoundError: If multiple patients are found for the given identifier
         """
         LOGGER.debug('Searching for patient with identifier %s', identifier)
 
@@ -91,10 +104,10 @@ class FHIRConnector:
         data = response.json()
 
         if 'entry' not in data or len(data['entry']) == 0:
-            raise ValueError(f'No patient found with identifier {identifier}')
+            raise PatientNotFoundError(f'No patient found with identifier {identifier}')
 
         if len(data['entry']) > 1:
-            raise ValueError(f'Multiple patients found with identifier {identifier}')
+            raise MultiplePatientsFoundError(f'Multiple patients found with identifier {identifier}')
 
         return Patient.model_validate(response.json()['entry'][0]['resource'])
 

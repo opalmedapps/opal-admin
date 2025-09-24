@@ -15,7 +15,7 @@ from authlib.oauth2 import OAuth2Error
 from pydantic import ValidationError
 from pytest_mock import MockerFixture
 
-from opal.services.fhir.fhir import FHIRConnector
+from opal.services.fhir.fhir import FHIRConnector, MultiplePatientsFoundError, PatientNotFoundError
 
 
 class TestFHIRConnector:
@@ -140,7 +140,7 @@ class TestFHIRConnector:
         mock_response = self._mock_response(mocker, empty_data)
         fhir_connector.session.get.return_value = mock_response
 
-        with pytest.raises(ValueError, match='No patient found with identifier test-identifier'):
+        with pytest.raises(PatientNotFoundError, match='No patient found with identifier test-identifier'):
             fhir_connector.find_patient('test-identifier')
 
     def test_find_patient_not_found_empty_entry(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
@@ -149,7 +149,7 @@ class TestFHIRConnector:
         mock_response = self._mock_response(mocker, empty_data)
         fhir_connector.session.get.return_value = mock_response
 
-        with pytest.raises(ValueError, match='No patient found with identifier test-identifier'):
+        with pytest.raises(PatientNotFoundError, match='No patient found with identifier test-identifier'):
             fhir_connector.find_patient('test-identifier')
 
     def test_find_patient_multiple_patients(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
@@ -161,7 +161,7 @@ class TestFHIRConnector:
         mock_response = self._mock_response(mocker, patient_data)
         fhir_connector.session.get.return_value = mock_response
 
-        with pytest.raises(ValueError, match='Multiple patients found with identifier test-identifier'):
+        with pytest.raises(MultiplePatientsFoundError, match='Multiple patients found with identifier test-identifier'):
             fhir_connector.find_patient('test-identifier')
 
     def test_find_patient_invalid_data(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
