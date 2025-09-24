@@ -132,12 +132,11 @@ class FHIRConnector:
         # these should eventually be fixed at the source
         for entry in data.get('entry', []):
             resource = entry.get('resource', {})
-            if 'code' in resource:
-                for coding in resource['code'].get('coding', []):
-                    # strip whitespace from code fields to avoid validation errors
-                    coding['code'] = coding['code'].rstrip()
-                    # replace empty code display fields to avoid validation errors
-                    coding['display'] = coding['display'] or 'No display provided'
+            for coding in resource.get('code', {}).get('coding', []):
+                # strip whitespace from code fields to avoid validation errors
+                coding['code'] = coding['code'].rstrip()
+                # replace empty code display fields to avoid validation errors
+                coding['display'] = coding['display'] or 'No display provided'
 
         conditions_bundle = Bundle.model_validate(data)
         return [condition.resource for condition in conditions_bundle.entry or []]
@@ -202,8 +201,8 @@ class FHIRConnector:
 
         for entry in data.get('entry', []):
             resource = entry.get('resource', {})
-            if 'meta' in resource and 'lastUpdated' in resource['meta']:
-                # sanitize invalid dates
+            if 'meta' in resource and 'lastUpdated' in resource['meta']:  # pragma: no cover
+                # sanitize invalid dates, assume that '-0001' means last year
                 resource['meta']['lastUpdated'] = resource['meta']['lastUpdated'].replace(
                     '-0001', str(datetime.now(tz=dt.UTC).year - 1)
                 )
