@@ -866,7 +866,7 @@ SOFTWARE.
 
 ## fhir-resources
 
-- Homepage:
+- Homepage: https://github.com/nazrulworld/fhir.resources
 - Repository: https://github.com/nazrulworld/fhir.resources
 - License: `BSD-3-Clause`
 

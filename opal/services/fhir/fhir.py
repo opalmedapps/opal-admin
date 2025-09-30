@@ -203,6 +203,7 @@ class FHIRConnector:
             resource = entry.get('resource', {})
             if 'meta' in resource and 'lastUpdated' in resource['meta']:  # pragma: no cover
                 # sanitize invalid dates, assume that '-0001' means last year
+                # this should eventually be fixed at the source
                 resource['meta']['lastUpdated'] = resource['meta']['lastUpdated'].replace(
                     '-0001', str(datetime.now(tz=dt.UTC).year - 1)
                 )

@@ -135,7 +135,7 @@ class TestFHIRConnector:
         )
 
     def test_find_patient_not_found(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
-        """Finding a patient by identifier raises a ValueError when no patient is found."""
+        """Finding a patient by identifier raises an error when no patient is found."""
         empty_data = {'resourceType': 'Bundle', 'type': 'collection', 'total': 0}
         mock_response = self._mock_response(mocker, empty_data)
         fhir_connector.session.get.return_value = mock_response
@@ -144,7 +144,7 @@ class TestFHIRConnector:
             fhir_connector.find_patient('test-identifier')
 
     def test_find_patient_not_found_empty_entry(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
-        """Finding a patient by identifier raises a ValueError when no patient is found."""
+        """Finding a patient by identifier raises an error when no patient is found."""
         empty_data = {'resourceType': 'Bundle', 'type': 'collection', 'total': 0, 'entry': []}
         mock_response = self._mock_response(mocker, empty_data)
         fhir_connector.session.get.return_value = mock_response
@@ -153,7 +153,7 @@ class TestFHIRConnector:
             fhir_connector.find_patient('test-identifier')
 
     def test_find_patient_multiple_patients(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
-        """Finding a patient by identifier returns the correct Patient resource."""
+        """Finding a patient by identifier raises an error when multiple patients are found."""
         patient_data = self._load_fixture('patient.json')
         # Simulate multiple patients by duplicating the entry
         patient_data['entry'].append(patient_data['entry'][0])
