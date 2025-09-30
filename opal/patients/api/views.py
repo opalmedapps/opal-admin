@@ -4,14 +4,21 @@
 
 """This module provides `APIViews` for the `patients` app REST APIs."""
 
+import base64
+import json
+from io import BytesIO
 from typing import Any
 
+from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import QuerySet
+from django.shortcuts import get_object_or_404
+from django.utils.module_loading import import_string
 
+import structlog
 from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, status
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -27,6 +34,7 @@ from opal.core.drf_permissions import (
     IsListener,
     IsRegistrationListener,
 )
+from opal.services.fhir.utils import FHIRDataRetrievalError, jwe_sh_link_encrypt, retrieve_patient_summary
 
 from ..api.serializers import (
     CaregiverRelationshipSerializer,
@@ -37,6 +45,8 @@ from ..api.serializers import (
     RelationshipTypeDescriptionSerializer,
 )
 from ..models import Patient, Relationship, RelationshipType
+
+LOGGER = structlog.get_logger()
 
 
 class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.RegistrationCode]):
@@ -292,3 +302,88 @@ class RelationshipTypeView(ListAPIView[RelationshipType]):
     queryset = RelationshipType.objects.all()
     permission_classes = (IsListener,)
     serializer_class = RelationshipTypeDescriptionSerializer
+
+
+class PatientSummaryView(APIView):
+    """View to process a request to retrieve the International Patient Summary (IPS) for a given patient."""
+
+    permission_classes = (IsListener,)
+
+    def get(self, request: Request, uuid: str) -> Response:
+        """
+        Handle a GET request to retrieve the International Patient Summary (IPS) for the given patient UUID.
+
+        Assemble the data needed to build a Smart Health Link that can be read by an IPS viewer.
+        The IPS data is encrypted and stored using the configured storage backend.
+
+        Args:
+            request: HTTP request
+            uuid: the patient's UUID for whom IPS link data is being generated
+
+        Raises:
+            ValidationError: if the patient has no health identification number
+
+        Returns:
+            HTTP response with the SH link payload that can be parsed by IPS viewers
+        """
+        patient = get_object_or_404(Patient, uuid=uuid)
+
+        if not patient.ramq:
+            raise ValidationError('Patient has no health identification number')
+
+        # Request and assemble IPS data into a bundle
+        try:
+            ips, ips_uuid = retrieve_patient_summary(
+                settings.FHIR_API_OAUTH_URL,
+                settings.FHIR_API_URL,
+                settings.FHIR_API_CLIENT_ID,
+                settings.FHIR_API_PRIVATE_KEY,
+                patient.ramq,
+            )
+        except FHIRDataRetrievalError as exc:
+            LOGGER.exception('Error retrieving IPS data from FHIR server for patient %s', uuid)
+            raise ValidationError('Error retrieving IPS data from FHIR server') from exc
+        else:
+            # Generate an encryption key for the bundle, and encrypt it
+            encryption_key, encrypted_ips = jwe_sh_link_encrypt(ips)
+
+            storage_backend_class: type = import_string(settings.IPS_STORAGE_BACKEND)
+            storage_backend = storage_backend_class()
+            file_name = f'{ips_uuid}.ips'
+
+            LOGGER.debug(
+                'Saving IPS bundle for patient %s to %s using storage backend %s',
+                uuid,
+                file_name,
+                settings.IPS_STORAGE_BACKEND,
+            )
+
+            try:
+                actual_file_name = storage_backend.save(file_name, BytesIO(encrypted_ips))
+            # storage backends can raise various exceptions, try to catch them all
+            except Exception as exc:
+                LOGGER.exception(
+                    'Error saving IPS bundle for patient %s to %s using storage backend %s',
+                    uuid,
+                    file_name,
+                    settings.IPS_STORAGE_BACKEND,
+                )
+                raise ValidationError('Error saving IPS bundle to storage backend') from exc
+            else:
+                LOGGER.debug('Successfully saved IPS bundle for patient %s to %s', uuid, actual_file_name)
+
+                # See: https://docs.smarthealthit.org/smart-health-links/spec/#construct-a-shlink-payload
+                link_content = {
+                    'url': f'{settings.IPS_PUBLIC_BASE_URL}/{ips_uuid}',
+                    'flag': 'L',
+                    'key': encryption_key,
+                    'label': 'Opal-App IPS Demo',
+                }
+
+                LOGGER.debug('Constructed SH link content for patient %s', uuid, extra=link_content)
+
+                # Convert the link content into JSON, parse it as base64, and build the SH link payload
+                link_json = json.dumps(link_content)
+                link_base64 = base64.b64encode(link_json.encode('utf-8')).decode('utf-8')
+
+                return Response({'payload': link_base64})
