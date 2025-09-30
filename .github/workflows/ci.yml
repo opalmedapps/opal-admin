@@ -221,7 +221,7 @@ jobs:
       # see: https://squidfunk.github.io/mkdocs-material/publishing-your-site/#with-github-actions
       # weekly cache updates
       - run: echo "cache_id=$(date --utc '+%V')" >> "$GITHUB_ENV"
-      - uses: actions/cache@v4.2.4
+      - uses: actions/cache@v4.3.0
         with:
           # weekly cache
           key: mkdocs-material-${{ env.cache_id }}
