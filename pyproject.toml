@@ -18,7 +18,7 @@ dependencies = [
     "django-crispy-forms==2.4",
     "django-environ==0.12.0",
     "django-extensions==4.1",
-    "django-filter==25.1",
+    "django-filter==25.2",
     "django-forms-dynamic==1.0.0",
     "django-modeltranslation==0.19.17",
     "django-phonenumber-field[phonenumberslite]==8.1.0",
