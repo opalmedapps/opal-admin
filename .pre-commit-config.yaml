@@ -34,13 +34,13 @@ repos:
     - id: validate-pyproject
 
 - repo: https://github.com/astral-sh/uv-pre-commit
-  rev: 0.8.17
+  rev: 0.8.22
   hooks:
     - id: uv-lock
 
 # https://docs.astral.sh/ruff/integrations/#pre-commit
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.13.0
+  rev: v0.13.2
   hooks:
     # Run the linter with fixes
     - id: ruff
@@ -107,12 +107,12 @@ repos:
 
 # zizmor detects security vulnerabilities in GitHub Actions workflows.
 - repo: https://github.com/woodruffw/zizmor-pre-commit
-  rev: v1.13.0
+  rev: v1.14.2
   hooks:
     - id: zizmor
 
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.33.3
+  rev: 0.34.0
   hooks:
     - id: check-github-workflows
       args: ["--verbose"]

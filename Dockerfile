@@ -4,7 +4,7 @@
 
 FROM python:3.13.7-alpine3.22 AS build
 
-COPY --from=ghcr.io/astral-sh/uv:0.8.17 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.8.22 /uv /uvx /bin/
 
 # dependencies for building Python packages
 RUN apk add --no-cache build-base \
@@ -24,7 +24,11 @@ WORKDIR /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-editable --no-default-groups --group $ENV --compile-bytecode
+    if [ "$ENV" = "prod" ]; then \
+      uv sync --locked --no-editable --no-default-groups --extra prod --compile-bytecode; \
+    else \
+      uv sync --locked --no-editable --no-default-groups --group dev --compile-bytecode; \
+    fi
 
 
 FROM python:3.13.7-alpine3.22

@@ -13,9 +13,9 @@ dependencies = [
     "authlib==1.6.3",
     "crispy-bootstrap5==2025.6",
     "dj-rest-auth==7.0.1",
-    "django==5.2.6",
+    "django==5.2.7",
     "django-auditlog==3.2.1",
-    "django-cors-headers==4.8.0",
+    "django-cors-headers==4.9.0",
     "django-crispy-forms==2.4",
     "django-environ==0.12.0",
     "django-extensions==4.1",
@@ -38,7 +38,7 @@ dependencies = [
     "kaleido==1.1.0",
     "mysqlclient==2.2.7",
     "openpyxl==3.1.5",
-    "pandas==2.3.2",
+    "pandas==2.3.3",
     # required for ImageFields
     "pillow==11.3.0",
     "plotly==6.3.0",
@@ -47,30 +47,35 @@ dependencies = [
     "qrcode==8.2",
     "requests==2.32.5",
     "slippers==0.6.2",
-    "twilio==9.8.0",
+    "twilio==9.8.3",
     "unidecode==1.4.0",
-    "whitenoise[brotli]==6.10.0",
+    "whitenoise[brotli]==6.11.0",
+]
+
+[project.optional-dependencies]
+prod = [
+    "gunicorn==23.0.0",
 ]
 
 [dependency-groups]
 dev = [
-    "beautifulsoup4==4.13.5",
-    "coverage==7.10.6",
+    "beautifulsoup4==4.14.2",
+    "coverage==7.10.7",
     "django-coverage-plugin==3.1.1",
     "django-stubs==5.2.5",
     "django-test-migrations==1.5.0",
-    "djangorestframework-stubs==3.16.2",
+    "djangorestframework-stubs==3.16.4",
     "factory-boy==3.3.3",
-    "mypy[faster-cache]==1.18.1",
-    "pandas-stubs==2.3.2.250827",
+    "mypy[faster-cache]==1.18.2",
+    "pandas-stubs==2.3.2.250926",
     "pre-commit==4.3.0",
     "pytest==8.4.2",
     "pytest-django==4.11.1",
-    "pytest-mock==3.15.0",
+    "pytest-mock==3.15.1",
     "pytest-randomly==4.0.1",
     "pytest-socket==0.7.0",
     "pytest-sugar==1.1.1",
-    "ruff==0.13.0",
+    "ruff==0.13.2",
     "types-beautifulsoup4==4.12.0.20250516",
     "types-fpdf2==2.8.4.20250822",
     "types-python-dateutil==2.9.0.20250822",
@@ -80,9 +85,6 @@ docs = [
     "mkdocs-autorefs==1.4.3",
     "mkdocs-gen-files==0.5.0",
     "mkdocs-literate-nav==0.6.2",
-    "mkdocs-material==9.6.20",
-    "mkdocstrings[python-legacy]==0.30.0",
-]
-prod = [
-    "gunicorn==23.0.0",
+    "mkdocs-material==9.6.21",
+    "mkdocstrings[python-legacy]==0.30.1",
 ]
