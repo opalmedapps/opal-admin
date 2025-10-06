@@ -164,6 +164,8 @@ jobs:
           # generate secret key
           SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
           sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
+          # enable IPS
+          sed -i "s/^# IPS_ENABLED=.*/IPS_ENABLED=True/" .env
           MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_OpalDB\`.* TO \`$DB_USER\`@\`%\`;"
           MYSQL_PWD=$DB_ROOT_PASSWORD mariadb -u root -h db --skip-ssl -e "GRANT ALL PRIVILEGES ON \`test_QuestionnaireDB\`.* TO \`$DB_USER\`@\`%\`;"
       - name: Run pytest
