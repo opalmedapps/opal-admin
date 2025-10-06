@@ -497,15 +497,18 @@ if ORMS_ENABLED:
     ORMS_HOST = env.url('ORMS_HOST').geturl()
 
 # FHIR API and IPS settings
-FHIR_API_URL = env.url('FHIR_API_URL').geturl()
-FHIR_API_OAUTH_URL = env.url('FHIR_API_OAUTH_URL').geturl()
-FHIR_API_CLIENT_ID = env.str('FHIR_API_CLIENT_ID')
-# ensure that newlines are converted to actual newlines
-FHIR_API_PRIVATE_KEY = env.str('FHIR_API_PRIVATE_KEY').replace('\\n', '\n')
+IPS_ENABLED = env.bool('IPS_ENABLED', default=False)
 
-IPS_STORAGE_BACKEND = env.str('IPS_STORAGE_BACKEND')
-IPS_PUBLIC_BASE_URL = env.url('IPS_PUBLIC_BASE_URL').geturl()
-FTP_STORAGE_LOCATION = env.str('FTP_STORAGE_LOCATION', default='')
+if IPS_ENABLED:
+    FHIR_API_URL = env.url('FHIR_API_URL').geturl()
+    FHIR_API_OAUTH_URL = env.url('FHIR_API_OAUTH_URL').geturl()
+    FHIR_API_CLIENT_ID = env.str('FHIR_API_CLIENT_ID')
+    # ensure that newlines are converted to actual newlines
+    FHIR_API_PRIVATE_KEY = env.str('FHIR_API_PRIVATE_KEY').replace('\\n', '\n')
+
+    IPS_STORAGE_BACKEND = env.str('IPS_STORAGE_BACKEND')
+    IPS_PUBLIC_BASE_URL = env.url('IPS_PUBLIC_BASE_URL').geturl()
+    FTP_STORAGE_LOCATION = env.str('FTP_STORAGE_LOCATION', default='')
 
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'
