@@ -1,0 +1,346 @@
+{
+    "meta": {
+        "lastUpdated": "2025-09-16T15:39:36"
+    },
+    "resourceType": "Bundle",
+    "type": "collection",
+    "total": 6,
+    "link": [
+        {
+            "relation": "self",
+            "url": "https://example.fhir/fhir/Observation"
+        }
+    ],
+    "entry": [
+        {
+            "fullUrl": "https://example.fhir/fhir/Observation/59ace158-3be6-11f0-9645-fa163e09c13a",
+            "resource": {
+                "id": "59ace158-3be6-11f0-9645-fa163e09c13a",
+                "meta": {
+                    "versionId": "1",
+                    "lastUpdated": "2025-05-03T11:10:00-04:00"
+                },
+                "resourceType": "Observation",
+                "status": "final",
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                "code": "laboratory"
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "WBC",
+                            "display": "White Blood Cell"
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": "Patient/9efb879b-e511-4e93-8c7b-fae3588639b5",
+                    "type": "Patient"
+                },
+                "effectiveDateTime": "2025-05-03T11:10:00-04:00",
+                "valueQuantity": {
+                    "value": 9,
+                    "unit": "10^9/L",
+                    "system": "http://unitsofmeasure.org"
+                }
+            }
+        },
+        {
+            "fullUrl": "https://example.fhir/fhir/Observation/59acedd7-3be6-11f0-9645-fa163e09c13a",
+            "resource": {
+                "id": "59acedd7-3be6-11f0-9645-fa163e09c13a",
+                "meta": {
+                    "versionId": "1",
+                    "lastUpdated": "2025-05-03T11:10:00-04:00"
+                },
+                "resourceType": "Observation",
+                "status": "final",
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                "code": "laboratory"
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "RBC",
+                            "display": "Red Blood Cell"
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": "Patient/9efb879b-e511-4e93-8c7b-fae3588639b5",
+                    "type": "Patient"
+                },
+                "effectiveDateTime": "2025-05-03T11:10:00-04:00",
+                "valueQuantity": {
+                    "value": 4,
+                    "unit": "10^12/L",
+                    "system": "http://unitsofmeasure.org"
+                }
+            }
+        },
+        {
+            "fullUrl": "https://example.fhir/fhir/Observation/5a84ac29-3be6-11f0-9645-fa163e09c13a",
+            "resource": {
+                "id": "5a84ac29-3be6-11f0-9645-fa163e09c13a",
+                "meta": {
+                    "versionId": "1",
+                    "lastUpdated": "2025-05-10T10:06:00-04:00"
+                },
+                "resourceType": "Observation",
+                "status": "final",
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                "code": "laboratory"
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "WBC",
+                            "display": "White Blood Cell"
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": "Patient/9efb879b-e511-4e93-8c7b-fae3588639b5",
+                    "type": "Patient"
+                },
+                "effectiveDateTime": "2025-05-10T10:06:00-04:00",
+                "valueQuantity": {
+                    "value": 9,
+                    "unit": "10^9/L",
+                    "system": "http://unitsofmeasure.org"
+                }
+            }
+        },
+        {
+            "fullUrl": "https://example.fhir/fhir/Observation/5a84ba58-3be6-11f0-9645-fa163e09c13a",
+            "resource": {
+                "id": "5a84ba58-3be6-11f0-9645-fa163e09c13a",
+                "meta": {
+                    "versionId": "1",
+                    "lastUpdated": "2025-05-10T10:06:00-04:00"
+                },
+                "resourceType": "Observation",
+                "status": "final",
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                "code": "laboratory"
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "RBC",
+                            "display": "Red Blood Cell"
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": "Patient/9efb879b-e511-4e93-8c7b-fae3588639b5",
+                    "type": "Patient"
+                },
+                "effectiveDateTime": "2025-05-10T10:06:00-04:00",
+                "valueQuantity": {
+                    "value": 4,
+                    "unit": "10^12/L",
+                    "system": "http://unitsofmeasure.org"
+                }
+            }
+        },
+        {
+            "fullUrl": "https://example.fhir/fhir/Observation/5b59a60b-3be6-11f0-9645-fa163e09c13a",
+            "resource": {
+                "id": "5b59a60b-3be6-11f0-9645-fa163e09c13a",
+                "meta": {
+                    "versionId": "1",
+                    "lastUpdated": "2025-05-18T13:08:00-04:00"
+                },
+                "resourceType": "Observation",
+                "status": "final",
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                "code": "laboratory"
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "WBC",
+                            "display": "White Blood Cell"
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": "Patient/9efb879b-e511-4e93-8c7b-fae3588639b5",
+                    "type": "Patient"
+                },
+                "effectiveDateTime": "2025-05-18T13:08:00-04:00",
+                "valueQuantity": {
+                    "value": 8,
+                    "unit": "10^9/L",
+                    "system": "http://unitsofmeasure.org"
+                }
+            }
+        },
+        {
+            "fullUrl": "https://example.fhir/fhir/Observation/5b59b016-3be6-11f0-9645-fa163e09c13a",
+            "resource": {
+                "id": "5b59b016-3be6-11f0-9645-fa163e09c13a",
+                "meta": {
+                    "versionId": "1",
+                    "lastUpdated": "2025-05-18T13:08:00-04:00"
+                },
+                "resourceType": "Observation",
+                "status": "final",
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                "code": "laboratory"
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "RBC",
+                            "display": "Red Blood Cell"
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": "Patient/9efb879b-e511-4e93-8c7b-fae3588639b5",
+                    "type": "Patient"
+                },
+                "effectiveDateTime": "2025-05-18T13:08:00-04:00",
+                "valueQuantity": {
+                    "value": 4,
+                    "unit": "10^12/L",
+                    "system": "http://unitsofmeasure.org"
+                }
+            }
+        },
+        {
+            "fullUrl": "https://openemr.opalmedapps.dev/apis/default/fhir/Observation/9efb0a09-01d7-4263-927b-7e39a7540865",
+            "resource": {
+                "id": "9efb0a09-01d7-4263-927b-7e39a7540865",
+                "meta": {
+                    "versionId": "1",
+                    "lastUpdated": "2025-08-27T10:00:57-04:00"
+                },
+                "resourceType": "Observation",
+                "status": "final",
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                "code": "vital-signs"
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "9279-1",
+                            "display": "Respiratory Rate"
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": "Patient/9ef97180-cd66-4fb3-a903-f1b78bd693a5",
+                    "type": "Patient"
+                },
+                "effectiveDateTime": "2025-08-08T10:27:03-04:00",
+                "valueQuantity": {
+                    "value": 32,
+                    "unit": "/min",
+                    "system": "http://unitsofmeasure.org",
+                    "code": "/min"
+                }
+            }
+        },
+        {
+            "fullUrl": "https://openemr.opalmedapps.dev/apis/default/fhir/Observation/9efb0a09-01da-4d16-893c-2a3b2ffc66d6",
+            "resource": {
+                "id": "9efb0a09-01da-4d16-893c-2a3b2ffc66d6",
+                "meta": {
+                    "versionId": "1",
+                    "lastUpdated": "2025-08-27T10:00:57-04:00"
+                },
+                "resourceType": "Observation",
+                "status": "final",
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                "code": "vital-signs"
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "8867-4",
+                            "display": "Heart rate"
+                        }
+                    ]
+                },
+                "subject": {
+                    "reference": "Patient/9ef97180-cd66-4fb3-a903-f1b78bd693a5",
+                    "type": "Patient"
+                },
+                "effectiveDateTime": "2025-08-08T10:27:03-04:00",
+                "valueQuantity": {
+                    "value": 140,
+                    "unit": "/min",
+                    "system": "http://unitsofmeasure.org",
+                    "code": "/min"
+                }
+            }
+        }
+    ]
+}

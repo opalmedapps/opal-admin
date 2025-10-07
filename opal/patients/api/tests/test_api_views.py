@@ -4,17 +4,26 @@
 
 """Test module for the `patients` app REST API endpoints."""
 
+import base64
 import json
 from collections.abc import Callable
 from datetime import datetime
 from http import HTTPStatus
+from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
+import django.core.files.storage
+from django.conf import LazySettings
 from django.urls import reverse
 from django.utils import timezone
 
 import pytest
+import requests
+from authlib.integrations.requests_client import OAuth2Session
+from jose import jwe, utils
 from pytest_django.asserts import assertContains, assertJSONEqual, assertRaisesMessage
+from pytest_mock import MockerFixture
 from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.test import APIClient
@@ -1034,3 +1043,167 @@ def test_relationship_types_list(api_client: APIClient, listener_user: User) -> 
         'name': relationship_type.name,
         'description': relationship_type.description,
     }
+
+
+class TestPatientSummaryView:
+    """Class wrapper for IPS endpoint tests."""
+
+    def test_unauthenticated(
+        self,
+        api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns a 403 error if the user is unauthenticated."""
+        response = api_client.get(reverse('api:patient-summary', kwargs={'uuid': uuid4()}))
+
+        assertContains(
+            response=response,
+            text='Authentication credentials were not provided.',
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
+
+    def test_unauthorized(
+        self,
+        user_api_client: APIClient,
+    ) -> None:
+        """Ensure the endpoint returns a 403 error if the user is unauthorized."""
+        response = user_api_client.get(reverse('api:patient-summary', kwargs={'uuid': uuid4()}))
+
+        assertContains(
+            response=response,
+            text='You do not have permission to perform this action.',
+            status_code=status.HTTP_403_FORBIDDEN,
+        )
+
+    def test_missing_patient(
+        self,
+        api_client: APIClient,
+        listener_user: User,
+    ) -> None:
+        """Ensure the endpoint returns a 404 error if the patient is missing."""
+        api_client.force_login(listener_user)
+
+        uuid = uuid4()
+        response = api_client.get(reverse('api:patient-summary', kwargs={'uuid': uuid}))
+
+        assertContains(
+            response=response,
+            text='No Patient matches the given query.',
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    def test_summary_saved(
+        self,
+        api_client: APIClient,
+        listener_user: User,
+        mocker: MockerFixture,
+        settings: LazySettings,
+    ) -> None:
+        """Ensure the endpoint can retrieve a patient summary with no errors."""
+        api_client.force_login(listener_user)
+
+        # use the FileSystemStorage backend to test saving file to a storage backend
+        settings.IPS_STORAGE_BACKEND = 'django.core.files.storage.FileSystemStorage'
+        spy_storage_save = mocker.spy(django.core.files.storage.FileSystemStorage, 'save')
+
+        data = 'this is a secret patient summary'
+        ips_uuid = uuid4()
+        mock_retrieve = mocker.patch('opal.patients.api.views.retrieve_patient_summary', return_value=(data, ips_uuid))
+
+        patient_uuid = uuid4()
+        patient = Patient.create(uuid=patient_uuid, ramq='OTES12345678')
+
+        response = api_client.get(reverse('api:patient-summary', kwargs={'uuid': patient_uuid}))
+
+        assert response.status_code == status.HTTP_200_OK, response.text
+
+        mock_retrieve.assert_called_once_with(
+            settings.FHIR_API_OAUTH_URL,
+            settings.FHIR_API_URL,
+            settings.FHIR_API_CLIENT_ID,
+            settings.FHIR_API_PRIVATE_KEY,
+            patient.ramq,
+        )
+
+        payload_base64 = response.json()['payload']
+
+        payload_decoded = base64.b64decode(payload_base64).decode('utf-8')
+        payload = json.loads(payload_decoded)
+        # verify payload conforms to SH Link spec: https://docs.smarthealthit.org/smart-health-links/spec/#construct-a-shlink-payload
+        assert payload['url'] == f'{settings.IPS_PUBLIC_BASE_URL}/{ips_uuid}'
+        assert payload['flag'] == 'L'
+        encryption_key = payload['key']
+        # 256 bits when base64 decoded
+        assert len(encryption_key) == 43
+        assert payload['label']
+
+        spy_storage_save.assert_called_once()
+
+        saved_file = Path(settings.MEDIA_ROOT) / spy_storage_save.spy_return
+        assert saved_file.exists()
+
+        with Path(saved_file).open(encoding='utf-8') as f:
+            saved_data = f.read()
+
+        # base64 URL decode to have 32 bytes of data
+        key_decoded = utils.base64url_decode(encryption_key.encode('utf-8'))
+
+        decrypted_data = jwe.decrypt(saved_data, key_decoded)
+
+        assert data == decrypted_data.decode('utf-8')
+
+    def test_summary_no_health_identifier(self, api_client: APIClient, listener_user: User) -> None:
+        """Ensure the endpoint raises a ValidationError when the patient has no health identification number."""
+        api_client.force_login(listener_user)
+
+        patient_uuid = uuid4()
+        Patient.create(uuid=patient_uuid)
+
+        response = api_client.get(reverse('api:patient-summary', kwargs={'uuid': patient_uuid}))
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.json() == ['Patient has no health identification number']
+
+    def test_summary_retrieve_error(
+        self,
+        api_client: APIClient,
+        listener_user: User,
+        mocker: MockerFixture,
+    ) -> None:
+        """Ensure the endpoint handles data retrieval errors."""
+        api_client.force_login(listener_user)
+
+        mock_session = mocker.Mock(spec=OAuth2Session)
+        mock_session.get.side_effect = requests.ConnectionError('Unable to connect')
+        mocker.patch('opal.services.fhir.fhir.OAuth2Session', return_value=mock_session)
+
+        patient_uuid = uuid4()
+        Patient.create(uuid=patient_uuid, ramq='OTES12345678')
+
+        response = api_client.get(reverse('api:patient-summary', kwargs={'uuid': patient_uuid}))
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST, response.text
+        assert response.json() == ['Error retrieving IPS data from FHIR server']
+
+    def test_summary_save_error(
+        self,
+        api_client: APIClient,
+        listener_user: User,
+        mocker: MockerFixture,
+        settings: LazySettings,
+    ) -> None:
+        """Ensure the endpoint handles save errors."""
+        api_client.force_login(listener_user)
+
+        mocker.patch('opal.patients.api.views.retrieve_patient_summary', return_value=('test', uuid4()))
+
+        # use the FileSystemStorage backend to test saving file to a storage backend
+        settings.IPS_STORAGE_BACKEND = 'django.core.files.storage.FileSystemStorage'
+        mocker.patch('django.core.files.storage.FileSystemStorage.save', side_effect=OSError('Unable to save file'))
+
+        patient_uuid = uuid4()
+        Patient.create(uuid=patient_uuid, ramq='OTES12345678')
+
+        response = api_client.get(reverse('api:patient-summary', kwargs={'uuid': patient_uuid}))
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST, response.text
+        assert response.json() == ['Error saving IPS bundle to storage backend']

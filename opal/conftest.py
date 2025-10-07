@@ -594,3 +594,23 @@ def use_twilio(settings: LazySettings) -> None:
     settings.TWILIO_ACCOUNT_SID = 'account-sid'
     settings.TWILIO_AUTH_TOKEN = 'twilio-auth-token'  # noqa: S105
     settings.SMS_FROM = '+11234567890'
+
+
+@pytest.fixture(autouse=True)
+def enable_ips(settings: LazySettings) -> None:
+    """
+    Fixture enabling IPS by default.
+
+    The values of settings are empty strings (actual values are not needed during tests).
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.IPS_ENABLED = True
+    settings.FHIR_API_URL = ''
+    settings.FHIR_API_OAUTH_URL = ''
+    settings.FHIR_API_CLIENT_ID = ''
+    settings.FHIR_API_PRIVATE_KEY = ''
+
+    settings.IPS_STORAGE_BACKEND = 'django.core.files.storage.FileSystemStorage'
+    settings.IPS_PUBLIC_BASE_URL = 'http://localhost:8000/media/'
