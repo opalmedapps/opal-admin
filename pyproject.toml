@@ -41,7 +41,7 @@ dependencies = [
     "pandas==2.3.3",
     # required for ImageFields
     "pillow==11.3.0",
-    "plotly==6.3.0",
+    "plotly==6.3.1",
     "pydantic==2.11.9",
     "python-jose[cryptography]==3.5.0",
     "qrcode==8.2",
