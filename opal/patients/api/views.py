@@ -297,7 +297,7 @@ class PatientExistsView(APIView):
 
 
 class RelationshipTypeView(ListAPIView[RelationshipType]):
-    """Rest API `ListAPIView` returning list of relationship type names and decsriptions."""
+    """Rest API `ListAPIView` returning list of relationship type names and descriptions."""
 
     queryset = RelationshipType.objects.all()
     permission_classes = (IsListener,)

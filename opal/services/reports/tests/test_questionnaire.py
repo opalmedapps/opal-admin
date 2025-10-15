@@ -306,7 +306,7 @@ def test_generate_pdf_one_page() -> None:
 
 # Marking this slow since the test uses chromium
 @pytest.mark.slow
-# Allow hosts to make the test work for Windows, Linux and Unix-based environements
+# Allow hosts to make the test work for Windows, Linux and Unix-based environments
 @pytest.mark.allow_hosts(['127.0.0.1'])
 def test_generate_pdf_charts() -> None:
     """Ensure that the PDF is correctly generated."""
@@ -423,7 +423,7 @@ def test_generate_pdf_toc_regex_no_match(mocker: MockerFixture) -> None:
 
 # Marking this slow since the test uses chromium
 @pytest.mark.slow
-# Allow hosts to make the test work for Windows, Linux and Unix-based  environements
+# Allow hosts to make the test work for Windows, Linux and Unix-based  environments
 @pytest.mark.allow_hosts(['127.0.0.1'])
 def test_draw_text_answer_and_charts_question_page_break(mocker: MockerFixture) -> None:
     """Ensure that the page break is correctly handled while drawing charts and tables."""
