@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """
-Module providing legacy quesitonnaire model managers to provide the interface through which Legacy DB query operations.
+Module providing legacy questionnaire model managers to provide the interface through which Legacy DB query operations.
 
 Each manager in this module should be prefixed with `Legacy`
 """
