@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@fortawesome/fontawesome-free": "7.0.1",
+    "@fortawesome/fontawesome-free": "7.1.0",
     "bootstrap": "5.3.8",
     "unpoly": "3.11.0"
   },
