@@ -62,7 +62,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
         id=f'{uuid.uuid4()}',
         status='final',
         type=CodeableConcept(
-            coding=[Coding(system='http://loinc.org', code='60591-5', display='Patient summary document')],
+            coding=[Coding(system='http://loinc.org', code='60591-5', display='Patient summary Document')],
         ),
         author=[Reference(reference=f'urn:uuid:{generator.id}')],
         date=dt.datetime.now(tz=dt.UTC).replace(microsecond=0),
@@ -72,7 +72,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
             CompositionSection(
                 title='Active Problems',
                 code=CodeableConcept(
-                    coding=[Coding(system='http://loinc.org', code='11450-4', display='Problem list reported')]
+                    coding=[Coding(system='http://loinc.org', code='11450-4', display='Problem list Reported')]
                 ),
                 entry=[
                     Reference(reference=f'urn:uuid:{condition.id}')
@@ -83,9 +83,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
             CompositionSection(
                 title='Past Medical History',
                 code=CodeableConcept(
-                    coding=[
-                        Coding(system='http://loinc.org', code='11348-0', display='History of Past illness Narrative')
-                    ]
+                    coding=[Coding(system='http://loinc.org', code='11348-0', display='History of Past illness note')]
                 ),
                 entry=[
                     Reference(reference=f'urn:uuid:{condition.id}')
@@ -120,7 +118,9 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
             ),
             CompositionSection(
                 title='Vital Signs',
-                code=CodeableConcept(coding=[Coding(system='http://loinc.org', code='8716-3', display='Vital signs')]),
+                code=CodeableConcept(
+                    coding=[Coding(system='http://loinc.org', code='8716-3', display='Vital signs note')]
+                ),
                 entry=[Reference(reference=f'urn:uuid:{vital_sign.id}') for vital_sign in vital_signs],
             ),
             CompositionSection(
@@ -130,7 +130,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
                         Coding(
                             system='http://loinc.org',
                             code='30954-2',
-                            display='Relevant diagnostic tests/laboratory data Narrative',
+                            display='Relevant diagnostic tests/laboratory data note',
                         )
                     ]
                 ),
@@ -139,9 +139,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
             CompositionSection(
                 title='Immunizations',
                 code=CodeableConcept(
-                    coding=[
-                        Coding(system='http://loinc.org', code='11369-6', display='History of Immunization Narrative')
-                    ]
+                    coding=[Coding(system='http://loinc.org', code='11369-6', display='History of Immunization note')]
                 ),
                 entry=[Reference(reference=f'urn:uuid:{immunization.id}') for immunization in immunizations],
             ),
