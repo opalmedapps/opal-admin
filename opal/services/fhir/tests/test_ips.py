@@ -93,7 +93,7 @@ def test_build_patient_summary_composition() -> None:
     composition = summary.entry[0].resource
     assert composition.__resource_type__ == 'Composition'
     assert 'International Patient Summary as of' in composition.title
-    assert composition.type.coding[0].display == 'Patient summary document'
+    assert composition.type.coding[0].display == 'Patient summary Document'
     assert composition.type.coding[0].code == '60591-5'
 
     # Verify all 7 IPS sections
