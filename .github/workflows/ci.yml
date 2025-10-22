@@ -131,6 +131,7 @@ jobs:
           MARIADB_PASSWORD: ${{ env.DB_PASSWORD }}
         options: |
           --mount type=tmpfs,destination=/var/lib/mysql
+          --innodb-flush-method=nosync
 
     steps:
       - name: Install Git
