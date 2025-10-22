@@ -129,6 +129,8 @@ jobs:
           MARIADB_DATABASE: test_opal
           MARIADB_USER: ${{ env.DB_USER }}
           MARIADB_PASSWORD: ${{ env.DB_PASSWORD }}
+        options: |
+          --mount type=tmpfs,destination=/var/lib/mysql
 
     steps:
       - name: Install Git
