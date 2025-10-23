@@ -57,6 +57,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
         id=f'{uuid.uuid4()}',
         language=get_language(),
         manufacturer=_('Opal Health Informatics Group'),
+        # The type comes from a ValueSet: https://hl7.org/fhir/valueset-device-nametype.html
         deviceName=[DeviceDeviceName(name=_('Opal IPS Generator'), type='user-friendly-name')],
     )
 
