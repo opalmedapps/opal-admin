@@ -30,7 +30,7 @@
   "rebaseWhen": "conflicted",
   // Keep uv lockfile updated regularly
   // https://docs.renovatebot.com/configuration-options/#lockfilemaintenance
-  "lockfileMaintenance": {
+  "lockFileMaintenance": {
     "enabled": true,
   },
   "packageRules": [
