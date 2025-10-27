@@ -63,8 +63,11 @@ USE_I18N = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
+# https://docs.djangoproject.com/en/dev/topics/i18n/translation/#how-django-discovers-translations
 LOCALE_PATHS = [
+    # locales for config, base templates, and the core app
     str(ROOT_DIR / 'locale'),
+    # add services locales since it is not an app
     str(ROOT_DIR / 'opal/services/locale'),
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#silenced-system-checks
