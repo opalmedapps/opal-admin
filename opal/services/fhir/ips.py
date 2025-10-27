@@ -179,9 +179,11 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
     # add narrative for empty entries
     for section in composition.section:
         if not section.entry:
+            no_information = _("There is no information available about the subject's {category}.").format(category=section.title.lower())
+
             section.text = Narrative(
                 status='generated',
-                div=f'<div xmlns="http://www.w3.org/1999/xhtml">{_("There is no information available about the subject's {category}.").format(category=section.title.lower())}</div>',
+                div=f'<div xmlns="http://www.w3.org/1999/xhtml">{no_information}</div>',
             )
             section.entry = None
 
