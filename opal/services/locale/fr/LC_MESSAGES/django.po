@@ -60,7 +60,7 @@ msgstr "Résultats de laboratoire"
 
 #: opal/services/fhir/ips.py
 msgid "Immunizations"
-msgstr "Vaccinations"
+msgstr "Vaccins"
 
 #: opal/services/fhir/ips.py
 #, python-brace-format
