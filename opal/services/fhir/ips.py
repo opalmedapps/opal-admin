@@ -8,6 +8,8 @@ import datetime as dt
 import uuid
 
 from django.utils import timezone
+from django.utils.translation import get_language
+from django.utils.translation import gettext as _
 
 from fhir.resources.R4B.allergyintolerance import AllergyIntolerance
 from fhir.resources.R4B.bundle import Bundle, BundleEntry
@@ -53,24 +55,27 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
 
     generator = Device(
         id=f'{uuid.uuid4()}',
-        manufacturer='Opal Health Informatics Group',
-        deviceName=[DeviceDeviceName(name='Opal IPS Generator', type='user-friendly-name')],
+        language=get_language(),
+        manufacturer=_('Opal Health Informatics Group'),
+        # The type comes from a ValueSet: https://hl7.org/fhir/valueset-device-nametype.html
+        deviceName=[DeviceDeviceName(name=_('Opal IPS Generator'), type='user-friendly-name')],
     )
 
     last_updated = timezone.now().astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S %Z')
     composition = Composition(
         id=f'{uuid.uuid4()}',
+        language=get_language(),
         status='final',
         type=CodeableConcept(
             coding=[Coding(system='http://loinc.org', code='60591-5', display='Patient summary Document')],
         ),
         author=[Reference(reference=f'urn:uuid:{generator.id}')],
         date=dt.datetime.now(tz=dt.UTC).replace(microsecond=0),
-        title=f'International Patient Summary as of {last_updated}',
+        title=_('International Patient Summary as of {date}').format(date=last_updated),
         subject=Reference(reference=f'urn:uuid:{patient.id}'),
         section=[
             CompositionSection(
-                title='Active Problems',
+                title=_('Active Problems'),
                 code=CodeableConcept(
                     coding=[Coding(system='http://loinc.org', code='11450-4', display='Problem list Reported')]
                 ),
@@ -81,7 +86,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
                 ],
             ),
             CompositionSection(
-                title='Past Medical History',
+                title=_('Past Medical History'),
                 code=CodeableConcept(
                     coding=[Coding(system='http://loinc.org', code='11348-0', display='History of Past illness note')]
                 ),
@@ -92,7 +97,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
                 ],
             ),
             CompositionSection(
-                title='Medication',
+                title=_('Medication'),
                 code=CodeableConcept(
                     coding=[
                         Coding(system='http://loinc.org', code='10160-0', display='History of Medication use Narrative')
@@ -104,7 +109,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
                 ],
             ),
             CompositionSection(
-                title='Allergies and Intolerances',
+                title=_('Allergies and Intolerances'),
                 code=CodeableConcept(
                     coding=[
                         Coding(
@@ -117,14 +122,14 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
                 entry=[Reference(reference=f'urn:uuid:{allergy.id}') for allergy in allergies],
             ),
             CompositionSection(
-                title='Vital Signs',
+                title=_('Vital Signs'),
                 code=CodeableConcept(
                     coding=[Coding(system='http://loinc.org', code='8716-3', display='Vital signs note')]
                 ),
                 entry=[Reference(reference=f'urn:uuid:{vital_sign.id}') for vital_sign in vital_signs],
             ),
             CompositionSection(
-                title='Laboratory Results',
+                title=_('Laboratory Results'),
                 code=CodeableConcept(
                     coding=[
                         Coding(
@@ -137,7 +142,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
                 entry=[Reference(reference=f'urn:uuid:{lab.id}') for lab in labs],
             ),
             CompositionSection(
-                title='Immunizations',
+                title=_('Immunizations'),
                 code=CodeableConcept(
                     coding=[Coding(system='http://loinc.org', code='11369-6', display='History of Immunization note')]
                 ),
@@ -174,9 +179,13 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
     # add narrative for empty entries
     for section in composition.section:
         if not section.entry:
+            no_information = _("There is no information available about the subject's {category}.").format(
+                category=section.title.lower()
+            )
+
             section.text = Narrative(
                 status='generated',
-                div=f'<div xmlns="http://www.w3.org/1999/xhtml">There is no information available about the subject\'s {section.title.lower()}.</div>',
+                div=f'<div xmlns="http://www.w3.org/1999/xhtml">{no_information}</div>',
             )
             section.entry = None
 
