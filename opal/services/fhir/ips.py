@@ -93,7 +93,9 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
                 CompositionSection(
                     title=_('Past Medical History'),
                     code=CodeableConcept(
-                        coding=[Coding(system='http://loinc.org', code='11348-0', display='History of Past illness note')]
+                        coding=[
+                            Coding(system='http://loinc.org', code='11348-0', display='History of Past illness note')
+                        ]
                     ),
                     entry=[
                         Reference(reference=f'urn:uuid:{condition.id}')
@@ -105,7 +107,9 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
                     title=_('Medication'),
                     code=CodeableConcept(
                         coding=[
-                            Coding(system='http://loinc.org', code='10160-0', display='History of Medication use Narrative')
+                            Coding(
+                                system='http://loinc.org', code='10160-0', display='History of Medication use Narrative'
+                            )
                         ],
                     ),
                     entry=[
@@ -149,7 +153,9 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
                 CompositionSection(
                     title=_('Immunizations'),
                     code=CodeableConcept(
-                        coding=[Coding(system='http://loinc.org', code='11369-6', display='History of Immunization note')]
+                        coding=[
+                            Coding(system='http://loinc.org', code='11369-6', display='History of Immunization note')
+                        ]
                     ),
                     entry=[Reference(reference=f'urn:uuid:{immunization.id}') for immunization in immunizations],
                 ),
@@ -168,7 +174,9 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
             ],
         )
 
-        ips.entry.extend(BundleEntry(resource=condition, fullUrl=f'urn:uuid:{condition.id}') for condition in conditions)
+        ips.entry.extend(
+            BundleEntry(resource=condition, fullUrl=f'urn:uuid:{condition.id}') for condition in conditions
+        )
         ips.entry.extend(BundleEntry(resource=allergy, fullUrl=f'urn:uuid:{allergy.id}') for allergy in allergies)
         ips.entry.extend(
             BundleEntry(resource=medication_request, fullUrl=f'urn:uuid:{medication_request.id}')
