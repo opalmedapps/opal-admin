@@ -60,7 +60,6 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
     with override(primary_system_language):
         generator = Device(
             id=f'{uuid.uuid4()}',
-            language=primary_system_language,
             manufacturer=_('Opal Health Informatics Group'),
             # The type comes from a ValueSet: https://hl7.org/fhir/valueset-device-nametype.html
             deviceName=[DeviceDeviceName(name=_('Opal IPS Generator'), type='user-friendly-name')],
@@ -69,7 +68,6 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
         last_updated = timezone.now().astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S %Z')
         composition = Composition(
             id=f'{uuid.uuid4()}',
-            language=primary_system_language,
             status='final',
             type=CodeableConcept(
                 coding=[Coding(system='http://loinc.org', code='60591-5', display='Patient summary Document')],
