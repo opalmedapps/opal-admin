@@ -49,15 +49,17 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
     Returns:
         the IPS as a FHIR Bundle resource
     """
-    # IPS bundles are generated in the system's primary language, assuming clinical data is typically saved in this language too
-    primary_system_language = settings.LANGUAGES[0][0]
+    # If a language is configured for IPS, use it to generate the bundle
+    # Otherwise, default to the system's primary language (assuming clinical data is typically saved in this language)
+    ips_language = settings.IPS_LANGUAGE or settings.LANGUAGES[0][0]
 
     vital_signs = [
         observation for observation in observations if observation.category[0].coding[0].code == 'vital-signs'
     ]
     labs = [observation for observation in observations if observation.category[0].coding[0].code == 'laboratory']
 
-    with override(primary_system_language):
+    # Translates static strings in the right language for the bundle
+    with override(ips_language):
         generator = Device(
             id=f'{uuid.uuid4()}',
             manufacturer=_('Opal Health Informatics Group'),
@@ -163,7 +165,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
         ips = Bundle(
             identifier={'system': 'urn:oid:2.16.724.4.8.10.200.10', 'value': f'{uuid.uuid4()}'},
             type='document',
-            language=primary_system_language,
+            language=ips_language,
             timestamp=dt.datetime.now(tz=dt.UTC).replace(microsecond=0),
             entry=[
                 BundleEntry(resource=composition, fullUrl=f'urn:uuid:{composition.id}'),
