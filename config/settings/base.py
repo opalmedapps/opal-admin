@@ -506,7 +506,7 @@ if ORMS_ENABLED:
 IPS_ENABLED = env.bool('IPS_ENABLED', default=False)
 
 if IPS_ENABLED:
-    IPS_LANGUAGE = env.str('IPS_LANGUAGE', default='')
+    IPS_LANGUAGE = env.str('IPS_LANGUAGE', default=None)
 
     FHIR_API_URL = env.url('FHIR_API_URL').geturl()
     FHIR_API_OAUTH_URL = env.url('FHIR_API_OAUTH_URL').geturl()
