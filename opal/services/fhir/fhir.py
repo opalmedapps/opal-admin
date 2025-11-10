@@ -135,6 +135,8 @@ class FHIRConnector:
             for coding in resource.get('code', {}).get('coding', []):
                 # strip whitespace from code fields to avoid validation errors
                 coding['code'] = coding['code'].rstrip()
+                # strip trailing period which is an invalid code
+                coding['code'] = coding['code'].rstrip('.')
                 # replace empty code display fields to avoid validation errors
                 coding['display'] = coding['display'] or 'No display provided'
 

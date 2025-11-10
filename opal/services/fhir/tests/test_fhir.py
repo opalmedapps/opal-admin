@@ -206,6 +206,9 @@ class TestFHIRConnector:
         # Add trailing whitespace to code and empty display
         conditions_data['entry'][0]['resource']['code']['coding'][0]['code'] = 'B18.2   '
         conditions_data['entry'][1]['resource']['code']['coding'][0]['display'] = ''
+        # Add trailing period to code
+        conditions_data['entry'][1]['resource']['code']['coding'][0]['code'] = 'B20.'
+
         mock_response = self._mock_response(mocker, conditions_data)
         fhir_connector.session.get.return_value = mock_response
 
@@ -215,6 +218,7 @@ class TestFHIRConnector:
         # Verify sanitization worked
         assert conditions[0].code.coding[0].code == 'B18.2'
         assert conditions[1].code.coding[0].display == 'No display provided'
+        assert conditions[1].code.coding[0].code == 'B20'
 
     def test_patient_conditions_invalid_data(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
         """Patient conditions raises a ValidationError when FHIR data is invalid."""
