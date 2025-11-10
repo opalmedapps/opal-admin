@@ -607,7 +607,7 @@ def enable_ips(settings: LazySettings) -> None:
         settings: the fixture providing access to the Django settings
     """
     settings.IPS_ENABLED = True
-    settings.IPS_LANGUAGE = ''
+    settings.IPS_LANGUAGE = None
     settings.FHIR_API_URL = ''
     settings.FHIR_API_OAUTH_URL = ''
     settings.FHIR_API_CLIENT_ID = ''
