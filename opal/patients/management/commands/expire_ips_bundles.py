@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 """Command for cleaning up expired IPS bundles."""
+
 import datetime
 import re
 from typing import Any
@@ -91,7 +92,9 @@ class Command(BaseCommand):
         num_errors = 0
 
         if settings.IPS_STORAGE_BACKEND != 'storages.backends.ftp.FTPStorage':
-            raise NotImplementedError(f'The expire_ips_bundles command currently only supports storages.backends.ftp.FTPStorage (see IPS_STORAGE_BACKEND); current value: {settings.IPS_STORAGE_BACKEND}')
+            raise NotImplementedError(
+                f'The expire_ips_bundles command currently only supports storages.backends.ftp.FTPStorage (see IPS_STORAGE_BACKEND); current value: {settings.IPS_STORAGE_BACKEND}'
+            )
 
         storage_backend = FTPStoragePlus()
 
@@ -99,11 +102,10 @@ class Command(BaseCommand):
         file_list = [name for name in file_list if re.match(r'^.+\.ips$', name)]
 
         LOGGER.info(
-            f'Checking {len(file_list)} {'file' if len(file_list) == 1 else 'files'} to clean up expired IPS bundles (from storage backend: {settings.IPS_STORAGE_BACKEND})',
+            f'Checking {len(file_list)} {"file" if len(file_list) == 1 else "files"} to clean up expired IPS bundles (from storage backend: {settings.IPS_STORAGE_BACKEND})',
         )
 
         for file_name in file_list:
-
             # Calculate the bundle's validity based on the time since it was last modified
             # Note that last modified is used instead of creation time (not available); it offers the same result, since bundle files aren't updated
             last_modified = storage_backend.get_modified_time(file_name)
@@ -124,5 +126,5 @@ class Command(BaseCommand):
                     num_errors += 1
 
         LOGGER.info(
-            f'{num_deleted} IPS {'bundle' if num_deleted == 1 else 'bundles'} out of {len(file_list)} deleted ({num_errors} {'error' if num_errors == 1 else 'errors'})',
+            f'{num_deleted} IPS {"bundle" if num_deleted == 1 else "bundles"} out of {len(file_list)} deleted ({num_errors} {"error" if num_errors == 1 else "errors"})',
         )
