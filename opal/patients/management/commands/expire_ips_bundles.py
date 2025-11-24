@@ -35,6 +35,7 @@ class FTPStoragePlus(FTPStorage):
 
         return datetime.datetime.fromisoformat(time_string_iso)
 
+    # Function modeled on `_get_dir_details` of the FTPStorage class
     def _get_dir_last_modified_details(self):
         # Get metadata from the files in the current directory
         lines = []
@@ -54,11 +55,10 @@ class FTPStoragePlus(FTPStorage):
 
         return entries
 
+    # Function modeled on `` of the ??? class
     def get_modified_time(self, name):
         """
         Return the last modified time (as a datetime) of the file specified by name.
-
-        The datetime will be timezone-aware if USE_TZ=True.
 
         Returns:
             The last modified datetime for the given file.
@@ -69,10 +69,9 @@ class FTPStoragePlus(FTPStorage):
         self._start_connection()
 
         entries = self._get_dir_last_modified_details()
-        date_time = self._datetime_from_time_string(entries[name])
 
         if name in entries:
-            return date_time
+            return self._datetime_from_time_string(entries[name])
         raise FileNotFoundError()
 
 
