@@ -72,7 +72,7 @@ def test_new_questionnaires_patient_caregiver() -> None:
     """
     Ensure LegacyQuestionnaireManager function 'new_questionnaires' is working.
 
-    Get questionnaires  with respendonts 'Caregiver' and 'Patient'
+    Get questionnaires  with respondents 'Caregiver' and 'Patient'
     Get empty return with incorrect username
     """
     caregiver = caregiver_factories.Caregiver.create(username='test_new_questionnaires')
@@ -148,7 +148,7 @@ def test_new_questionnaires_return_empty_without_respondent_matching() -> None:
     """
     Ensure LegacyQuestionnaireManager function 'new_questionnaires' is working.
 
-    Get empty questionnaires with unexpected respondents
+    Get an empty result when there is only a self relationship and caregiver questionnaires.
     """
     caregiver = caregiver_factories.Caregiver.create(username='test_new_questionnaires')
     caregiver_profile = caregiver_factories.CaregiverProfile.create(user=caregiver)
@@ -172,30 +172,24 @@ def test_new_questionnaires_return_empty_without_respondent_matching() -> None:
     )
     legacy_purpose = factories.LegacyPurposeFactory.create(title=legacy_dictionary)
 
-    legacy_dictionary1 = factories.LegacyDictionaryFactory.create(
-        content='Patient',
+    legacy_dictionary = factories.LegacyDictionaryFactory.create(
+        content='Caregiver',
         content_id=3,
         language_id=2,
     )
-    legacy_respondent1 = factories.LegacyRespondentFactory.create(title=legacy_dictionary1)
+    legacy_respondent = factories.LegacyRespondentFactory.create(title=legacy_dictionary)
     legacy_questionnaire1 = factories.LegacyQuestionnaireFactory.create(
         purpose=legacy_purpose,
-        respondent=legacy_respondent1,
+        respondent=legacy_respondent,
     )
     factories.LegacyAnswerQuestionnaireFactory.create(
         questionnaire=legacy_questionnaire1,
         patient=legacy_patient,
     )
 
-    legacy_dictionary2 = factories.LegacyDictionaryFactory.create(
-        content='Caregiver',
-        content_id=4,
-        language_id=2,
-    )
-    legacy_respondent2 = factories.LegacyRespondentFactory.create(title=legacy_dictionary2)
     legacy_questionnaire2 = factories.LegacyQuestionnaireFactory.create(
         purpose=legacy_purpose,
-        respondent=legacy_respondent2,
+        respondent=legacy_respondent,
     )
     factories.LegacyAnswerQuestionnaireFactory.create(
         questionnaire=legacy_questionnaire2,
