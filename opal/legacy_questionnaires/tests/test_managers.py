@@ -215,18 +215,18 @@ def test_new_questionnaires_exclude_deleted() -> None:
         patient=patient,
     )
     legacy_patient = factories.LegacyQuestionnairePatientFactory.create()
-    legacy_dictionary = factories.LegacyDictionaryFactory.create(
+    dictionary_clinical = factories.LegacyDictionaryFactory.create(
         content='CLINICAL',
         content_id=1,
         language_id=2,
     )
-    legacy_purpose = factories.LegacyPurposeFactory.create(title=legacy_dictionary)
-    legacy_dictionary1 = factories.LegacyDictionaryFactory.create(
+    legacy_purpose = factories.LegacyPurposeFactory.create(title=dictionary_clinical)
+    dictionary_patient = factories.LegacyDictionaryFactory.create(
         content='Patient',
         content_id=3,
         language_id=2,
     )
-    legacy_respondent = factories.LegacyRespondentFactory.create(title=legacy_dictionary1)
+    legacy_respondent = factories.LegacyRespondentFactory.create(title=dictionary_patient)
     legacy_questionnaire = factories.LegacyQuestionnaireFactory.create(
         purpose=legacy_purpose,
         respondent=legacy_respondent,
