@@ -60,18 +60,17 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
         )
 
         if relationship_types:
-            # A user can only access respondent=PATIENT questionnaire when they have a relationship with the patient.
-            # The patient allows answering patient questionnaires.
-            if relationship_types.filter(can_answer_questionnaire=True):
-                respondent_contents.append('Patient')
-            # A user can only access respondent=CAREGIVER questionnaires.
-            # When they don't have a self relationship with the patient.
-            if not relationship_types.filter(role_type='SELF'):
+            # Always include patient questionnaires, whether the user is the patient themselves or a caregiver.
+            respondent_contents.append('Patient')
+
+            # A caregiver user can also access respondent=CAREGIVER questionnaires.
+            if relationship_types.exclude(role_type='SELF'):
                 respondent_contents.append('Caregiver')
 
         return self.filter(
             # 0 = New questionnaires
             legacyanswerquestionnaire__status=0,
+            legacyanswerquestionnaire__deleted=0,
             legacyanswerquestionnaire__patient__external_id=patient_sernum,
             # questionnaire purpose
             purpose=purpose_id,
