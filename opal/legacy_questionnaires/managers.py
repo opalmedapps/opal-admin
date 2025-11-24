@@ -70,6 +70,7 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
         return self.filter(
             # 0 = New questionnaires
             legacyanswerquestionnaire__status=0,
+            legacyanswerquestionnaire__deleted=0,
             legacyanswerquestionnaire__patient__external_id=patient_sernum,
             # questionnaire purpose
             purpose=purpose_id,
