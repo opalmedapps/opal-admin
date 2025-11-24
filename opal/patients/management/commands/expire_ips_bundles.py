@@ -18,6 +18,7 @@ LOGGER = structlog.get_logger()
 
 # The number of hours after which IPS bundles will be deleted
 # If this value is changed, please also update the instructions in the app (ips-preview-share.html)
+# The value of 1 hour was chosen as the easiest way to comply with the SHL specification: https://docs.smarthealthit.org/smart-health-links/spec/#fileslocation-links
 IPS_EXPIRY_HOURS = 1
 
 
