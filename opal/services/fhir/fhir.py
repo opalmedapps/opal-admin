@@ -6,6 +6,7 @@
 
 import datetime as dt
 from datetime import datetime
+from typing import Any
 
 import structlog
 from authlib.integrations.requests_client import OAuth2Session
@@ -40,6 +41,16 @@ class MultiplePatientsFoundError(Exception):
     """Raised when multiple patients are found for a given identifier in the FHIR server."""
 
     pass
+
+
+def _clean_coding(coding: dict[str, Any]) -> None:
+    """Clean a coding code by stripping whitespace and trailing periods."""
+    # strip whitespace from code fields to avoid validation errors
+    coding['code'] = coding['code'].rstrip()
+    # strip trailing period which is an invalid code
+    coding['code'] = coding['code'].rstrip('.')
+    # replace empty code display fields to avoid validation errors
+    coding['display'] = coding['display'] or 'No display provided'
 
 
 class FHIRConnector:
@@ -133,12 +144,7 @@ class FHIRConnector:
         for entry in data.get('entry', []):
             resource = entry.get('resource', {})
             for coding in resource.get('code', {}).get('coding', []):
-                # strip whitespace from code fields to avoid validation errors
-                coding['code'] = coding['code'].rstrip()
-                # strip trailing period which is an invalid code
-                coding['code'] = coding['code'].rstrip('.')
-                # replace empty code display fields to avoid validation errors
-                coding['display'] = coding['display'] or 'No display provided'
+                _clean_coding(coding)
 
         conditions_bundle = Bundle.model_validate(data)
         return [condition.resource for condition in conditions_bundle.entry or []]
@@ -180,6 +186,13 @@ class FHIRConnector:
         response.raise_for_status()
 
         data = response.json()
+
+        # sanitize some known data issues
+        # these should eventually be fixed at the source
+        for entry in data.get('entry', []):
+            resource = entry.get('resource', {})
+            for coding in resource.get('code', {}).get('coding', []):
+                _clean_coding(coding)
 
         allergies_bundle = Bundle.model_validate(data)
         return [allergy.resource for allergy in allergies_bundle.entry or []]
