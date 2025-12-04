@@ -78,9 +78,16 @@ def test_build_patient_summary() -> None:
     assert summary.type == 'document'
     assert summary.identifier.system == 'urn:oid:2.16.724.4.8.10.200.10'
 
+    observations_with_category = [observation for observation in observations if observation.category]
+
     # Composition, Patient, Device and the resources
     assert len(summary.entry) == (
-        3 + len(conditions) + len(medication_requests) + len(allergies) + len(observations) + len(immunizations)
+        3
+        + len(conditions)
+        + len(medication_requests)
+        + len(allergies)
+        + len(observations_with_category)
+        + len(immunizations)
     )
 
 
@@ -99,10 +106,18 @@ def test_build_patient_summary_composition() -> None:
     # Verify all 7 IPS sections
     assert len(composition.section) == 7
 
+    observations_with_category = [observation for observation in observations if observation.category]
+
     vital_signs = [
-        observation for observation in observations if observation.category[0].coding[0].code == 'vital-signs'
+        observation
+        for observation in observations_with_category
+        if observation.category[0].coding[0].code == 'vital-signs'
     ]
-    labs = [observation for observation in observations if observation.category[0].coding[0].code == 'laboratory']
+    labs = [
+        observation
+        for observation in observations_with_category
+        if observation.category[0].coding[0].code == 'laboratory'
+    ]
 
     expected_sections = [
         # The second condition is still active
@@ -194,7 +209,7 @@ def test_build_patient_summary_resources_included() -> None:
     expected_ids.update(condition.id for condition in conditions)
     expected_ids.update(medication_request.id for medication_request in medication_requests)
     expected_ids.update(allergy.id for allergy in allergies)
-    expected_ids.update(observation.id for observation in observations)
+    expected_ids.update(observation.id for observation in observations if observation.category)
     expected_ids.update(immunization.id for immunization in immunizations)
 
     assert resource_ids == expected_ids
@@ -202,3 +217,18 @@ def test_build_patient_summary_resources_included() -> None:
     for entry in summary.entry:
         assert entry.fullUrl.startswith('urn:uuid:')
         assert f'urn:uuid:{entry.resource.id}' == entry.fullUrl
+
+
+def test_build_patient_summary_resources_observations_without_category() -> None:
+    """Observations without a category are not included in the patient summary Bundle."""
+    summary, _patient, _conditions, _medication_requests, _allergies, observations, _immunizations = (
+        _prepare_build_patient_summary()
+    )
+
+    # Skip the first three entries (Composition, Patient, Device)
+    resource_ids = {entry.resource.id for entry in summary.entry}
+
+    observations_without_category = [observation for observation in observations if not observation.category]
+
+    for observation in observations_without_category:
+        assert observation.id not in resource_ids
