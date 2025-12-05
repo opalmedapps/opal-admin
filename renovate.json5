@@ -8,14 +8,20 @@
     "config:recommended",
     // https://docs.renovatebot.com/presets-default/#separatemultiplemajorreleases
     ":separateMultipleMajorReleases",
-    // https://docs.renovatebot.com/presets-default/#separatepatchreleases
-    ":separatePatchReleases",
-    // https://docs.renovatebot.com/modules/manager/pre-commit/
-    // https://docs.renovatebot.com/presets-default/#enableprecommit
-    ":enablePreCommit",
+    // set timezone to local one to ensure schedules are run
+    // https://docs.renovatebot.com/configuration-options/#timezone
+    ":timezone(America/Toronto)",
+    // Keep uv lockfile updated regularly
+    // https://docs.renovatebot.com/configuration-options/#lockfilemaintenance
+    // https://docs.renovatebot.com/presets-default/#maintainlockfilesweekly
+    ":maintainLockFilesWeekly",
+    // https://docs.renovatebot.com/presets-default/#configmigration
+    ":configMigration",
+    // https://docs.renovatebot.com/presets-helpers/#helperspingithubactiondigeststosemver
+    "helpers:pinGitHubActionDigestsToSemver",
     "github>mschoettle/renovate-presets//presets/docker-alpine.json5",
     "github>mschoettle/renovate-presets//presets/actions-dependency-version.json5",
-    "github>mschoettle/renovate-presets//presets/packages/typos.json5",
+    "github>mschoettle/renovate-presets//presets/pre-commit-hooks.json5",
   ],
   // https://docs.renovatebot.com/configuration-options/#assignees
   "assignees": ["mschoettle"],
@@ -34,6 +40,16 @@
     "enabled": true,
   },
   "packageRules": [
+    // Allow to receive patch updates for MariaDB and Python while waiting with upgrading to the next minor version
+    {
+      "matchPackageNames": [
+        "python",
+        "mariadb",
+      ],
+      "extends": [
+        ":separatePatchReleases",
+      ],
+    },
     // Change commit type to build for Docker-related updates
     {
       "matchDatasources": ["docker", "docker-compose"],
@@ -58,6 +74,17 @@
     {
       "matchPackageNames": ["/pytest/"],
       "groupName": "pytest packages"
+    },
+    // Exclude uv and ruff pre-commits from pre-commit hooks group
+    // to avoid adding config options from the pre-commit hooks preset
+    {
+      "matchManagers": [
+        "pre-commit",
+      ],
+      "matchPackageNames": [
+        "!/ruff-pre-commit/",
+        "!/uv-pre-commit/",
+      ],
     },
     // Combine ruff and ruff-pre-commit
     {
