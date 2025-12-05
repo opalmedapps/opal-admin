@@ -133,4 +133,4 @@ repos:
         # actionlint has a shellcheck integration which extracts shell scripts in `run:` steps from GitHub Actions
         # and checks these with shellcheck.
         # see also: https://github.com/rhysd/actionlint/pull/482
-        - "github.com/wasilibs/go-shellcheck/cmd/shellcheck@v0.10.0"
+        - "github.com/wasilibs/go-shellcheck/cmd/shellcheck@v0.11.1"
