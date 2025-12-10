@@ -25,11 +25,11 @@ jobs:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244 # v7.1.4
+      - uses: astral-sh/setup-uv@ed21f2f24f8dd64503750218de024bcf64c7250a # v7.1.5
         id: setup-uv
         with:
           # renovate: datasource=pypi dependency=uv
-          version: "0.9.15"
+          version: "0.9.17"
       - name: Install dependencies
         # docs dependencies required to type check scripts in docs/
         run: uv sync --locked --group docs
@@ -66,11 +66,11 @@ jobs:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244 # v7.1.4
+      - uses: astral-sh/setup-uv@ed21f2f24f8dd64503750218de024bcf64c7250a # v7.1.5
         id: setup-uv
         with:
           # renovate: datasource=pypi dependency=uv
-          version: "0.9.15"
+          version: "0.9.17"
       - name: Install dependencies
         run: uv sync --locked --no-dev
       - name: Configure environment file
@@ -203,11 +203,11 @@ jobs:
           # fetch the full git history to be able to determine creation dates for pages
           # see: https://github.com/timvink/mkdocs-git-revision-date-localized-plugin?tab=readme-ov-file#note-when-using-build-environments
           fetch-depth: 0
-      - uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244 # v7.1.4
+      - uses: astral-sh/setup-uv@ed21f2f24f8dd64503750218de024bcf64c7250a # v7.1.5
         id: setup-uv
         with:
           # renovate: datasource=pypi dependency=uv
-          version: "0.9.15"
+          version: "0.9.17"
       - name: Install dependencies
         run: |
           uv sync --locked --no-dev --group docs
