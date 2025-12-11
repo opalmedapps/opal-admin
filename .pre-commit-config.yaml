@@ -34,13 +34,13 @@ repos:
     - id: validate-pyproject
 
 - repo: https://github.com/astral-sh/uv-pre-commit
-  rev: 0.9.15
+  rev: 0.9.17
   hooks:
     - id: uv-lock
 
 # https://docs.astral.sh/ruff/integrations/#pre-commit
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.14.4
+  rev: v0.14.8
   hooks:
     # Run the linter with fixes
     - id: ruff

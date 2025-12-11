@@ -54,16 +54,6 @@ const USER_RECORDS = [
         password: 'Patient.Demo1',
         uid: 'dcBSK5qdoiOM2L9cEdShkqOadkG3',
     },
-    {
-        email: 'pete@opalmedapps.ca',
-        password: 'Patient.Demo1',
-        uid: '9kmS7qYQX8arnFFs4ZYJk1tqLFw1',
-    },
-    {
-        email: 'martin@opalmedapps.ca',
-        password: 'Patient.Demo1',
-        uid: '2grqcCoyPlVucfAPD4NM1SuCk3i1',
-    },
     // A user registered at another institution
     {
         email: 'apptest+ned@opalmedapps.ca',
