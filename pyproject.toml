@@ -21,7 +21,7 @@ dependencies = [
     "django-extensions==4.1",
     "django-filter==25.2",
     "django-forms-dynamic==1.0.0",
-    "django-modeltranslation==0.19.17",
+    "django-modeltranslation==0.19.19",
     "django-phonenumber-field[phonenumberslite]==8.4.0",
     "django-storages==1.14.6",
     "django-structlog==10.0.0",
