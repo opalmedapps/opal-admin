@@ -78,7 +78,7 @@ def test_build_patient_summary() -> None:
     assert summary.type == 'document'
     assert summary.identifier.system == 'urn:oid:2.16.724.4.8.10.200.10'
 
-    observations_with_category = [observation for observation in observations if observation.category]
+    observations_with_category_value = ips._clean_observations(observations)
 
     # Composition, Patient, Device and the resources
     assert len(summary.entry) == (
@@ -86,7 +86,7 @@ def test_build_patient_summary() -> None:
         + len(conditions)
         + len(medication_requests)
         + len(allergies)
-        + len(observations_with_category)
+        + len(observations_with_category_value)
         + len(immunizations)
     )
 
@@ -106,16 +106,16 @@ def test_build_patient_summary_composition() -> None:
     # Verify all 7 IPS sections
     assert len(composition.section) == 7
 
-    observations_with_category = [observation for observation in observations if observation.category]
+    observations_with_category_value = ips._clean_observations(observations)
 
     vital_signs = [
         observation
-        for observation in observations_with_category
+        for observation in observations_with_category_value
         if observation.category[0].coding[0].code == 'vital-signs'
     ]
     labs = [
         observation
-        for observation in observations_with_category
+        for observation in observations_with_category_value
         if observation.category[0].coding[0].code == 'laboratory'
     ]
 
@@ -209,7 +209,7 @@ def test_build_patient_summary_resources_included() -> None:
     expected_ids.update(condition.id for condition in conditions)
     expected_ids.update(medication_request.id for medication_request in medication_requests)
     expected_ids.update(allergy.id for allergy in allergies)
-    expected_ids.update(observation.id for observation in observations if observation.category)
+    expected_ids.update(observation.id for observation in ips._clean_observations(observations))
     expected_ids.update(immunization.id for immunization in immunizations)
 
     assert resource_ids == expected_ids
