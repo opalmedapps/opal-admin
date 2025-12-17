@@ -34,9 +34,7 @@ def _clean_observations(observations: list[Observation]) -> list[Observation]:
     Remove those:
         - without a category
         - without a value and therefore a dataAbsentReason
-
-    Returns:
-    """
+    """  # noqa: DOC201
     return [
         observation for observation in observations if observation.category and observation.dataAbsentReason is not None
     ]

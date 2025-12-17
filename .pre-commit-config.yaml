@@ -101,7 +101,6 @@ repos:
     name: mypy
     description: static type checking
     entry: mypy
-    args: ["--config-file=setup.cfg"]
     language: python
     types: [python]
 
