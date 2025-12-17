@@ -194,7 +194,7 @@ class PendingRelationshipTable(tables.Table):
         """
         status_value = value
 
-        if value == RelationshipStatus.PENDING.label:
+        if value == str(RelationshipStatus.PENDING.label):
             today = timezone.now().date()
             number_of_days = (today - record.request_date).days
             pending_since_text = ngettext(

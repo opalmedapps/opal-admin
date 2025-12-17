@@ -60,13 +60,13 @@ class TestInsertTestData(CommandTestMixin):
         assert Institution.objects.count() == 1
         assert Institution.objects.get().acronym == 'OMI'
         assert Site.objects.count() == 1
-        assert Patient.objects.count() == 10
-        assert HospitalPatient.objects.count() == 10
-        assert CaregiverProfile.objects.count() == 10
+        assert Patient.objects.count() == 8
+        assert HospitalPatient.objects.count() == 8
+        assert CaregiverProfile.objects.count() == 8
         assert RelationshipType.objects.count() == 5
         assert RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).count() == 1
-        assert Relationship.objects.count() == 13
-        assert SecurityAnswer.objects.count() == 30
+        assert Relationship.objects.count() == 11
+        assert SecurityAnswer.objects.count() == 24
         assert GeneralTest.objects.count() == 1
         assert PathologyObservation.objects.count() == 1
         assert Note.objects.count() == 1
@@ -144,12 +144,12 @@ class TestInsertTestData(CommandTestMixin):
         # new data was created
         assert Institution.objects.count() == 1
         assert Site.objects.count() == 1
-        assert Patient.objects.count() == 10
-        assert HospitalPatient.objects.count() == 10
-        assert CaregiverProfile.objects.count() == 10
-        assert Relationship.objects.count() == 13
+        assert Patient.objects.count() == 8
+        assert HospitalPatient.objects.count() == 8
+        assert CaregiverProfile.objects.count() == 8
+        assert Relationship.objects.count() == 11
         assert RelationshipType.objects.count() == 5
-        assert SecurityAnswer.objects.count() == 30
+        assert SecurityAnswer.objects.count() == 24
         assert ClinicalStaff.objects.count() == 1
         assert legacy_models.LegacyOAUser.objects.count() == 1
 

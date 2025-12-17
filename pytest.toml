@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: Copyright (C) 2025 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# see: https://docs.pytest.org/en/stable/reference/reference.html#configuration-options
+[pytest]
+console_output_style = "times"
+addopts = [
+    "--strict-markers",
+    "--ds=config.settings.test",
+    "-m not slow",
+    # https://pytest-django.readthedocs.io/en/latest/usage.html#fail-on-template-vars-fail-for-invalid-variables-in-templates
+    "--fail-on-template-vars",
+    "--disable-socket",
+    # Speed up tests with MySQL due to slowness in creating test DBs
+    "--reuse-db",
+]
+# see: https://docs.pytest.org/en/stable/how-to/mark.html
+markers = [
+    "slow: marks tests as slow"
+]
+# https://docs.pytest.org/en/stable/how-to/capture-warnings.html#warnings
+filterwarnings = [
+    "error",
+    # https://docs.djangoproject.com/en/5.2/ref/settings/#std-setting-FORMS_URLFIELD_ASSUME_HTTPS
+    "ignore:The\\sFORMS_URLFIELD_ASSUME_HTTPS\\stransitional\\ssetting\\sis\\sdeprecated.:django.utils.deprecation.RemovedInDjango60Warning",
+]

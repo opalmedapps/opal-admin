@@ -284,6 +284,26 @@ class TestFHIRConnector:
             'https://example.com/fhir/AllergyIntolerance?patient=test-patient-uuid'
         )
 
+    def test_patient_allergies_data_sanitization(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Patient allergies data sanitization handles malformed code fields."""
+        allergies_data = self._load_fixture('allergies.json')
+        # Add trailing whitespace to code and empty display
+        allergies_data['entry'][0]['resource']['code']['coding'][0]['code'] = 'B18.2   '
+        allergies_data['entry'][1]['resource']['code']['coding'][0]['display'] = ''
+        # Add trailing period to code
+        allergies_data['entry'][1]['resource']['code']['coding'][0]['code'] = 'B20.'
+
+        mock_response = self._mock_response(mocker, allergies_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        allergies = fhir_connector.patient_allergies('test-patient-uuid')
+
+        assert len(allergies) == 2
+        # Verify sanitization worked
+        assert allergies[0].code.coding[0].code == 'B18.2'
+        assert allergies[1].code.coding[0].display == 'No display provided'
+        assert allergies[1].code.coding[0].code == 'B20'
+
     def test_patient_allergies_empty(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
         """Retrieving patient allergies returns an empty list when no allergies found."""
         empty_data = {'resourceType': 'Bundle', 'type': 'collection', 'total': 0}

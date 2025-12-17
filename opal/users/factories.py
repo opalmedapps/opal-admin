@@ -11,14 +11,14 @@ Inspired by:
   * https://medium.com/analytics-vidhya/factoryboy-usage-cd0398fd11d2
 """
 
+# TypeVar.default backported from Python 3.13
+from typing import TypeVar
+
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group
 
 from factory import Faker, LazyFunction, lazy_attribute
 from factory.django import DjangoModelFactory
-
-# TypeVar.default backported from Python 3.13
-from typing_extensions import TypeVar
 
 from . import models
 
