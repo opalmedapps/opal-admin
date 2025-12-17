@@ -120,7 +120,7 @@ requires-dist = [
     { name = "qrcode", specifier = "==8.2" },
     { name = "requests", specifier = "==2.32.5" },
     { name = "slippers", specifier = "==0.6.2" },
-    { name = "twilio", specifier = "==9.8.8" },
+    { name = "twilio", specifier = "==9.9.0" },
     { name = "unidecode", specifier = "==1.4.0" },
     { name = "whitenoise", extras = ["brotli"], specifier = "==6.11.0" },
 ]
@@ -137,7 +137,7 @@ dev = [
     { name = "factory-boy", specifier = "==3.3.3" },
     { name = "mypy", extras = ["faster-cache"], specifier = "==1.19.1" },
     { name = "pandas-stubs", specifier = "==2.3.3.251201" },
-    { name = "pre-commit", specifier = "==4.5.0" },
+    { name = "pre-commit", specifier = "==4.5.1" },
     { name = "pytest", specifier = "==9.0.2" },
     { name = "pytest-django", specifier = "==4.11.1" },
     { name = "pytest-mock", specifier = "==3.15.1" },
@@ -1647,7 +1647,7 @@ wheels = [
 
 [[package]]
 name = "pre-commit"
-version = "4.5.0"
+version = "4.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cfgv" },
@@ -1656,9 +1656,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "virtualenv" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f4/9b/6a4ffb4ed980519da959e1cf3122fc6cb41211daa58dbae1c73c0e519a37/pre_commit-4.5.0.tar.gz", hash = "sha256:dc5a065e932b19fc1d4c653c6939068fe54325af8e741e74e88db4d28a4dd66b", size = 198428, upload-time = "2025-11-22T21:02:42.304Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/40/f1/6d86a29246dfd2e9b6237f0b5823717f60cad94d47ddc26afa916d21f525/pre_commit-4.5.1.tar.gz", hash = "sha256:eb545fcff725875197837263e977ea257a402056661f09dae08e4b149b030a61", size = 198232, upload-time = "2025-12-16T21:14:33.552Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5d/c4/b2d28e9d2edf4f1713eb3c29307f1a63f3d67cf09bdda29715a36a68921a/pre_commit-4.5.0-py2.py3-none-any.whl", hash = "sha256:25e2ce09595174d9c97860a95609f9f852c0614ba602de3561e267547f2335e1", size = 226429, upload-time = "2025-11-22T21:02:40.836Z" },
+    { url = "https://files.pythonhosted.org/packages/5d/19/fd3ef348460c80af7bb4669ea7926651d1f95c23ff2df18b9d24bab4f3fa/pre_commit-4.5.1-py2.py3-none-any.whl", hash = "sha256:3b3afd891e97337708c1674210f8eba659b52a38ea5f822ff142d10786221f77", size = 226437, upload-time = "2025-12-16T21:14:32.409Z" },
 ]
 
 [[package]]
@@ -2165,7 +2165,7 @@ wheels = [
 
 [[package]]
 name = "twilio"
-version = "9.8.8"
+version = "9.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -2173,9 +2173,9 @@ dependencies = [
     { name = "pyjwt" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/16/c3/1d923bef66f48c8d139177c61b315dc376e9b6a669d0f383e09bb2acad42/twilio-9.8.8.tar.gz", hash = "sha256:b4d35cf5f7eceb39eeec243f740a8909c7dcdc67b9fa0840ee3718a71836df91", size = 946667, upload-time = "2025-12-03T11:26:40.646Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/36/50/5bc596c079f0633f10e9c08abe03601f3aac04cffa18df90affd403eea2c/twilio-9.9.0.tar.gz", hash = "sha256:de92d97c398470f06d81d3146d3ea23d784abb199dc3a881f40e77129ba087b9", size = 947689, upload-time = "2025-12-17T06:48:47.098Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/25/a1/803ac455b0d9d08da5621f87fd26b8eb788b7c4975e6e5974cb04344e5fa/twilio-9.8.8-py2.py3-none-any.whl", hash = "sha256:fcbfff12633995dc56f5396747c6f3b45fd63cbb3f616949367aa7676b1614d5", size = 1843262, upload-time = "2025-12-03T11:26:39.176Z" },
+    { url = "https://files.pythonhosted.org/packages/43/f1/727d7e7966cc482630c6dc01728f52af417dc0d122b510de5e22d31f22e9/twilio-9.9.0-py2.py3-none-any.whl", hash = "sha256:ef25c0727dfd217611ccc69cc58befe380819a3b8ec2243964c89d87a1f8fa47", size = 1845825, upload-time = "2025-12-17T06:48:45.807Z" },
 ]
 
 [[package]]
