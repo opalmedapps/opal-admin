@@ -53,10 +53,18 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
     # Otherwise, default to the system's primary language (assuming clinical data is typically saved in this language)
     ips_language = settings.IPS_LANGUAGE or settings.LANGUAGES[0][0]
 
+    observations_with_category = [observation for observation in observations if observation.category]
+
     vital_signs = [
-        observation for observation in observations if observation.category[0].coding[0].code == 'vital-signs'
+        observation
+        for observation in observations_with_category
+        if observation.category[0].coding[0].code == 'vital-signs'
     ]
-    labs = [observation for observation in observations if observation.category[0].coding[0].code == 'laboratory']
+    labs = [
+        observation
+        for observation in observations_with_category
+        if observation.category[0].coding[0].code == 'laboratory'
+    ]
 
     # Translates static strings in the right language for the bundle
     with override(ips_language):

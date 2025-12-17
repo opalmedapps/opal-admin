@@ -115,8 +115,6 @@ MRN_DATA = MappingProxyType({
         'Mike Brown': [('ODH', '8888881')],
         'Kathy Brown': [('ODH', '8888880')],
         'Valerie Solanas': [('ODH', '5555553')],
-        'Martin Curley': [('ODH', '5555559')],
-        'Pete Boyd': [('ODH', '5555554')],
     },
     InstitutionOption.ohigph: {
         'Lisa Simpson': [('ODH2', '9999993')],
@@ -348,24 +346,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             legacy_id=99,
             mrns=mrn_data['Valerie Solanas'],
         )
-        pete = _create_patient(
-            first_name='Pete',
-            last_name='Boyd',
-            date_of_birth=date(1971, 6, 11),
-            sex=SexType.MALE,
-            ramq='BOYP06117199',
-            legacy_id=100,
-            mrns=mrn_data['Pete Boyd'],
-        )
-        martin = _create_patient(
-            first_name='Martin',
-            last_name='Curley',
-            date_of_birth=date(1965, 4, 23),
-            sex=SexType.MALE,
-            ramq='CURM04236599',
-            legacy_id=101,
-            mrns=mrn_data['Martin Curley'],
-        )
 
     # caregivers
 
@@ -441,24 +421,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             language='en',
             phone_number='',
             legacy_id=8,
-        )
-        user_pete = _create_caregiver(
-            first_name=pete.first_name,
-            last_name=pete.last_name,
-            username='9kmS7qYQX8arnFFs4ZYJk1tqLFw1',
-            email='pete@opalmedapps.ca',
-            language='en',
-            phone_number='',
-            legacy_id=9,
-        )
-        user_martin = _create_caregiver(
-            first_name=martin.first_name,
-            last_name=martin.last_name,
-            username='2grqcCoyPlVucfAPD4NM1SuCk3i1',
-            email='martin@opalmedapps.ca',
-            language='en',
-            phone_number='',
-            legacy_id=10,
         )
 
     # get relationship types
@@ -577,26 +539,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             start_date=today,
         )
 
-        # Pete --> Pete: Self
-        _create_relationship(
-            patient=pete,
-            caregiver=user_pete,
-            relationship_type=type_self,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=today,
-            start_date=today,
-        )
-
-        # Martin --> Martin: Self
-        _create_relationship(
-            patient=martin,
-            caregiver=user_martin,
-            relationship_type=type_self,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=today,
-            start_date=today,
-        )
-
     # The rest of the relationships exist at both institutions
     # To be added if necessary
 
@@ -610,8 +552,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
         _create_security_answers(user_mike)
         _create_security_answers(user_kathy)
         _create_security_answers(user_valerie)
-        _create_security_answers(user_pete)
-        _create_security_answers(user_martin)
 
     # Pathology reports for patients
     # Pathology reports are currently not intended to be rolled out at Sainte-Justine which is a pediatric hospital
