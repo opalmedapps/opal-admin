@@ -360,7 +360,7 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
 def django_db_setup(
     django_db_setup: None,
     django_db_blocker: DjangoDbBlocker,
-) -> Generator[None, None, None]:
+) -> Generator[None]:
     """
     Set up the QuestionnaireDB manually using an SQL file with the schema.
 
@@ -390,7 +390,7 @@ def django_db_setup(
 
 
 @pytest.fixture
-def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, None, None]:
+def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None]:
     """
     Initialize the QuestionnaireDB with data.
 

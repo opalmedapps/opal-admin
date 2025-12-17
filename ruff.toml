@@ -12,7 +12,6 @@ show-fixes = true
 # enable preview mode
 # https://docs.astral.sh/ruff/preview/
 preview = true
-target-version = 'py312'
 
 # https://docs.astral.sh/ruff/settings/#lint
 [lint]
