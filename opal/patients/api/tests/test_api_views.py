@@ -607,7 +607,8 @@ class TestPatientDemographicView:
         api_client.force_login(interface_engine_user)
         payload = self._get_valid_input_data()
         payload['date_of_death'] = (
-            timezone.now()
+            timezone
+            .now()
             .astimezone()
             .replace(
                 microsecond=0,
@@ -1141,8 +1142,7 @@ class TestPatientSummaryView:
         saved_file = Path(settings.MEDIA_ROOT) / spy_storage_save.spy_return
         assert saved_file.exists()
 
-        with Path(saved_file).open(encoding='utf-8') as f:
-            saved_data = f.read()
+        saved_data = Path(saved_file).read_text(encoding='utf-8')
 
         # base64 URL decode to have 32 bytes of data
         key_decoded = utils.base64url_decode(encryption_key.encode('utf-8'))

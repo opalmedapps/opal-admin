@@ -140,7 +140,8 @@ class TestAppChartView:
 
         # Direct function call
         edumaterials = (
-            models.LegacyEducationalMaterial.objects.get_unread_queryset(
+            models.LegacyEducationalMaterial.objects
+            .get_unread_queryset(
                 self.patient.patientsernum,
                 self.user.username,
             )
@@ -165,7 +166,8 @@ class TestAppChartView:
 
         # Direct function call
         edumaterials = (
-            models.LegacyEducationalMaterial.objects.get_unread_queryset(
+            models.LegacyEducationalMaterial.objects
+            .get_unread_queryset(
                 self.patient.patientsernum,
                 self.user.username,
             )
