@@ -90,4 +90,4 @@ docs = [
 ]
 
 [tool.uv.sources]
-fhir-resources = { git = "https://github.com/nazrulworld/fhir.resources.git", rev = "main" }
+fhir-resources = { git = "https://github.com/nazrulworld/fhir.resources.git", rev = "9a2eec1774913dbd89816e9a1cfcda22cdd4388e" }
