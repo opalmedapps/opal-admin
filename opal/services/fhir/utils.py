@@ -6,7 +6,6 @@
 
 import logging
 import secrets
-import uuid
 
 import structlog
 from authlib.oauth2 import OAuth2Error
@@ -48,7 +47,7 @@ def jwe_sh_link_encrypt(data: str) -> tuple[str, bytes]:
 
 def retrieve_patient_summary(
     oauth_url: str, fhir_url: str, client_id: str, private_key: str, identifier: str
-) -> tuple[str, uuid.UUID]:
+) -> tuple[str, str]:
     """
     Retrieve patient data and build a patient summary in IPS format for a patient identified by their identifier.
 
@@ -83,6 +82,10 @@ def retrieve_patient_summary(
 
         patient = fhir.find_patient(identifier)
         patient_uuid = patient.id
+
+        if not patient_uuid:
+            raise FHIRDataRetrievalError(f'Patient with identifier {identifier} has no UUID')
+
         conditions = fhir.patient_conditions(patient_uuid)
         medication_requests = fhir.patient_medication_requests(patient_uuid)
         allergies = fhir.patient_allergies(patient_uuid)
@@ -113,4 +116,7 @@ def retrieve_patient_summary(
 
         LOGGER.debug('Successfully built IPS bundle for patient with UUID %s', patient_uuid)
 
-        return ips_bundle.model_dump_json(indent=2), ips_bundle.identifier.value
+        # we know that there is an identifier because it is set in the build_patient_summary function
+        ips_uuid: str = ips_bundle.identifier.value  # type: ignore[assignment,union-attr]
+
+        return ips_bundle.model_dump_json(indent=2), ips_uuid
