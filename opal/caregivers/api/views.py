@@ -56,7 +56,8 @@ class GetRegistrationEncryptionInfoView(RetrieveAPIView[RegistrationCode]):
     """Class handling gets requests for registration encryption values."""
 
     queryset = (
-        RegistrationCode.objects.select_related(
+        RegistrationCode.objects
+        .select_related(
             'relationship',
             'relationship__patient',
         )
@@ -198,7 +199,8 @@ class RetrieveRegistrationCodeMixin:
         """
         code = self.kwargs.get('code') if hasattr(self, 'kwargs') else None
         return (
-            RegistrationCode.objects.select_related(
+            RegistrationCode.objects
+            .select_related(
                 'relationship__caregiver',
                 'relationship__caregiver__user',
             )
@@ -523,7 +525,8 @@ class RegistrationCompletionView(APIView):
         # use the last one
         email_verifications: Manager[EmailVerification] = relationship.caregiver.email_verifications
         email_verification = (
-            email_verifications.filter(
+            email_verifications
+            .filter(
                 is_verified=True,
             )
             .order_by('-sent_at')

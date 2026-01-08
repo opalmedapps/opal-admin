@@ -399,7 +399,8 @@ class TestDailyUsageStatisticsUpdate(CommandTestMixin):
         ).first()
         assert marge_previous_day_app_activity
         marge_last_login_previous_day = (
-            legacy_models.LegacyPatientActivityLog.objects.filter(
+            legacy_models.LegacyPatientActivityLog.objects
+            .filter(
                 username=marge_caregiver.user,
                 date_time__date=marge_previous_day_app_activity.action_date,
             )

@@ -922,7 +922,8 @@ def test_accessrequestrequestorform_form_filled_required_type(role_type: RoleTyp
 def test_accessrequestrequestorform_relationship_type(age: int, enabled_options: list[RoleType]) -> None:
     """Ensure the relationship_type field has the correct options enabled/disabled based on the patient's age."""
     relationship_types = list(
-        RelationshipType.objects.filter(
+        RelationshipType.objects
+        .filter(
             role_type__in=enabled_options,
         )
         .values_list('name', flat=True)
@@ -955,7 +956,8 @@ def test_accessrequestrequestorform_relationship_type_existing_self() -> None:
     disabled_options = [option['label'] for option in options if option['attrs'].get('disabled', '') == 'disabled']
 
     disabled_types = list(
-        RelationshipType.objects.filter(
+        RelationshipType.objects
+        .filter(
             role_type__in=[
                 RoleType.SELF,
                 RoleType.GUARDIAN_CAREGIVER,
