@@ -105,7 +105,7 @@ requires-dist = [
     { name = "django-tables2", specifier = "==2.8.0" },
     { name = "djangorestframework", specifier = "==3.16.1" },
     { name = "drf-spectacular", specifier = "==0.29.0" },
-    { name = "fhir-resources", specifier = "==8.0.0" },
+    { name = "fhir-resources", git = "https://github.com/nazrulworld/fhir.resources.git?rev=9a2eec1774913dbd89816e9a1cfcda22cdd4388e" },
     { name = "fpdf2", specifier = "==2.8.5" },
     { name = "gunicorn", marker = "extra == 'prod'", specifier = "==23.0.0" },
     { name = "hl7apy", specifier = "==1.3.5" },
@@ -899,14 +899,10 @@ wheels = [
 
 [[package]]
 name = "fhir-resources"
-version = "8.0.0"
-source = { registry = "https://pypi.org/simple" }
+version = "8.1.1.dev0"
+source = { git = "https://github.com/nazrulworld/fhir.resources.git?rev=9a2eec1774913dbd89816e9a1cfcda22cdd4388e#9a2eec1774913dbd89816e9a1cfcda22cdd4388e" }
 dependencies = [
     { name = "fhir-core" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/79/12/342da7d972e39268b1993392d104b92c3b8878e8d818414ad26bd98aeb2a/fhir.resources-8.0.0.tar.gz", hash = "sha256:84dac3af31eaf90d5b0386cac21d26c50e6fb1526d68b88a2c42d112978e9cf9", size = 1526522, upload-time = "2024-12-25T16:11:33.633Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/53/fd/c44dfd6fd69ad526c815879cecca537450d727cd023426f4bf06879f4c27/fhir.resources-8.0.0-py2.py3-none-any.whl", hash = "sha256:9c46d6d79c6d6629c3bea6f244bcc6e8e0e4d15757a675f19d9d1c05c9ab2199", size = 2200379, upload-time = "2024-12-25T16:11:30.454Z" },
 ]
 
 [[package]]

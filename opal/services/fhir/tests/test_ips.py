@@ -64,7 +64,7 @@ def _prepare_build_patient_summary() -> tuple[
         immunizations,
     )
 
-    return (summary, patient, conditions, medication_requests, allergies, observations, immunizations)
+    return (summary, patient, conditions, medication_requests, allergies, observations, immunizations)  # type: ignore[return-value]
 
 
 def test_build_patient_summary() -> None:
@@ -140,7 +140,7 @@ def test_build_patient_summary_composition() -> None:
         # The section's resources are referenced
         if resources:
             assert len(section.entry) == len(resources)
-            for entry, resource in zip(section.entry, resources, strict=True):
+            for entry, resource in zip(section.entry, resources, strict=True):  # type:ignore[call-overload]
                 assert entry.reference == f'urn:uuid:{resource.id}', (
                     f'Section {section.title} has an incorrect resource reference'
                 )
@@ -206,11 +206,11 @@ def test_build_patient_summary_resources_included() -> None:
     resource_ids = {entry.resource.id for entry in summary.entry[3:]}
 
     expected_ids: set[str] = set()
-    expected_ids.update(condition.id for condition in conditions)
-    expected_ids.update(medication_request.id for medication_request in medication_requests)
-    expected_ids.update(allergy.id for allergy in allergies)
-    expected_ids.update(observation.id for observation in observations if observation.category)
-    expected_ids.update(immunization.id for immunization in immunizations)
+    expected_ids.update(condition.id for condition in conditions)  # type: ignore[misc]
+    expected_ids.update(medication_request.id for medication_request in medication_requests)  # type: ignore[misc]
+    expected_ids.update(allergy.id for allergy in allergies)  # type: ignore[misc]
+    expected_ids.update(observation.id for observation in observations if observation.category)  # type: ignore[misc]
+    expected_ids.update(immunization.id for immunization in immunizations)  # type: ignore[misc]
 
     assert resource_ids == expected_ids
 
