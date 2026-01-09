@@ -164,7 +164,8 @@ class Command(BaseCommand):
         # Since between the same patient and caregiver might be many different relationships,
         # the query fetches only one record per patient <===> caregiver relationship with the maximum end_date
         relationships = (
-            Relationship.objects.select_related(
+            Relationship.objects
+            .select_related(
                 'patient',
                 'caregiver__user',
             )

@@ -78,7 +78,8 @@ def fetch_grouped_registration_summary(
     group_field = group_by.name.lower()
 
     return list(
-        queryset.values(
+        queryset
+        .values(
             group_field,
         )
         .annotate(
@@ -287,7 +288,8 @@ def fetch_logins_summary(
     group_field = group_by.name.lower()
 
     return list(
-        queryset.values(
+        queryset
+        .values(
             group_field,
         )
         .annotate(
@@ -325,7 +327,8 @@ def fetch_users_clicks_summary(
 
     # TODO: QSCCD-2173 - add count of the announcement clicks
     return list(
-        queryset.values(
+        queryset
+        .values(
             group_field,
         )
         .annotate(
@@ -363,7 +366,8 @@ def fetch_user_patient_clicks_summary(
     group_field = group_by.name.lower()
 
     return list(
-        queryset.values(
+        queryset
+        .values(
             group_field,
         )
         .annotate(
@@ -558,7 +562,8 @@ def fetch_users_latest_login_year_summary(
         latest login statistics grouped by year for a given time period.
     """
     latest_logins = (
-        DailyUserAppActivity.objects.filter(
+        DailyUserAppActivity.objects
+        .filter(
             action_date__gte=start_date,
             action_date__lte=end_date,
         )
@@ -595,7 +600,8 @@ def fetch_labs_summary_per_patient(
     # TODO: update the query using `lab_groups_received` statistic field once QSCCD-2209 is implemented.
     # Update query should include `total_lab_groups_received` and `average_labs_per_test_group`.
     return list(
-        DailyPatientDataReceived.objects.filter(
+        DailyPatientDataReceived.objects
+        .filter(
             action_date__gte=start_date,
             action_date__lte=end_date,
         )
@@ -630,7 +636,8 @@ def fetch_logins_summary_per_user(
         individual login statistics (per user).
     """
     return list(
-        DailyUserAppActivity.objects.filter(
+        DailyUserAppActivity.objects
+        .filter(
             action_date__gte=start_date,
             action_date__lte=end_date,
         )
@@ -670,13 +677,15 @@ def fetch_patient_demographic_diagnosis_summary(
     """
     # TODO: QSCCD-2254 - update the query when Diagnosis model is implemented in django-backend
     latest_diagnosis_sernum_list = (
-        legacy_models.LegacyDiagnosis.objects.values(
+        legacy_models.LegacyDiagnosis.objects
+        .values(
             'patient_ser_num',
         )
         .annotate(
             latest_diagnosis_date=models.Max('creation_date'),
             latest_diagnosis_sernum=models.Subquery(
-                legacy_models.LegacyDiagnosis.objects.filter(
+                legacy_models.LegacyDiagnosis.objects
+                .filter(
                     patient_ser_num=models.OuterRef('patient_ser_num'),
                 )
                 .order_by('-creation_date')
@@ -689,7 +698,8 @@ def fetch_patient_demographic_diagnosis_summary(
         )
     )
     demographics_and_diagnosis = (
-        legacy_models.LegacyPatientControl.objects.filter(
+        legacy_models.LegacyPatientControl.objects
+        .filter(
             models.Q(patient__legacydiagnosis__diagnosis_ser_num__in=latest_diagnosis_sernum_list)
             | models.Q(patient__legacydiagnosis__diagnosis_ser_num__isnull=True),
             patient__last_updated__date__gte=start_date,
@@ -759,7 +769,8 @@ def _fetch_received_medical_records_summary(
     group_field = group_by.name.lower()
 
     return list(
-        queryset.values(
+        queryset
+        .values(
             group_field,
         )
         .annotate(
