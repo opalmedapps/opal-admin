@@ -88,7 +88,7 @@ requires-dist = [
     { name = "argon2-cffi", specifier = "==25.1.0" },
     { name = "authlib", specifier = "==1.6.6" },
     { name = "crispy-bootstrap5", specifier = "==2025.6" },
-    { name = "dj-rest-auth", specifier = "==7.0.1" },
+    { name = "dj-rest-auth", specifier = "==7.0.2" },
     { name = "django", specifier = "==5.2.10" },
     { name = "django-auditlog", specifier = "==3.4.1" },
     { name = "django-cors-headers", specifier = "==4.9.0" },
@@ -559,13 +559,13 @@ wheels = [
 
 [[package]]
 name = "dj-rest-auth"
-version = "7.0.1"
+version = "7.0.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "djangorestframework" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b7/19/00150c8bedf7b6d4c44ecf7c2be9e58ae2203b42741ca734152d34f549f1/dj-rest-auth-7.0.1.tar.gz", hash = "sha256:3f8c744cbcf05355ff4bcbef0c8a63645da38e29a0fdef3c3332d4aced52fb90", size = 220541, upload-time = "2025-01-04T23:37:38.688Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d1/07/3727a003d06251d2fe3694c4bcce9d0f22413453964018f387d878f9a00a/dj_rest_auth-7.0.2.tar.gz", hash = "sha256:e0ccbca6bcde9dd68fd1d8e868fdfb9d65d60b669f381b74feac2a3e7815466c", size = 169086, upload-time = "2026-01-09T10:37:27.671Z" }
 
 [[package]]
 name = "django"
