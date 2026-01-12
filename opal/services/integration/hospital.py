@@ -66,7 +66,7 @@ def find_patient_by_hin(health_insurance_number: str) -> PatientSchema:
 
     Raises [PatientNotFoundError][opal.services.integration.hospital.PatientNotFoundError] if the patient is not found.
     Raises [NonOKResponseError][opal.services.integration.hospital.NonOKResponseError] if the response is not OK.
-    Raises [pydantic.ValidationError][] if the data in the response is not valid.
+    Raises [pydantic_core.ValidationError][] if the data in the response is not valid.
 
     Args:
         health_insurance_number: the health insurance number of the patient
@@ -86,7 +86,7 @@ def find_patient_by_mrn(mrn: str, site: str) -> PatientSchema:
 
     Raises [PatientNotFoundError][opal.services.integration.hospital.PatientNotFoundError] if the patient is not found.
     Raises [NonOKResponseError][opal.services.integration.hospital.NonOKResponseError] if the response is not OK.
-    Raises [pydantic.ValidationError][] if the data in the response is not valid.
+    Raises [pydantic_core.ValidationError][] if the data in the response is not valid.
 
     Args:
         mrn: the MRN of the patient
