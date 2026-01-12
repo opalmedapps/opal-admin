@@ -225,10 +225,23 @@ def test_build_patient_summary_resources_observations_without_category() -> None
         _prepare_build_patient_summary()
     )
 
-    # Skip the first three entries (Composition, Patient, Device)
     resource_ids = {entry.resource.id for entry in summary.entry}
 
-    observations_without_category = [observation for observation in observations if not observation.category]
+    observations_without_category = [observation.id for observation in observations if not observation.category]
 
-    for observation in observations_without_category:
-        assert observation.id not in resource_ids
+    assert len(observations_without_category) == 1
+    assert 'a083c331-bd33-4372-8c4d-8c329d354607' in observations_without_category
+    assert 'a083c331-bd33-4372-8c4d-8c329d354607' not in resource_ids
+
+
+def test_build_patient_summary_resources_observations_without_data_absent_reason() -> None:
+    """Observations with a dataAbsentReason are not included in the patient summary Bundle."""
+    summary, _patient, _conditions, _medication_requests, _allergies, observations, _immunizations = (
+        _prepare_build_patient_summary()
+    )
+
+    resource_ids = {entry.resource.id for entry in summary.entry}
+    observations_without_value = [observation.id for observation in observations if observation.dataAbsentReason]
+
+    assert len(observations_without_value) == 1
+    assert '9efb0a09-01e2-4792-8085-439698be315e' not in resource_ids
