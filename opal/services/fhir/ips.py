@@ -27,6 +27,19 @@ from fhir.resources.R4B.patient import Patient
 from fhir.resources.R4B.reference import Reference
 
 
+def _clean_observations(observations: list[Observation]) -> list[Observation]:
+    """
+    Clean up observations.
+
+    Remove those:
+        - without a category
+        - without a value and therefore a dataAbsentReason
+    """  # noqa: DOC201
+    return [
+        observation for observation in observations if observation.category and observation.dataAbsentReason is None
+    ]
+
+
 def build_patient_summary(  # noqa: PLR0913, PLR0917
     patient: Patient,
     conditions: list[Condition],
@@ -52,18 +65,13 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
     # If a language is configured for IPS, use it to generate the bundle
     # Otherwise, default to the system's primary language (assuming clinical data is typically saved in this language)
     ips_language = settings.IPS_LANGUAGE or settings.LANGUAGES[0][0]
-
-    observations_with_category = [observation for observation in observations if observation.category]
+    cleaned_observations = _clean_observations(observations)
 
     vital_signs = [
-        observation
-        for observation in observations_with_category
-        if observation.category[0].coding[0].code == 'vital-signs'
+        observation for observation in cleaned_observations if observation.category[0].coding[0].code == 'vital-signs'
     ]
     labs = [
-        observation
-        for observation in observations_with_category
-        if observation.category[0].coding[0].code == 'laboratory'
+        observation for observation in cleaned_observations if observation.category[0].coding[0].code == 'laboratory'
     ]
 
     # Translates static strings in the right language for the bundle

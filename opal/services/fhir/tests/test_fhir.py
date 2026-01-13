@@ -388,7 +388,7 @@ class TestFHIRConnector:
 
         observations = fhir_connector.patient_observations('test-patient-uuid')
 
-        assert len(observations) == 9
+        assert len(observations) == 10
         assert observations[0].id == '59ace158-3be6-11f0-9645-fa163e09c13a'
         assert observations[1].id == '59acedd7-3be6-11f0-9645-fa163e09c13a'
         fhir_connector.session.get.assert_called_once_with(
@@ -403,7 +403,7 @@ class TestFHIRConnector:
 
         observations = fhir_connector.patient_observations('test-patient-uuid')
 
-        assert len(observations) == 9
+        assert len(observations) == 10
         assert observations[8].id == 'a083c331-bd33-4372-8c4d-8c329d354607'
         assert observations[8].category is None
 
