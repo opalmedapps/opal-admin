@@ -50,8 +50,11 @@ jobs:
           SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
           sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
           uv run mypy .
-      - uses: mschoettle/pre-commit-action@0ffaba63d7e205c4109d6a3ca4ced5fc4decd04b # v4.2.3
+      - uses: j178/prek-action@91fd7d7cf70ae1dee9f4f44e7dfa5d1073fe6623 # v1.0.11
         if: '!cancelled()'
+        with:
+          # renovate: datasource=pypi dependency=prek
+          prek-version: "0.2.27"
         env:
           SKIP: ruff,ruff-format,mypy,markdownlint-cli2,reuse-lint-file
       - uses: opalmedapps/actions/actions/check-thirdparty-notice@main
