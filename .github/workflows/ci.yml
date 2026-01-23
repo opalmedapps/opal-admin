@@ -54,7 +54,7 @@ jobs:
         if: '!cancelled()'
         with:
           # renovate: datasource=pypi dependency=prek
-          prek-version: "0.2.27"
+          prek-version: "0.3.0"
         env:
           SKIP: ruff,ruff-format,mypy,markdownlint-cli2,reuse-lint-file
       - uses: opalmedapps/actions/actions/check-thirdparty-notice@main
