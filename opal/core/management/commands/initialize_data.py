@@ -326,6 +326,13 @@ class Command(BaseCommand):
         )
         self.stdout.write(f'{orms.username} token: {token_orms}')
 
+        # ORMS needs a legacy user to be able to access the legacy OpalAdmin API
+        self._create_legacy_user(
+            constants.USERNAME_ORMS,
+            legacy_models.LegacyOAUserType.SYSTEM,
+            'External System',
+        )
+
     def _create_users(self, **options: Any) -> None:
         # create a legacy admin user with the system administrator role
         self._create_legacy_user('admin', legacy_models.LegacyOAUserType.HUMAN, 'System Administrator')
