@@ -86,5 +86,5 @@ docs = [
     "mkdocs-gen-files==0.6.0",
     "mkdocs-literate-nav==0.6.2",
     "mkdocs-material==9.7.1",
-    "mkdocstrings[python-legacy]==1.0.1",
+    "mkdocstrings[python-legacy]==1.0.2",
 ]
