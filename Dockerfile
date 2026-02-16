@@ -4,7 +4,7 @@
 
 FROM python:3.13.11-alpine3.22 AS build
 
-COPY --from=ghcr.io/astral-sh/uv:0.9.29 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.10.3 /uv /uvx /bin/
 
 # dependencies for building Python packages
 RUN apk add --no-cache build-base \
