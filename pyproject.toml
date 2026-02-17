@@ -38,7 +38,7 @@ dependencies = [
     "kaleido==1.2.0",
     "mysqlclient==2.2.8",
     "openpyxl==3.1.5",
-    "pandas==2.3.3",
+    "pandas==3.0.1",
     # required for ImageFields
     "pillow==12.1.1",
     "plotly==6.3.0",
