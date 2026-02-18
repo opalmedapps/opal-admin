@@ -869,14 +869,14 @@ wheels = [
 
 [[package]]
 name = "fhir-core"
-version = "1.1.5"
+version = "1.1.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/dd/89/22e3b5eecb847812571089ad1c406e5d966fc819d71d119f0f5618bb8d3b/fhir_core-1.1.5.tar.gz", hash = "sha256:fc3c14252d32bf0502fdbcec7136685308cc81bf76ae754c3be3aac66bfa5801", size = 34417, upload-time = "2026-01-29T10:47:13.459Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a4/98/210f317815f6eafa8cb21fbf203e6ac75bd53f2b25c1376bc1a647b3b4d7/fhir_core-1.1.4.tar.gz", hash = "sha256:d6549665c32f6b710da19d1309851d5d5f8902af899925623d6f4441eb1f2176", size = 33870, upload-time = "2025-07-11T18:10:59.565Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bf/b4/988e247cbb18d61f676b563b7af77e49e971b4fb2147d9024baf36581c1e/fhir_core-1.1.5-py2.py3-none-any.whl", hash = "sha256:8b6a51487ab002410fdc77f5dac8e83e20929693483837c3c237af11ca3e5896", size = 29614, upload-time = "2026-01-29T10:47:11.906Z" },
+    { url = "https://files.pythonhosted.org/packages/2b/16/0fb20a14046b6b8a447019e939e58ee8dbe54a6bd06472f93d9ec6801ed8/fhir_core-1.1.4-py2.py3-none-any.whl", hash = "sha256:66d81639f9a45e646cf21cae492d68d89550a22409bf68a9b292b789e0d0061d", size = 29183, upload-time = "2025-07-11T18:10:58.167Z" },
 ]
 
 [[package]]
