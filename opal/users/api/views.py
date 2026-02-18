@@ -11,7 +11,7 @@ from rest_framework import generics
 from opal.core.drf_permissions import FullDjangoModelPermissions
 
 from ..models import Caregiver
-from .serializers import GroupSerializer, UserCaregiverUpdateSerializer
+from .serializers import GroupSerializer, UpdateCaregiverEmailSerializer
 
 
 class ListGroupView(generics.ListAPIView[Group]):
@@ -27,7 +27,7 @@ class UserCaregiverUpdateView(generics.UpdateAPIView[Caregiver]):
     """View to update a caregiver."""
 
     permission_classes = (FullDjangoModelPermissions,)
-    serializer_class = UserCaregiverUpdateSerializer
+    serializer_class = UpdateCaregiverEmailSerializer
     queryset = Caregiver.objects.filter(is_active=True)
     lookup_url_kwarg = 'username'
     lookup_field = 'username'

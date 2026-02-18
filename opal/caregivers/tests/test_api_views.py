@@ -211,6 +211,42 @@ def test_caregiver_profile_missing_header(api_client: APIClient, listener_user: 
     assert 'detail' in data
 
 
+def test_caregiver_profile_update_language(api_client: APIClient, listener_user: User) -> None:
+    """The caregiver can update their language."""
+    caregiver_profile = caregiver_factories.CaregiverProfile.create(user__username='testuser')
+    assert caregiver_profile.user.language == 'en'
+
+    api_client.force_login(user=listener_user)
+    api_client.credentials(HTTP_APPUSERID=caregiver_profile.user.username)
+
+    response = api_client.patch(
+        reverse('api:caregivers-profile'),
+        data={'language': 'fr'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    caregiver_profile.refresh_from_db()
+    assert caregiver_profile.user.language == 'fr'
+
+
+def test_caregiver_profile_update_invalid_language(api_client: APIClient, listener_user: User) -> None:
+    """An error is returned if the caregiver tries to update their language to an unsupported value."""
+    caregiver_profile = caregiver_factories.CaregiverProfile.create(user__username='testuser')
+    assert caregiver_profile.user.language == 'en'
+
+    api_client.force_login(user=listener_user)
+    api_client.credentials(HTTP_APPUSERID=caregiver_profile.user.username)
+
+    response = api_client.patch(
+        reverse('api:caregivers-profile'),
+        data={'language': 'de'},
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    data = response.json()
+    assert 'language' in data
+
+
 def test_registration_encryption_unauthenticated_unauthorized(
     api_client: APIClient,
     user: User,
