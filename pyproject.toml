@@ -7,7 +7,7 @@ name = "admin"
 version = "0"
 description = "New administrative web application used to configure Opal and its content"
 readme = "README.md"
-requires-python = "==3.13.12"
+requires-python = "==3.14.3"
 dependencies = [
     "argon2-cffi==25.1.0",
     "authlib==1.6.6",
