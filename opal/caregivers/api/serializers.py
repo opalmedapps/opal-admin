@@ -70,7 +70,7 @@ class UpdateCaregiverProfileSerializer(serializers.ModelSerializer[CaregiverProf
     """
     Serializer for updating a caregiver profile.
 
-    The language needs to be provided in lowercase.
+    The language code needs to be provided in lowercase, e.g., en, fr.
     All languages of settings.LANGUAGES are accepted.
     """
 
