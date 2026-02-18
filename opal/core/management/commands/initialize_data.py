@@ -326,7 +326,7 @@ class Command(BaseCommand):
         )
         self.stdout.write(f'{orms.username} token: {token_orms}')
 
-        # ORMS needs a legacy user to be able to access the legacy OpalAdmin API
+        # the interface engine needs a legacy user to be able to access the legacy OpalAdmin API
         self._create_legacy_user(
             constants.USERNAME_ORMS,
             legacy_models.LegacyOAUserType.SYSTEM,

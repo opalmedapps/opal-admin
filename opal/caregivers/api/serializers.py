@@ -21,6 +21,7 @@ from opal.hospital_settings.api.serializers import InstitutionSerializer
 from opal.hospital_settings.models import Institution
 from opal.patients.api.serializers import HospitalPatientSerializer, PatientSerializer, RelationshipTypeSerializer
 from opal.patients.models import Patient, RelationshipStatus
+from opal.users.models import Caregiver
 
 
 class DeviceSerializer(DynamicFieldsSerializer[Device]):
@@ -63,6 +64,60 @@ class CaregiverSerializer(DynamicFieldsSerializer[CaregiverProfile]):
                 'required': True,
             },
         }
+
+
+class UpdateCaregiverProfileSerializer(serializers.ModelSerializer[CaregiverProfile]):
+    """
+    Serializer for updating a caregiver profile.
+
+    The language code needs to be provided in lowercase, e.g., en, fr.
+    All languages of settings.LANGUAGES are accepted.
+    """
+
+    language = serializers.CharField(source='user.language', required=True)
+
+    class Meta:
+        model = CaregiverProfile
+        fields = [
+            'language',
+        ]
+
+    def validate_language(self, value: str) -> str:
+        """
+        Validate the language field.
+
+        Raises a ValidationError if the language value is not supported
+
+        Args:
+            value: the language value to validate
+
+        Returns:
+            the validated language value
+        """
+        # use the Caregiver model to check that the language value is valid
+        Caregiver(language=value).clean_fields(exclude=['username', 'password', 'email', 'phone_number'])
+
+        return value
+
+    def update(self, instance: CaregiverProfile, validated_data: dict[str, Any]) -> CaregiverProfile:
+        """
+        Update a caregiver profile.
+
+        Args:
+            instance: the caregiver profile instance to update
+            validated_data: the validated request data
+
+        Returns:
+            the updated caregiver profile instance
+        """
+        user_data = validated_data.pop('user')
+
+        for attr, value in user_data.items():
+            setattr(instance.user, attr, value)
+
+        instance.user.save()
+
+        return instance
 
 
 class EmailVerificationSerializer(DynamicFieldsSerializer[EmailVerification]):
