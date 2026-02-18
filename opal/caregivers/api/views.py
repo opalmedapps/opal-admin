@@ -150,7 +150,7 @@ class GetCaregiverPatientsList(APIView):
     ],
 )
 class CaregiverProfileView(RetrieveUpdateAPIView[CaregiverProfile]):
-    """Retrieve the profile of the current caregiver."""
+    """Retrieve and update the profile of the current caregiver."""
 
     permission_classes = (IsListener,)
     serializer_class = CaregiverSerializer

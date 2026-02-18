@@ -67,7 +67,12 @@ class CaregiverSerializer(DynamicFieldsSerializer[CaregiverProfile]):
 
 
 class UpdateCaregiverProfileSerializer(serializers.ModelSerializer[CaregiverProfile]):
-    """Serializer for updating a caregiver profile."""
+    """
+    Serializer for updating a caregiver profile.
+
+    The language needs to be provided in lowercase.
+    All languages of settings.LANGUAGES are accepted.
+    """
 
     language = serializers.CharField(source='user.language', required=True)
 
