@@ -215,6 +215,13 @@ uv run mkdocs serve -a localhost:8001
 
 Then open http://localhost:8001 to view the generated documentation site.
 
+### Documenting architecture decisions
+
+We use [Architecture Decision Records (ADR)](https://adr.github.io/) to record architecture decisions.
+The ADRs live in `docs/adr/` and follow the [Nygard format](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).
+
+We recommend the use of the tool [`adrs`](http://joshrotenberg.com/adrs/) to help manage ADRs.
+
 ## Development
 
 ### Dependencies
