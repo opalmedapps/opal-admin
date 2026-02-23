@@ -117,7 +117,7 @@ class Command(BaseCommand):
             )
 
         if dry_run:
-            LOGGER.info('Running command in dry-run mode; no files will be deleted.')
+            LOGGER.info('Running command in dry-run mode; no files will be deleted')
 
         storage_backend = FTPStoragePlus()
 
