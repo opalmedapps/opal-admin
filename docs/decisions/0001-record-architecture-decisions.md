@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 number: 1
-status: proposed
+status: accepted
 date: 2026-02-23
 ---
 
