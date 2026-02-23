@@ -146,7 +146,8 @@ class Command(BaseCommand):
                         storage_backend.delete(file_name)
 
                     num_deleted += 1
-                except:
+                # Bare except: catch any possible error here in order to properly log it and continue
+                except:  # noqa: E722
                     # Example of a one-off error: PermissionError: [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions
                     LOGGER.exception(f'Failed to delete IPS bundle "{file_name}"')
                     num_errors += 1
