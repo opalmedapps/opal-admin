@@ -148,5 +148,5 @@ class Command(BaseCommand):
                     num_errors += 1
 
         LOGGER.info(
-            f'{num_deleted} IPS {"bundle" if num_deleted == 1 else "bundles"} out of {len(file_list)} {'would be' if dry_run else 'was' if num_deleted == 1 else 'were'} deleted ({num_errors} {"error" if num_errors == 1 else "errors"})',
+            f'{num_deleted} IPS {"bundle" if num_deleted == 1 else "bundles"} out of {len(file_list)} {"would be" if dry_run else "was" if num_deleted == 1 else "were"} deleted ({num_errors} {"error" if num_errors == 1 else "errors"})',
         )
