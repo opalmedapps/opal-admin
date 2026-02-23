@@ -25,40 +25,44 @@ IPS_EXPIRY_HOURS = 1
 class FTPStoragePlus(FTPStorage):
     """Subclass of FTPStorage that can check a file's last modified datetime."""
 
-    def __init__(self, **settings):
+    def __init__(self, **settings: Any) -> None:
         """Default constructor."""
         super().__init__(**settings)
 
-    def _datetime_from_time_string(self, time_string):
+    def _datetime_from_time_string(self, time_string: str) -> datetime.datetime:
         # Convert the time representation to ISO format, in UTC
         time_string_iso = time_string[:8] + 'T' + time_string[8:] + 'Z'
 
         return datetime.datetime.fromisoformat(time_string_iso)
 
     # Function modeled on `_get_dir_details` of the FTPStorage class
-    def _get_dir_last_modified_details(self):
+    def _get_dir_last_modified_details(self) -> dict[str, str]:
         # Get metadata from the files in the current directory
-        lines = []
+        lines: list[str] = []
         self._connection.retrlines('MLSD', lines.append)
         entries = {}
 
         for line in lines:
             # Break down each part of the string (for example): ;modify=20251028155020;
-            attributes = line.split(';')
+            attributes: list[str] = line.split(';')
             # The last part of each line is the file name
             filename = attributes[-1].strip()
             # Break attributes into their component parts (for example): ['modify', '20251028155020']
-            attributes = [x.split('=') for x in attributes]
+            attributes_parsed: list[list[str]] = [x.split('=') for x in attributes]
             # Keep only the 'modify' value
-            modify = [x[1] for x in attributes if x[0] == 'modify']
+            modify = [x[1] for x in attributes_parsed if x[0] == 'modify']
             entries[filename] = modify[0]
 
         return entries
 
-    # Function modeled on `` of the ??? class
-    def get_modified_time(self, name):
+    # Implements `get_modified_time` of the Storage class (from FTPStorage(BaseStorage(Storage)))
+    # Function modeled on `listdir` of the FTPStorage class
+    def get_modified_time(self, name: str) -> datetime.datetime:
         """
         Return the last modified time (as a datetime) of the file specified by name.
+
+        Args:
+            name: The name of the file to check.
 
         Returns:
             The last modified datetime for the given file.
