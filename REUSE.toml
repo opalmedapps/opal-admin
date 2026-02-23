@@ -5,7 +5,6 @@ version = 1
 path = [
     "uv.lock",
     "opal/static/thirdparty/package-lock.json",
-    ".adr-dir",
 ]
 SPDX-FileCopyrightText = "NONE"
 SPDX-License-Identifier = "CC0-1.0"
