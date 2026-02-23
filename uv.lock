@@ -146,7 +146,7 @@ dev = [
     { name = "pytest-sugar", specifier = "==1.1.1" },
     { name = "ruff", specifier = "==0.15.2" },
     { name = "types-beautifulsoup4", specifier = "==4.12.0.20250516" },
-    { name = "types-fpdf2", specifier = "==2.8.4.20260130" },
+    { name = "types-fpdf2", specifier = "==2.8.4.20260221" },
     { name = "types-python-dateutil", specifier = "==2.9.0.20260124" },
     { name = "types-requests", specifier = "==2.32.4.20260107" },
 ]
@@ -2164,14 +2164,14 @@ wheels = [
 
 [[package]]
 name = "types-fpdf2"
-version = "2.8.4.20260130"
+version = "2.8.4.20260221"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pillow" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fd/4b/6a2ae17bcee1551071fbd58f2897d5695d97d9a98e5235857ba755c05882/types_fpdf2-2.8.4.20260130.tar.gz", hash = "sha256:c635cbbb013e6c09edcc208c75df2784ca7c2c5971fef76eacd609afa2fe6cd5", size = 41404, upload-time = "2026-01-30T03:58:26.099Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/09/12/8397bbcd0ba4ee5c21c1905363fe0752f72b627096f000dd04ed7b484f21/types_fpdf2-2.8.4.20260221.tar.gz", hash = "sha256:4350911f72fad000e351eb8b0ad8d7c7f8f8476b273100f33eeb41fbab737028", size = 41609, upload-time = "2026-02-21T03:55:29.005Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d8/05/2ee01aff9b6bf1fad7d8a5cddb8c0808d84a2337ffb4804f122a2417c99f/types_fpdf2-2.8.4.20260130-py3-none-any.whl", hash = "sha256:6f77c426558f8c5e0231188367b87270249deb2bb3493d8ed458d7cd2de659dd", size = 48293, upload-time = "2026-01-30T03:58:24.725Z" },
+    { url = "https://files.pythonhosted.org/packages/e1/eb/095d6b22ae3167537c4eff33340d0078e7ed9015af27ef37651541590769/types_fpdf2-2.8.4.20260221-py3-none-any.whl", hash = "sha256:a0509d0c0446038405a5df55b0aebc19569dddaa471fa6ae0d11ab6e1585479e", size = 48401, upload-time = "2026-02-21T03:55:27.876Z" },
 ]
 
 [[package]]
