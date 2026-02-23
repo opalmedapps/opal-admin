@@ -1,0 +1,45 @@
+; SPDX-FileCopyrightText: Copyright (C) 2025 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
+;
+; SPDX-License-Identifier: AGPL-3.0-or-later
+
+; https://coverage.readthedocs.io/en/7.13.0/config.html
+[run]
+source = opal
+; include = opal/*
+omit =
+    .*,
+    **/tests/*,
+    # omit test utils
+    opal/core/test_utils.py,
+    # **/migrations/*,
+    opal/wsgi.py,
+    opal/asgi.py,
+    # omit prod settings
+    opal/settings_prod.py,
+    # omit sidebar menu
+    opal/templates/sidebar_menu.html,
+    opal/templates/components/menu_group.html,
+    opal/templates/components/menu_item.html
+branch = True
+# starting with Python 3.14, sysmon is the default core
+# which does not support plugins yet and won't detect coverage in Django templates
+# https://coverage.readthedocs.io/en/7.11.0/changes.html#version-7-9-1-2025-06-13
+# https://coverage.readthedocs.io/en/latest/config.html#run-core
+core = ctrace
+plugins =
+    django_coverage_plugin
+
+[report]
+fail_under = 100
+precision = 2
+show_missing = True
+skip_empty = True
+skip_covered = True
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+    # Don't require coverage on TYPE_CHECKING imports
+    if TYPE_CHECKING:
+
+    # Don't complain if non-runnable code isn't run:
+    if __name__ == .__main__.:

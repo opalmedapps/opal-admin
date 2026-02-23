@@ -508,7 +508,8 @@ class Relationship(models.Model):
             hasattr(self, 'patient')
             and self.type.role_type == RoleType.SELF
             # exclude the current instance to support updating it
-            and Relationship.objects.exclude(
+            and Relationship.objects
+            .exclude(
                 pk=self.pk,
             )
             .filter(
@@ -523,7 +524,8 @@ class Relationship(models.Model):
             hasattr(self, 'caregiver')
             and self.type.role_type == RoleType.SELF
             # exclude the current instance to support updating it
-            and Relationship.objects.exclude(
+            and Relationship.objects
+            .exclude(
                 pk=self.pk,
             )
             .filter(
@@ -574,7 +576,8 @@ class Relationship(models.Model):
             hasattr(self, 'patient')
             and hasattr(self, 'caregiver')
             # exclude the current instance to support updating it
-            and Relationship.objects.exclude(
+            and Relationship.objects
+            .exclude(
                 pk=self.pk,
             )
             .filter(

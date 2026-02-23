@@ -42,7 +42,8 @@ def build_all_quantity_sample_charts(patient: Patient) -> dict[str, str | None]:
     # Build charts for the measurements that contain only one value
     for sample_type in SINGLE_VALUE_SAMPLE_TYPES:
         queryset = (
-            QuantitySample.objects.order_by('start_date')
+            QuantitySample.objects
+            .order_by('start_date')
             .filter(
                 patient=patient,
                 type=sample_type,

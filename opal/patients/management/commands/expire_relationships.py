@@ -30,7 +30,8 @@ class Command(BaseCommand):
         number_of_updates = 0
 
         relationships_to_check = (
-            Relationship.objects.select_related(
+            Relationship.objects
+            .select_related(
                 'patient',
                 'type',
             )

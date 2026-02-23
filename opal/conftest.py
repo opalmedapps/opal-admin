@@ -360,7 +360,7 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
 def django_db_setup(
     django_db_setup: None,
     django_db_blocker: DjangoDbBlocker,
-) -> Generator[None, None, None]:
+) -> Generator[None]:
     """
     Set up the QuestionnaireDB manually using an SQL file with the schema.
 
@@ -371,11 +371,9 @@ def django_db_setup(
     Yields:
         None
     """
-    with Path('opal/tests/sql/questionnairedb_functions.sql').open(encoding='utf-8') as handle:
-        sql_content = handle.read()
+    sql_content = Path('opal/tests/sql/questionnairedb_functions.sql').read_text(encoding='utf-8')
 
-    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open(encoding='utf-8') as handle:
-        sql_cleanup = handle.read()
+    sql_cleanup = Path('opal/tests/sql/questionnairedb_cleanup.sql').read_text(encoding='utf-8')
 
     with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
         conn.execute(sql_content)
@@ -390,7 +388,7 @@ def django_db_setup(
 
 
 @pytest.fixture
-def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, None, None]:
+def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None]:
     """
     Initialize the QuestionnaireDB with data.
 
@@ -410,11 +408,9 @@ def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, No
     Yields:
         None
     """
-    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='utf-8') as handle:
-        sql_data = handle.read()
+    sql_data = Path('opal/tests/sql/questionnairedb_data.sql').read_text(encoding='utf-8')
 
-    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open(encoding='utf-8') as handle:
-        sql_cleanup = handle.read()
+    sql_cleanup = Path('opal/tests/sql/questionnairedb_cleanup.sql').read_text(encoding='utf-8')
 
     with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
         # safety check to ensure that there is no data already

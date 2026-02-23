@@ -75,8 +75,7 @@ def fixture_institution_form_files() -> dict[str, SimpleUploadedFile]:
     Returns:
         dictionary with two logo image files
     """
-    with Path('opal/tests/fixtures/test_logo.png').open(mode='rb') as image_logo:
-        file_content = image_logo.read()
+    file_content = Path('opal/tests/fixtures/test_logo.png').read_bytes()
 
     return {
         'logo_en': SimpleUploadedFile(

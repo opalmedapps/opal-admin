@@ -39,7 +39,8 @@ def parse_pid_segment(segment: Segment) -> dict[str, Any]:
     return {
         'first_name': segment.pid_5.pid_5_2.to_er7(),
         'last_name': segment.pid_5.pid_5_1.to_er7(),
-        'date_of_birth': datetime.strptime(segment.pid_7.to_er7(), FORMAT_DATE)
+        'date_of_birth': datetime
+        .strptime(segment.pid_7.to_er7(), FORMAT_DATE)
         .astimezone(timezone.get_current_timezone())
         .date(),
         'sex': segment.pid_8.to_er7(),

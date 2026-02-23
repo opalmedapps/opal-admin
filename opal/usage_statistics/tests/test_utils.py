@@ -948,7 +948,8 @@ def _fetch_annotated_relationships() -> models.QuerySet[patient_models.Relations
     date_time = timezone.now()
     relationships_queryset = patient_models.Relationship.objects.all()
     return (
-        relationships_queryset.select_related(
+        relationships_queryset
+        .select_related(
             'patient',
             'caregiver__user',
         )

@@ -70,7 +70,8 @@ class AppChartView(APIView):
                 legacy_id,
                 username,
             ).count(),
-            'unread_educationalmaterial_count': models.LegacyEducationalMaterial.objects.get_unread_queryset(
+            'unread_educationalmaterial_count': models.LegacyEducationalMaterial.objects
+            .get_unread_queryset(
                 legacy_id,
                 username,
             )
@@ -83,7 +84,8 @@ class AppChartView(APIView):
                 username,
                 1,
             ).count(),
-            'unread_research_reference_count': models.LegacyEducationalMaterial.objects.get_unread_queryset(
+            'unread_research_reference_count': models.LegacyEducationalMaterial.objects
+            .get_unread_queryset(
                 legacy_id,
                 username,
             )
