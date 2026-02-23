@@ -12,9 +12,9 @@ date: 2026-02-23
 ## Context and Problem Statement
 
 We want to add support for patients to store health-related information.
-Basically, answers to questions they are usually asked when going to a new doctor or clinic, for example, their history of surgeries, medications, alcohol use etc.
+Basically, answers to questions they are usually asked when going to a new doctor or clinic, for example, their history of surgeries, medications, alcohol use, etc.
 
-In the end, the data needs to provided as FHIR resources so that it can be included in the International Patient Summary (IPS).
+In the end, the data needs to be provided as FHIR resources so that it can be included in the International Patient Summary (IPS).
 
 While the IPS functionality is currently provided from the `patients` app, it needs to be considered if this is the right place, or if another app (like `health_data`) would be better suited.
 
