@@ -9,7 +9,7 @@ import re
 from typing import Any
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 
 import structlog
 from storages.backends.ftp import FTPStorage
@@ -80,6 +80,20 @@ class Command(BaseCommand):
 
     help = 'Delete expired IPS bundles from their storage location.'
 
+    def add_arguments(self, parser: CommandParser) -> None:
+        """
+        Add arguments to the command.
+
+        Args:
+            parser: the command parser to add arguments to
+        """
+        parser.add_argument(
+            '--dry-run',
+            action='store_true',
+            default=False,
+            help='Runs the command with printouts of all planned actions, without actually deleting any files.',
+        )
+
     def handle(self, *args: Any, **options: Any) -> None:
         """
         Handle deletion of expired IPS bundles.
@@ -88,6 +102,8 @@ class Command(BaseCommand):
             args: non-keyword input arguments.
             options: additional keyword input arguments.
         """
+        dry_run: bool = options['dry_run']
+
         num_deleted = 0
         num_errors = 0
 
@@ -95,6 +111,9 @@ class Command(BaseCommand):
             raise NotImplementedError(
                 f'The expire_ips_bundles command currently only supports storages.backends.ftp.FTPStorage (see IPS_STORAGE_BACKEND); current value: {settings.IPS_STORAGE_BACKEND}'
             )
+
+        if dry_run:
+            LOGGER.info('Running command in dry-run mode; no files will be deleted.')
 
         storage_backend = FTPStoragePlus()
 
@@ -119,12 +138,15 @@ class Command(BaseCommand):
 
             if not valid:
                 try:
-                    storage_backend.delete(file_name)
+                    if not dry_run:
+                        storage_backend.delete(file_name)
+
                     num_deleted += 1
                 except:
+                    # Example of a one-off error: PermissionError: [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions
                     LOGGER.exception(f'Failed to delete IPS bundle "{file_name}"')
                     num_errors += 1
 
         LOGGER.info(
-            f'{num_deleted} IPS {"bundle" if num_deleted == 1 else "bundles"} out of {len(file_list)} deleted ({num_errors} {"error" if num_errors == 1 else "errors"})',
+            f'{num_deleted} IPS {"bundle" if num_deleted == 1 else "bundles"} out of {len(file_list)} {'would be' if dry_run else 'was' if num_deleted == 1 else 'were'} deleted ({num_errors} {"error" if num_errors == 1 else "errors"})',
         )
