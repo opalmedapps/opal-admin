@@ -28,13 +28,12 @@ It would be good to have a mixin that provides the ability for a timestamped mod
 
 ## Decision Outcome
 
-Chosen option: We will use the timestamped model from `django-extensions` because we already have it as a dependency. The dependency is currently a regular dependency but the app is only enabled in development.
-
-The `TimeStampedModel` can therefore be almost used right away and it is tested.
+Chosen option: We will use the timestamped model from `django-model-utils` because it is well tested and has type hints.
 
 ### Consequences
 
-- Need to enable `django-extensions` as an app in the base settings
+- Need to keep another package up to date.
+- Move `django-extensions` to dev dependency
 
 ## Pros and Cons of the Options
 
@@ -44,6 +43,8 @@ Dedicated package for models.
 
 - Last release in September 2024
 - Well-tested model: https://github.com/jazzband/django-model-utils/blob/master/tests/test_models/test_timestamped_model.py
+- Has other models and managers that could be helpful in the future
+- Package has type hints
 
 ### Model from `django-extensions`
 
@@ -51,6 +52,7 @@ We already use this package.
 
 - No additional dependency necessary
 - Need to make it available in all environments making certain management commands available in production
+- Package does not have type hints causing `Call to untyped function "CreationDateTimeField" in typed context` and `Call to untyped function "ModificationDateTimeField" in typed context`
 - Last release in April 2025
 - Has some tests:
     - https://github.com/django-extensions/django-extensions/blob/main/tests/test_timestamped_model.py
