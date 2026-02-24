@@ -4,11 +4,15 @@
 
 from datetime import date
 
+from django.conf import LazySettings
+
 import pytest
 from pytest_mock import MockerFixture, MockType
+from structlog.testing import LogCapture
 
 from opal.core.test_utils import CommandTestMixin
 from opal.patients import factories as patient_factories
+from opal.patients.management.commands.expire_ips_bundles import FTPStoragePlus
 from opal.patients.models import Patient, Relationship, RelationshipStatus
 
 pytestmark = pytest.mark.django_db(databases=['default'])
@@ -28,6 +32,32 @@ def calculate_age_fixed_date(date_of_birth: date) -> int:
         The result of Patient.calculate_age called with the input date_of_birth and a fixed reference date.
     """
     return calculate_age_original(date_of_birth=date_of_birth, reference_date=date(2014, 1, 15))
+
+
+class TestExpireIPSBundlesCommand(CommandTestMixin):
+    """Test class for expire_ips_bundles management command."""
+
+    def test_ftp_storage_only(self, settings: LazySettings) -> None:
+        """Raises a NotImplementedError when using a different storage backend than FTPStorage."""
+        settings.IPS_STORAGE_BACKEND = 'django.core.files.storage.FileSystemStorage'
+
+        with pytest.raises(NotImplementedError) as error:
+            self._call_command('expire_ips_bundles')
+
+        assert 'The expire_ips_bundles command currently only supports storages.backends.ftp.FTPStorage' in str(error.value)
+
+    def test_no_bundles(self, settings: LazySettings, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """No effect when there are no bundles."""
+        settings.IPS_STORAGE_BACKEND = 'storages.backends.ftp.FTPStorage'
+        mocker.patch.object(FTPStoragePlus, 'listdir', return_value=(
+            ['.', '..'],
+            ['.htaccess']
+        ))
+
+        self._call_command('expire_ips_bundles')
+
+        logs = [entry['event'] for entry in structlog_output.entries]
+        assert 'Checking 0 files to clean up expired IPS bundles (from storage backend: storages.backends.ftp.FTPStorage)' in logs
 
 
 class TestExpireRelationshipsCommand(CommandTestMixin):
