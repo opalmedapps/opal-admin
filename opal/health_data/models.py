@@ -25,6 +25,8 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from model_utils.models import TimeStampedModel
+
 from opal.patients.models import Patient
 
 from .managers import QuantitySampleManager
@@ -192,3 +194,28 @@ class QuantitySample(AbstractSample):
             return f'{self.value} {unit.value}'
 
         return super().__str__()
+
+
+class PatientReportedData(TimeStampedModel):
+    """
+    A model representing patient-reported data.
+
+    This model can be used to store any kind of data that the patient reports, such as symptoms, medication intake, etc.
+    """
+
+    patient = models.OneToOneField(
+        verbose_name=_('Patient'),
+        to=Patient,
+        on_delete=models.CASCADE,
+        related_name='patient_reported_data',
+    )
+    alcohol_use = models.JSONField(_('Alcohol Use'), null=True, blank=True)
+    tobacco_use = models.JSONField(_('Tobacco Use'), null=True, blank=True)
+
+    class Meta:
+        verbose_name = _('Patient Reported Data')
+        verbose_name_plural = _('Patient Reported Data')
+
+    def __str__(self) -> str:
+        """Return a string representation of this instance."""
+        return f'Patient Reported Data for {self.patient}'

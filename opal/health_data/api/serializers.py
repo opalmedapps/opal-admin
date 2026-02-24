@@ -8,7 +8,7 @@ from typing import Any
 
 from rest_framework import serializers
 
-from ..models import QuantitySample
+from ..models import PatientReportedData, QuantitySample
 
 
 class QuantitySampleListSerializer(serializers.ListSerializer[list[QuantitySample]]):
@@ -44,3 +44,11 @@ class QuantitySampleSerializer(serializers.ModelSerializer[QuantitySample]):
         fields = ('type', 'value', 'start_date', 'device', 'source')
         # See: https://www.django-rest-framework.org/api-guide/serializers/#customizing-multiple-create
         list_serializer_class = QuantitySampleListSerializer
+
+
+class PatientReportedDataSerializer(serializers.ModelSerializer[PatientReportedData]):
+    """Serializer for `PatientReportedData` instances."""
+
+    class Meta:
+        model = PatientReportedData
+        fields = ('alcohol_use', 'tobacco_use')

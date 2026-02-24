@@ -10,7 +10,7 @@ from django.db import models
 from django.utils import timezone
 
 from drf_spectacular.utils import extend_schema, inline_serializer
-from rest_framework import generics, serializers
+from rest_framework import generics, mixins, serializers
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,8 +20,8 @@ from opal.core.drf_permissions import IsListener, IsORMSUser
 from opal.patients.api.serializers import PatientUUIDSerializer
 from opal.patients.models import Patient
 
-from ..models import QuantitySample
-from .serializers import QuantitySampleSerializer
+from ..models import PatientReportedData, QuantitySample
+from .serializers import PatientReportedDataSerializer, QuantitySampleSerializer
 
 
 class CreateQuantitySampleView(generics.CreateAPIView[QuantitySample]):
@@ -174,3 +174,68 @@ class MarkQuantitySampleAsViewedView(APIView):
 
         # Return an empty response if patient's quantity samples updated successfully
         return Response()
+
+
+class PatientRecordedDataView(
+    mixins.CreateModelMixin,
+    generics.RetrieveUpdateAPIView[PatientReportedData],
+):
+    """
+    Create view for `PatientReportedData`.
+
+    Supports the creation of one or more instances at the same time by passing a list of dictionaries.
+    """
+
+    serializer_class = PatientReportedDataSerializer
+    # TODO: change to model permissions?
+    # TODO: change in the future to limit to user with access to the patient
+    # TODO: add CaregiverPermissions?
+    permission_classes = (IsListener,)
+    queryset = PatientReportedData.objects.all()
+    lookup_field = 'patient__uuid'
+    lookup_url_kwarg = 'uuid'
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Create a new `PatientReportedData` instance for the patient specified in the URL.
+
+        Args:
+            request: the API request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the response
+        """
+        return self.create(request, *args, **kwargs)
+
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Create one or more new quantity samples.
+
+        Ensures that the patient with the uuid as part of the URL exists.
+        Raises a 404 if the patient does not exist.
+
+        Args:
+            request: the API request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the response
+        """
+        uuid = self.kwargs['uuid']
+        self.patient = generics.get_object_or_404(Patient.objects.filter(date_of_death=None), uuid=uuid)
+
+        return super().create(request, *args, **kwargs)
+
+    def perform_create(self, serializer: serializers.BaseSerializer[PatientReportedData]) -> None:
+        """
+        Perform the creation.
+
+        Uses the patient instance determined according to the ID in the URL.
+
+        Args:
+            serializer: the serializer instance to use
+        """
+        serializer.save(patient=self.patient)

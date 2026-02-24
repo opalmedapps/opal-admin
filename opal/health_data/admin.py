@@ -8,7 +8,7 @@ from django.contrib import admin
 from django.contrib.admin.options import BaseModelAdmin
 from django.http import HttpRequest
 
-from .models import AbstractSample, QuantitySample
+from .models import AbstractSample, PatientReportedData, QuantitySample
 
 
 class AbstractSampleAdminMixin(BaseModelAdmin[AbstractSample]):
@@ -64,3 +64,6 @@ class QuantitySampleAdmin(AbstractSampleAdminMixin, admin.ModelAdmin[QuantitySam
         'viewed_at',
         'viewed_by',
     ]
+
+
+admin.site.register(PatientReportedData, admin.ModelAdmin[PatientReportedData])
