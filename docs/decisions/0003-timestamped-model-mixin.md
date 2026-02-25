@@ -33,7 +33,10 @@ Chosen option: We will use the timestamped model from `django-model-utils` becau
 ### Consequences
 
 - Need to keep another package up to date.
-- Move `django-extensions` to dev dependency
+
+#### Unrelated consequence
+
+`django-extensions` should already be a dev dependency, move it to dev dependency.
 
 ## Pros and Cons of the Options
 
