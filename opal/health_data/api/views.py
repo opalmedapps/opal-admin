@@ -10,11 +10,12 @@ from django.db import models
 from django.utils import timezone
 
 from drf_spectacular.utils import extend_schema, inline_serializer
-from rest_framework import generics, mixins, serializers
+from rest_framework import generics, serializers, status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.core.api.mixins import AllowPUTAsCreateMixin
 from opal.core.api.views import EmptyResponseSerializer
 from opal.core.drf_permissions import IsListener, IsORMSUser
 from opal.patients.api.serializers import PatientUUIDSerializer
@@ -177,7 +178,7 @@ class MarkQuantitySampleAsViewedView(APIView):
 
 
 class PatientRecordedDataView(
-    mixins.CreateModelMixin,
+    AllowPUTAsCreateMixin[PatientReportedData],
     generics.RetrieveUpdateAPIView[PatientReportedData],
 ):
     """
@@ -195,23 +196,9 @@ class PatientRecordedDataView(
     lookup_field = 'patient__uuid'
     lookup_url_kwarg = 'uuid'
 
-    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
-        Create a new `PatientReportedData` instance for the patient specified in the URL.
-
-        Args:
-            request: the API request
-            args: additional arguments
-            kwargs: additional keyword arguments
-
-        Returns:
-            the response
-        """
-        return self.create(request, *args, **kwargs)
-
-    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """
-        Create one or more new quantity samples.
+        Create or update `PatientReportedData` for the patient specified in the URL.
 
         Ensures that the patient with the uuid as part of the URL exists.
         Raises a 404 if the patient does not exist.
@@ -224,18 +211,16 @@ class PatientRecordedDataView(
         Returns:
             the response
         """
-        uuid = self.kwargs['uuid']
-        self.patient = generics.get_object_or_404(Patient.objects.filter(date_of_death=None), uuid=uuid)
+        # handle foreign-key relationship to patient since this use case is not supported by AllowPUTAsCreateMixin
+        if self._get_object_or_none() is None:
+            uuid = self.kwargs['uuid']
+            instance = generics.get_object_or_404(Patient.objects.filter(date_of_death=None), uuid=uuid)
 
-        return super().create(request, *args, **kwargs)
+            partial = kwargs.pop('partial', False)
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
 
-    def perform_create(self, serializer: serializers.BaseSerializer[PatientReportedData]) -> None:
-        """
-        Perform the creation.
+            serializer.save(patient=instance)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        Uses the patient instance determined according to the ID in the URL.
-
-        Args:
-            serializer: the serializer instance to use
-        """
-        serializer.save(patient=self.patient)
+        return super().update(request, *args, **kwargs)
