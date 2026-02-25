@@ -623,12 +623,8 @@ def structlog_output() -> LogCapture:
     Returns:
         An object providing log output via log_output.entries.
     """
-    return LogCapture()
-
-
-@pytest.fixture(autouse=True)
-def fixture_configure_structlog(structlog_output: LogCapture) -> None:
-    """Configuration to capture output from structlog, see: https://www.structlog.org/en/stable/testing.html."""
+    log_capture = LogCapture()
     structlog.configure(
-        processors=[structlog_output]
+        processors=[log_capture]
     )
+    return log_capture
