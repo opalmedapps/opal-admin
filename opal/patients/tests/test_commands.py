@@ -49,6 +49,8 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
     def test_no_bundles(self, settings: LazySettings, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """No effect when there are no bundles."""
         settings.IPS_STORAGE_BACKEND = 'storages.backends.ftp.FTPStorage'
+        settings.FTP_STORAGE_LOCATION = ''
+        mocker.patch.object(FTPStoragePlus, '_decode_location', return_value={})
         mocker.patch.object(FTPStoragePlus, 'listdir', return_value=(
             ['.', '..'],
             ['.htaccess']
