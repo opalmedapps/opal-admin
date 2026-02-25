@@ -227,6 +227,11 @@ extend-select = [
     # allow private member access
     "SLF001",
 ]
+"opal/patients/tests/test_commands.py" = [
+    # FTP is used for IPS upload
+    "S321",
+    "S402",
+]
 
 # https://docs.astral.sh/ruff/settings/#lintpydocstyle
 [lint.pydocstyle]

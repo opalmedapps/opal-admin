@@ -2,7 +2,10 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+import datetime
 from datetime import date
+from ftplib import FTP
+from itertools import starmap
 
 from django.conf import LazySettings
 
@@ -37,6 +40,52 @@ def calculate_age_fixed_date(date_of_birth: date) -> int:
 class TestExpireIPSBundlesCommand(CommandTestMixin):
     """Test class for expire_ips_bundles management command."""
 
+    @pytest.fixture(autouse=True)
+    def before_each(self, mocker: MockerFixture, settings: LazySettings) -> None:
+        """Setup for tests."""
+        settings.IPS_STORAGE_BACKEND = 'storages.backends.ftp.FTPStorage'
+        settings.FTP_STORAGE_LOCATION = ''
+
+        # Fake the current time for consistent results
+        mocker.patch('django.utils.timezone.now', return_value=datetime.datetime(2026, 1, 1, 9, 0, 0, tzinfo=datetime.UTC))
+
+        mocker.patch.object(FTPStoragePlus, '_decode_location', return_value={
+            'active': False,
+            'host': '',
+            'passwd': '',
+            'path': '',
+            'port': '',
+            'secure': False,
+            'user': '',
+        })
+        mocker.patch.object(FTP, 'connect')
+        mocker.patch.object(FTP, 'login')
+        mocker.patch.object(FTP, 'pwd')
+
+    def _mock_files(self, mocker: MockerFixture, files: dict[str, str]) -> None:
+        def format_info_line(file_name: str, date_str: str) -> str:
+            return f'type=test;size=0;modify={date_str};UNIX.mode=0000;UNIX.uid=1;UNIX.gid=1;unique=123456789ab; {file_name}'
+
+        basic_date = '20000101000000'
+
+        mocker.patch.object(FTPStoragePlus, 'listdir', return_value=(
+            ['.', '..'],
+            ['.htaccess', *files.keys()]
+        ))
+
+        info_lines = [
+            format_info_line('.', basic_date),
+            format_info_line('..', basic_date),
+            *list(starmap(format_info_line, files.items())),
+            format_info_line('.htaccess', basic_date),
+        ]
+
+        mocker.patch.object(FTP, 'retrlines', side_effect=lambda command, append: [append(line) for line in info_lines])
+
+    def _get_logs(self, structlog_output: LogCapture) -> list[str]:
+        """Gets log data as a list of strings from a structlog LogCapture fixture."""
+        return [entry['event'] for entry in structlog_output.entries]
+
     def test_ftp_storage_only(self, settings: LazySettings) -> None:
         """Raises a NotImplementedError when using a different storage backend than FTPStorage."""
         settings.IPS_STORAGE_BACKEND = 'django.core.files.storage.FileSystemStorage'
@@ -46,20 +95,105 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
         assert 'The expire_ips_bundles command currently only supports storages.backends.ftp.FTPStorage' in str(error.value)
 
-    def test_no_bundles(self, settings: LazySettings, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+    def test_no_bundles(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """No effect when there are no bundles."""
-        settings.IPS_STORAGE_BACKEND = 'storages.backends.ftp.FTPStorage'
-        settings.FTP_STORAGE_LOCATION = ''
-        mocker.patch.object(FTPStoragePlus, '_decode_location', return_value={})
-        mocker.patch.object(FTPStoragePlus, 'listdir', return_value=(
-            ['.', '..'],
-            ['.htaccess']
-        ))
+        self._mock_files(mocker, {})
 
         self._call_command('expire_ips_bundles')
 
-        logs = [entry['event'] for entry in structlog_output.entries]
+        logs = self._get_logs(structlog_output)
         assert 'Checking 0 files to clean up expired IPS bundles (from storage backend: storages.backends.ftp.FTPStorage)' in logs
+
+    def test_keep(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """Keep a non-expired bundle."""
+        self._mock_files(mocker, {
+            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101081500',
+        })
+
+        self._call_command('expire_ips_bundles')
+
+        logs = self._get_logs(structlog_output)
+        assert '0 IPS bundles out of 1 were deleted (0 errors)' in logs
+
+    def test_keep_almost_expired(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """Keep a non-expired bundle that is right about to expire."""
+        self._mock_files(mocker, {
+            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080001',
+        })
+
+        self._call_command('expire_ips_bundles')
+
+        logs = self._get_logs(structlog_output)
+        assert '0 IPS bundles out of 1 were deleted (0 errors)' in logs
+
+    def test_keep_now(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """Keep a bundle that was created just now."""
+        self._mock_files(mocker, {
+            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101090000',
+        })
+
+        self._call_command('expire_ips_bundles')
+
+        logs = self._get_logs(structlog_output)
+        assert '0 IPS bundles out of 1 were deleted (0 errors)' in logs
+
+    def test_keep_future(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """In case of a clock being out of sync, keep a bundle that is marked as last updated in the future."""
+        self._mock_files(mocker, {
+            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101090001',
+        })
+
+        self._call_command('expire_ips_bundles')
+
+        logs = self._get_logs(structlog_output)
+        assert '0 IPS bundles out of 1 were deleted (0 errors)' in logs
+
+    def test_delete(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """Delete an expired bundle."""
+        self._mock_files(mocker, {
+            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
+        })
+
+        self._call_command('expire_ips_bundles')
+
+        logs = self._get_logs(structlog_output)
+        assert '1 IPS bundle out of 1 was deleted (0 errors)' in logs
+
+    def test_delete_just_expired(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """Delete an expired bundle that has just expired."""
+        self._mock_files(mocker, {
+            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080000',
+        })
+
+        self._call_command('expire_ips_bundles')
+
+        logs = self._get_logs(structlog_output)
+        assert '1 IPS bundle out of 1 was deleted (0 errors)' in logs
+
+    def test_delete_one_keep_one(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """Delete one expired bundle while leaving the other untouched."""
+        self._mock_files(mocker, {
+            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080000',
+            'bd7c9cdc-1605-4839-9473-8109f488c1fd.ips': '20260101081500',
+        })
+
+        self._call_command('expire_ips_bundles')
+
+        logs = self._get_logs(structlog_output)
+        assert '1 IPS bundle out of 2 was deleted (0 errors)' in logs
+
+    def test_no_deletions_during_dry_run(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """Don't delete expired bundles when running in dry-run mode."""
+        self._mock_files(mocker, {
+            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
+        })
+
+        # TODO spy on storage_backend.delete (shouldn't run)
+
+        self._call_command('expire_ips_bundles', '--dry-run')
+
+        logs = self._get_logs(structlog_output)
+        assert '1 IPS bundle out of 1 would be deleted (0 errors)' in logs
 
 
 class TestExpireRelationshipsCommand(CommandTestMixin):

@@ -625,6 +625,8 @@ def structlog_output() -> LogCapture:
     """
     log_capture = LogCapture()
     structlog.configure(
-        processors=[log_capture]
+        processors=[log_capture],
+        # Allows this fixture to be used in multiple subsequent tests without caching issues
+        cache_logger_on_first_use=False,
     )
     return log_capture

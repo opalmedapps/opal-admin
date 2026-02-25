@@ -10,6 +10,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
+from django.utils import timezone
 
 import structlog
 from storages.backends.ftp import FTPStorage
@@ -132,7 +133,7 @@ class Command(BaseCommand):
             # Calculate the bundle's validity based on the time since it was last modified
             # Note that last modified is used instead of creation time (not available); it offers the same result, since bundle files aren't updated
             last_modified = storage_backend.get_modified_time(file_name)
-            now = datetime.datetime.now(datetime.UTC)
+            now = timezone.now()  # UTC
             delta = now - last_modified
             valid = delta < datetime.timedelta(hours=IPS_EXPIRY_HOURS)
 
