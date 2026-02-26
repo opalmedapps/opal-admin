@@ -83,6 +83,7 @@ jobs:
           # generate secret key
           SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
           sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
+          echo "DJANGO_SETTINGS_MODULE=config.settings.development" >> .env
       - name: Check for model changes with no migration
         if: '!cancelled()'
         run: uv run python manage.py makemigrations --dry-run --check
