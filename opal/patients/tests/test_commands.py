@@ -252,12 +252,21 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
             },
         )
         # Overwrite the directory listing with an additional file that isn't included in retrlines
-        mocker.patch.object(FTPStoragePlus, 'listdir', return_value=(['.', '..'], ['.htaccess', 'bd7c9cdc-1605-4839-9473-8109f488c1fd.ips', '1304efc5-9961-4249-bfa5-68af94cb0982.ips']))
+        mocker.patch.object(
+            FTPStoragePlus,
+            'listdir',
+            return_value=(
+                ['.', '..'],
+                ['.htaccess', 'bd7c9cdc-1605-4839-9473-8109f488c1fd.ips', '1304efc5-9961-4249-bfa5-68af94cb0982.ips'],
+            ),
+        )
 
         self._call_command('expire_ips_bundles')
 
         logs = self._get_logs(structlog_output)
-        assert 'ERROR - Bundle "bd7c9cdc-1605-4839-9473-8109f488c1fd.ips" last modified information is unavailable' in logs
+        assert (
+            'ERROR - Bundle "bd7c9cdc-1605-4839-9473-8109f488c1fd.ips" last modified information is unavailable' in logs
+        )
         assert '1 IPS bundle out of 2 was deleted (1 error)' in logs
 
     def test_file_delete_error(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
