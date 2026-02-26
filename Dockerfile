@@ -86,5 +86,7 @@ RUN cp .env.sample .env \
 
 USER appuser
 
+ENV DJANGO_SETTINGS_MODULE=config.settings.production
+
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 CMD [ "/app/start.sh" ]
