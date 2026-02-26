@@ -88,6 +88,3 @@ docs = [
     "mkdocs-material==9.7.3",
     "mkdocstrings[python-legacy]==1.0.3",
 ]
-
-[tool.uv.sources]
-fhir-resources = { git = "https://github.com/nazrulworld/fhir.resources.git", rev = "9a2eec1774913dbd89816e9a1cfcda22cdd4388e" }
