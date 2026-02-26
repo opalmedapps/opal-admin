@@ -8,6 +8,8 @@ import datetime as dt
 from datetime import datetime
 from typing import Any, cast
 
+from django.utils import timezone
+
 import structlog
 from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2.rfc7523 import PrivateKeyJWT
@@ -51,6 +53,25 @@ def _clean_coding(coding: dict[str, Any]) -> None:
     coding['code'] = coding['code'].rstrip('.')
     # replace empty code display fields to avoid validation errors
     coding['display'] = coding['display'] or 'No display provided'
+
+
+def _clean_last_updated(bundle: dict[str, Any]) -> dict[str, Any]:
+    """
+    Add timezone to timestamp of Bundle.meta.lastUpdated if it is missing.
+
+    Args:
+        bundle: the FHIR Bundle as a dictionary
+
+    Returns:
+        the cleaned bundle
+    """
+    if 'meta' in bundle and 'lastUpdated' in bundle['meta']:
+        last_updated = datetime.fromisoformat(bundle['meta']['lastUpdated'])
+        if last_updated.tzinfo is None:
+            last_updated = last_updated.replace(tzinfo=timezone.get_current_timezone())
+        bundle['meta']['lastUpdated'] = last_updated.isoformat()
+
+    return bundle
 
 
 class FHIRConnector:
@@ -141,6 +162,8 @@ class FHIRConnector:
 
         # sanitize some known data issues
         # these should eventually be fixed at the source
+        _clean_last_updated(data)
+
         for entry in data.get('entry', []):
             resource = entry.get('resource', {})
             for coding in resource.get('code', {}).get('coding', []):
@@ -167,6 +190,10 @@ class FHIRConnector:
         response.raise_for_status()
 
         data = response.json()
+
+        # sanitize some known data issues
+        # these should eventually be fixed at the source
+        _clean_last_updated(data)
 
         medications_bundle = Bundle.model_validate(data)
 
@@ -195,6 +222,8 @@ class FHIRConnector:
 
         # sanitize some known data issues
         # these should eventually be fixed at the source
+        _clean_last_updated(data)
+
         for entry in data.get('entry', []):
             resource = entry.get('resource', {})
             for coding in resource.get('code', {}).get('coding', []):
@@ -221,6 +250,10 @@ class FHIRConnector:
         response.raise_for_status()
 
         data = response.json()
+
+        # sanitize some known data issues
+        # these should eventually be fixed at the source
+        _clean_last_updated(data)
 
         for entry in data.get('entry', []):
             resource = entry.get('resource', {})
@@ -255,6 +288,10 @@ class FHIRConnector:
         response.raise_for_status()
 
         data = response.json()
+
+        # sanitize some known data issues
+        # these should eventually be fixed at the source
+        _clean_last_updated(data)
 
         observations_bundle = Bundle.model_validate(data)
         return [
