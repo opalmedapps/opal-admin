@@ -112,7 +112,9 @@ jobs:
           fi
       - name: Run check management command
         if: '!cancelled()'
-        run: uv run python manage.py check --fail-level WARNING
+        run: |
+          cat .env
+          uv run python manage.py check --fail-level WARNING
       - name: Validate templates
         if: '!cancelled()'
         run: uv run python manage.py validate_templates
