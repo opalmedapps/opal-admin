@@ -41,6 +41,7 @@ jobs:
           # generate secret key
           SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
           sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
+          echo "DJANGO_SETTINGS_MODULE=config.settings.production" >> .env
       - name: Test the image
         env:
           TAG: ${{ steps.build-image.outputs.tag }}
