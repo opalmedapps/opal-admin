@@ -228,7 +228,7 @@ extend-select = [
     "SLF001",
 ]
 "opal/patients/tests/test_commands.py" = [
-    # FTP is used for IPS upload
+    # FTP is used for uploading IPS bundles, which are encrypted
     "S321",
     "S402",
 ]
