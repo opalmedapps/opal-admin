@@ -4,12 +4,12 @@
 
 # Project information
 site_name: Backend
-site_url: https://opalmedapps.gitlab.io/backend
+site_url: https://opalmedapps.github.io/opal-admin
 site_author: Opal Health Informatics Group (O-HIG)
 
 # Repository
-repo_name: opalmedapps/backend
-repo_url: https://gitlab.com/opalmedapps/backend
+repo_name: opalmedapps/opal-admin
+repo_url: https://github.com/opalmedapps/opal-admin
 
 # Copyright
 copyright: Copyright &copy; Opal Health Informatics Group (O-HIG)

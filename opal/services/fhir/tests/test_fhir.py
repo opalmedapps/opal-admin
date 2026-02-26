@@ -203,6 +203,8 @@ class TestFHIRConnector:
     def test_patient_conditions_data_sanitization(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
         """Patient conditions data sanitization handles malformed code fields."""
         conditions_data = self._load_fixture('conditions.json')
+        # Remove timezone from Bundle.meta.lastUpdated
+        conditions_data['meta']['lastUpdated'] = conditions_data['meta']['lastUpdated'].replace('-05:00', '')
         # Add trailing whitespace to code and empty display
         conditions_data['entry'][0]['resource']['code']['coding'][0]['code'] = 'B18.2   '
         conditions_data['entry'][1]['resource']['code']['coding'][0]['display'] = ''
@@ -269,6 +271,23 @@ class TestFHIRConnector:
         with pytest.raises(ValidationError, match=r'entry.0.resource.subject\n\s+Field required'):
             fhir_connector.patient_medication_requests('test-patient-uuid')
 
+    def test_patient_medication_requests_data_sanitization(
+        self, fhir_connector: FHIRConnector, mocker: MockerFixture
+    ) -> None:
+        """Patient medication requests data sanitization handles malformed data."""
+        medication_requests_data = self._load_fixture('medication_requests.json')
+        # Remove timezone from Bundle.meta.lastUpdated
+        medication_requests_data['meta']['lastUpdated'] = medication_requests_data['meta']['lastUpdated'].replace(
+            '-05:00', ''
+        )
+
+        mock_response = self._mock_response(mocker, medication_requests_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        medication_requests = fhir_connector.patient_medication_requests('test-patient-uuid')
+
+        assert len(medication_requests) == 2
+
     def test_patient_allergies(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
         """Retrieving patient allergies returns the correct AllergyIntolerance resources."""
         allergies_data = self._load_fixture('allergies.json')
@@ -287,6 +306,8 @@ class TestFHIRConnector:
     def test_patient_allergies_data_sanitization(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
         """Patient allergies data sanitization handles malformed code fields."""
         allergies_data = self._load_fixture('allergies.json')
+        # Remove timezone from Bundle.meta.lastUpdated
+        allergies_data['meta']['lastUpdated'] = allergies_data['meta']['lastUpdated'].replace('-05:00', '')
         # Add trailing whitespace to code and empty display
         allergies_data['entry'][0]['resource']['code']['coding'][0]['code'] = 'B18.2   '
         allergies_data['entry'][1]['resource']['code']['coding'][0]['display'] = ''
@@ -355,6 +376,8 @@ class TestFHIRConnector:
     ) -> None:
         """Patient immunizations date sanitization handles invalid dates with -0001."""
         immunizations_data = self._load_fixture('immunizations.json')
+        # Remove timezone from Bundle.meta.lastUpdated
+        immunizations_data['meta']['lastUpdated'] = immunizations_data['meta']['lastUpdated'].replace('-05:00', '')
         # Add invalid date with -0001 year
         immunizations_data['entry'][0]['resource']['meta']['lastUpdated'] = '-0001-11-30T00:00:00-04:00'
         mock_response = self._mock_response(mocker, immunizations_data)
@@ -427,6 +450,19 @@ class TestFHIRConnector:
 
         with pytest.raises(ValidationError, match=r'entry.0.resource.status\n\s+Value for the field'):
             fhir_connector.patient_observations('test-patient-uuid')
+
+    def test_patient_observations_data_sanitization(self, fhir_connector: FHIRConnector, mocker: MockerFixture) -> None:
+        """Patient observations data sanitization handles malformed code fields."""
+        observations_data = self._load_fixture('observations.json')
+        # Remove timezone from Bundle.meta.lastUpdated
+        observations_data['meta']['lastUpdated'] = observations_data['meta']['lastUpdated'].replace('-05:00', '')
+
+        mock_response = self._mock_response(mocker, observations_data)
+        fhir_connector.session.get.return_value = mock_response
+
+        observations = fhir_connector.patient_observations('test-patient-uuid')
+
+        assert len(observations) == 10
 
     @pytest.mark.parametrize(
         'method_name',

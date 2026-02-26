@@ -6,7 +6,9 @@
 
 import datetime as dt
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
+
+from django.utils import timezone
 
 import structlog
 from authlib.integrations.requests_client import OAuth2Session
@@ -51,6 +53,25 @@ def _clean_coding(coding: dict[str, Any]) -> None:
     coding['code'] = coding['code'].rstrip('.')
     # replace empty code display fields to avoid validation errors
     coding['display'] = coding['display'] or 'No display provided'
+
+
+def _clean_last_updated(bundle: dict[str, Any]) -> dict[str, Any]:
+    """
+    Add timezone to timestamp of Bundle.meta.lastUpdated if it is missing.
+
+    Args:
+        bundle: the FHIR Bundle as a dictionary
+
+    Returns:
+        the cleaned bundle
+    """
+    if 'meta' in bundle and 'lastUpdated' in bundle['meta']:
+        last_updated = datetime.fromisoformat(bundle['meta']['lastUpdated'])
+        if last_updated.tzinfo is None:
+            last_updated = last_updated.replace(tzinfo=timezone.get_current_timezone())
+        bundle['meta']['lastUpdated'] = last_updated.isoformat()
+
+    return bundle
 
 
 class FHIRConnector:
@@ -141,13 +162,17 @@ class FHIRConnector:
 
         # sanitize some known data issues
         # these should eventually be fixed at the source
+        _clean_last_updated(data)
+
         for entry in data.get('entry', []):
             resource = entry.get('resource', {})
             for coding in resource.get('code', {}).get('coding', []):
                 _clean_coding(coding)
 
         conditions_bundle = Bundle.model_validate(data)
-        return [condition.resource for condition in conditions_bundle.entry or []]
+        return [
+            cast('Condition', condition.resource) for condition in conditions_bundle.entry or [] if condition.resource
+        ]
 
     def patient_medication_requests(self, uuid: str) -> list[MedicationRequest]:
         """
@@ -166,9 +191,17 @@ class FHIRConnector:
 
         data = response.json()
 
+        # sanitize some known data issues
+        # these should eventually be fixed at the source
+        _clean_last_updated(data)
+
         medications_bundle = Bundle.model_validate(data)
 
-        return [medication.resource for medication in medications_bundle.entry or []]
+        return [
+            cast('MedicationRequest', medication.resource)
+            for medication in medications_bundle.entry or []
+            if medication.resource
+        ]
 
     def patient_allergies(self, uuid: str) -> list[AllergyIntolerance]:
         """
@@ -189,13 +222,17 @@ class FHIRConnector:
 
         # sanitize some known data issues
         # these should eventually be fixed at the source
+        _clean_last_updated(data)
+
         for entry in data.get('entry', []):
             resource = entry.get('resource', {})
             for coding in resource.get('code', {}).get('coding', []):
                 _clean_coding(coding)
 
         allergies_bundle = Bundle.model_validate(data)
-        return [allergy.resource for allergy in allergies_bundle.entry or []]
+        return [
+            cast('AllergyIntolerance', allergy.resource) for allergy in allergies_bundle.entry or [] if allergy.resource
+        ]
 
     def patient_immunizations(self, uuid: str) -> list[Immunization]:
         """
@@ -214,6 +251,10 @@ class FHIRConnector:
 
         data = response.json()
 
+        # sanitize some known data issues
+        # these should eventually be fixed at the source
+        _clean_last_updated(data)
+
         for entry in data.get('entry', []):
             resource = entry.get('resource', {})
             if 'meta' in resource and 'lastUpdated' in resource['meta']:  # pragma: no cover
@@ -225,7 +266,11 @@ class FHIRConnector:
 
         immunizations_bundle = Bundle.model_validate(data)
 
-        return [immunization.resource for immunization in immunizations_bundle.entry or []]
+        return [
+            cast('Immunization', immunization.resource)
+            for immunization in immunizations_bundle.entry or []
+            if immunization.resource
+        ]
 
     def patient_observations(self, uuid: str) -> list[Observation]:
         """
@@ -244,5 +289,13 @@ class FHIRConnector:
 
         data = response.json()
 
+        # sanitize some known data issues
+        # these should eventually be fixed at the source
+        _clean_last_updated(data)
+
         observations_bundle = Bundle.model_validate(data)
-        return [observation.resource for observation in observations_bundle.entry or []]
+        return [
+            cast('Observation', observation.resource)
+            for observation in observations_bundle.entry or []
+            if observation.resource
+        ]
