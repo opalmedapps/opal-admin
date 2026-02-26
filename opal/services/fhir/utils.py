@@ -117,6 +117,6 @@ def retrieve_patient_summary(
         LOGGER.debug('Successfully built IPS bundle for patient with UUID %s', patient_uuid)
 
         # we know that there is an identifier because it is set in the build_patient_summary function
-        ips_uuid: str = ips_bundle.identifier.value
+        ips_uuid: str = ips_bundle.identifier.value  # type: ignore[assignment,union-attr]
 
         return ips_bundle.model_dump_json(indent=2), ips_uuid
