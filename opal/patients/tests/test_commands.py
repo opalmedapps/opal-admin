@@ -103,9 +103,11 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
     def test_no_bundles(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """No effect when there are no bundles."""
         self._mock_files(mocker, {})
+        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
 
         self._call_command('expire_ips_bundles')
 
+        assert delete_spy.call_count == 0
         logs = self._get_logs(structlog_output)
         assert (
             'Checking 0 files to clean up expired IPS bundles (from storage backend: storages.backends.ftp.FTPStorage)'
@@ -120,9 +122,11 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101081500',
             },
         )
+        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
 
         self._call_command('expire_ips_bundles')
 
+        assert delete_spy.call_count == 0
         logs = self._get_logs(structlog_output)
         assert '0 IPS bundles out of 1 were deleted (0 errors)' in logs
 
@@ -134,9 +138,11 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080001',
             },
         )
+        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
 
         self._call_command('expire_ips_bundles')
 
+        assert delete_spy.call_count == 0
         logs = self._get_logs(structlog_output)
         assert '0 IPS bundles out of 1 were deleted (0 errors)' in logs
 
@@ -148,9 +154,11 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101090000',
             },
         )
+        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
 
         self._call_command('expire_ips_bundles')
 
+        assert delete_spy.call_count == 0
         logs = self._get_logs(structlog_output)
         assert '0 IPS bundles out of 1 were deleted (0 errors)' in logs
 
@@ -162,9 +170,11 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101090001',
             },
         )
+        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
 
         self._call_command('expire_ips_bundles')
 
+        assert delete_spy.call_count == 0
         logs = self._get_logs(structlog_output)
         assert '0 IPS bundles out of 1 were deleted (0 errors)' in logs
 
@@ -176,9 +186,11 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
             },
         )
+        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
 
         self._call_command('expire_ips_bundles')
 
+        assert delete_spy.call_count == 1
         logs = self._get_logs(structlog_output)
         assert '1 IPS bundle out of 1 was deleted (0 errors)' in logs
 
@@ -190,9 +202,11 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080000',
             },
         )
+        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
 
         self._call_command('expire_ips_bundles')
 
+        assert delete_spy.call_count == 1
         logs = self._get_logs(structlog_output)
         assert '1 IPS bundle out of 1 was deleted (0 errors)' in logs
 
@@ -205,9 +219,11 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 'bd7c9cdc-1605-4839-9473-8109f488c1fd.ips': '20260101081500',
             },
         )
+        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
 
         self._call_command('expire_ips_bundles')
 
+        assert delete_spy.call_count == 1
         logs = self._get_logs(structlog_output)
         assert '1 IPS bundle out of 2 was deleted (0 errors)' in logs
 
@@ -219,13 +235,48 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
             },
         )
-
-        # TODO spy on storage_backend.delete (shouldn't run)
+        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
 
         self._call_command('expire_ips_bundles', '--dry-run')
 
+        assert delete_spy.call_count == 0
         logs = self._get_logs(structlog_output)
         assert '1 IPS bundle out of 1 would be deleted (0 errors)' in logs
+
+    def test_file_not_found(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """Log an error and continue if information about a file is missing from the server."""
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
+            },
+        )
+        # Overwrite the directory listing with an additional file that isn't included in retrlines
+        mocker.patch.object(FTPStoragePlus, 'listdir', return_value=(['.', '..'], ['.htaccess', 'bd7c9cdc-1605-4839-9473-8109f488c1fd.ips', '1304efc5-9961-4249-bfa5-68af94cb0982.ips']))
+
+        self._call_command('expire_ips_bundles')
+
+        logs = self._get_logs(structlog_output)
+        assert 'ERROR - Bundle "bd7c9cdc-1605-4839-9473-8109f488c1fd.ips" last modified information is unavailable' in logs
+        assert '1 IPS bundle out of 2 was deleted (1 error)' in logs
+
+    def test_file_delete_error(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """Log an error and continue if a file fails to be deleted."""
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101070000',
+                'bd7c9cdc-1605-4839-9473-8109f488c1fd.ips': '20260101070000',
+            },
+        )
+        # Throw a PermissionError only for the first file, do nothing for the second
+        mocker.patch.object(FTPStoragePlus, 'delete', side_effect=[PermissionError, None])
+
+        self._call_command('expire_ips_bundles')
+
+        logs = self._get_logs(structlog_output)
+        assert 'ERROR - Failed to delete IPS bundle "1304efc5-9961-4249-bfa5-68af94cb0982.ips"' in logs
+        assert '1 IPS bundle out of 2 was deleted (1 error)' in logs
 
 
 class TestExpireRelationshipsCommand(CommandTestMixin):

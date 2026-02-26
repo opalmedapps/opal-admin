@@ -132,16 +132,22 @@ class Command(BaseCommand):
         for file_name in file_list:
             # Calculate the bundle's validity based on the time since it was last modified
             # Note that last modified is used instead of creation time (not available); it offers the same result, since bundle files aren't updated
-            last_modified = storage_backend.get_modified_time(file_name)
+            try:
+                last_modified = storage_backend.get_modified_time(file_name)
+            except FileNotFoundError:
+                LOGGER.exception(f'ERROR - Bundle "{file_name}" last modified information is unavailable')
+                num_errors += 1
+                continue
+
             now = timezone.now()  # UTC
             delta = now - last_modified
-            valid = delta < datetime.timedelta(hours=IPS_EXPIRY_HOURS)
+            expired = delta >= datetime.timedelta(hours=IPS_EXPIRY_HOURS)
 
             LOGGER.debug(
-                f'{"KEEP" if valid else "DELETE"} - Bundle "{file_name}" last modified {delta} ago ({last_modified} UTC)',
+                f'{"DELETE" if expired else "KEEP"} - Bundle "{file_name}" last modified {delta} ago ({last_modified} UTC)',
             )
 
-            if not valid:
+            if expired:
                 try:
                     if not dry_run:
                         storage_backend.delete(file_name)
@@ -150,7 +156,7 @@ class Command(BaseCommand):
                 # Bare except: catch any possible error here in order to properly log it and continue
                 except:  # noqa: E722
                     # Example of a one-off error: PermissionError: [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions
-                    LOGGER.exception(f'Failed to delete IPS bundle "{file_name}"')
+                    LOGGER.exception(f'ERROR - Failed to delete IPS bundle "{file_name}"')
                     num_errors += 1
 
         LOGGER.info(
