@@ -104,7 +104,7 @@ requires-dist = [
     { name = "django-tables2", specifier = "==2.8.0" },
     { name = "djangorestframework", specifier = "==3.16.1" },
     { name = "drf-spectacular", specifier = "==0.29.0" },
-    { name = "fhir-resources", specifier = "==8.0.0" },
+    { name = "fhir-resources", specifier = "==8.2.0" },
     { name = "fpdf2", specifier = "==2.8.6" },
     { name = "gunicorn", marker = "extra == 'prod'", specifier = "==25.1.0" },
     { name = "hl7apy", specifier = "==1.3.5" },
@@ -154,7 +154,7 @@ docs = [
     { name = "mkdocs-autorefs", specifier = "==1.4.4" },
     { name = "mkdocs-gen-files", specifier = "==0.6.0" },
     { name = "mkdocs-literate-nav", specifier = "==0.6.2" },
-    { name = "mkdocs-material", specifier = "==9.7.2" },
+    { name = "mkdocs-material", specifier = "==9.7.3" },
     { name = "mkdocstrings", extras = ["python-legacy"], specifier = "==1.0.3" },
 ]
 
@@ -869,26 +869,26 @@ wheels = [
 
 [[package]]
 name = "fhir-core"
-version = "1.1.4"
+version = "1.1.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a4/98/210f317815f6eafa8cb21fbf203e6ac75bd53f2b25c1376bc1a647b3b4d7/fhir_core-1.1.4.tar.gz", hash = "sha256:d6549665c32f6b710da19d1309851d5d5f8902af899925623d6f4441eb1f2176", size = 33870, upload-time = "2025-07-11T18:10:59.565Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/dd/89/22e3b5eecb847812571089ad1c406e5d966fc819d71d119f0f5618bb8d3b/fhir_core-1.1.5.tar.gz", hash = "sha256:fc3c14252d32bf0502fdbcec7136685308cc81bf76ae754c3be3aac66bfa5801", size = 34417, upload-time = "2026-01-29T10:47:13.459Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2b/16/0fb20a14046b6b8a447019e939e58ee8dbe54a6bd06472f93d9ec6801ed8/fhir_core-1.1.4-py2.py3-none-any.whl", hash = "sha256:66d81639f9a45e646cf21cae492d68d89550a22409bf68a9b292b789e0d0061d", size = 29183, upload-time = "2025-07-11T18:10:58.167Z" },
+    { url = "https://files.pythonhosted.org/packages/bf/b4/988e247cbb18d61f676b563b7af77e49e971b4fb2147d9024baf36581c1e/fhir_core-1.1.5-py2.py3-none-any.whl", hash = "sha256:8b6a51487ab002410fdc77f5dac8e83e20929693483837c3c237af11ca3e5896", size = 29614, upload-time = "2026-01-29T10:47:11.906Z" },
 ]
 
 [[package]]
 name = "fhir-resources"
-version = "8.0.0"
+version = "8.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fhir-core" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/79/12/342da7d972e39268b1993392d104b92c3b8878e8d818414ad26bd98aeb2a/fhir.resources-8.0.0.tar.gz", hash = "sha256:84dac3af31eaf90d5b0386cac21d26c50e6fb1526d68b88a2c42d112978e9cf9", size = 1526522, upload-time = "2024-12-25T16:11:33.633Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a3/99/b82d8a5c96918844ab4a59cf7cae2b269cab46acf902b4f6533f78790287/fhir_resources-8.2.0.tar.gz", hash = "sha256:122a8b336385d504b399df9c5f332a7d913f07bc71a52dc9dde39abb5bf29129", size = 1618120, upload-time = "2026-02-02T20:53:19.088Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/53/fd/c44dfd6fd69ad526c815879cecca537450d727cd023426f4bf06879f4c27/fhir.resources-8.0.0-py2.py3-none-any.whl", hash = "sha256:9c46d6d79c6d6629c3bea6f244bcc6e8e0e4d15757a675f19d9d1c05c9ab2199", size = 2200379, upload-time = "2024-12-25T16:11:30.454Z" },
+    { url = "https://files.pythonhosted.org/packages/99/fb/e0a86d85d84be50e5750ca3ed51a96bf2ce091978c695118ea5b0bd75c81/fhir_resources-8.2.0-py2.py3-none-any.whl", hash = "sha256:ce6c9edc2aca867a090415885f1b0c625c510feddc0d843dc54a31d8b32ac091", size = 2287854, upload-time = "2026-02-02T20:53:13.466Z" },
 ]
 
 [[package]]
@@ -1234,7 +1234,7 @@ wheels = [
 
 [[package]]
 name = "mkdocs-material"
-version = "9.7.2"
+version = "9.7.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "babel" },
@@ -1249,9 +1249,9 @@ dependencies = [
     { name = "pymdown-extensions" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/34/57/5d3c8c9e2ff9d66dc8f63aa052eb0bac5041fecff7761d8689fe65c39c13/mkdocs_material-9.7.2.tar.gz", hash = "sha256:6776256552290b9b7a7aa002780e25b1e04bc9c3a8516b6b153e82e16b8384bd", size = 4097818, upload-time = "2026-02-18T15:53:07.763Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8a/b4/f900fcb8e6f510241e334ca401eddcb61ed880fb6572f7f32e4228472ca1/mkdocs_material-9.7.3.tar.gz", hash = "sha256:e5f0a18319699da7e78c35e4a8df7e93537a888660f61a86bd773a7134798f22", size = 4097748, upload-time = "2026-02-24T12:06:22.646Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cd/19/d194e75e82282b1d688f0720e21b5ac250ed64ddea333a228aaf83105f2e/mkdocs_material-9.7.2-py3-none-any.whl", hash = "sha256:9bf6f53452d4a4d527eac3cef3f92b7b6fc4931c55d57766a7d87890d47e1b92", size = 9305052, upload-time = "2026-02-18T15:53:05.221Z" },
+    { url = "https://files.pythonhosted.org/packages/b9/1b/16ad0193079bb8a15aa1d2620813a9cd15b18de150a4ea1b2c607fb4c74d/mkdocs_material-9.7.3-py3-none-any.whl", hash = "sha256:37ebf7b4788c992203faf2e71900be3c197c70a4be9b0d72aed537b08a91dd9d", size = 9305078, upload-time = "2026-02-24T12:06:19.155Z" },
 ]
 
 [[package]]

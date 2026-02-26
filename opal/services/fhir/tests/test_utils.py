@@ -127,6 +127,32 @@ def test_retrieve_patient_summary_no_patient_error(mocker: MockerFixture) -> Non
         )
 
 
+def test_retrieve_patient_summary_patient_no_id(mocker: MockerFixture) -> None:
+    """An error is raised if the patient does not have an ID."""
+    with Path(__file__).parent.joinpath('fixtures').joinpath('patient.json').open(encoding='utf-8') as f:
+        patient = Bundle.model_validate_json(f.read()).entry[0].resource
+
+    patient.id = None
+
+    mock_fhir_connector = mocker.Mock(spec=FHIRConnector)
+    mock_fhir_connector.find_patient.return_value = patient
+    mock_fhir_connector.patient_conditions.return_value = []
+    mock_fhir_connector.patient_medication_requests.return_value = []
+    mock_fhir_connector.patient_allergies.return_value = []
+    mock_fhir_connector.patient_observations.return_value = []
+    mock_fhir_connector.patient_immunizations.return_value = []
+    mocker.patch('opal.services.fhir.utils.FHIRConnector', return_value=mock_fhir_connector)
+
+    with pytest.raises(FHIRDataRetrievalError, match='Patient with identifier test-identifier has no ID'):
+        retrieve_patient_summary(
+            oauth_url='https://example.com/oauth2',
+            fhir_url='https://example.com/fhir',
+            client_id='test-client-id',
+            private_key='private-key',
+            identifier='test-identifier',
+        )
+
+
 def test_retrieve_patient_summary_oauth2_error(mocker: MockerFixture) -> None:
     """An error is raised if the OAuth2 authentication fails."""
     mock_session = mocker.Mock(spec=OAuth2Session)
