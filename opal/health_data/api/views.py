@@ -214,13 +214,13 @@ class PatientRecordedDataView(
         # handle foreign-key relationship to patient since this use case is not supported by AllowPUTAsCreateMixin
         if self._get_object_or_none() is None:
             uuid = self.kwargs['uuid']
-            instance = generics.get_object_or_404(Patient.objects.filter(date_of_death=None), uuid=uuid)
+            patient = generics.get_object_or_404(Patient.objects.filter(date_of_death=None), uuid=uuid)
 
             partial = kwargs.pop('partial', False)
-            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer = self.get_serializer(data=request.data, partial=partial)
             serializer.is_valid(raise_exception=True)
 
-            serializer.save(patient=instance)
+            serializer.save(patient=patient)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return super().update(request, *args, **kwargs)
