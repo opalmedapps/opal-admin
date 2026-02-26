@@ -6,7 +6,6 @@
 
 import datetime as dt
 import uuid
-from collections.abc import Sequence
 
 from django.conf import settings
 from django.utils import timezone
@@ -48,7 +47,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
     allergies: list[AllergyIntolerance],
     observations: list[Observation],
     immunizations: list[Immunization],
-    social_history: Sequence[Observation],
+    social_history: list[Observation],
 ) -> Bundle:
     """
     Build an International Patient Summary (IPS) document as a FHIR Bundle.
