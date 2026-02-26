@@ -47,17 +47,23 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         settings.FTP_STORAGE_LOCATION = ''
 
         # Fake the current time for consistent results
-        mocker.patch('django.utils.timezone.now', return_value=datetime.datetime(2026, 1, 1, 9, 0, 0, tzinfo=datetime.UTC))
+        mocker.patch(
+            'django.utils.timezone.now', return_value=datetime.datetime(2026, 1, 1, 9, 0, 0, tzinfo=datetime.UTC)
+        )
 
-        mocker.patch.object(FTPStoragePlus, '_decode_location', return_value={
-            'active': False,
-            'host': '',
-            'passwd': '',
-            'path': '',
-            'port': '',
-            'secure': False,
-            'user': '',
-        })
+        mocker.patch.object(
+            FTPStoragePlus,
+            '_decode_location',
+            return_value={
+                'active': False,
+                'host': '',
+                'passwd': '',
+                'path': '',
+                'port': '',
+                'secure': False,
+                'user': '',
+            },
+        )
         mocker.patch.object(FTP, 'connect')
         mocker.patch.object(FTP, 'login')
         mocker.patch.object(FTP, 'pwd')
@@ -68,10 +74,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
         basic_date = '20000101000000'
 
-        mocker.patch.object(FTPStoragePlus, 'listdir', return_value=(
-            ['.', '..'],
-            ['.htaccess', *files.keys()]
-        ))
+        mocker.patch.object(FTPStoragePlus, 'listdir', return_value=(['.', '..'], ['.htaccess', *files.keys()]))
 
         info_lines = [
             format_info_line('.', basic_date),
@@ -93,7 +96,9 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         with pytest.raises(NotImplementedError) as error:
             self._call_command('expire_ips_bundles')
 
-        assert 'The expire_ips_bundles command currently only supports storages.backends.ftp.FTPStorage' in str(error.value)
+        assert 'The expire_ips_bundles command currently only supports storages.backends.ftp.FTPStorage' in str(
+            error.value
+        )
 
     def test_no_bundles(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """No effect when there are no bundles."""
@@ -102,13 +107,19 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         self._call_command('expire_ips_bundles')
 
         logs = self._get_logs(structlog_output)
-        assert 'Checking 0 files to clean up expired IPS bundles (from storage backend: storages.backends.ftp.FTPStorage)' in logs
+        assert (
+            'Checking 0 files to clean up expired IPS bundles (from storage backend: storages.backends.ftp.FTPStorage)'
+            in logs
+        )
 
     def test_keep(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """Keep a non-expired bundle."""
-        self._mock_files(mocker, {
-            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101081500',
-        })
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101081500',
+            },
+        )
 
         self._call_command('expire_ips_bundles')
 
@@ -117,9 +128,12 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
     def test_keep_almost_expired(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """Keep a non-expired bundle that is right about to expire."""
-        self._mock_files(mocker, {
-            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080001',
-        })
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080001',
+            },
+        )
 
         self._call_command('expire_ips_bundles')
 
@@ -128,9 +142,12 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
     def test_keep_now(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """Keep a bundle that was created just now."""
-        self._mock_files(mocker, {
-            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101090000',
-        })
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101090000',
+            },
+        )
 
         self._call_command('expire_ips_bundles')
 
@@ -139,9 +156,12 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
     def test_keep_future(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """In case of a clock being out of sync, keep a bundle that is marked as last updated in the future."""
-        self._mock_files(mocker, {
-            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101090001',
-        })
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101090001',
+            },
+        )
 
         self._call_command('expire_ips_bundles')
 
@@ -150,9 +170,12 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
     def test_delete(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """Delete an expired bundle."""
-        self._mock_files(mocker, {
-            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
-        })
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
+            },
+        )
 
         self._call_command('expire_ips_bundles')
 
@@ -161,9 +184,12 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
     def test_delete_just_expired(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """Delete an expired bundle that has just expired."""
-        self._mock_files(mocker, {
-            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080000',
-        })
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080000',
+            },
+        )
 
         self._call_command('expire_ips_bundles')
 
@@ -172,10 +198,13 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
     def test_delete_one_keep_one(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """Delete one expired bundle while leaving the other untouched."""
-        self._mock_files(mocker, {
-            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080000',
-            'bd7c9cdc-1605-4839-9473-8109f488c1fd.ips': '20260101081500',
-        })
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080000',
+                'bd7c9cdc-1605-4839-9473-8109f488c1fd.ips': '20260101081500',
+            },
+        )
 
         self._call_command('expire_ips_bundles')
 
@@ -184,9 +213,12 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
     def test_no_deletions_during_dry_run(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """Don't delete expired bundles when running in dry-run mode."""
-        self._mock_files(mocker, {
-            '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
-        })
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
+            },
+        )
 
         # TODO spy on storage_backend.delete (shouldn't run)
 
