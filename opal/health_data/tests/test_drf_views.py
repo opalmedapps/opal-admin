@@ -22,7 +22,7 @@ from opal.patients import factories as patient_factories
 from opal.users.models import User
 
 from ..api import views
-from ..models import QuantitySample, QuantitySampleType, SampleSourceType
+from ..models import PatientReportedData, QuantitySample, QuantitySampleType, SampleSourceType
 
 pytestmark = pytest.mark.django_db
 
@@ -483,3 +483,17 @@ def test_unviewed_health_data_no_duplicates(api_client: APIClient, orms_user: Us
         raw=response.content,
         expected_data=[{'count': 3, 'patient_uuid': f'{patient.uuid}'}],
     )
+
+
+def test_patientreporteddata_put_create(admin_api_client: APIClient) -> None:
+    """Ensure first-time PUT creates `PatientReportedData` for the patient."""
+    patient = patient_factories.Patient.create()
+
+    response = admin_api_client.put(
+        reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
+        data={'alcohol_use': None, 'tobacco_use': None},
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert PatientReportedData.objects.count() == 1
+    PatientReportedData.objects.get(patient=patient)
