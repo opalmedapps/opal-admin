@@ -84,7 +84,7 @@ def retrieve_patient_summary(
         patient_uuid = patient.id
 
         if not patient_uuid:
-            raise FHIRDataRetrievalError(f'Patient with identifier {identifier} has no UUID')
+            raise FHIRDataRetrievalError(f'Patient with identifier {identifier} has no ID')
 
         conditions = fhir.patient_conditions(patient_uuid)
         medication_requests = fhir.patient_medication_requests(patient_uuid)
@@ -117,6 +117,6 @@ def retrieve_patient_summary(
         LOGGER.debug('Successfully built IPS bundle for patient with UUID %s', patient_uuid)
 
         # we know that there is an identifier because it is set in the build_patient_summary function
-        ips_uuid: str = ips_bundle.identifier.value  # type: ignore[assignment,union-attr]
+        ips_uuid: str = ips_bundle.identifier.value
 
         return ips_bundle.model_dump_json(indent=2), ips_uuid
