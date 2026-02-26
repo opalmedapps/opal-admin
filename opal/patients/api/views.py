@@ -34,7 +34,13 @@ from opal.core.drf_permissions import (
     IsListener,
     IsRegistrationListener,
 )
-from opal.services.fhir.utils import FHIRDataRetrievalError, jwe_sh_link_encrypt, retrieve_patient_summary
+from opal.health_data.models import PatientReportedData
+from opal.services.fhir.utils import (
+    FHIRConnectionSettings,
+    FHIRDataRetrievalError,
+    jwe_sh_link_encrypt,
+    retrieve_patient_summary,
+)
 
 from ..api.serializers import (
     CaregiverRelationshipSerializer,
@@ -331,14 +337,27 @@ class PatientSummaryView(APIView):
         if not patient.ramq:
             raise ValidationError('Patient has no health identification number')
 
+        social_history_row = (
+            PatientReportedData.objects.filter(patient=patient).values_list('alcohol_use', 'tobacco_use').first()
+        )
+
+        social_history = (
+            [item for item in social_history_row if item is not None] if social_history_row is not None else []
+        )
+
+        fhir_settings = FHIRConnectionSettings(
+            oauth_url=settings.FHIR_API_OAUTH_URL,
+            fhir_url=settings.FHIR_API_URL,
+            client_id=settings.FHIR_API_CLIENT_ID,
+            private_key=settings.FHIR_API_PRIVATE_KEY,
+        )
+
         # Request and assemble IPS data into a bundle
         try:
             ips, ips_uuid = retrieve_patient_summary(
-                settings.FHIR_API_OAUTH_URL,
-                settings.FHIR_API_URL,
-                settings.FHIR_API_CLIENT_ID,
-                settings.FHIR_API_PRIVATE_KEY,
+                fhir_settings,
                 patient.ramq,
+                social_history=social_history,
             )
         except FHIRDataRetrievalError as exc:
             LOGGER.exception('Error retrieving IPS data from FHIR server for patient %s', uuid)

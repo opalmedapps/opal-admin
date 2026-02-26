@@ -6,6 +6,7 @@
 
 import datetime as dt
 import uuid
+from collections.abc import Sequence
 
 from django.conf import settings
 from django.utils import timezone
@@ -47,6 +48,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
     allergies: list[AllergyIntolerance],
     observations: list[Observation],
     immunizations: list[Immunization],
+    social_history: Sequence[Observation],
 ) -> Bundle:
     """
     Build an International Patient Summary (IPS) document as a FHIR Bundle.
@@ -58,6 +60,7 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
         allergies: the list of AllergyIntolerance resources
         observations: the list of Observation resources
         immunizations: the list of Immunization resources
+        social_history: the list of Observation resources related to the patient's social history, for example, patient-reported alcohol and tobacco use
 
     Returns:
         the IPS as a FHIR Bundle resource
@@ -175,6 +178,19 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
                     ),
                     entry=[Reference(reference=f'urn:uuid:{immunization.id}') for immunization in immunizations],
                 ),
+                CompositionSection(
+                    title=_('Social History'),
+                    code=CodeableConcept(
+                        coding=[
+                            Coding(
+                                system='http://loinc.org',
+                                code='29762-2',
+                                display='Social history note',
+                            )
+                        ]
+                    ),
+                    entry=[Reference(reference=f'urn:uuid:{observation.id}') for observation in social_history],
+                ),
             ],
         )
 
@@ -204,6 +220,9 @@ def build_patient_summary(  # noqa: PLR0913, PLR0917
         ips.entry.extend(BundleEntry(resource=lab, fullUrl=f'urn:uuid:{lab.id}') for lab in labs)
         ips.entry.extend(
             BundleEntry(resource=immunization, fullUrl=f'urn:uuid:{immunization.id}') for immunization in immunizations
+        )
+        ips.entry.extend(
+            BundleEntry(resource=observation, fullUrl=f'urn:uuid:{observation.id}') for observation in social_history
         )
 
         # add narrative for empty entries

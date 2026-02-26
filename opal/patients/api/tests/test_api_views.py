@@ -29,9 +29,11 @@ from rest_framework.exceptions import NotFound
 from rest_framework.test import APIClient
 
 from opal.caregivers.factories import CaregiverProfile, Device, RegistrationCode
+from opal.health_data.models import PatientReportedData
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
 from opal.patients.factories import HospitalPatient, Patient, Relationship, RelationshipType
+from opal.services.fhir.utils import FHIRConnectionSettings
 from opal.users import factories as caregiver_factories
 from opal.users.models import User
 
@@ -1118,11 +1120,14 @@ class TestPatientSummaryView:
         assert response.status_code == status.HTTP_200_OK, response.text
 
         mock_retrieve.assert_called_once_with(
-            settings.FHIR_API_OAUTH_URL,
-            settings.FHIR_API_URL,
-            settings.FHIR_API_CLIENT_ID,
-            settings.FHIR_API_PRIVATE_KEY,
+            FHIRConnectionSettings(
+                oauth_url=settings.FHIR_API_OAUTH_URL,
+                fhir_url=settings.FHIR_API_URL,
+                client_id=settings.FHIR_API_CLIENT_ID,
+                private_key=settings.FHIR_API_PRIVATE_KEY,
+            ),
             patient.ramq,
+            social_history=[],
         )
 
         payload_base64 = response.json()['payload']
@@ -1201,9 +1206,17 @@ class TestPatientSummaryView:
         mocker.patch('django.core.files.storage.FileSystemStorage.save', side_effect=OSError('Unable to save file'))
 
         patient_uuid = uuid4()
-        Patient.create(uuid=patient_uuid, ramq='OTES12345678')
+        patient = Patient.create(uuid=patient_uuid, ramq='OTES12345678')
+
+        PatientReportedData.objects.create(
+            patient=patient,
+            alcohol_use={'frequency': 'daily', 'quantity': 2},
+            tobacco_use={'status': 'former', 'quit_date': '2020-01-01'},
+        )
 
         response = api_client.get(reverse('api:patient-summary', kwargs={'uuid': patient_uuid}))
+
+        # assert False
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST, response.text
         assert response.json() == ['Error saving IPS bundle to storage backend']

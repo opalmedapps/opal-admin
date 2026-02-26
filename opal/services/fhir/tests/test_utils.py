@@ -16,10 +16,22 @@ from jose import jwe, utils
 from pytest_mock import MockerFixture
 
 from opal.services.fhir.fhir import FHIRConnector
-from opal.services.fhir.utils import FHIRDataRetrievalError, jwe_sh_link_encrypt, retrieve_patient_summary
+from opal.services.fhir.utils import (
+    FHIRConnectionSettings,
+    FHIRDataRetrievalError,
+    jwe_sh_link_encrypt,
+    retrieve_patient_summary,
+)
 
 if TYPE_CHECKING:
     from unittest.mock import Mock
+
+FHIR_SETTINGS = FHIRConnectionSettings(
+    oauth_url='https://example.com/oauth2',
+    fhir_url='https://example.com/fhir',
+    client_id='test-client-id',
+    private_key='private-key',
+)
 
 
 def test_jwe_sh_link_encrypt() -> None:
@@ -97,10 +109,7 @@ def test_retrieve_patient_summary(mocker: MockerFixture) -> None:
     mocker.patch('opal.services.fhir.utils.FHIRConnector', return_value=mock_fhir_connector)
 
     summary_json, summary_uuid = retrieve_patient_summary(
-        oauth_url='https://example.com/oauth2',
-        fhir_url='https://example.com/fhir',
-        client_id='test-client-id',
-        private_key='private-key',
+        settings=FHIR_SETTINGS,
         identifier='test-identifier',
     )
 
@@ -119,10 +128,7 @@ def test_retrieve_patient_summary_no_patient_error(mocker: MockerFixture) -> Non
 
     with pytest.raises(FHIRDataRetrievalError, match='Error finding patient with identifier test-identifier'):
         retrieve_patient_summary(
-            oauth_url='https://example.com/oauth2',
-            fhir_url='https://example.com/fhir',
-            client_id='test-client-id',
-            private_key='private-key',
+            settings=FHIR_SETTINGS,
             identifier='test-identifier',
         )
 
@@ -135,9 +141,6 @@ def test_retrieve_patient_summary_oauth2_error(mocker: MockerFixture) -> None:
 
     with pytest.raises(FHIRDataRetrievalError, match='Error retrieving data from FHIR server'):
         retrieve_patient_summary(
-            oauth_url='https://example.com/oauth2',
-            fhir_url='https://example.com/fhir',
-            client_id='test-client-id',
-            private_key='private-key',
+            settings=FHIR_SETTINGS,
             identifier='test-identifier',
         )

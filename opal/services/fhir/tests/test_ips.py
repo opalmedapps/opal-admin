@@ -62,6 +62,7 @@ def _prepare_build_patient_summary() -> tuple[
         allergies,
         observations,
         immunizations,
+        [],
     )
 
     return (summary, patient, conditions, medication_requests, allergies, observations, immunizations)
@@ -103,8 +104,8 @@ def test_build_patient_summary_composition() -> None:
     assert composition.type.coding[0].display == 'Patient summary Document'
     assert composition.type.coding[0].code == '60591-5'
 
-    # Verify all 7 IPS sections
-    assert len(composition.section) == 7
+    # Verify all IPS sections
+    assert len(composition.section) == 8
 
     observations_with_category_value = ips._clean_observations(observations)
 
@@ -129,6 +130,7 @@ def test_build_patient_summary_composition() -> None:
         ('Vital Signs', '8716-3', vital_signs),
         ('Laboratory Results', '30954-2', labs),
         ('Immunizations', '11369-6', immunizations),
+        ('Social History', '29762-2', []),
     ]
 
     for section, (expected_title, expected_code, resources) in zip(composition.section, expected_sections, strict=True):
@@ -153,7 +155,7 @@ def test_build_patient_summary_empty_sections() -> None:
     patient_data = _load_fixture('patient.json')
     patient = Bundle.model_validate(patient_data).entry[0].resource
 
-    summary = ips.build_patient_summary(patient, [], [], [], [], [])
+    summary = ips.build_patient_summary(patient, [], [], [], [], [], [])
 
     composition = summary.entry[0].resource
 
@@ -167,7 +169,7 @@ def test_build_patient_summary_patient() -> None:
     patient_data = _load_fixture('patient.json')
     patient = Bundle.model_validate(patient_data).entry[0].resource
 
-    summary = ips.build_patient_summary(patient, [], [], [], [], [])
+    summary = ips.build_patient_summary(patient, [], [], [], [], [], [])
 
     composition = summary.entry[0].resource
 
@@ -184,7 +186,7 @@ def test_build_patient_summary_generator() -> None:
     patient_data = _load_fixture('patient.json')
     patient = Bundle.model_validate(patient_data).entry[0].resource
 
-    summary = ips.build_patient_summary(patient, [], [], [], [], [])
+    summary = ips.build_patient_summary(patient, [], [], [], [], [], [])
 
     composition = summary.entry[0].resource
     generator = summary.entry[2].resource
