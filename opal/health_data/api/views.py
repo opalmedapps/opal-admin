@@ -127,7 +127,8 @@ class UnviewedQuantitySampleView(APIView):
 
         # Unviewed counts of patients' QuantitySamples
         unviewed_counts = (
-            Patient.objects.select_related(
+            Patient.objects
+            .select_related(
                 'quantity_samples',
             )
             .filter(

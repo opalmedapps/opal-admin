@@ -453,6 +453,9 @@ class TestInitializeData(CommandTestMixin):
         with assertRaisesMessage(ObjectDoesNotExist, message):
             User.objects.get(username='orms')
 
+        with assertRaisesMessage(ObjectDoesNotExist, message):
+            legacy_models.LegacyOAUser.objects.get(username='orms')
+
         token_listener.refresh_from_db()
         token_registration_listener.refresh_from_db()
         token_interface_engine.refresh_from_db()
@@ -524,6 +527,13 @@ class TestInitializeData(CommandTestMixin):
         User.objects.get(username='interface-engine')
 
         legacy_models.LegacyOAUser.objects.get(username='interface-engine')
+
+    def test_insert_legacy_orms(self) -> None:
+        """A legacy orms user is generated."""
+        self._call_command('initialize_data')
+
+        User.objects.get(username='orms')
+        legacy_models.LegacyOAUser.objects.get(username='orms')
 
     def test_insert_superuser_random_password(self) -> None:
         """An admin user with a random password is generated."""

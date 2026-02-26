@@ -466,9 +466,9 @@ class LegacyPatientTestResultFactory(DjangoModelFactory[models.LegacyPatientTest
     normal_range_min = Faker('random_int')
     normal_range_max = Faker('random_int')
     normal_range = lazy_attribute(
-        lambda legacypatienttestresult: str(legacypatienttestresult.normal_range_min)
-        + '-'
-        + str(legacypatienttestresult.normal_range_max),
+        lambda legacypatienttestresult: (
+            f'{legacypatienttestresult.normal_range_min} - {legacypatienttestresult.normal_range_max}'
+        ),
     )
     test_value_numeric = Faker('pyfloat', positive=True)
     test_value_string = lazy_attribute(lambda legacypatienttestresult: str(legacypatienttestresult.test_value_numeric))

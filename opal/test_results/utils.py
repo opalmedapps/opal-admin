@@ -58,7 +58,8 @@ def generate_pathology_report(
             patient_date_of_birth=patient.date_of_birth,
             patient_ramq=patient.ramq or '',
             patient_sites_and_mrns=list(
-                patient.hospital_patients.all()
+                patient.hospital_patients
+                .all()
                 .annotate(
                     site_code=models.F('site__acronym'),
                 )

@@ -110,8 +110,7 @@ class TestAccountRecover(CommandTestMixin):
         assert caregiver_models.SecurityAnswer.objects.count() == 0
         assert caregiver_models.Device.objects.count() == 0
         assert patient_models.HospitalPatient.objects.count() == 0
-        with Path('test.json').open('w', encoding='utf-8') as file:
-            file.write(stdout)
+        Path('test.json').write_text(stdout, encoding='utf-8')
         stdout, _stderr = self._call_command('recover_account', 'test.json')
         assert stdout == 'Data successfully recovered! Please delete the backup file.\n'
         assert patient_models.Patient.objects.count() == 1

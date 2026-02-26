@@ -125,7 +125,8 @@ def get_aggregated_patient_received_data(
             # Use a slice (e.g., [:1]) instead of get()/first()
             # since the OuterRef cannot be resolved until the queryset is used within a Subquery.
             # https://docs.djangoproject.com/en/5.0/ref/models/expressions/#limiting-the-subquery-to-a-single-row
-            legacy_models.LegacyAppointment.objects.filter(
+            legacy_models.LegacyAppointment.objects
+            .filter(
                 patientsernum=patient_out_ref,
                 scheduledstarttime__lt=end_datetime_period,
             )
@@ -136,7 +137,8 @@ def get_aggregated_patient_received_data(
             # Retrieve the closest open/active appointment for every patient relatively to the requesting
             # date range, regardless of how far it might be.
             # E.g., the appointment might be later than the end of the range.
-            legacy_models.LegacyAppointment.objects.filter(
+            legacy_models.LegacyAppointment.objects
+            .filter(
                 patientsernum=patient_out_ref,
                 state='Active',
                 status='Open',
@@ -149,7 +151,8 @@ def get_aggregated_patient_received_data(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
                 # Aggregate how many appointments for every patient were received in the given date range.
-                legacy_models.LegacyAppointment.objects.filter(
+                legacy_models.LegacyAppointment.objects
+                .filter(
                     patientsernum=patient_out_ref,
                     date_added__range=date_added_range,
                 )
@@ -166,7 +169,8 @@ def get_aggregated_patient_received_data(
         # Subqueries for Documents
         'last_document_received': models.Subquery(
             # Retrieve the latest received document for every patient, regardless of how old it might be.
-            legacy_models.LegacyDocument.objects.filter(
+            legacy_models.LegacyDocument.objects
+            .filter(
                 patientsernum=patient_out_ref,
                 dateadded__lt=end_datetime_period,
             )
@@ -177,7 +181,8 @@ def get_aggregated_patient_received_data(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
                 # Aggregate how many documents for every patient were received in the given date range.
-                legacy_models.LegacyDocument.objects.filter(
+                legacy_models.LegacyDocument.objects
+                .filter(
                     patientsernum=patient_out_ref,
                     dateadded__range=date_added_range,
                 )
@@ -195,7 +200,8 @@ def get_aggregated_patient_received_data(
         'last_educational_material_received': models.Subquery(
             # Retrieve the latest received educational material for every patient,
             # regardless of how old it might be.
-            legacy_models.LegacyEducationalMaterial.objects.filter(
+            legacy_models.LegacyEducationalMaterial.objects
+            .filter(
                 patientsernum=patient_out_ref,
                 date_added__lt=end_datetime_period,
             )
@@ -206,7 +212,8 @@ def get_aggregated_patient_received_data(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
                 # Aggregate how many educational materials for every patient were received in the given date range.
-                legacy_models.LegacyEducationalMaterial.objects.filter(
+                legacy_models.LegacyEducationalMaterial.objects
+                .filter(
                     patientsernum=patient_out_ref,
                     date_added__range=date_added_range,
                 )
@@ -223,7 +230,8 @@ def get_aggregated_patient_received_data(
         # Subqueries for Questionnaires
         'last_questionnaire_received': models.Subquery(
             # Retrieve the latest received questionnaire for every patient, regardless of how old it might be.
-            legacy_models.LegacyQuestionnaire.objects.filter(
+            legacy_models.LegacyQuestionnaire.objects
+            .filter(
                 patientsernum=patient_out_ref,
                 date_added__lt=end_datetime_period,
             )
@@ -234,7 +242,8 @@ def get_aggregated_patient_received_data(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
                 # Aggregate how many questionnaires for every patient were received in the given date range.
-                legacy_models.LegacyQuestionnaire.objects.filter(
+                legacy_models.LegacyQuestionnaire.objects
+                .filter(
                     patientsernum=patient_out_ref,
                     date_added__range=date_added_range,
                 )
@@ -252,7 +261,8 @@ def get_aggregated_patient_received_data(
         # Subqueries for Labs
         'last_lab_received': models.Subquery(
             # Retrieve the latest received lab result for every patient, regardless of how old it might be.
-            legacy_models.LegacyPatientTestResult.objects.filter(
+            legacy_models.LegacyPatientTestResult.objects
+            .filter(
                 patient_ser_num=patient_out_ref,
                 date_added__lt=end_datetime_period,
             )
@@ -263,7 +273,8 @@ def get_aggregated_patient_received_data(
             # Use Coalesce to prevent an aggregate Count() from returning a None and return 0 instead.
             models.Subquery(
                 # Aggregate how many lab results for every patient were received in the given date range.
-                legacy_models.LegacyPatientTestResult.objects.filter(
+                legacy_models.LegacyPatientTestResult.objects
+                .filter(
                     patient_ser_num=patient_out_ref,
                     date_added__range=date_added_range,
                 )
