@@ -1210,8 +1210,7 @@ class TestPatientSummaryView:
 
         PatientReportedData.objects.create(
             patient=patient,
-            alcohol_use={'frequency': 'daily', 'quantity': 2},
-            tobacco_use={'status': 'former', 'quit_date': '2020-01-01'},
+            social_history=[{'frequency': 'daily', 'quantity': 2}, {'status': 'former', 'quit_date': '2020-01-01'}],
         )
 
         response = api_client.get(reverse('api:patient-summary', kwargs={'uuid': patient_uuid}))

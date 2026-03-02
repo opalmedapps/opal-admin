@@ -36,8 +36,7 @@ class Migration(migrations.Migration):
                         default=django.utils.timezone.now, editable=False, verbose_name='modified'
                     ),
                 ),
-                ('alcohol_use', models.JSONField(blank=True, null=True, verbose_name='Alcohol Use')),
-                ('tobacco_use', models.JSONField(blank=True, null=True, verbose_name='Tobacco Use')),
+                ('social_history', models.JSONField(blank=True, null=True, verbose_name='Social History')),
                 (
                     'patient',
                     models.OneToOneField(

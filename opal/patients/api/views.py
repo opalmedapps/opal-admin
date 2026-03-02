@@ -337,12 +337,11 @@ class PatientSummaryView(APIView):
         if not patient.ramq:
             raise ValidationError('Patient has no health identification number')
 
-        social_history_row = (
-            PatientReportedData.objects.filter(patient=patient).values_list('alcohol_use', 'tobacco_use').first()
-        )
-
+        patient_reported_data = PatientReportedData.objects.filter(patient=patient).first()
         social_history = (
-            [item for item in social_history_row if item is not None] if social_history_row is not None else []
+            patient_reported_data.social_history
+            if patient_reported_data and patient_reported_data.social_history
+            else []
         )
 
         fhir_settings = FHIRConnectionSettings(
