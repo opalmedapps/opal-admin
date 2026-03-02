@@ -16,7 +16,7 @@ dependencies = [
     "django==5.2.11",
     "django-auditlog==3.4.1",
     "django-cors-headers==4.9.0",
-    "django-crispy-forms==2.5",
+    "django-crispy-forms==2.6",
     "django-environ==0.13.0",
     "django-filter==25.2",
     "django-forms-dynamic==1.0.0",
