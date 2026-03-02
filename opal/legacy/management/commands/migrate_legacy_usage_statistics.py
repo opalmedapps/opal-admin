@@ -86,14 +86,14 @@ class Command(BaseCommand):
         The legacy patient activity logs should be ordered
         by the patient serial number and the date added.
 
+        Args:
+            file_path: the log file path.
+            batch_size: the migration batch size.
+
         Returns the number of record inserted.
 
         Returns:
             the number of record inserted with success.
-
-        Args:
-            file_path: the log file path.
-            batch_size: the migration batch size.
         """
         batch_app_activity = []
         batch_patient_activity = []
@@ -163,15 +163,15 @@ class Command(BaseCommand):
         """
         Migrate list of legacy patient data received logs.
 
+        Args:
+            file_path: the log file path.
+            batch_size: the migration batch size.
+
         The legacy patient data received logs should be ordered by
         the patient serial number and the date added.
 
         Returns:
             the number of record inserted with success.
-
-        Args:
-            file_path: the log file path.
-            batch_size: the migration batch size.
         """
         batch = []
         last_record = DailyPatientDataReceived.objects.all().last()
@@ -212,14 +212,14 @@ class Command(BaseCommand):
         """
         Create legacy patient activity log.
 
+        Args:
+            activity_log: legacy patient activity log
+
         Returns:
             DailyUserPatientActivity: activity log object
 
         Raises:
             ValueError: If the legacy patient is missing in system
-
-        Args:
-            activity_log: legacy patient activity log
         """
         legacy_id = int(activity_log['PatientSerNum'])
         if legacy_id in self.patients and legacy_id in self.self_caregiver:
@@ -242,14 +242,14 @@ class Command(BaseCommand):
         """
         Create legacy app activity log.
 
+        Args:
+            activity_log: legacy patient activity log
+
         Returns:
             DailyUserAppActivity: activity log object
 
         Raises:
             ValueError: If the legacy patient is missing in system
-
-        Args:
-            activity_log: legacy patient activity log
         """
         last_login = (
             None
@@ -281,14 +281,14 @@ class Command(BaseCommand):
         """
         Create legacy patient data received log.
 
+        Args:
+            data_received_log: legacy patient data received log
+
         Returns:
             DailyPatientDataReceived: statistic log object
 
         Raises:
             ValueError: If the legacy patient is missing in system
-
-        Args:
-            data_received_log: legacy patient data received log
         """
         next_appointment = (
             None
@@ -342,12 +342,12 @@ class Command(BaseCommand):
         """
         Migrate legacy patient data received log.
 
-        Returns:
-            The empty batch size.
-
         Args:
             batch: List of model object.
             model: Model object created.
+
+        Returns:
+            The empty batch size.
         """
         model.bulk_create(batch, batch_size=len(batch))
         batch.clear()

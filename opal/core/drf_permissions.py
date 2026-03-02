@@ -195,11 +195,11 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         Args:
             request: The http request.
 
-        Raises:
-            ParseError: If the caregiver username was not provided.
-
         Returns:
             The caregiver username.
+
+        Raises:
+            ParseError: If the caregiver username was not provided.
         """
         caregiver_username = request.headers.get('Appuserid')
         if not caregiver_username or not isinstance(caregiver_username, str):
@@ -216,11 +216,11 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         Args:
             view: The view through which the request was made.
 
-        Raises:
-            ParseError: If the patient's legacy id was not provided.
-
         Returns:
             The patient's legacy id.
+
+        Raises:
+            ParseError: If the patient's legacy id was not provided.
         """
         patient_legacy_id: int | None = view.kwargs.get('legacy_id') if hasattr(view, 'kwargs') else None
         if not patient_legacy_id or not isinstance(patient_legacy_id, int):
@@ -237,11 +237,11 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         Args:
             caregiver_username: The caregiver username used to search for a matching CaregiverProfile.
 
-        Raises:
-            PermissionDenied: If the caregiver is not found.
-
         Returns:
             The CaregiverProfile.
+
+        Raises:
+            PermissionDenied: If the caregiver is not found.
         """
         caregiver_profile = CaregiverProfile.objects.filter(user__username=caregiver_username).first()
         if not caregiver_profile:
@@ -260,11 +260,11 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             caregiver_profile: The caregiver profile used to search for Relationships.
             patient_legacy_id: The patient legacy id representing the patient who should be part of the Relationship(s).
 
-        Raises:
-            PermissionDenied: If the caregiver has no relationships with the patient.
-
         Returns:
             The set of relationships between the caregiver and patient.
+
+        Raises:
+            PermissionDenied: If the caregiver has no relationships with the patient.
         """
         relationships_with_target = caregiver_profile.relationships.filter(
             patient__legacy_id=patient_legacy_id,

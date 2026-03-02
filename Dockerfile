@@ -4,7 +4,7 @@
 
 FROM python:3.13.12-alpine3.22 AS build
 
-COPY --from=ghcr.io/astral-sh/uv:0.10.4 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.10.7 /uv /uvx /bin/
 
 # dependencies for building Python packages
 RUN apk add --no-cache build-base \
@@ -85,6 +85,8 @@ RUN cp .env.sample .env \
   && chown appuser:appuser /logs
 
 USER appuser
+
+ENV DJANGO_SETTINGS_MODULE=config.settings.production
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 CMD [ "/app/start.sh" ]

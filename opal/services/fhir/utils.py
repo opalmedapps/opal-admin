@@ -73,7 +73,7 @@ def retrieve_patient_summary(
     settings: FHIRConnectionSettings,
     identifier: str,
     social_history: Sequence[dict[str, Any]] = (),
-) -> tuple[str, uuid.UUID]:
+) -> tuple[str, str]:
     """
     Retrieve patient data and build a patient summary in IPS format for a patient identified by their identifier.
 
@@ -82,11 +82,11 @@ def retrieve_patient_summary(
         identifier: the patient identifier (usually the health insurance number)
         social_history: optional social history data to include in the IPS bundle, for example, patient-reported alcohol and tobacco use
 
-    Raises:
-        FHIRDataRetrievalError: if there is an error retrieving data from the FHIR server
-
     Returns:
         a tuple of the patient summary in IPS format as a JSON string and the UUID of the IPS bundle
+
+    Raises:
+        FHIRDataRetrievalError: if there is an error retrieving data from the FHIR server
     """
     LOGGER.debug(
         'Building patient summary for patient with identifier %s, using OAuth2 URL: %s, FHIR API: %s, client ID: %s',
@@ -106,6 +106,10 @@ def retrieve_patient_summary(
 
         patient = fhir.find_patient(identifier)
         patient_uuid = patient.id
+
+        if not patient_uuid:
+            raise FHIRDataRetrievalError(f'Patient with identifier {identifier} has no ID')
+
         conditions = fhir.patient_conditions(patient_uuid)
         medication_requests = fhir.patient_medication_requests(patient_uuid)
         allergies = fhir.patient_allergies(patient_uuid)
@@ -152,7 +156,10 @@ def retrieve_patient_summary(
 
         LOGGER.debug('Successfully built IPS bundle for patient with UUID %s', patient_uuid)
 
-        return ips_bundle.model_dump_json(indent=2), ips_bundle.identifier.value
+        # we know that there is an identifier because it is set in the build_patient_summary function
+        ips_uuid: str = ips_bundle.identifier.value  # type: ignore[assignment,union-attr]
+
+        return ips_bundle.model_dump_json(indent=2), ips_uuid
 
 
 def validate_observation(value: dict[str, Any]) -> Observation:

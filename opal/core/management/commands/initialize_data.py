@@ -27,11 +27,11 @@ def token(value: str) -> str:
     Args:
         value: The token string to validate
 
-    Raises:
-        ValueError: If the token string is not 40 characters long
-
     Returns:
         the token string
+
+    Raises:
+        ValueError: If the token string is not 40 characters long
     """
     if len(value) != constants.TOKEN_LENGTH:
         raise ValueError('Token must be 40 characters long')
@@ -46,11 +46,11 @@ def password(value: str) -> str:
     Args:
         value: the password string to validate
 
-    Raises:
-        ValueError: If the password is too short
-
     Returns:
         the password string
+
+    Raises:
+        ValueError: If the password is too short
     """
     minimum_length = constants.ADMIN_PASSWORD_MIN_LENGTH
 

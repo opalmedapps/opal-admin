@@ -99,14 +99,14 @@ class SecurityAnswerViewSet(
             username: user username
             request: Http request.
 
-        Raises:
-            ValidationError: the answer is not equal to the correct one.
-
         Returns:
             Http response with the data needed to
             return the security question when verification succeed,
             return message 'Wrong Answer' when the answer not correct,
             return message 'Wrong Answer' when there is an exception.
+
+        Raises:
+            ValidationError: the answer is not equal to the correct one.
         """
         input_serializer = serializers.VerifySecurityAnswerSerializer(data=request.data, partial=True)
         input_serializer.is_valid(raise_exception=True)
