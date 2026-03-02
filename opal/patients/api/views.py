@@ -338,11 +338,7 @@ class PatientSummaryView(APIView):
             raise ValidationError('Patient has no health identification number')
 
         patient_reported_data = PatientReportedData.objects.filter(patient=patient).first()
-        social_history = (
-            patient_reported_data.social_history
-            if patient_reported_data and patient_reported_data.social_history
-            else []
-        )
+        social_history = patient_reported_data.social_history if patient_reported_data else []
 
         fhir_settings = FHIRConnectionSettings(
             oauth_url=settings.FHIR_API_OAUTH_URL,
