@@ -11,7 +11,7 @@ requires-python = "==3.13.12"
 dependencies = [
     "argon2-cffi==25.1.0",
     "authlib==1.6.8",
-    "crispy-bootstrap5==2025.6",
+    "crispy-bootstrap5==2026.3",
     "dj-rest-auth==7.1.1",
     "django==5.2.11",
     "django-auditlog==3.4.1",
