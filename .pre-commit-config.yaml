@@ -64,7 +64,7 @@ repos:
   - id: markdownlint-cli2
 
 - repo: https://github.com/adamchainz/django-upgrade
-  rev: 1.29.1
+  rev: 1.30.0
   hooks:
   - id: django-upgrade
 
@@ -74,7 +74,7 @@ repos:
     - id: reuse-lint-file
 
 - repo: https://github.com/crate-ci/typos
-  rev: v1.43.5
+  rev: v1.44.0
   hooks:
     - id: typos
 
@@ -112,7 +112,7 @@ repos:
     - id: zizmor
 
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.36.2
+  rev: 0.37.0
   hooks:
     - id: check-github-workflows
       args: ["--verbose"]
