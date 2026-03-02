@@ -11,7 +11,6 @@ from django.utils import timezone
 
 import pandas as pd
 import pytest
-import pytz
 from pytest_django.asserts import assertRaisesMessage
 
 from opal.caregivers import factories as caregiver_factories
@@ -1064,7 +1063,7 @@ def test_export_data_invalid_file_name(tmp_path: Path) -> None:
 
 def test_convert_to_naive() -> None:
     """Ensure that datetime conversion function remove the timezone information."""
-    sample_datetime = pd.Timestamp(dt.datetime.now(pytz.utc))
+    sample_datetime = pd.Timestamp(dt.datetime.now(dt.UTC))
     assert sample_datetime.tz
     sample_datetime = stats_utils._convert_to_naive(sample_datetime)
     assert not sample_datetime.tz
