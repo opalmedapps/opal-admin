@@ -58,11 +58,11 @@ def retrieve_patient_summary(
         private_key: Private key in PEM format for PrivateKeyJWT authentication
         identifier: the patient identifier (usually the health insurance number)
 
-    Raises:
-        FHIRDataRetrievalError: if there is an error retrieving data from the FHIR server
-
     Returns:
         a tuple of the patient summary in IPS format as a JSON string and the UUID of the IPS bundle
+
+    Raises:
+        FHIRDataRetrievalError: if there is an error retrieving data from the FHIR server
     """
     LOGGER.debug(
         'Building patient summary for patient with identifier %s, using OAuth2 URL: %s, FHIR API: %s, client ID: %s',

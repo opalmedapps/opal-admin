@@ -438,12 +438,12 @@ def create_access_request(
         caregiver: a `Caregiver` instance if the caregiver exists, a tuple consisting of first and last name otherwise
         relationship_type: the type of relationship between the caregiver and patient
 
-    Raises:
-        ValueError: if an existing user registering as self is missing their legacy_id value
-
     Returns:
         the newly created relationship (which provides access to patient and caregiver)
         and the registration code (in the case of a new caregiver, otherwise None)
+
+    Raises:
+        ValueError: if an existing user registering as self is missing their legacy_id value
     """
     is_new_patient = False
     registration_code = None

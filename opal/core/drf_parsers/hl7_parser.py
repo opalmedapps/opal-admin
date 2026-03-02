@@ -291,11 +291,11 @@ class HL7Parser(BaseParser):
             media_type: Acceptable data/media type
             parser_context: Additional request metadata to specify parsing functionality
 
-        Raises:
-            ParseError: If the data passed is not a StringIO stream
-
         Returns:
             dictionary object containing the parsed HL7v2 message
+
+        Raises:
+            ParseError: If the data passed is not a StringIO stream
         """
         # Initialize the message_dict to hold parsed data
         message_dict: dict[str, Any] = defaultdict(list)

@@ -498,12 +498,11 @@ def get_questionnaire_data(patient: Patient) -> list[questionnaire.Questionnaire
     Args:
         patient: patient for data
 
-    Raises:
-        DataFetchError: error fetching the arguments
-
     Returns:
         list of the questionnaireData
 
+    Raises:
+        DataFetchError: error fetching the arguments
     """
     if patient.legacy_id:
         external_patient_id = patient.legacy_id
@@ -554,11 +553,11 @@ def _parse_query_result(
     Args:
         query_result: raw query results, each tuple represents a database row
 
-    Raises:
-        TypeError: if the JSON data cannot be deserialized
-
     Returns:
         structured list of dictionaries representing the query
+
+    Raises:
+        TypeError: if the JSON data cannot be deserialized
     """
     data_list = []
     for parsed_data in query_result:
@@ -578,11 +577,11 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
     Args:
         parsed_data_list: parsed data list of the questionnaire
 
-    Raises:
-        DataFetchError: if the questionnaire data format is wrong
-
     Returns:
         complete answered questionnaire data list of the patient
+
+    Raises:
+        DataFetchError: if the questionnaire data format is wrong
     """
     questionnaire_data_list = []
 
@@ -609,11 +608,11 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnai
     Args:
         questions_data: unprocessed questions data associated with the questionnaire
 
-    Raises:
-        TypeError: the answers are wrongly formatted
-
     Returns:
         list of questions associated with the questionnaire
+
+    Raises:
+        TypeError: the answers are wrongly formatted
     """
     questions = []
 
