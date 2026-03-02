@@ -68,11 +68,11 @@ class RetrieveRegistrationDetailsView(RetrieveAPIView[caregiver_models.Registrat
         """
         Override get_object to filter RegistrationCode by patient date_of_death.
 
-        Raises:
-            PermissionDenied: return forbidden error for deceased patients.
-
         Returns:
             The object of RegistrationCode
+
+        Raises:
+            PermissionDenied: return forbidden error for deceased patients.
         """
         registration_code = super().get_object()
         if registration_code.relationship.patient.date_of_death:
@@ -266,11 +266,11 @@ class PatientExistsView(APIView):
         Args:
             request: List of mrn & site dictionary objects
 
-        Raises:
-            NotFound: if `Patient` record has not been found through the provided `mrns` list of `HospitalPatients`
-
         Returns:
             uuid & legacy_id for the `Patient` object
+
+        Raises:
+            NotFound: if `Patient` record has not been found through the provided `mrns` list of `HospitalPatients`
         """
         # Make `is_active` not required for cases when source system calling
         # the API without knowing if Patient is active in Opal
@@ -320,11 +320,11 @@ class PatientSummaryView(APIView):
             request: HTTP request
             uuid: the patient's UUID for whom IPS link data is being generated
 
-        Raises:
-            ValidationError: if the patient has no health identification number
-
         Returns:
             HTTP response with the SH link payload that can be parsed by IPS viewers
+
+        Raises:
+            ValidationError: if the patient has no health identification number
         """
         patient = get_object_or_404(Patient, uuid=uuid)
 

@@ -156,11 +156,11 @@ class RelationshipType(models.Model):
             args: additional arguments
             kwargs: additional keyword arguments
 
-        Raises:
-            ValidationError: if the instance does not have a `role_type` of _Caregiver_
-
         Returns:
             Number of models deleted and dict of models deleted.
+
+        Raises:
+            ValidationError: if the instance does not have a `role_type` of _Caregiver_
         """
         if self.role_type != RoleType.CAREGIVER:
             raise ValidationError(

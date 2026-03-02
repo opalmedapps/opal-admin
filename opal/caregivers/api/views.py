@@ -120,11 +120,11 @@ class GetCaregiverPatientsList(APIView):
         Args:
             request: Http request made by the listener needed to retrieve `Appuserid`.
 
-        Raises:
-            ParseError: If the caregiver username was not provided.
-
         Returns:
             Http response with the list of patients for a given caregiver.
+
+        Raises:
+            ParseError: If the caregiver username was not provided.
         """
         user_id = request.headers.get('Appuserid')
 
@@ -271,11 +271,11 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             request: the HTTP request.
             code: registration code.
 
-        Raises:
-            ValidationError: if re-sending the verification code was requested too soon.
-
         Returns:
             Http response with empty message.
+
+        Raises:
+            ValidationError: if re-sending the verification code was requested too soon.
         """
         registration_code = get_object_or_404(self.get_queryset())
 
@@ -430,11 +430,11 @@ class RegistrationCompletionView(APIView):
             request: REST framework's request object.
             code: registration code.
 
-        Raises:
-            ValidationError: validation error.
-
         Returns:
             HTTP response with the error or success status.
+
+        Raises:
+            ValidationError: validation error.
         """
         serializer_class = self._get_serializer_class()
         serializer = serializer_class(

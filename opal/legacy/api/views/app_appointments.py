@@ -71,11 +71,11 @@ class UpdateAppointmentCheckinView(UpdateAPIView[models.LegacyAppointment]):
         """
         Override get_object to filter by source_system_id and source_database.
 
-        Raises:
-            NotFound: If zero or multiple appointment records are found
-
         Returns:
             LegacyAppointment model instance
+
+        Raises:
+            NotFound: If zero or multiple appointment records are found
         """
         serializer = self.get_serializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
