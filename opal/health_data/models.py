@@ -209,7 +209,7 @@ class PatientReportedData(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name='patient_reported_data',
     )
-    social_history = models.JSONField(_('Social History'), null=True, blank=True)
+    social_history = models.JSONField(_('Social History'), null=False, blank=True, default=list)
 
     class Meta:
         verbose_name = _('Patient Reported Data')

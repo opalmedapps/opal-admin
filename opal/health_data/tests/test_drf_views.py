@@ -491,9 +491,10 @@ def test_patientreporteddata_put_create(admin_api_client: APIClient) -> None:
 
     response = admin_api_client.put(
         reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
-        data={'alcohol_use': None, 'tobacco_use': None},
+        data={},
     )
 
     assert response.status_code == status.HTTP_201_CREATED
     assert PatientReportedData.objects.count() == 1
-    PatientReportedData.objects.get(patient=patient)
+    data = PatientReportedData.objects.get(patient=patient)
+    assert data.social_history == []

@@ -49,72 +49,42 @@ class QuantitySampleSerializer(serializers.ModelSerializer[QuantitySample]):
         list_serializer_class = QuantitySampleListSerializer
 
 
+def _validate_observation(value: dict[str, Any]) -> None:
+    """
+    Validate that the given value is a valid FHIR `Observation` resource.
+
+    Args:
+        value: the value to validate
+
+    Raises:
+        ValidationError: if the value is not a valid `Observation`
+    """
+    try:
+        validate_observation(value).model_dump(mode='json')
+    except PydanticValidationError as exc:
+        errors = [
+            {
+                'loc': error['loc'],
+                'msg': error['msg'],
+                'type': error['type'],
+            }
+            for error in exc.errors()
+        ]
+
+        raise serializers.ValidationError(errors) from exc  # type: ignore[arg-type]
+
+
 class PatientReportedDataSerializer(serializers.ModelSerializer[PatientReportedData]):
     """Serializer for `PatientReportedData` instances."""
 
-    def _validate_observation(self, value: dict[str, Any]) -> dict[str, Any]:
-        """
-        Validate that the given value is a valid FHIR `Observation` resource.
-
-        Args:
-            value: the value to validate
-
-        Returns:
-            the validated value if it is a valid `Observation`
-
-        Raises:
-            ValidationError: if the value is not a valid `Observation`
-        """
-        try:
-            observation: dict[str, Any] = validate_observation(value).model_dump(mode='json')
-        except PydanticValidationError as exc:
-            errors = [
-                {
-                    'loc': error['loc'],
-                    'msg': error['msg'],
-                    'type': error['type'],
-                }
-                for error in exc.errors()
-            ]
-
-            raise serializers.ValidationError(errors) from exc  # type: ignore[arg-type]
-
-        return observation
-
-    def validate_alcohol_use(self, value: dict[str, Any] | None) -> dict[str, Any] | None:
-        """
-        Validate the `alcohol_use` field.
-
-        Raises a `ValidationError` if the value is not a valid FHIR `Observation` resource.
-
-        Args:
-            value: the value of the `alcohol_use` field to validate
-
-        Returns:
-            the validated value
-        """
-        if value is None:
-            return value
-
-        return self._validate_observation(value)
-
-    def validate_tobacco_use(self, value: dict[str, Any] | None) -> dict[str, Any] | None:
-        """
-        Validate the `tobacco_use` field.
-
-        Raises a `ValidationError` if the value is not a valid FHIR `Observation` resource.
-
-        Args:
-            value: the value of the `tobacco_use` field to validate
-
-        Returns:
-            the validated value
-        """
-        if value is None:
-            return value
-
-        return self._validate_observation(value)
+    social_history = serializers.ListField(
+        child=serializers.JSONField(validators=[_validate_observation]),
+        required=False,
+        allow_null=False,
+        default=list,
+        allow_empty=True,
+    )
 
     class Meta:
         model = PatientReportedData
-        fields = ('alcohol_use', 'tobacco_use')
+        fields = ('social_history',)
