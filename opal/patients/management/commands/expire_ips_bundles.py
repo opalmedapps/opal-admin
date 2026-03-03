@@ -136,6 +136,12 @@ class Command(BaseCommand):
                 LOGGER.exception(f'ERROR - Bundle "{file_name}" last modified information is unavailable')
                 num_errors += 1
                 continue
+            except ValueError:
+                LOGGER.exception(
+                    f'ERROR - Bundle "{file_name}" last modified information is not in the expected format'
+                )
+                num_errors += 1
+                continue
 
             now = timezone.now()  # UTC
             delta = now - last_modified

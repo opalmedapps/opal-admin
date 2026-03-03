@@ -287,6 +287,25 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         assert 'ERROR - Failed to delete IPS bundle "1304efc5-9961-4249-bfa5-68af94cb0982.ips"' in logs
         assert '1 IPS bundle out of 2 was deleted (1 error)' in logs
 
+    def test_file_date_format_error(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """Log an error and continue if a file's metadata for last modified time isn't in the expected format."""
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101',
+                'bd7c9cdc-1605-4839-9473-8109f488c1fd.ips': '20260101070000',
+            },
+        )
+
+        self._call_command('expire_ips_bundles')
+
+        logs = self._get_logs(structlog_output)
+        assert (
+            'ERROR - Bundle "1304efc5-9961-4249-bfa5-68af94cb0982.ips" last modified information is not in the expected format'
+            in logs
+        )
+        assert '1 IPS bundle out of 2 was deleted (1 error)' in logs
+
     def test_24_hour_time(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """Correctly parse times in the 24-hour system."""
         self._mock_files(
