@@ -101,5 +101,9 @@
       "matchPackageNames": ["/uv-pre-commit|uv$/"],
       "groupName": "uv",
     },
+    // Group upload and download artifact actions
+    {
+      "matchPackageNames": ["actions/upload-artifact", "actions/download-artifact"],
+    },
   ],
 }
