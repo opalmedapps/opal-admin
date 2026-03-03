@@ -227,6 +227,11 @@ extend-select = [
     # allow private member access
     "SLF001",
 ]
+"opal/patients/management/commands/expire_ips_bundles.py" = [
+    # FTP is used for uploading IPS bundles, which are encrypted
+    "S321",
+    "S402",
+]
 "opal/patients/tests/test_commands.py" = [
     # FTP is used for uploading IPS bundles, which are encrypted
     "S321",

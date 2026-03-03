@@ -4,8 +4,9 @@
 
 import datetime
 from datetime import date
-from ftplib import FTP
+from ftplib import FTP, Error
 from itertools import starmap
+from typing import Any
 
 from django.conf import LazySettings
 
@@ -68,9 +69,14 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         mocker.patch.object(FTP, 'login')
         mocker.patch.object(FTP, 'pwd')
 
-    def _mock_files(self, mocker: MockerFixture, files: dict[str, str]) -> None:
+    def _mock_files(self, mocker: MockerFixture, files: dict[str, str], **kwargs: Any) -> None:
+        hide_modify = kwargs.get('hide_modify')
+
         def format_info_line(file_name: str, date_str: str) -> str:
-            return f'type=test;size=0;modify={date_str};UNIX.mode=0000;UNIX.uid=1;UNIX.gid=1;unique=123456789ab; {file_name}'
+            modify_part = '' if hide_modify else f'modify={date_str}'
+            return (
+                f'type=test;size=0;{modify_part};UNIX.mode=0000;UNIX.uid=1;UNIX.gid=1;unique=123456789ab; {file_name}'
+            )
 
         basic_date = '20000101000000'
 
@@ -265,7 +271,8 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
         logs = self._get_logs(structlog_output)
         assert (
-            'ERROR - Bundle "bd7c9cdc-1605-4839-9473-8109f488c1fd.ips" last modified information is unavailable' in logs
+            'ERROR - Bundle "bd7c9cdc-1605-4839-9473-8109f488c1fd.ips" last modified information failed to be retrieved from the server'
+            in logs
         )
         assert '1 IPS bundle out of 2 was deleted (1 error)' in logs
 
@@ -301,10 +308,48 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
         logs = self._get_logs(structlog_output)
         assert (
-            'ERROR - Bundle "1304efc5-9961-4249-bfa5-68af94cb0982.ips" last modified information is not in the expected format'
+            'ERROR - Bundle "1304efc5-9961-4249-bfa5-68af94cb0982.ips" last modified date is not in the expected format'
             in logs
         )
         assert '1 IPS bundle out of 2 was deleted (1 error)' in logs
+
+    def test_modify_missing_error(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """Log an error if the 'modify' metadata attribute is missing."""
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101070000',
+            },
+            hide_modify=True,
+        )
+
+        self._call_command('expire_ips_bundles')
+
+        logs = self._get_logs(structlog_output)
+        assert (
+            'ERROR - Bundle "1304efc5-9961-4249-bfa5-68af94cb0982.ips" last modified information failed to be retrieved from the server'
+            in logs
+        )
+        assert '0 IPS bundles out of 1 were deleted (1 error)' in logs
+
+    def test_retrieve_lines_error(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+        """Log an error if the command to retrieve lines fails."""
+        self._mock_files(
+            mocker,
+            {
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101070000',
+            },
+        )
+        mocker.patch.object(FTP, 'retrlines', side_effect=Error)
+
+        self._call_command('expire_ips_bundles')
+
+        logs = self._get_logs(structlog_output)
+        assert (
+            'ERROR - Bundle "1304efc5-9961-4249-bfa5-68af94cb0982.ips" last modified information failed to be retrieved from the server'
+            in logs
+        )
+        assert '0 IPS bundles out of 1 were deleted (1 error)' in logs
 
     def test_24_hour_time(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """Correctly parse times in the 24-hour system."""

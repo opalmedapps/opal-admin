@@ -5,6 +5,7 @@
 """Command for cleaning up expired IPS bundles."""
 
 import datetime
+import ftplib
 import re
 from typing import Any
 
@@ -13,7 +14,7 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.utils import timezone
 
 import structlog
-from storages.backends.ftp import FTPStorage
+from storages.backends.ftp import FTPStorage, FTPStorageException
 
 LOGGER = structlog.get_logger()
 
@@ -36,23 +37,30 @@ class FTPStoragePlus(FTPStorage):
 
     # Function modeled on `_get_dir_details` of the FTPStorage class
     def _get_dir_last_modified_details(self) -> dict[str, str]:
-        # Get metadata from the files in the current directory
-        lines: list[str] = []
-        self._connection.retrlines('MLSD', lines.append)
-        entries = {}
+        # Connection must be open!
+        try:
+            # Get metadata from the files in the current directory
+            lines: list[str] = []
+            self._connection.retrlines('MLSD', lines.append)
+            entries = {}
 
-        for line in lines:
-            # Break down each part of the string (for example): ;modify=20251028155020;
-            attributes: list[str] = line.split(';')
-            # The last part of each line is the file name
-            filename = attributes[-1].strip()
-            # Break attributes into their component parts (for example): ['modify', '20251028155020']
-            attributes_parsed: list[list[str]] = [x.split('=') for x in attributes]
-            # Keep only the 'modify' value
-            modify = [x[1] for x in attributes_parsed if x[0] == 'modify']
-            entries[filename] = modify[0]
+            for line in lines:
+                # Example line: type=file;size=256;modify=20251028155020;UNIX.mode=0644;UNIX.uid=1000;UNIX.gid=1000;unique=123456789ab; file-name.ext
+                # Break the line around 'modify=', then parse the timestamp and file name out of the string that comes after it
+                parts = line.split('modify=')[1].split(';')
+                modify = parts[0]
+                filename = parts[-1].strip()
 
-        return entries
+                entries[filename] = modify
+
+        except IndexError as error:
+            raise FTPStorageException('Output of MLSD in this directory is not in the expected format') from error
+
+        except ftplib.all_errors as error:
+            raise FTPStorageException('Error getting directory listing') from error
+
+        else:
+            return entries
 
     # Implements `get_modified_time` of the Storage class (from FTPStorage(BaseStorage(Storage)))
     # Function modeled on `listdir` of the FTPStorage class
@@ -132,14 +140,14 @@ class Command(BaseCommand):
             # Note that last modified is used instead of creation time (not available); it offers the same result, since bundle files aren't updated
             try:
                 last_modified = storage_backend.get_modified_time(file_name)
-            except FileNotFoundError:
-                LOGGER.exception(f'ERROR - Bundle "{file_name}" last modified information is unavailable')
+            except (FTPStorageException, FileNotFoundError):
+                LOGGER.exception(
+                    f'ERROR - Bundle "{file_name}" last modified information failed to be retrieved from the server'
+                )
                 num_errors += 1
                 continue
             except ValueError:
-                LOGGER.exception(
-                    f'ERROR - Bundle "{file_name}" last modified information is not in the expected format'
-                )
+                LOGGER.exception(f'ERROR - Bundle "{file_name}" last modified date is not in the expected format')
                 num_errors += 1
                 continue
 
