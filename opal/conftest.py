@@ -34,13 +34,6 @@ LEGACY_TEST_PATIENT_ID = 51
 LEGACY_DICTIONARY_CONTENT_ID = 9000000
 
 
-# see: https://pytest-django.readthedocs.io/en/latest/database.html#use-the-same-database-for-all-xdist-processes
-@pytest.fixture(scope='session')
-def django_db_modify_db_settings() -> None:
-    """Use the same database for all xdist processes."""
-    pass
-
-
 def pytest_collection_modifyitems(session: Session, config: Config, items: list[Function]) -> None:
     """
     Change the execution order of tests.
