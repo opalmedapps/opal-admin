@@ -42,7 +42,7 @@ However, we also recommend to change the `DATABASE_PASSWORD`.
 These configuration parameters are read by `docker compose` and by the settings in `config/settings/`, such as `base.py` (via [`django-environ`](https://github.com/joke2k/django-environ)).
 
 > [!NOTE]
-> The legacy database is currently provided by the [`db-docker`](https://github.com/opalmedapps/opal-db-management/).
+> The legacy database is currently provided by the [`db-management`](https://github.com/opalmedapps/opal-db-management/).
 > For information on the legacy database connections, please see the [Legacy DB Connection](database/legacy_db.md) page.
 > Make sure the configuration of the legacy database connection in your `.env` file matches the values of the one in your `db-management` setup.
 
@@ -215,6 +215,13 @@ uv run mkdocs serve -a localhost:8001
 
 Then open http://localhost:8001 to view the generated documentation site.
 
+### Documenting architecture decisions
+
+We use [Architecture Decision Records (ADR)](https://adr.github.io/) to record architecture decisions.
+The ADRs live in `docs/adr/` and follow the [Nygard format](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).
+
+We recommend the use of the tool [`adrs`](http://joshrotenberg.com/adrs/) to help manage ADRs.
+
 ## Development
 
 ### Dependencies
@@ -353,7 +360,7 @@ For example:
 ```yaml
 services:
   app:
-    image: registry.gitlab.com/opalmedapps/backend:<commit>
+    image: ghcr.io/opalmedapps/opal-admin:main
     environment:
       - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
     command: python manage.py runserver 0:8000
@@ -374,11 +381,11 @@ The following management commands need to be run periodically (e.g., as a cronjo
 
 ## Running the databases with encrypted connections
 
-If a dev chooses they can also run Django backend using SSL/TLS mode to encrypt all database connections and traffic. This requires installing [db-docker](https://gitlab.com/opalmedapps/db-docker) with the SSL/TLS setup and modifying the setup for Django:
+If a dev chooses they can also run Django backend using SSL/TLS mode to encrypt all database connections and traffic. This requires installing [db-management](https://github.com/opalmedapps/opal-db-management) with the SSL/TLS setup and modifying the setup for Django:
 
-1. In the `db-docker` repository, follow the [Running the databases with encrypted connections](https://gitlab.com/opalmedapps/db-docker/-/tree/use-override-for-ssl#running-the-databases-with-encrypted-connections) section to generate self-signed certificates and set the databases in the SSL/TLS mode.
+1. In the `db-management` repository, follow the [Running the databases with encrypted connections](https://github.com/opalmedapps/opal-db-management#running-the-databases-with-encrypted-connections) section to generate self-signed certificates and set the databases in the SSL/TLS mode.
 
-2. In the `db-docker` project, open a bash CLI and navigate to the `certs/` directory. There should be eight files: two certificate authority (CA) certificates (e.g., `ca-key.pem`, `ca.pem`), three database/server certificates (e.g., `server-cert.pem`, `server-key.pem`, `server-req.pem`), and three OpenSSL configuration files (e.g., `openssl-server.cnf`, `openssl-ca.cnf`, and `v3.ext`).
+2. In the `db-management` project, open a bash CLI and navigate to the `certs/` directory. There should be eight files: two certificate authority (CA) certificates (e.g., `ca-key.pem`, `ca.pem`), three database/server certificates (e.g., `server-cert.pem`, `server-key.pem`, `server-req.pem`), and three OpenSSL configuration files (e.g., `openssl-server.cnf`, `openssl-ca.cnf`, and `v3.ext`).
 
 3. Generate the `django-db` (a.k.a., `backend-db`) certificate:
 

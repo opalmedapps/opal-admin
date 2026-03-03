@@ -166,3 +166,32 @@ def test_notify_new_patient_not_found(mocker: MockFixture) -> None:
 
     with pytest.raises(hospital.PatientNotFoundError):
         hospital.notify_new_patient('1234', 'TEST')
+
+
+def test_add_questionnaire_report(mocker: MockFixture) -> None:
+    """No error is raised if the response is OK."""
+    response = _MockResponse(HTTPStatus.OK, data=None)
+    mocker.patch('requests.post', return_value=response)
+
+    hospital.add_questionnaire_report('1234', 'TEST', b'report')
+
+
+def test_add_questionnaire_report_bad_request(mocker: MockFixture) -> None:
+    """A NonOKResponseError is raised if the response is not OK."""
+    response = _MockResponse(HTTPStatus.BAD_REQUEST, data={'status': 400, 'message': 'no no no'})
+    mocker.patch('requests.post', return_value=response)
+
+    with pytest.raises(hospital.NonOKResponseError) as exc:
+        hospital.add_questionnaire_report('1234', 'TEST', b'report')
+
+    assert exc.value.error.status == 400
+    assert exc.value.error.message == 'no no no'
+
+
+def test_add_questionnaire_report_not_found(mocker: MockFixture) -> None:
+    """A NonOKResponseError is raised if the patient was not found."""
+    response = _MockResponse(HTTPStatus.NOT_FOUND, data={'status': 404, 'message': 'not found'})
+    mocker.patch('requests.post', return_value=response)
+
+    with pytest.raises(hospital.PatientNotFoundError):
+        hospital.add_questionnaire_report('1234', 'TEST', b'report')

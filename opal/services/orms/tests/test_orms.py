@@ -5,6 +5,7 @@
 import uuid
 
 from pytest_mock.plugin import MockerFixture
+from requests.exceptions import RequestException
 
 from opal.core.test_utils import RequestMockerTest
 from opal.services.general.service_error import ServiceErrorHandler
@@ -90,3 +91,28 @@ def test_set_opal_patient_error(mocker: MockerFixture) -> None:
 
     assert response['status'] == 'error'
     assert response['data']['responseData']['error'] == 'Some error message'
+
+
+def test_set_opal_patient_request_error(mocker: MockerFixture) -> None:
+    """Ensure that set_opal_patient returns an error for invalid input."""
+    orms_service = ORMSService()
+    mock_post = RequestMockerTest.mock_requests_post(
+        mocker,
+        {
+            'status': 'Error',
+            'error': 'Some error message',
+        },
+    )
+    mock_post.side_effect = RequestException('Request failed')
+
+    response = orms_service.set_opal_patient(
+        [
+            ('RVH', '0000001'),
+            ('MCH', '0000002'),
+        ],
+        uuid.uuid4(),
+    )
+
+    print(response)
+    assert response['status'] == 'error'
+    assert response['data']['responseData']['data']['message'] == 'Request failed'

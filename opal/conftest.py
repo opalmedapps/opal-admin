@@ -360,7 +360,7 @@ def _change_media_root(tmp_path: Path, settings: LazySettings) -> None:
 def django_db_setup(
     django_db_setup: None,
     django_db_blocker: DjangoDbBlocker,
-) -> Generator[None, None, None]:
+) -> Generator[None]:
     """
     Set up the QuestionnaireDB manually using an SQL file with the schema.
 
@@ -371,11 +371,9 @@ def django_db_setup(
     Yields:
         None
     """
-    with Path('opal/tests/sql/questionnairedb_functions.sql').open(encoding='utf-8') as handle:
-        sql_content = handle.read()
+    sql_content = Path('opal/tests/sql/questionnairedb_functions.sql').read_text(encoding='utf-8')
 
-    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open(encoding='utf-8') as handle:
-        sql_cleanup = handle.read()
+    sql_cleanup = Path('opal/tests/sql/questionnairedb_cleanup.sql').read_text(encoding='utf-8')
 
     with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
         conn.execute(sql_content)
@@ -390,7 +388,7 @@ def django_db_setup(
 
 
 @pytest.fixture
-def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, None, None]:
+def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None]:
     """
     Initialize the QuestionnaireDB with data.
 
@@ -410,11 +408,9 @@ def questionnaire_data(django_db_blocker: DjangoDbBlocker) -> Generator[None, No
     Yields:
         None
     """
-    with Path('opal/tests/sql/questionnairedb_data.sql').open(encoding='utf-8') as handle:
-        sql_data = handle.read()
+    sql_data = Path('opal/tests/sql/questionnairedb_data.sql').read_text(encoding='utf-8')
 
-    with Path('opal/tests/sql/questionnairedb_cleanup.sql').open(encoding='utf-8') as handle:
-        sql_cleanup = handle.read()
+    sql_cleanup = Path('opal/tests/sql/questionnairedb_cleanup.sql').read_text(encoding='utf-8')
 
     with django_db_blocker.unblock(), connections['questionnaire'].cursor() as conn:
         # safety check to ensure that there is no data already
@@ -594,3 +590,24 @@ def use_twilio(settings: LazySettings) -> None:
     settings.TWILIO_ACCOUNT_SID = 'account-sid'
     settings.TWILIO_AUTH_TOKEN = 'twilio-auth-token'  # noqa: S105
     settings.SMS_FROM = '+11234567890'
+
+
+@pytest.fixture(autouse=True)
+def enable_ips(settings: LazySettings) -> None:
+    """
+    Fixture enabling IPS by default.
+
+    The values of settings are empty strings (actual values are not needed during tests).
+
+    Args:
+        settings: the fixture providing access to the Django settings
+    """
+    settings.IPS_ENABLED = True
+    settings.IPS_LANGUAGE = None
+    settings.FHIR_API_URL = ''
+    settings.FHIR_API_OAUTH_URL = ''
+    settings.FHIR_API_CLIENT_ID = ''
+    settings.FHIR_API_PRIVATE_KEY = ''
+
+    settings.IPS_STORAGE_BACKEND = 'django.core.files.storage.FileSystemStorage'
+    settings.IPS_PUBLIC_BASE_URL = 'http://localhost:8000/media/'

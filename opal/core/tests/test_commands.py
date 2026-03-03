@@ -18,13 +18,24 @@ from rest_framework.authtoken.models import Token
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer, SecurityQuestion
 from opal.core import constants
+from opal.core.management.commands.insert_test_data import _create_date, _create_patient
 from opal.core.test_utils import CommandTestMixin
 from opal.hospital_settings.models import Institution, Site
+from opal.legacy import factories as legacy_factories
 from opal.legacy import models as legacy_models
 from opal.patients import factories
-from opal.patients.models import HospitalPatient, Patient, Relationship
+from opal.patients.models import (
+    DataAccessType,
+    HospitalPatient,
+    Patient,
+    Relationship,
+    RelationshipType,
+    RoleType,
+    SexType,
+)
 from opal.test_results.models import GeneralTest, Note, PathologyObservation
-from opal.users.models import Caregiver, User
+from opal.users import factories as user_factories
+from opal.users.models import Caregiver, ClinicalStaff, User
 
 pytestmark = pytest.mark.django_db()
 
@@ -40,35 +51,45 @@ class TestInsertTestData(CommandTestMixin):
         with pytest.raises(CommandError, match="argument institution: invalid InstitutionOption value: 'muhc'"):
             self._call_command('insert_test_data', 'muhc')
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert(self) -> None:
         """Ensure that test data is inserted when there is no existing data."""
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert Institution.objects.count() == 1
         assert Institution.objects.get().acronym == 'OMI'
         assert Site.objects.count() == 1
-        assert Patient.objects.count() == 10
-        assert HospitalPatient.objects.count() == 10
+        assert Patient.objects.count() == 8
+        assert HospitalPatient.objects.count() == 8
         assert CaregiverProfile.objects.count() == 8
-        assert Relationship.objects.count() == 13
-        assert SecurityAnswer.objects.count() == 21
-        assert GeneralTest.objects.count() == 9
-        assert PathologyObservation.objects.count() == 9
-        assert Note.objects.count() == 9
+        assert RelationshipType.objects.count() == 5
+        assert RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).count() == 1
+        assert Relationship.objects.count() == 11
+        assert SecurityAnswer.objects.count() == 24
+        assert GeneralTest.objects.count() == 1
+        assert PathologyObservation.objects.count() == 1
+        assert Note.objects.count() == 1
+        assert legacy_models.LegacyOAUser.objects.count() == 1
+        assert ClinicalStaff.objects.count() == 1
         assert stdout == 'Test data successfully created\n'
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert_ohigph(self) -> None:
         """Ensure that test data for the Opal Pediatric Institute is inserted when there is no existing data."""
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         stdout, _stderr = self._call_command('insert_test_data', 'OHIGPH')
 
         assert Institution.objects.count() == 1
         assert Institution.objects.get().acronym == 'OHIGPH'
         assert Site.objects.count() == 1
-        assert Patient.objects.count() == 2
-        assert HospitalPatient.objects.count() == 2
-        assert CaregiverProfile.objects.count() == 2
-        assert Relationship.objects.count() == 3
-        assert SecurityAnswer.objects.count() == 6
+        assert Patient.objects.count() == 1
+        assert HospitalPatient.objects.count() == 1
+        assert CaregiverProfile.objects.count() == 0
+        assert RelationshipType.objects.count() == 5
+        assert RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).count() == 1
+        assert Relationship.objects.count() == 0
+        assert SecurityAnswer.objects.count() == 0
         assert GeneralTest.objects.count() == 0
         assert PathologyObservation.objects.count() == 0
         assert Note.objects.count() == 0
@@ -84,12 +105,16 @@ class TestInsertTestData(CommandTestMixin):
         assert stdout == 'Test data insertion cancelled\n'
         relationship.refresh_from_db()
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert_existing_data_delete(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """The existing data is deleted when confirmed and new data added."""
         monkeypatch.setattr('builtins.input', lambda _: 'yes')
-        relationship = factories.Relationship.create()
+        relationship_type = factories.RelationshipType.create(name='Family', role_type=RoleType.CAREGIVER)
+        relationship = factories.Relationship.create(type=relationship_type)
         hospital_patient = factories.HospitalPatient.create()
         security_answer = caregiver_factories.SecurityAnswer.create(user=relationship.caregiver)
+        user = user_factories.ClinicalStaff.create(username='DemoAdmin')
+        legacy_user = legacy_factories.LegacyOAUserFactory.create(username='DemoAdmin')
 
         institution = Institution.objects.get()
         site = Site.objects.get()
@@ -97,12 +122,14 @@ class TestInsertTestData(CommandTestMixin):
         caregiver_profile = CaregiverProfile.objects.get()
         caregiver = Caregiver.objects.get()
 
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         stdout, _stderr = self._call_command('insert_test_data', 'OMI')
 
         assert 'Existing test data deleted' in stdout
         assert 'Test data successfully created' in stdout
 
         # old data was deleted
+        assert not RelationshipType.objects.filter(pk=relationship_type.pk).exists()
         assert not Relationship.objects.filter(pk=relationship.pk).exists()
         assert not HospitalPatient.objects.filter(pk=hospital_patient.pk).exists()
         assert not Institution.objects.filter(pk=institution.pk).exists()
@@ -111,32 +138,48 @@ class TestInsertTestData(CommandTestMixin):
         assert not CaregiverProfile.objects.filter(pk=caregiver_profile.pk).exists()
         assert not Caregiver.objects.filter(pk=caregiver.pk).exists()
         assert not SecurityAnswer.objects.filter(pk=security_answer.pk).exists()
+        assert not ClinicalStaff.objects.filter(pk=user.pk).exists()
+        assert not legacy_models.LegacyOAUser.objects.filter(pk=legacy_user.pk).exists()
 
         # new data was created
         assert Institution.objects.count() == 1
         assert Site.objects.count() == 1
-        assert Patient.objects.count() == 10
-        assert HospitalPatient.objects.count() == 10
+        assert Patient.objects.count() == 8
+        assert HospitalPatient.objects.count() == 8
         assert CaregiverProfile.objects.count() == 8
-        assert Relationship.objects.count() == 13
-        assert SecurityAnswer.objects.count() == 21
+        assert Relationship.objects.count() == 11
+        assert RelationshipType.objects.count() == 5
+        assert SecurityAnswer.objects.count() == 24
+        assert ClinicalStaff.objects.count() == 1
+        assert legacy_models.LegacyOAUser.objects.count() == 1
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
+    def test_insert_existing_data_delete_complete(self) -> None:
+        """The insert test data command can be called twice."""
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
+        self._call_command('insert_test_data', 'OMI')
+        self._call_command('insert_test_data', 'OMI', '--force-delete')
+
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_insert_existing_data_force_delete(self) -> None:
         """The existing data is deleted without confirmation."""
         relationship = factories.Relationship.create()
         factories.HospitalPatient.create()
         caregiver_factories.SecurityAnswer.create(user=relationship.caregiver)
 
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         stdout, _stderr = self._call_command('insert_test_data', 'OMI', '--force-delete')
 
         assert 'Existing test data deleted' in stdout
         assert 'Test data successfully created' in stdout
 
+    @pytest.mark.django_db(databases=['default', 'legacy'])
     def test_create_security_answers(self) -> None:
         """Ensure that the security answer's question depends on the user's language."""
+        legacy_factories.LegacyOARoleFactory.create(name_en='System Administrator')
         self._call_command('insert_test_data', 'OMI')
 
-        caregiver_en = CaregiverProfile.objects.get(user__first_name='Marge')
+        caregiver_en = CaregiverProfile.objects.get(user__first_name='John')
         question_en = SecurityAnswer.objects.filter(user=caregiver_en)[0].question
         caregiver_fr = CaregiverProfile.objects.filter(user__language='fr').first()
 
@@ -145,27 +188,43 @@ class TestInsertTestData(CommandTestMixin):
         # if changed, assert that the French caregiver has a French security question
         assert caregiver_fr is None
 
-    def test_birth_date_calculation_before(self, mocker: MockerFixture) -> None:
-        """Ensure that the birth date is calculated correctly when the current date is before the birth date."""
-        # set today before Bart's birth day in the year (Feb 22nd)
+    def test_create_data_calculation_before(self, mocker: MockerFixture) -> None:
+        """Ensure that the date is calculated correctly when the current date is before the date."""
+        # set today before Bart's birth day in the year (Feb 23rd)
         now = datetime(2024, 1, 18, tzinfo=timezone.get_current_timezone())
         mocker.patch.object(timezone, 'now', return_value=now)
 
-        self._call_command('insert_test_data', 'OMI')
+        calculated_date = _create_date(14, 2, 23)
 
-        bart = Patient.objects.get(first_name='Bart')
-        assert bart.date_of_birth == date(2009, 2, 23)
+        assert calculated_date == date(2009, 2, 23)
 
-    def test_birth_date_calculation_after(self, mocker: MockerFixture) -> None:
-        """Ensure that the birth date is calculated correctly when the current date is after the birth date."""
-        # set today after Bart's birth day in the year (Feb 22nd)
+    def test_create_date_calculation_after(self, mocker: MockerFixture) -> None:
+        """Ensure that the date is calculated correctly when the current date is after the date."""
+        # set today after Bart's birth day in the year (Feb 23rd)
         now = datetime(2024, 2, 23, tzinfo=timezone.get_current_timezone())
         mocker.patch.object(timezone, 'now', return_value=now)
 
-        self._call_command('insert_test_data', 'OMI')
+        calculated_date = _create_date(14, 2, 23)
 
-        bart = Patient.objects.get(first_name='Bart')
-        assert bart.date_of_birth == date(2010, 2, 23)
+        assert calculated_date == date(2010, 2, 23)
+
+    def test_create_patient_deceased(self) -> None:
+        """Ensure that the patient is created as deceased when the date of death is provided."""
+        _create_patient(
+            first_name='Mona',
+            last_name='Simpson',
+            date_of_birth=date(1940, 3, 15),
+            sex=SexType.FEMALE,
+            ramq='SIMM40531599',
+            legacy_id=42,
+            mrns=[],
+            date_of_death=date(2025, 6, 2),
+            data_access=DataAccessType.NEED_TO_KNOW,
+        )
+
+        patient = Patient.objects.get(first_name='Mona', last_name='Simpson')
+
+        assert patient.date_of_death == datetime(2025, 6, 2, 0, 0, 0, tzinfo=timezone.get_current_timezone())
 
 
 @pytest.mark.django_db(databases=['default', 'legacy'])
@@ -173,8 +232,9 @@ class TestInitializeData(CommandTestMixin):
     """Test class to group the `initialize_data` command tests."""
 
     @pytest.fixture(autouse=True)
-    def _add_legacy_role(self) -> None:
+    def _add_legacy_roles(self) -> None:
         legacy_models.LegacyOARole.objects.create(name_en='System Administrator')
+        legacy_models.LegacyOARole.objects.create(name_en='External System')
 
     def test_insert(self) -> None:
         """Ensure that initial data is inserted when there is no existing data."""
@@ -393,6 +453,9 @@ class TestInitializeData(CommandTestMixin):
         with assertRaisesMessage(ObjectDoesNotExist, message):
             User.objects.get(username='orms')
 
+        with assertRaisesMessage(ObjectDoesNotExist, message):
+            legacy_models.LegacyOAUser.objects.get(username='orms')
+
         token_listener.refresh_from_db()
         token_registration_listener.refresh_from_db()
         token_interface_engine.refresh_from_db()
@@ -457,8 +520,23 @@ class TestInitializeData(CommandTestMixin):
 
         assert token.key == random_token
 
+    def test_insert_legacy_interface_engine(self) -> None:
+        """A legacy interface engine user is generated."""
+        self._call_command('initialize_data')
+
+        User.objects.get(username='interface-engine')
+
+        legacy_models.LegacyOAUser.objects.get(username='interface-engine')
+
+    def test_insert_legacy_orms(self) -> None:
+        """A legacy orms user is generated."""
+        self._call_command('initialize_data')
+
+        User.objects.get(username='orms')
+        legacy_models.LegacyOAUser.objects.get(username='orms')
+
     def test_insert_superuser_random_password(self) -> None:
-        """An admin user with a random password us generated."""
+        """An admin user with a random password is generated."""
         stdout, _stderr = self._call_command('initialize_data')
 
         user = User.objects.get(username='admin')

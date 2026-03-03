@@ -39,7 +39,8 @@ def parse_pid_segment(segment: Segment) -> dict[str, Any]:
     return {
         'first_name': segment.pid_5.pid_5_2.to_er7(),
         'last_name': segment.pid_5.pid_5_1.to_er7(),
-        'date_of_birth': datetime.strptime(segment.pid_7.to_er7(), FORMAT_DATE)
+        'date_of_birth': datetime
+        .strptime(segment.pid_7.to_er7(), FORMAT_DATE)
         .astimezone(timezone.get_current_timezone())
         .date(),
         'sex': segment.pid_8.to_er7(),
@@ -290,11 +291,11 @@ class HL7Parser(BaseParser):
             media_type: Acceptable data/media type
             parser_context: Additional request metadata to specify parsing functionality
 
-        Raises:
-            ParseError: If the data passed is not a StringIO stream
-
         Returns:
             dictionary object containing the parsed HL7v2 message
+
+        Raises:
+            ParseError: If the data passed is not a StringIO stream
         """
         # Initialize the message_dict to hold parsed data
         message_dict: dict[str, Any] = defaultdict(list)

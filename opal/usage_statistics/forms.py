@@ -59,11 +59,11 @@ class UsageStatisticsExportFormMixin(forms.Form):
         """
         Clean exporting usage statistics form.
 
-        Raises:
-            ValidationError: if the data is invalid.
-
         Returns:
             form with cleaned fields
+
+        Raises:
+            ValidationError: if the data is invalid.
         """
         super().clean()
         start_date = self.cleaned_data.get('start_date')

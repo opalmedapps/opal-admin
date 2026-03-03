@@ -164,7 +164,8 @@ class Command(BaseCommand):
         # Since between the same patient and caregiver might be many different relationships,
         # the query fetches only one record per patient <===> caregiver relationship with the maximum end_date
         relationships = (
-            Relationship.objects.select_related(
+            Relationship.objects
+            .select_related(
                 'patient',
                 'caregiver__user',
             )
@@ -183,8 +184,10 @@ class Command(BaseCommand):
                 'caregiver__user__id',
                 'id',
             )
+            # NOTE: Not clear why this is needed: It does not limit to one record.
+            # There should always only be one confirmed relationship at a time, however.
             .annotate(
-                end_date=models.Max('end_date'),
+                end_date_max=models.Max('end_date'),
             )
         )
 

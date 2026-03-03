@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='user',
             constraint=models.CheckConstraint(
-                check=models.Q(('type__in', ['CLINICAL', 'CAREGIVER'])), name='users_user_type_valid'
+                condition=models.Q(('type__in', ['CLINICAL', 'CAREGIVER'])), name='users_user_type_valid'
             ),
         ),
     ]

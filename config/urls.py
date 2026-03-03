@@ -23,6 +23,7 @@ Examples:
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.views import LogoutView
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import path
@@ -59,7 +60,7 @@ urlpatterns = [
     # Make favicon available in admin site (causes ConnectionResetError otherwise)
     path(
         'favicon.ico',
-        RedirectView.as_view(permanent=True, url=staticfiles_storage.url('images/favicon.ico')),
+        login_not_required(RedirectView.as_view(permanent=True, url=staticfiles_storage.url('images/favicon.ico'))),
         name='favicon.ico',
     ),
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),

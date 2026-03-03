@@ -131,11 +131,11 @@ class Command(BaseCommand):
             databank_patient: Patient consenting for this databank module
             module: databank data module enum type
 
-        Raises:
-            ValueError: If an invalid DateModuleType value is provided or if a patient is missing the legacy id
-
         Returns:
             JSON string of the patient's databank information for this module
+
+        Raises:
+            ValueError: If an invalid DateModuleType value is provided or if a patient is missing the legacy id
         """
         databank_data: DatabankQuerySet | None = None
         if not databank_patient.patient.legacy_id:

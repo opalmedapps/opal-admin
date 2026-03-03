@@ -4,7 +4,7 @@
 
 services:
   db:
-    image: mariadb:10.11.11-jammy
+    image: mariadb:10.11.16-jammy
     environment:
       - MARIADB_RANDOM_ROOT_PASSWORD=yes
       - MARIADB_USER=${DATABASE_USER}
@@ -21,7 +21,7 @@ services:
       context: .
       args:
         # install development dependencies in the local image
-        - ENV=development
+        - ENV=dev
     command: python manage.py runserver 0:8000
     env_file:
       - .env

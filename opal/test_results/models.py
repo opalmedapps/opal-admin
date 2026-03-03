@@ -116,7 +116,7 @@ class LabObservation(AbstractObservation):
     value_abnormal = models.CharField(
         verbose_name=_('Abnormal Flag'),
         max_length=1,
-        choices=AbnormalFlag.choices,
+        choices=AbnormalFlag,
         default=AbnormalFlag.NORMAL,
     )
 
@@ -199,7 +199,7 @@ class GeneralTest(models.Model):
     type = models.CharField(
         verbose_name=_('Type'),
         max_length=1,
-        choices=TestType.choices,
+        choices=TestType,
         help_text=_('The test type, for example pathlogy or regular lab.'),
     )
     sending_facility = models.CharField(
@@ -263,7 +263,7 @@ class GeneralTest(models.Model):
         constraints = [
             models.CheckConstraint(
                 name='%(app_label)s_%(class)s_type_valid',
-                check=models.Q(type__in=TestType.values),
+                condition=models.Q(type__in=TestType.values),
             ),
         ]
 

@@ -28,7 +28,7 @@ class GroupSerializer(serializers.ModelSerializer[Group]):
         fields = ('pk', 'name')
 
 
-class UserCaregiverUpdateSerializer(serializers.ModelSerializer[Caregiver]):
+class UpdateCaregiverEmailSerializer(serializers.ModelSerializer[Caregiver]):
     """
     User caregiver serializer.
 

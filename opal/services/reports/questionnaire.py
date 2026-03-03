@@ -449,7 +449,7 @@ class QuestionnairePDF(FPDF):
             },
         )
 
-        image = io.BytesIO(chart_trace.to_image(format='PNG', engine='kaleido'))
+        image = io.BytesIO(chart_trace.to_image(format='PNG'))
         self.image(image, w=self.epw, x=Align.R)
         self.ln(10)
 

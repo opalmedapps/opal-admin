@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import datetime as dt
-import urllib
+import urllib.parse
 from datetime import date, datetime, timedelta
 from typing import Any
 

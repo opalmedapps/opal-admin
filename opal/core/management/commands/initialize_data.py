@@ -27,11 +27,11 @@ def token(value: str) -> str:
     Args:
         value: The token string to validate
 
-    Raises:
-        ValueError: If the token string is not 40 characters long
-
     Returns:
         the token string
+
+    Raises:
+        ValueError: If the token string is not 40 characters long
     """
     if len(value) != constants.TOKEN_LENGTH:
         raise ValueError('Token must be 40 characters long')
@@ -46,11 +46,11 @@ def password(value: str) -> str:
     Args:
         value: the password string to validate
 
-    Raises:
-        ValueError: If the password is too short
-
     Returns:
         the password string
+
+    Raises:
+        ValueError: If the password is too short
     """
     minimum_length = constants.ADMIN_PASSWORD_MIN_LENGTH
 
@@ -215,6 +215,12 @@ class Command(BaseCommand):
         interface_engine, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_INTERFACE_ENGINE)
         interface_engine.set_unusable_password()
         interface_engine.save()
+        # the interface engine needs a legacy user to be able to access the legacy OpalAdmin API
+        self._create_legacy_user(
+            constants.USERNAME_INTERFACE_ENGINE,
+            legacy_models.LegacyOAUserType.SYSTEM,
+            'External System',
+        )
         legacy_backend, _ = ClinicalStaff.objects.get_or_create(username=constants.USERNAME_BACKEND_LEGACY)
         legacy_backend.set_unusable_password()
         legacy_backend.save()
@@ -319,6 +325,13 @@ class Command(BaseCommand):
             defaults={'key': predefined_token},
         )
         self.stdout.write(f'{orms.username} token: {token_orms}')
+
+        # the interface engine needs a legacy user to be able to access the legacy OpalAdmin API
+        self._create_legacy_user(
+            constants.USERNAME_ORMS,
+            legacy_models.LegacyOAUserType.SYSTEM,
+            'External System',
+        )
 
     def _create_users(self, **options: Any) -> None:
         # create a legacy admin user with the system administrator role

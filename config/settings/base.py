@@ -63,7 +63,13 @@ USE_I18N = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
-LOCALE_PATHS = [str(ROOT_DIR / 'locale')]
+# https://docs.djangoproject.com/en/dev/topics/i18n/translation/#how-django-discovers-translations
+LOCALE_PATHS = [
+    # locales for config, base templates, and the core app
+    str(ROOT_DIR / 'locale'),
+    # add services locales since it is not an app
+    str(ROOT_DIR / 'opal/services/locale'),
+]
 # https://docs.djangoproject.com/en/dev/ref/settings/#silenced-system-checks
 # W001: allow definition of PAGE_SIZE globally while having pagination opt-in
 # E311: legacy questionnaire content_id cannot be unique
@@ -155,7 +161,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ROOT_URLCONF = 'config.urls'
 # https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = 'config.wsgi.application'
-# Root path for API URLs
+# Root path for API URLs for convenience in tests
 # Note: without a trailing slash
 API_ROOT = 'api'
 
@@ -217,8 +223,6 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_REDIRECT_URL = 'start'
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = 'login'
-# routes ignored by LoginRequiredMiddleware
-AUTH_EXEMPT_ROUTES = ['login', 'admin:login', 'admin:index', 'favicon.ico']
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 # also: https://docs.djangoproject.com/en/dev/topics/auth/customizing/#substituting-a-custom-user-model
 AUTH_USER_MODEL = 'users.User'
@@ -228,7 +232,7 @@ if env.get_value('FEDAUTH_API_ENDPOINT', default=None):  # pragma: no cover
     FEDAUTH_API_ENDPOINT = env.url('FEDAUTH_API_ENDPOINT').geturl()
     FEDAUTH_INSTITUTION = env.str('FEDAUTH_INSTITUTION')
 
-    AUTHENTICATION_BACKENDS.append('opal.users.backends.FedAuthBackend')
+    AUTHENTICATION_BACKENDS.append('opal.core.auth.FedAuthBackend')
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
@@ -274,7 +278,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'opal.core.middleware.LoginRequiredMiddleware',
+    'django.contrib.auth.middleware.LoginRequiredMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_structlog.middlewares.RequestMiddleware',
@@ -337,7 +341,10 @@ TEMPLATES = [
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#form-renderer
-FORM_RENDERER = 'django.forms.renderers.DjangoDivFormRenderer'
+FORM_RENDERER = 'django.forms.renderers.DjangoTemplates'
+
+# transitional setting in preparation for Django 6
+FORMS_URLFIELD_ASSUME_HTTPS = True
 
 # Crispy forms
 # https://django-crispy-forms.readthedocs.io/en/latest/index.html
@@ -414,7 +421,7 @@ LOGGING = {
         },
         'opal': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'DEBUG',
         },
         # Suppress default django runserver logs
         'django.request': {
@@ -453,6 +460,8 @@ structlog.configure(
 # ------------------------------------------------------------------------------
 # See https://django-auditlog.readthedocs.io/en/latest/usage.html#settings
 AUDITLOG_INCLUDE_ALL_MODELS = True
+# Store changes in JSON format
+AUDITLOG_STORE_JSON_CHANGES = True
 # Use the Appuserid header to correlate changes with app users
 # https://django-auditlog.readthedocs.io/en/latest/usage.html#correlation-id
 AUDITLOG_CID_HEADER = 'Appuserid'
@@ -492,6 +501,22 @@ ORMS_ENABLED = env.bool('ORMS_ENABLED', default=False)
 if ORMS_ENABLED:
     # base URL to ORMS (no trailing slash)
     ORMS_HOST = env.url('ORMS_HOST').geturl()
+
+# FHIR API and IPS settings
+IPS_ENABLED = env.bool('IPS_ENABLED', default=False)
+
+if IPS_ENABLED:
+    IPS_LANGUAGE = env.str('IPS_LANGUAGE', default=None)
+
+    FHIR_API_URL = env.url('FHIR_API_URL').geturl()
+    FHIR_API_OAUTH_URL = env.url('FHIR_API_OAUTH_URL').geturl()
+    FHIR_API_CLIENT_ID = env.str('FHIR_API_CLIENT_ID')
+    # ensure that newlines are converted to actual newlines
+    FHIR_API_PRIVATE_KEY = env.str('FHIR_API_PRIVATE_KEY').replace('\\n', '\n')
+
+    IPS_STORAGE_BACKEND = env.str('IPS_STORAGE_BACKEND')
+    IPS_PUBLIC_BASE_URL = env.url('IPS_PUBLIC_BASE_URL').geturl()
+    FTP_STORAGE_LOCATION = env.str('FTP_STORAGE_LOCATION', default='')
 
 # OTHER
 ADMIN_GROUP_NAME = 'System Administrators'
