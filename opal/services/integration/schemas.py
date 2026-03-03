@@ -12,7 +12,7 @@ from datetime import date, datetime
 from enum import StrEnum, auto
 from typing import Self
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import AwareDatetime, Base64Bytes, BaseModel, Field, model_validator
 
 
 class ErrorResponseSchema(BaseModel):
@@ -22,11 +22,16 @@ class ErrorResponseSchema(BaseModel):
     message: str
 
 
-class HospitalNumberSchema(BaseModel):
+class _MRNSiteSchema(BaseModel):
     """A patient's hospital number consisting of an MRN and a site code."""
 
     mrn: str = Field(min_length=1, max_length=10)
     site: str = Field(min_length=3, max_length=10)
+
+
+class HospitalNumberSchema(_MRNSiteSchema):
+    """A patient's hospital number consisting of an MRN and a site code."""
+
     is_active: bool = True
 
 
@@ -55,11 +60,11 @@ class PatientSchema(BaseModel):
         """
         Check that a patient has at least one medical number (MRN or health insurance number).
 
-        Raises:
-            ValueError: if neither MRN nor health insurance number is provided
-
         Returns:
             the model instance
+
+        Raises:
+            ValueError: if neither MRN nor health insurance number is provided
         """
         if not self.mrns and not self.health_insurance_number:
             raise ValueError('Patient must have at least one medical number (MRN or health insurance number)')
@@ -77,3 +82,10 @@ class PatientByMRNSchema(HospitalNumberSchema):
     """The request to search for a patient by hospital number (MRN and site code)."""
 
     pass
+
+
+class QuestionnaireReportRequestSchema(_MRNSiteSchema):
+    """The request to generate a questionnaire report."""
+
+    document: Base64Bytes
+    document_datetime: AwareDatetime

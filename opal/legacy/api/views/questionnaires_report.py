@@ -9,7 +9,6 @@ import logging
 from typing import Any
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
-from django.utils import timezone
 
 from fpdf import FPDFException
 from rest_framework import exceptions, response, views
@@ -18,7 +17,7 @@ from rest_framework.request import Request
 from opal.core.drf_permissions import IsORMSUser
 from opal.legacy.utils import generate_questionnaire_report, get_questionnaire_data
 from opal.patients.models import Patient
-from opal.services.hospital.hospital import SourceSystemReportExportData, SourceSystemService
+from opal.services.integration import hospital
 
 from ..serializers import QuestionnaireReportRequestSerializer
 
@@ -30,7 +29,6 @@ class QuestionnairesReportView(views.APIView):
 
     permission_classes = (IsORMSUser,)
     serializer_class = QuestionnaireReportRequestSerializer
-    source_system = SourceSystemService()
 
     def post(
         self,
@@ -57,12 +55,15 @@ class QuestionnairesReportView(views.APIView):
         # Validate received data. Return a 400 response if the data was invalid.
         serializer.is_valid(raise_exception=True)
 
+        mrn = serializer.validated_data.get('mrn')
+        site = serializer.validated_data.get('site')
+
         try:
             patient = Patient.objects.get_patient_by_site_mrn_list(
                 [
                     {
-                        'site': {'acronym': serializer.validated_data.get('site')},
-                        'mrn': serializer.validated_data.get('mrn'),
+                        'site': {'acronym': site},
+                        'mrn': mrn,
                     },
                 ],
             )
@@ -78,21 +79,17 @@ class QuestionnairesReportView(views.APIView):
             LOGGER.exception('An error occurred during questionnaire report generation')
             raise exceptions.APIException(detail='An error occurred during questionnaire report generation.') from exc
 
-        encoded_report = base64.b64encode(pdf_report).decode('utf-8')
+        encoded_report = base64.b64encode(pdf_report)
 
-        # Submit report to the source system
-        export_result = self.source_system.export_pdf_report(
-            SourceSystemReportExportData(
-                mrn=serializer.validated_data.get('mrn'),
-                site=serializer.validated_data.get('site'),
-                base64_content=encoded_report,
-                document_number='MU-8624',  # TODO: clarify where to get the value (currently set as a test document)
-                document_date=timezone.now(),  # TODO: get the exact time of the report creation
-            ),
-        )
-
-        if not export_result or 'status' not in export_result or export_result['status'] == 'error':
-            LOGGER.error(f'An error occurred while exporting a PDF report to the source system: {export_result}')
-            raise exceptions.APIException(detail='An error occurred while exporting a PDF report to the source system')
+        try:
+            hospital.add_questionnaire_report(mrn, site, encoded_report)
+        except hospital.NonOKResponseError as exc:
+            LOGGER.exception('An error occurred while exporting a PDF report to the source system')
+            raise exceptions.APIException(
+                detail='An error occurred while exporting a PDF report to the source system'
+            ) from exc
+        except hospital.PatientNotFoundError as exc:
+            LOGGER.exception('The patient was not found in the source system')
+            raise exceptions.APIException(detail='The patient was not found in the source system') from exc
 
         return response.Response()

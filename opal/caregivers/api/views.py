@@ -21,7 +21,7 @@ from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import exceptions, serializers
 from rest_framework import serializers as drf_serializers
-from rest_framework.generics import RetrieveAPIView, UpdateAPIView, get_object_or_404
+from rest_framework.generics import RetrieveAPIView, RetrieveUpdateAPIView, UpdateAPIView, get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -33,6 +33,7 @@ from opal.caregivers.api.serializers import (
     DeviceSerializer,
     EmailVerificationSerializer,
     RegistrationEncryptionInfoSerializer,
+    UpdateCaregiverProfileSerializer,
 )
 from opal.caregivers.models import CaregiverProfile, Device, EmailVerification, RegistrationCode, RegistrationCodeStatus
 from opal.core.api.mixins import AllowPUTAsCreateMixin
@@ -56,7 +57,8 @@ class GetRegistrationEncryptionInfoView(RetrieveAPIView[RegistrationCode]):
     """Class handling gets requests for registration encryption values."""
 
     queryset = (
-        RegistrationCode.objects.select_related(
+        RegistrationCode.objects
+        .select_related(
             'relationship',
             'relationship__patient',
         )
@@ -118,11 +120,11 @@ class GetCaregiverPatientsList(APIView):
         Args:
             request: Http request made by the listener needed to retrieve `Appuserid`.
 
-        Raises:
-            ParseError: If the caregiver username was not provided.
-
         Returns:
             Http response with the list of patients for a given caregiver.
+
+        Raises:
+            ParseError: If the caregiver username was not provided.
         """
         user_id = request.headers.get('Appuserid')
 
@@ -147,8 +149,8 @@ class GetCaregiverPatientsList(APIView):
         ),
     ],
 )
-class CaregiverProfileView(RetrieveAPIView[CaregiverProfile]):
-    """Retrieve the profile of the current caregiver."""
+class CaregiverProfileView(RetrieveUpdateAPIView[CaregiverProfile]):
+    """Retrieve and update the profile of the current caregiver."""
 
     permission_classes = (IsListener,)
     serializer_class = CaregiverSerializer
@@ -156,9 +158,23 @@ class CaregiverProfileView(RetrieveAPIView[CaregiverProfile]):
     lookup_field = 'user__username'
     lookup_url_kwarg = 'username'
 
+    def get_serializer_class(self) -> type[serializers.BaseSerializer[CaregiverProfile]]:
+        """
+        Return the serializer class to use based on the request method.
+
+        Returns:
+            The UpdateCaregiverProfileSerializer for PUT and PATCH requests, and the CaregiverSerializer for GET requests.
+        """
+        if self.request.method in {'PUT', 'PATCH'}:
+            return UpdateCaregiverProfileSerializer
+
+        return CaregiverSerializer
+
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
         Handle retrieval of a caregiver profile.
+
+        Raises a ParseError if the Appuserid header is missing.
 
         Args:
             request: the HTTP request
@@ -167,10 +183,28 @@ class CaregiverProfileView(RetrieveAPIView[CaregiverProfile]):
 
         Returns:
             the HTTP response
-
-        Raises:
-            ParseError: if the Appuserid HTTP header is missing
         """
+        self._check_appuserid(request)
+        return super().retrieve(request, *args, **kwargs)
+
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Handle update of a caregiver profile.
+
+        Raises a ParseError if the Appuserid header is missing.
+
+        Args:
+            request: the HTTP request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the HTTP response
+        """
+        self._check_appuserid(request)
+        return super().update(request, *args, **kwargs)
+
+    def _check_appuserid(self, request: Request) -> None:
         user_id = request.headers.get('Appuserid')
 
         if not user_id:
@@ -180,8 +214,6 @@ class CaregiverProfileView(RetrieveAPIView[CaregiverProfile]):
 
         # manually set the username kwarg since it is not provided via the URL
         self.kwargs['username'] = user_id
-
-        return super().retrieve(request, *args, **kwargs)
 
 
 class RetrieveRegistrationCodeMixin:
@@ -198,7 +230,8 @@ class RetrieveRegistrationCodeMixin:
         """
         code = self.kwargs.get('code') if hasattr(self, 'kwargs') else None
         return (
-            RegistrationCode.objects.select_related(
+            RegistrationCode.objects
+            .select_related(
                 'relationship__caregiver',
                 'relationship__caregiver__user',
             )
@@ -238,11 +271,11 @@ class VerifyEmailView(RetrieveRegistrationCodeMixin, APIView):
             request: the HTTP request.
             code: registration code.
 
-        Raises:
-            ValidationError: if re-sending the verification code was requested too soon.
-
         Returns:
             Http response with empty message.
+
+        Raises:
+            ValidationError: if re-sending the verification code was requested too soon.
         """
         registration_code = get_object_or_404(self.get_queryset())
 
@@ -397,11 +430,11 @@ class RegistrationCompletionView(APIView):
             request: REST framework's request object.
             code: registration code.
 
-        Raises:
-            ValidationError: validation error.
-
         Returns:
             HTTP response with the error or success status.
+
+        Raises:
+            ValidationError: validation error.
         """
         serializer_class = self._get_serializer_class()
         serializer = serializer_class(
@@ -523,7 +556,8 @@ class RegistrationCompletionView(APIView):
         # use the last one
         email_verifications: Manager[EmailVerification] = relationship.caregiver.email_verifications
         email_verification = (
-            email_verifications.filter(
+            email_verifications
+            .filter(
                 is_verified=True,
             )
             .order_by('-sent_at')

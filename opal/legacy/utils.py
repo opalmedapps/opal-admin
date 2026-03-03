@@ -98,6 +98,7 @@ def create_patient(  # noqa: PLR0913, PLR0917
     language: LegacyLanguage,
     ramq: str,
     access_level: LegacyAccessLevel,
+    legacy_id: int | None = None,
 ) -> LegacyPatient:
     """
     Create a patient with the given properties.
@@ -111,6 +112,7 @@ def create_patient(  # noqa: PLR0913, PLR0917
         language: the language of the patient
         ramq: the RAMQ of the patient
         access_level: the access level of the patient
+        legacy_id: the desired legacy ID of the patient, if a specific ID is required
 
     Returns:
         the legacy patient instance
@@ -125,6 +127,7 @@ def create_patient(  # noqa: PLR0913, PLR0917
     )
 
     patient = LegacyPatient(
+        patientsernum=legacy_id,
         first_name=first_name,
         last_name=last_name,
         sex=sex,
@@ -214,7 +217,7 @@ def insert_hospital_identifiers(patient: LegacyPatient, mrns: list[tuple[Site, s
             patient=patient,
             mrn=hospital_patient[1],
             is_active=hospital_patient[2],
-            hospital_id=hospital_patient[0].acronym,
+            hospital=hospital_patient[0].acronym,
         )
         for hospital_patient in mrns
     ]
@@ -262,6 +265,7 @@ def initialize_new_patient(
         language=language,
         ramq=patient.ramq,
         access_level=ACCESS_LEVEL_MAPPING[patient.data_access],
+        legacy_id=patient.legacy_id,
     )
 
     insert_hospital_identifiers(legacy_patient, mrns)
@@ -270,7 +274,9 @@ def initialize_new_patient(
     return legacy_patient
 
 
-def create_user(user_type: LegacyUserType, user_type_id: int, username: str) -> LegacyUsers:
+def create_user(
+    user_type: LegacyUserType, user_type_id: int, username: str, legacy_id: int | None = None
+) -> LegacyUsers:
     """
     Create a user with the given properties.
 
@@ -278,11 +284,13 @@ def create_user(user_type: LegacyUserType, user_type_id: int, username: str) -> 
         user_type: the type of the user
         user_type_id: the legacy ID of the type of the user (e.g., the patient ID for a patient)
         username: the username of the user
+        legacy_id: the desired legacy ID of the patient, if a specific ID is required
 
     Returns:
         the created user instance
     """
     user = LegacyUsers(
+        usersernum=legacy_id,
         usertype=user_type,
         usertypesernum=user_type_id,
         username=username,
@@ -336,6 +344,7 @@ def create_caregiver_user(
     user_patient_legacy_id: int = relationship.patient.legacy_id  # type: ignore[assignment]
     user_type = LegacyUserType.PATIENT
     language = LegacyLanguage(language.upper())
+    legacy_id = relationship.caregiver.legacy_id
 
     if relationship.type.is_self:
         legacy_patient = LegacyPatient.objects.get(patientsernum=user_patient_legacy_id)
@@ -356,7 +365,7 @@ def create_caregiver_user(
         user_patient_legacy_id = dummy_patient.patientsernum
         user_type = LegacyUserType.CAREGIVER
 
-    return create_user(user_type, user_patient_legacy_id, username)
+    return create_user(user_type, user_patient_legacy_id, username, legacy_id)
 
 
 def change_caregiver_user_to_patient(caregiver_legacy_id: int, patient: Patient) -> None:
@@ -393,7 +402,8 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:
         boolean value indicating success or failure, to help logging in registration endpoint
     """
     try:
-        legacy_patient = LegacyPatient.objects.get(patientsernum=django_patient.legacy_id)
+        # It is assumed that the legacy patient exists at this point
+        legacy_patient = LegacyPatient.objects.get(patientsernum=django_patient.legacy_id)  # type: ignore[misc]
 
         # Check for the existence of the consent form and educational materials before attempting to insert
         control_records = fetch_databank_control_records(django_patient)
@@ -488,12 +498,11 @@ def get_questionnaire_data(patient: Patient) -> list[questionnaire.Questionnaire
     Args:
         patient: patient for data
 
-    Raises:
-        DataFetchError: error fetching the arguments
-
     Returns:
         list of the questionnaireData
 
+    Raises:
+        DataFetchError: error fetching the arguments
     """
     if patient.legacy_id:
         external_patient_id = patient.legacy_id
@@ -544,11 +553,11 @@ def _parse_query_result(
     Args:
         query_result: raw query results, each tuple represents a database row
 
-    Raises:
-        TypeError: if the JSON data cannot be deserialized
-
     Returns:
         structured list of dictionaries representing the query
+
+    Raises:
+        TypeError: if the JSON data cannot be deserialized
     """
     data_list = []
     for parsed_data in query_result:
@@ -568,11 +577,11 @@ def _process_questionnaire_data(parsed_data_list: list[dict[str, Any]]) -> list[
     Args:
         parsed_data_list: parsed data list of the questionnaire
 
-    Raises:
-        DataFetchError: if the questionnaire data format is wrong
-
     Returns:
         complete answered questionnaire data list of the patient
+
+    Raises:
+        DataFetchError: if the questionnaire data format is wrong
     """
     questionnaire_data_list = []
 
@@ -599,11 +608,11 @@ def _process_questions(questions_data: list[dict[str, Any]]) -> list[questionnai
     Args:
         questions_data: unprocessed questions data associated with the questionnaire
 
-    Raises:
-        TypeError: the answers are wrongly formatted
-
     Returns:
         list of questions associated with the questionnaire
+
+    Raises:
+        TypeError: the answers are wrongly formatted
     """
     questions = []
 
@@ -661,7 +670,8 @@ def generate_questionnaire_report(
             patient_date_of_birth=patient.date_of_birth,
             patient_ramq=patient.ramq,
             patient_sites_and_mrns=list(
-                patient.hospital_patients.all()
+                patient.hospital_patients
+                .all()
                 .annotate(
                     site_code=models.F('site__acronym'),
                 )

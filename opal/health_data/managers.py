@@ -56,7 +56,8 @@ class QuantitySampleManager(models.Manager['QuantitySample']):
 
         # Add .order_by() to remove ORDER BY statement that is added by default
         diastolic_measurements = (
-            self.filter(
+            self
+            .filter(
                 patient=patient,
                 type=quantity_sample_models.QuantitySampleType.BLOOD_PRESSURE_DIASTOLIC,
                 start_date=models.OuterRef('start_date'),
@@ -69,7 +70,8 @@ class QuantitySampleManager(models.Manager['QuantitySample']):
 
         # list() forces QuerySet evaluation that makes call to the database
         return list(
-            self.filter(
+            self
+            .filter(
                 patient=patient,
                 type=quantity_sample_models.QuantitySampleType.BLOOD_PRESSURE_SYSTOLIC,
             )

@@ -68,6 +68,26 @@ def test_create_patient() -> None:
     assert legacy_patient.access_level == models.LegacyAccessLevel.NEED_TO_KNOW
 
 
+def test_create_patient_legacy_id() -> None:
+    """The patient is created successfully with the desired legacy ID."""
+    legacy_patient = legacy_utils.create_patient(
+        'Marge',
+        'Simpson',
+        models.LegacySexType.FEMALE,
+        dt.date(1986, 10, 5),
+        'marge@opalmedapps.ca',
+        models.LegacyLanguage.FRENCH,
+        'SIMM86600599',
+        models.LegacyAccessLevel.NEED_TO_KNOW,
+        legacy_id=12345,
+    )
+
+    legacy_patient.full_clean()
+
+    assert legacy_patient.pk == 12345
+    assert models.LegacyPatient.objects.filter(pk=12345).exists()
+
+
 def test_create_dummy_patient() -> None:
     """The dummy patient is created successfully."""
     legacy_patient = legacy_utils.create_dummy_patient(
@@ -127,10 +147,6 @@ def test_insert_hospital_identifiers() -> None:
 
     legacy_patient = factories.LegacyPatientFactory.create(patientsernum=patient.legacy_id)
 
-    factories.LegacyHospitalIdentifierTypeFactory.create(code='RVH')
-    factories.LegacyHospitalIdentifierTypeFactory.create(code='MGH')
-    factories.LegacyHospitalIdentifierTypeFactory.create(code='MCH')
-
     legacy_utils.insert_hospital_identifiers(
         legacy_patient,
         [
@@ -144,17 +160,17 @@ def test_insert_hospital_identifiers() -> None:
     assert models.LegacyPatientHospitalIdentifier.objects.filter(patient=legacy_patient).count() == 3
     assert models.LegacyPatientHospitalIdentifier.objects.filter(
         mrn='9999995',
-        hospital__code='RVH',
+        hospital='RVH',
         is_active=True,
     ).exists()
     assert models.LegacyPatientHospitalIdentifier.objects.filter(
         mrn='7654321',
-        hospital__code='MGH',
+        hospital='MGH',
         is_active=True,
     ).exists()
     assert models.LegacyPatientHospitalIdentifier.objects.filter(
         mrn='1234567',
-        hospital__code='MCH',
+        hospital='MCH',
         is_active=False,
     ).exists()
 
@@ -172,10 +188,6 @@ def test_create_patient_control() -> None:
 def test_initialize_new_patient() -> None:
     """A legacy patient is initialized from an existing patient."""
     patient = patient_factories.Patient.create(ramq='SIMB04100199')
-
-    factories.LegacyHospitalIdentifierTypeFactory.create(code='RVH')
-    factories.LegacyHospitalIdentifierTypeFactory.create(code='MGH')
-    factories.LegacyHospitalIdentifierTypeFactory.create(code='MCH')
 
     legacy_patient = legacy_utils.initialize_new_patient(
         patient,
@@ -229,6 +241,16 @@ def test_create_user() -> None:
     assert legacy_user.usertype == models.LegacyUserType.CAREGIVER
     assert legacy_user.usertypesernum == 123
     assert legacy_user.username == 'test-username'
+
+
+def test_create_user_legacy_id() -> None:
+    """The legacy user is created successfully with the desired legacy ID."""
+    legacy_user = legacy_utils.create_user(models.LegacyUserType.CAREGIVER, 123, 'test-username', 321)
+
+    legacy_user.full_clean()
+    legacy_user.refresh_from_db()
+
+    assert legacy_user.usersernum == 321
 
 
 def test_update_legacy_user_type() -> None:
@@ -291,6 +313,20 @@ def test_create_caregiver_user_caregiver() -> None:
     assert legacy_user.usertype == models.LegacyUserType.CAREGIVER
     assert legacy_user.usertypesernum == legacy_patient.patientsernum
     assert legacy_user.username == 'test-username'
+
+
+def test_create_caregiver_user_caregiver_legacy_id() -> None:
+    """The caregiver user is created with the desired legacy ID."""
+    relationship = patient_factories.Relationship.create(
+        patient__legacy_id=None,
+        caregiver__user__first_name='John',
+        caregiver__user__last_name='Wayne',
+        caregiver__legacy_id=123,
+    )
+
+    legacy_user = legacy_utils.create_caregiver_user(relationship, 'test-username', 'fr', 'marge@opalmedapps.ca')
+
+    assert legacy_user.usersernum == 123
 
 
 def test_change_caregiver_user_to_patient() -> None:

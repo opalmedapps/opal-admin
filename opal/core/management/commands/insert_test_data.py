@@ -4,6 +4,7 @@
 
 """Management command for inserting test data."""
 
+import hashlib
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
@@ -20,6 +21,7 @@ from dateutil.relativedelta import relativedelta
 
 from opal.caregivers.models import CaregiverProfile, SecurityAnswer
 from opal.hospital_settings.models import Institution, Site
+from opal.legacy import models as legacy_models
 from opal.patients.models import (
     DataAccessType,
     HospitalPatient,
@@ -27,13 +29,13 @@ from opal.patients.models import (
     Relationship,
     RelationshipStatus,
     RelationshipType,
+    RoleType,
     SexType,
 )
 from opal.test_results.models import GeneralTest, Note, PathologyObservation, TestType
-from opal.users.models import Caregiver
+from opal.users.models import Caregiver, ClinicalStaff
 
 DIRECTORY_FILES = Path('opal/core/management/commands/files')
-PARKING_URLS_MUHC = ('https://muhc.ca/patient-and-visitor-parking', 'https://cusm.ca/stationnement')
 
 
 class InstitutionOption(Enum):
@@ -57,13 +59,13 @@ INSTITUTION_DATA = MappingProxyType({
         'name': 'Opal Demo',
         'name_fr': 'Démo de Opal',
         'acronym_fr': 'DO1',
-        'support_email': 'info@opalmedapps.ca',
+        'support_email': 'support@opalmedapps.ca',
     },
     InstitutionOption.ohigph: {
         'name': 'Opal Demo 2',
         'name_fr': 'Démo de Opal 2',
-        'acronym_fr': 'HPOHIG',
-        'support_email': 'info@opalmedapps.ca',
+        'acronym_fr': 'DO2',
+        'support_email': 'support@opalmedapps.ca',
     },
 })
 
@@ -83,10 +85,10 @@ SITE_DATA = MappingProxyType({
     ],
     InstitutionOption.ohigph: [
         (
-            'OHIG Pediatric Hospital',
-            'Hôpital Pédiatrique OHIG',
-            'CHUSJ',
-            'CHUSJ',
+            'Opal Demo Hospital 2',
+            "Hôpital démo d'Opal 2",
+            'ODH2',
+            'HDO2',
             (
                 'https://www.chusj.org/en/a-propos/coordonnees/Stationnement',
                 'https://www.chusj.org/a-propos/coordonnees/Stationnement',
@@ -105,20 +107,17 @@ SITE_DATA = MappingProxyType({
 
 MRN_DATA = MappingProxyType({
     InstitutionOption.omi: {
-        'Marge Simpson': [('ODH', '9999996')],
-        'Homer Simpson': [('ODH', '9999997')],
-        'Bart Simpson': [('ODH', '9999995')],
-        'Mona Simpson': [('ODH', '9999993')],
-        'Fred Flintstone': [('ODH', '9999998')],
-        'Pebbles Flintstone': [('ODH', '9999999')],
-        'Wednesday Addams': [('ODH', '9999991')],
         'Laurie Opal': [('ODH', '1092300')],
         "Rory O'Brien": [('ODH', '9999989')],
+        "Cara O'Brien": [('ODH', '8888885')],
         'John Smith': [('ODH', '9999994')],
+        'Richard Smith': [('ODH', '8888882')],
+        'Mike Brown': [('ODH', '8888881')],
+        'Kathy Brown': [('ODH', '8888880')],
+        'Valerie Solanas': [('ODH', '5555553')],
     },
     InstitutionOption.ohigph: {
-        'Bart Simpson': [('CHUSJ', '9999996')],
-        'Lisa Simpson': [('CHUSJ', '9999993')],
+        'Lisa Simpson': [('ODH2', '9999993')],
     },
 })
 
@@ -196,7 +195,10 @@ class Command(BaseCommand):
 
 def _delete_existing_data() -> None:
     """Delete all the existing test data."""
+    ClinicalStaff.objects.filter(username='DemoAdmin').delete()
     Relationship.objects.all().delete()
+    # delete any custom relationship types
+    RelationshipType.objects.filter(role_type=RoleType.CAREGIVER).delete()
     Patient.objects.all().delete()
     # also deletes security answers
     CaregiverProfile.objects.all().delete()
@@ -206,6 +208,8 @@ def _delete_existing_data() -> None:
     Note.objects.all().delete()
     PathologyObservation.objects.all().delete()
     GeneralTest.objects.all().delete()
+
+    legacy_models.LegacyOAUser.objects.filter(username='DemoAdmin').delete()
 
 
 def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: PLR0914, PLR0915
@@ -230,17 +234,37 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
     institution = create_institution(institution_option)
     sites = create_sites(institution_option, institution)
 
-    mrn_data: dict[str, list[tuple[Site, str]]] = {}
+    # create demo admin user
+    _create_user(
+        username='DemoAdmin',
+        password='Silk7-Artificial-Floral',  # noqa: S106
+        user_type=legacy_models.LegacyOAUserType.HUMAN,
+        user_role='System Administrator',
+    )
+
+    # create Family & Friends relationship type
+    type_family = RelationshipType.objects.create(
+        name='Family & Friends',
+        name_fr='Famille et amis',
+        description='Family & Friends',
+        description_fr='Famille et amis',
+        start_age=14,
+        end_age=120,
+        form_required=False,
+    )
+
+    # the third item in the tuple is whether the MRN is active (only needed for creating a legacy patient)
+    mrn_data: dict[str, list[tuple[Site, str, bool]]] = {}
 
     for key, value in MRN_DATA[institution_option].items():
-        new_value = [(sites[site], mrn) for site, mrn in value]
+        new_value = [(sites[site], mrn, True) for site, mrn in value]
         mrn_data[key] = new_value
 
     is_pediatric = institution_option == InstitutionOption.ohigph
 
     # patients
     if is_pediatric:
-        lisa = _create_patient(
+        _create_patient(
             first_name='Lisa',
             last_name='Simpson',
             date_of_birth=_create_date(8, 5, 9),
@@ -250,66 +274,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             mrns=mrn_data['Lisa Simpson'],
         )
     else:
-        marge = _create_patient(
-            first_name='Marge',
-            last_name='Simpson',
-            date_of_birth=_create_date(36, 10, 1),
-            sex=SexType.FEMALE,
-            ramq='SIMM86600199',
-            legacy_id=51,
-            mrns=mrn_data['Marge Simpson'],
-        )
-
-        homer = _create_patient(
-            first_name='Homer',
-            last_name='Simpson',
-            date_of_birth=_create_date(39, 5, 12),
-            sex=SexType.MALE,
-            ramq='SIMH83051299',
-            legacy_id=52,
-            mrns=mrn_data['Homer Simpson'],
-        )
-
-        mona = _create_patient(
-            first_name='Mona',
-            last_name='Simpson',
-            date_of_birth=date(1940, 3, 15),
-            sex=SexType.FEMALE,
-            ramq='SIMM40531599',
-            legacy_id=55,
-            mrns=mrn_data['Mona Simpson'],
-            date_of_death=_relative_date(today, -2),
-            data_access=DataAccessType.NEED_TO_KNOW,
-        )
-
-        fred = _create_patient(
-            first_name='Fred',
-            last_name='Flintstone',
-            date_of_birth=date(1960, 8, 1),
-            sex=SexType.MALE,
-            ramq='FLIF60080199',
-            legacy_id=56,
-            mrns=mrn_data['Fred Flintstone'],
-        )
-
-        pebbles = _create_patient(
-            first_name='Pebbles',
-            last_name='Flintstone',
-            date_of_birth=_create_date(9, 2, 22),
-            sex=SexType.FEMALE,
-            ramq='FLIP15022299',
-            legacy_id=57,
-            mrns=mrn_data['Pebbles Flintstone'],
-        )
-        wednesday = _create_patient(
-            first_name='Wednesday',
-            last_name='Addams',
-            date_of_birth=_create_date(15, 2, 13),
-            sex=SexType.FEMALE,
-            ramq='ADAW09021399',
-            legacy_id=58,
-            mrns=mrn_data['Wednesday Addams'],
-        )
         laurie = _create_patient(
             first_name='Laurie',
             last_name='Opal',
@@ -328,82 +292,64 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             legacy_id=59,
             mrns=mrn_data["Rory O'Brien"],
         )
+        cara = _create_patient(
+            first_name='Cara',
+            last_name="O'Brien",
+            date_of_birth=date(1974, 11, 25),
+            sex=SexType.FEMALE,
+            ramq='OBRC11257499',
+            legacy_id=96,
+            mrns=mrn_data["Cara O'Brien"],
+        )
         john = _create_patient(
             first_name='John',
             last_name='Smith',
             date_of_birth=date(1985, 1, 1),
             sex=SexType.MALE,
-            ramq='',
+            ramq='ABCD99988877',
             legacy_id=93,
             mrns=mrn_data['John Smith'],
         )
-    # Bart exists at both institutions
-    bart = _create_patient(
-        first_name='Bart',
-        last_name='Simpson',
-        date_of_birth=_create_date(14, 2, 23),
-        sex=SexType.OTHER,
-        ramq='SIMB13022399',
-        legacy_id=53,
-        mrns=mrn_data['Bart Simpson'],
-    )
+        richard = _create_patient(
+            first_name='Richard',
+            last_name='Smith',
+            date_of_birth=date(1946, 5, 5),
+            sex=SexType.MALE,
+            ramq='SMIR05054616',
+            legacy_id=94,
+            mrns=mrn_data['Richard Smith'],
+        )
+        mike = _create_patient(
+            first_name='Mike',
+            last_name='Brown',
+            date_of_birth=date(1972, 6, 11),
+            sex=SexType.MALE,
+            ramq='BROM72061199',
+            legacy_id=103,
+            mrns=mrn_data['Mike Brown'],
+        )
+        kathy = _create_patient(
+            first_name='Kathy',
+            last_name='Brown',
+            date_of_birth=date(1974, 11, 25),
+            sex=SexType.FEMALE,
+            ramq='BROK11257499',
+            legacy_id=102,
+            mrns=mrn_data['Kathy Brown'],
+        )
+        valerie = _create_patient(
+            first_name='Valerie',
+            last_name='Solanas',
+            date_of_birth=date(1979, 6, 21),
+            sex=SexType.MALE,
+            ramq='SOLV06217999',
+            legacy_id=99,
+            mrns=mrn_data['Valerie Solanas'],
+        )
 
     # caregivers
-    user_marge = _create_caregiver(
-        # hard-coded name since the patient Marge might not exist
-        first_name='Marge',
-        last_name='Simpson',
-        username='QXmz5ANVN3Qp9ktMlqm2tJ2YYBz2',
-        email='marge@opalmedapps.ca',
-        language='en',
-        phone_number='+15142345678',
-        legacy_id=1,
-    )
-
-    user_bart = _create_caregiver(
-        first_name=bart.first_name,
-        last_name=bart.last_name,
-        username='SipDLZCcOyTYj7O3C8HnWLalb4G3',
-        email='bart@opalmedapps.ca',
-        language='en',
-        phone_number='+498999998123',
-        legacy_id=3,
-    )
 
     if not is_pediatric:
-        user_homer = _create_caregiver(
-            first_name=homer.first_name,
-            last_name=homer.last_name,
-            username='PyKlcbRpMLVm8lVnuopFnFOHO4B3',
-            email='homer@opalmedapps.ca',
-            language='en',
-            phone_number='+15147654321',
-            legacy_id=2,
-            # homer is blocked: he lost access due to him being unstable
-            is_active=False,
-        )
-
-        user_mona = _create_caregiver(
-            first_name=mona.first_name,
-            last_name=mona.last_name,
-            username='61DXBRwLCmPxlaUoX6M1MP9DiEl1',
-            email='mona@opalmedapps.ca',
-            language='en',
-            phone_number='+15144758941',
-            legacy_id=4,
-            is_active=False,
-        )
-
-        user_fred = _create_caregiver(
-            first_name='Fred',
-            last_name='Flintstone',
-            username='ZYHAjhNy6hhr4tOW8nFaVEeKngt1',
-            email='fred@opalmedapps.ca',
-            language='en',
-            phone_number='+15144758941',
-            legacy_id=5,
-        )
-
         user_laurie = _create_caregiver(
             first_name='Laurie',
             last_name='Opal',
@@ -411,7 +357,7 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             email='laurie@opalmedapps.ca',
             language='en',
             phone_number='',
-            legacy_id=6,
+            legacy_id=1,
         )
         user_rory = _create_caregiver(
             first_name='Rory',
@@ -420,125 +366,69 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             email='rory@opalmedapps.ca',
             language='en',
             phone_number='+15145554321',
-            legacy_id=7,
+            legacy_id=2,
+        )
+        user_cara = _create_caregiver(
+            first_name=cara.first_name,
+            last_name=cara.last_name,
+            username='dR2Cb1Yf0vQb4ywvMoAXw1SxbY93',
+            email='cara@opalmedapps.ca',
+            language='en',
+            phone_number='',
+            legacy_id=3,
         )
         user_john = _create_caregiver(
-            first_name='John',
-            last_name='Smith',
+            first_name=john.first_name,
+            last_name=john.last_name,
             username='hIMnEXkedPMxYnXeqNXzphklu4V2',
             email='john@opalmedapps.ca',
             language='en',
             phone_number='',
+            legacy_id=4,
+        )
+        user_richard = _create_caregiver(
+            first_name=richard.first_name,
+            last_name=richard.last_name,
+            username='2WhxeTpYF8aHlfSQX8oGeq4LFhw2',
+            email='richard@opalmedapps.ca',
+            language='en',
+            phone_number='',
+            legacy_id=5,
+        )
+        user_mike = _create_caregiver(
+            first_name=mike.first_name,
+            last_name=mike.last_name,
+            username='hSJdAae7xWNwnemd2YypQSVfoOb2',
+            email='mike@opalmedapps.ca',
+            language='en',
+            phone_number='',
+            legacy_id=6,
+        )
+        user_kathy = _create_caregiver(
+            first_name=kathy.first_name,
+            last_name=kathy.last_name,
+            username='OPWj4Cj5iRfgva4b3HGtVGjvuk13',
+            email='kathy@opalmedapps.ca',
+            language='en',
+            phone_number='',
+            legacy_id=7,
+        )
+        user_valerie = _create_caregiver(
+            first_name=valerie.first_name,
+            last_name=valerie.last_name,
+            username='dcBSK5qdoiOM2L9cEdShkqOadkG3',
+            email='valerie@opalmedapps.ca',
+            language='en',
+            phone_number='',
             legacy_id=8,
         )
+
     # get relationship types
     type_self = RelationshipType.objects.self_type()
-    type_parent = RelationshipType.objects.parent_guardian()
-    type_caregiver = RelationshipType.objects.guardian_caregiver()
-    type_mandatary = RelationshipType.objects.mandatary()
 
     # relationships
-    date_bart_fourteen = _relative_date(bart.date_of_birth, 14)
 
-    if is_pediatric:
-        # Marge --> Lisa: Guardian/Parent
-        _create_relationship(
-            patient=lisa,
-            caregiver=user_marge,
-            relationship_type=type_parent,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -1),
-            start_date=_relative_date(today, -3),
-            end_date=_relative_date(lisa.date_of_birth, 14),
-        )
-    else:
-        # Marge --> Marge: Self
-        _create_relationship(
-            patient=marge,
-            caregiver=user_marge,
-            relationship_type=type_self,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -4),
-            start_date=_relative_date(today, -6),
-        )
-
-        # Marge --> Homer: Mandatary
-        _create_relationship(
-            patient=homer,
-            caregiver=user_marge,
-            relationship_type=type_mandatary,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -1),
-            start_date=_relative_date(today, -1),
-        )
-
-        # Homer --> Homer: Self
-        _create_relationship(
-            patient=homer,
-            caregiver=user_homer,
-            relationship_type=type_self,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -10),
-            start_date=_relative_date(today, -12),
-            end_date=_relative_date(today, -1),
-        )
-
-        # Marge --> Mona: Mandatary
-        _create_relationship(
-            patient=mona,
-            caregiver=user_marge,
-            relationship_type=type_mandatary,
-            status=RelationshipStatus.EXPIRED,
-            request_date=_relative_date(today, -5),
-            start_date=_relative_date(today, -3),
-            end_date=_relative_date(today, -2),
-            reason='Patient deceased.',
-        )
-
-        # Mona --> Mona: Self
-        _create_relationship(
-            patient=mona,
-            caregiver=user_mona,
-            relationship_type=type_self,
-            status=RelationshipStatus.EXPIRED,
-            request_date=_relative_date(today, -5),
-            start_date=_relative_date(today, -4),
-            end_date=_relative_date(today, -2),
-            reason='Patient deceased.',
-        )
-
-        # Marge --> Bart: Guardian/Parent
-        _create_relationship(
-            patient=bart,
-            caregiver=user_marge,
-            relationship_type=type_parent,
-            status=RelationshipStatus.EXPIRED,
-            request_date=_relative_date(today, -9),
-            start_date=bart.date_of_birth,
-            end_date=date_bart_fourteen,
-        )
-
-        # Fred --> Fred: Self
-        _create_relationship(
-            patient=fred,
-            caregiver=user_fred,
-            relationship_type=type_self,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -2),
-            start_date=_relative_date(today, -8),
-        )
-
-        # Fred --> Pebbles: Guardian/Parent
-        _create_relationship(
-            patient=pebbles,
-            caregiver=user_fred,
-            relationship_type=type_parent,
-            status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -1),
-            start_date=_relative_date(today, -3),
-            end_date=_relative_date(pebbles.date_of_birth, 14),
-        )
-
+    if not is_pediatric:
         # Laurie --> Laurie: Self
         _create_relationship(
             patient=laurie,
@@ -555,8 +445,28 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_rory,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),
-            start_date=_relative_date(today, -14),
+            request_date=today,
+            start_date=today,
+        )
+
+        # Cara --> Cara: Self
+        _create_relationship(
+            patient=cara,
+            caregiver=user_cara,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=today,
+            start_date=today,
+        )
+
+        # Rory --> Cara: Family & Friends
+        _create_relationship(
+            patient=cara,
+            caregiver=user_rory,
+            relationship_type=type_family,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=today,
+            start_date=today,
         )
 
         # John --> John: Self
@@ -565,108 +475,87 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             caregiver=user_john,
             relationship_type=type_self,
             status=RelationshipStatus.CONFIRMED,
-            request_date=_relative_date(today, -14),
-            start_date=_relative_date(today, -14),
+            request_date=today,
+            start_date=today,
         )
+
+        # Richard --> Richard: Self
+        _create_relationship(
+            patient=richard,
+            caregiver=user_richard,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=today,
+            start_date=today,
+        )
+
+        # John --> Richard: Family & Friends
+        _create_relationship(
+            patient=richard,
+            caregiver=user_john,
+            relationship_type=type_family,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=today,
+            start_date=today,
+        )
+
+        # Mike --> Mike: Self
+        _create_relationship(
+            patient=mike,
+            caregiver=user_mike,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=today,
+            start_date=today,
+        )
+
+        # Kathy --> Kathy: Self
+        _create_relationship(
+            patient=kathy,
+            caregiver=user_kathy,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=today,
+            start_date=today,
+        )
+
+        # Mike --> Kathy: Family & Friends
+        _create_relationship(
+            patient=kathy,
+            caregiver=user_mike,
+            relationship_type=type_family,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=today,
+            start_date=today,
+        )
+
+        # Valerie --> Valerie: Self
+        _create_relationship(
+            patient=valerie,
+            caregiver=user_valerie,
+            relationship_type=type_self,
+            status=RelationshipStatus.CONFIRMED,
+            request_date=today,
+            start_date=today,
+        )
+
     # The rest of the relationships exist at both institutions
-
-    # Marge --> Bart: Guardian-Caregiver
-    _create_relationship(
-        patient=bart,
-        caregiver=user_marge,
-        relationship_type=type_caregiver,
-        status=RelationshipStatus.PENDING,
-        request_date=date_bart_fourteen,
-        start_date=date_bart_fourteen,
-        end_date=_relative_date(bart.date_of_birth, 18),
-    )
-
-    # Bart --> Bart
-    _create_relationship(
-        patient=bart,
-        caregiver=user_bart,
-        relationship_type=type_self,
-        status=RelationshipStatus.CONFIRMED,
-        request_date=date_bart_fourteen,
-        start_date=date_bart_fourteen,
-    )
+    # To be added if necessary
 
     # create the same security question and answers for the caregivers
     if not is_pediatric:
-        _create_security_answers(user_homer)
-        _create_security_answers(user_fred)
         _create_security_answers(user_laurie)
         _create_security_answers(user_rory)
+        _create_security_answers(user_cara)
         _create_security_answers(user_john)
+        _create_security_answers(user_richard)
+        _create_security_answers(user_mike)
+        _create_security_answers(user_kathy)
+        _create_security_answers(user_valerie)
 
-    _create_security_answers(user_marge)
-    _create_security_answers(user_bart)
-
-    # Pathology reports for Marge, Bart, Homer, Fred, Pebbles, and Wednesday
+    # Pathology reports for patients
     # Pathology reports are currently not intended to be rolled out at Sainte-Justine which is a pediatric hospital
     if not is_pediatric:
-        # Marge has 2 pathology reports received 2 and 12 days ago respectively
-        _create_pathology_result(
-            patient=marge,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=2),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=2),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=2),
-            legacy_document_id=7,
-        )
-        _create_pathology_result(
-            patient=marge,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=12),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=12),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=12),
-            legacy_document_id=8,
-        )
-        # Homer received his pathology 8 days ago
-        _create_pathology_result(
-            patient=homer,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=8),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=8),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=8),
-            legacy_document_id=6,
-        )
-        # Fred received his pathology 4 days ago
-        _create_pathology_result(
-            patient=fred,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=4),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=4),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=4),
-            legacy_document_id=12,
-        )
-        # Bart received his pathology 5 days ago
-        _create_pathology_result(
-            patient=bart,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=5),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=5),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=5),
-            legacy_document_id=5,
-        )
-        # Pebbles received her pathology 4 days ago
-        _create_pathology_result(
-            patient=pebbles,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=4),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=4),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=4),
-            legacy_document_id=13,
-        )
-        # Wednesday received her pathology 15 days ago
-        _create_pathology_result(
-            patient=wednesday,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=15),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=15),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=15),
-            legacy_document_id=16,
-        )
         # Create a fake pathology for laurie as well to complete her dataset
         # Laurie received her pathology 15 days ago
         _create_pathology_result(
@@ -676,15 +565,6 @@ def _create_test_data(institution_option: InstitutionOption) -> None:  # noqa: P
             received_at=timezone.now() - relativedelta(years=6, months=0, days=15),
             reported_at=timezone.now() - relativedelta(years=6, months=0, days=15),
             legacy_document_id=31,
-        )
-        # Rory pathology 12 days ago
-        _create_pathology_result(
-            patient=rory,
-            site=sites['ODH'],
-            collected_at=timezone.now() - relativedelta(years=0, months=0, days=12),
-            received_at=timezone.now() - relativedelta(years=0, months=0, days=12),
-            reported_at=timezone.now() - relativedelta(years=0, months=0, days=12),
-            legacy_document_id=32,
         )
 
 
@@ -809,6 +689,38 @@ def _create_site(  # noqa: PLR0913, PLR0917
     return site
 
 
+def _create_user(
+    username: str,
+    password: str,
+    user_type: legacy_models.LegacyOAUserType,
+    user_role: str,
+    user_email: str | None = None,
+) -> None:
+    """
+    Create, validate and save an user account instance with the given properties.
+
+    Args:
+        username: the user's username
+        password: the user's password
+        user_type: the user's type (human or system)
+        user_role: the user's role
+        user_email: the user's email (optional, default is None)
+
+    """
+    role = legacy_models.LegacyOARole.objects.get(name_en=user_role)
+    legacy_models.LegacyOAUser.objects.create(
+        username=username,
+        # the password does not matter since legacy OpalAdmin
+        # does not support logging in with AD or regular login at the same time
+        # i.e., if AD login is enabled a regular log in is not possible
+        password=password,
+        oa_role=role,
+        user_type=user_type,
+    )
+
+    ClinicalStaff.objects.create_superuser(username=username, email=user_email, password=password)
+
+
 def _create_patient(  # noqa: PLR0913, PLR0917
     first_name: str,
     last_name: str,
@@ -816,7 +728,7 @@ def _create_patient(  # noqa: PLR0913, PLR0917
     sex: SexType,
     ramq: str,
     legacy_id: int,
-    mrns: list[tuple[Site, str]],
+    mrns: list[tuple[Site, str, bool]],
     date_of_death: date | None = None,
     data_access: DataAccessType = DataAccessType.ALL,
 ) -> Patient:
@@ -908,7 +820,6 @@ def _create_caregiver(  # noqa: PLR0913, PLR0917
 
     # User passwords aren't currently saved in Django
     user.set_unusable_password()
-    print(f'checking {user}: {user.phone_number}')
     user.full_clean()
     user.save()
 
@@ -932,7 +843,7 @@ def _create_relationship(  # noqa: PLR0913, PLR0917
     start_date: date,
     end_date: date | None = None,
     reason: str = '',
-) -> None:
+) -> Relationship:
     """
     Create, validate and save a relationship instance with the given properties.
 
@@ -945,6 +856,9 @@ def _create_relationship(  # noqa: PLR0913, PLR0917
         start_date: the start date of the relationship
         end_date: the optional end date of the relationship, `None` if there is no end date
         reason: the optional reason for the relationship status
+
+    Returns:
+        the newly created relationship instance
     """
     relationship = Relationship(
         patient=patient,
@@ -959,6 +873,8 @@ def _create_relationship(  # noqa: PLR0913, PLR0917
 
     relationship.full_clean()
     relationship.save()
+
+    return relationship
 
 
 def _create_security_answer(caregiver: CaregiverProfile, question: str, answer: str) -> None:
@@ -976,29 +892,30 @@ def _create_security_answers(caregiver: CaregiverProfile) -> None:
         else 'Quel est le nom de votre premier animal de compagnie?'
     )
     question2 = (
-        'What was the name of your favorite superhero as a child?'
+        'Where did you go to on your first vacation?'
         if language == 'en'
-        else 'Quel était le nom de votre super-héros préféré durant votre enfance?'
+        else 'Où êtes-vous allé lors de vos premières vacances?'
     )
     question3 = (
-        'What was the color of your first car?'
+        'What is the first name of your childhood best friend?'
         if language == 'en'
-        else 'Quelle était la couleur de votre première voiture?'
+        else "Quel est le prénom de votre meilleur ami d'enfance?"
     )
+    # security answers need to be in uppercase
     _create_security_answer(
         caregiver,
         question1,
-        '5ed4c7167f059c5b864fd775f527c5a88794f9f823fea73c6284756b31a08faf6f9f950473c5aa7cdb99c56bc7807517fe4c4a0bd67318bcaec508592dd6d917',
+        hashlib.sha512(b'MEG').hexdigest(),
     )
     _create_security_answer(
         caregiver,
         question2,
-        'f3b49c229cc474b3334dd4a3bbe827a866cbf6d6775cde7a5c42da24b4f15db8c0e564c4ff20754841c2baa9dafffc2caa02341010456157b1de9b927f24a1e6',
+        hashlib.sha512(b'FLORIDA').hexdigest(),
     )
     _create_security_answer(
         caregiver,
         question3,
-        'a7dbabba9a0371fbdb92724a5ca66401e02069089b1f3a100374e61f934fe9e959215ae0327de2bc064a9dfc351c4d64ef89bd47e95be0198a1f466c3518cc1d',
+        hashlib.sha512(b'DIANA').hexdigest(),
     )
 
 

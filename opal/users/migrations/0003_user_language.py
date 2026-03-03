@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='user',
             constraint=models.CheckConstraint(
-                check=models.Q(('language__in', ['EN', 'FR'])), name='users_user_language_valid'
+                condition=models.Q(('language__in', ['EN', 'FR'])), name='users_user_language_valid'
             ),
         ),
     ]

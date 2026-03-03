@@ -2,9 +2,9 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-FROM python:3.12.9-alpine3.20 AS build
+FROM python:3.13.12-alpine3.22 AS build
 
-COPY --from=ghcr.io/astral-sh/uv:0.6.12 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.10.7 /uv /uvx /bin/
 
 # dependencies for building Python packages
 RUN apk add --no-cache build-base \
@@ -15,8 +15,8 @@ RUN apk add --no-cache build-base \
   # argon2-cffi dependencies
   && apk add --no-cache libffi-dev
 
-# for which environment the build is done: development or production
-ARG ENV=production
+# for which environment the build is done: dev or prod
+ARG ENV=prod
 
 WORKDIR /app
 
@@ -24,10 +24,14 @@ WORKDIR /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-editable --no-dev --compile-bytecode
+    if [ "$ENV" = "prod" ]; then \
+      uv sync --locked --no-editable --no-default-groups --extra prod --compile-bytecode; \
+    else \
+      uv sync --locked --no-editable --no-default-groups --group dev --compile-bytecode; \
+    fi
 
 
-FROM python:3.12.9-alpine3.20
+FROM python:3.13.12-alpine3.22
 
 RUN apk upgrade --no-cache \
   # mysqlclient runtime dependencies
@@ -82,5 +86,7 @@ RUN cp .env.sample .env \
 
 USER appuser
 
+ENV DJANGO_SETTINGS_MODULE=config.settings.production
+
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
-CMD [ "./start.sh" ]
+CMD [ "/app/start.sh" ]

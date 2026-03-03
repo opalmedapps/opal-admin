@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name='patient',
             constraint=models.CheckConstraint(
-                check=models.Q(('data_access__in', ['ALL', 'NTK'])),
+                condition=models.Q(('data_access__in', ['ALL', 'NTK'])),
                 name='patients_patient_access_level_valid',
             ),
         ),

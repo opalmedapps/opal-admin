@@ -4,6 +4,9 @@
 
 """Functions in this module provide the ability to communicate with an institution's integration engine."""
 
+import base64
+import datetime as dt
+from datetime import datetime
 from http import HTTPStatus
 from typing import Any
 
@@ -11,7 +14,14 @@ from django.conf import settings
 
 import requests
 
-from .schemas import ErrorResponseSchema, HospitalNumberSchema, PatientByHINSchema, PatientByMRNSchema, PatientSchema
+from .schemas import (
+    ErrorResponseSchema,
+    HospitalNumberSchema,
+    PatientByHINSchema,
+    PatientByMRNSchema,
+    PatientSchema,
+    QuestionnaireReportRequestSchema,
+)
 
 
 class NonOKResponseError(Exception):
@@ -56,7 +66,7 @@ def find_patient_by_hin(health_insurance_number: str) -> PatientSchema:
 
     Raises [PatientNotFoundError][opal.services.integration.hospital.PatientNotFoundError] if the patient is not found.
     Raises [NonOKResponseError][opal.services.integration.hospital.NonOKResponseError] if the response is not OK.
-    Raises [pydantic.ValidationError][] if the data in the response is not valid.
+    Raises [pydantic_core.ValidationError][] if the data in the response is not valid.
 
     Args:
         health_insurance_number: the health insurance number of the patient
@@ -76,7 +86,7 @@ def find_patient_by_mrn(mrn: str, site: str) -> PatientSchema:
 
     Raises [PatientNotFoundError][opal.services.integration.hospital.PatientNotFoundError] if the patient is not found.
     Raises [NonOKResponseError][opal.services.integration.hospital.NonOKResponseError] if the response is not OK.
-    Raises [pydantic.ValidationError][] if the data in the response is not valid.
+    Raises [pydantic_core.ValidationError][] if the data in the response is not valid.
 
     Args:
         mrn: the MRN of the patient
@@ -106,3 +116,28 @@ def notify_new_patient(mrn: str, site: str) -> None:
     _retrieve(f'{settings.SOURCE_SYSTEM_HOST}/newOpalPatient', data=data.model_dump_json())
 
     # we know at this point that the request was successful
+
+
+def add_questionnaire_report(
+    mrn: str,
+    site: str,
+    content: bytes,
+) -> None:
+    """
+    Notify the integration engine that a questionnaire report is now available.
+
+    Raises [PatientNotFoundError][opal.services.integration.hospital.PatientNotFoundError] if the patient is not found.
+    Raises [NonOKResponseError][opal.services.integration.hospital.NonOKResponseError] if the response is not OK.
+
+    Args:
+        mrn: the MRN of the patient
+        site: the site code the MRN of the patient belongs to
+        content: the PDF of the questionnaire report
+    """
+    data = QuestionnaireReportRequestSchema(
+        mrn=mrn,
+        site=site,
+        document=base64.b64encode(content),
+        document_datetime=datetime.now(tz=dt.UTC),
+    )
+    _retrieve(f'{settings.SOURCE_SYSTEM_HOST}/addPatientQuestionnaireDocument', data=data.model_dump_json())

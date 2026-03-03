@@ -130,7 +130,8 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             if legacy_id is not None
         ]
         return (
-            self.select_related(
+            self
+            .select_related(
                 'aliasexpressionsernum__aliassernum__appointmentcheckin',
                 'aliasexpressionsernum__aliassernum__educational_material_control_ser_num',
             )
@@ -161,7 +162,8 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             status=RelationshipStatus.CONFIRMED,
         )
         return (
-            self.filter(
+            self
+            .filter(
                 scheduledstarttime__gte=timezone.localtime(timezone.now()),
                 patientsernum__in=patient_ids,
                 state='Active',
@@ -190,7 +192,8 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
 
         """
         return (
-            self.select_related(
+            self
+            .select_related(
                 'aliasexpressionsernum__aliassernum',
                 'source_database',
                 'patientsernum',
@@ -246,11 +249,11 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
             received_at: date and time that indicate when the pathology report data were entered into the source system
             report_file_name: filename of the new pathology report document
 
-        Raises:
-            DatabaseError: if new `LegacyDocument` instance could not be saved to the database
-
         Returns:
             newly created and saved `LegacyDocument` instance for the pathology report document
+
+        Raises:
+            DatabaseError: if new `LegacyDocument` instance could not be saved to the database
         """
         # Perform lazy import by using the `django.apps` to avoid circular imports issue
         LegacyPatientModel = apps.get_model('legacy', 'LegacyPatient')  # noqa: N806
@@ -327,7 +330,8 @@ class LegacyAnnouncementManager(models.Manager['LegacyAnnouncement']):
             Count of unread announcement(s) records.
         """
         return (
-            self.exclude(
+            self
+            .exclude(
                 readby__contains=username,
             )
             .filter(
@@ -357,7 +361,8 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
 
         """
         return (
-            self.filter(
+            self
+            .filter(
                 patientsernum=patient_ser_num,
                 last_updated__gt=last_synchronized,
             )
@@ -413,7 +418,8 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
             Diagnosis data
         """
         return (
-            self.filter(
+            self
+            .filter(
                 patient_ser_num=patient_ser_num,
                 last_updated__gt=last_synchronized,
             )
@@ -452,7 +458,8 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
             Lab data
         """
         return (
-            self.select_related(
+            self
+            .select_related(
                 'test_expression_ser_num',
                 'test_group_expression_ser_num',
                 'patient_ser_num',
@@ -540,7 +547,8 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
             Annotated `LegacyPatientActivityLog` records
         """
         return (
-            self.filter(
+            self
+            .filter(
                 date_time__gte=start_datetime_period,
                 date_time__lt=end_datetime_period,
             )
@@ -638,7 +646,8 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
         #       Whereas if Marge clicks on a TxTeamMessage from her chart page,
         #       PAL shows Request=Read, Parameters={"Field":"TxTeamMessages","Id":"1"}
         return (
-            self.filter(
+            self
+            .filter(
                 date_time__gte=start_datetime_period,
                 date_time__lt=end_datetime_period,
             )
