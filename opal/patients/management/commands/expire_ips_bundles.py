@@ -30,11 +30,9 @@ class FTPStoragePlus(FTPStorage):
         """Default constructor."""
         super().__init__(**settings)
 
-    def _datetime_from_time_string(self, time_string: str) -> datetime.datetime:
-        # Convert the time representation to ISO format, in UTC
-        time_string_iso = time_string[:8] + 'T' + time_string[8:] + 'Z'
-
-        return datetime.datetime.fromisoformat(time_string_iso)
+    def _datetime_from_string(self, datetime_string: str) -> datetime.datetime:
+        # The datetime representation is in UTC
+        return datetime.datetime.strptime(datetime_string, '%Y%m%d%H%M%S').replace(tzinfo=datetime.UTC)
 
     # Function modeled on `_get_dir_details` of the FTPStorage class
     def _get_dir_last_modified_details(self) -> dict[str, str]:
@@ -76,7 +74,7 @@ class FTPStoragePlus(FTPStorage):
         entries = self._get_dir_last_modified_details()
 
         if name in entries:
-            return self._datetime_from_time_string(entries[name])
+            return self._datetime_from_string(entries[name])
         raise FileNotFoundError()
 
 
