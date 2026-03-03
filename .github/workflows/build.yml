@@ -41,6 +41,8 @@ jobs:
           # generate secret key
           SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe())")
           sed -i "s/^SECRET_KEY=.*/SECRET_KEY=$SECRET_KEY/" .env
+          # requires production settings
+          sed -i "s/^DJANGO_SETTINGS_MODULE=.*/DJANGO_SETTINGS_MODULE=config.settings.production"
           echo "ALLOWED_HOSTS=localhost" >> .env
       - name: Test the image
         env:
