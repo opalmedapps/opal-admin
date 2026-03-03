@@ -80,7 +80,9 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
         basic_date = '20000101000000'
 
-        mocker.patch.object(FTPStorageWithModifiedTime, 'listdir', return_value=(['.', '..'], ['.htaccess', *files.keys()]))
+        mocker.patch.object(
+            FTPStorageWithModifiedTime, 'listdir', return_value=(['.', '..'], ['.htaccess', *files.keys()])
+        )
 
         info_lines = [
             format_info_line('.', basic_date),
