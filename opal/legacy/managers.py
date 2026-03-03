@@ -249,11 +249,11 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
             received_at: date and time that indicate when the pathology report data were entered into the source system
             report_file_name: filename of the new pathology report document
 
-        Raises:
-            DatabaseError: if new `LegacyDocument` instance could not be saved to the database
-
         Returns:
             newly created and saved `LegacyDocument` instance for the pathology report document
+
+        Raises:
+            DatabaseError: if new `LegacyDocument` instance could not be saved to the database
         """
         # Perform lazy import by using the `django.apps` to avoid circular imports issue
         LegacyPatientModel = apps.get_model('legacy', 'LegacyPatient')  # noqa: N806

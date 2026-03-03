@@ -112,11 +112,11 @@ class HL7CreateView(CreateAPIView[_Model]):
             parsed_data: segmented dictionary parsed from the HL7 request data
             url_uuid: UUID string passed in the endpoint url kwarg
 
-        Raises:
-            ValidationError: If no patient could be found at all, or multiple are found
-
         Returns:
             True if the patient identified in the PID segment exists in the database and matches the UUID
+
+        Raises:
+            ValidationError: If no patient could be found at all, or multiple are found
         """
         # Filter out invalid sites from the raw site list given by the hospital (e.g `HNAM_PERSONID`)
         valid_sites = {site_tuple[0] for site_tuple in Site.objects.all().values_list('acronym')}

@@ -60,11 +60,11 @@ class PatientSchema(BaseModel):
         """
         Check that a patient has at least one medical number (MRN or health insurance number).
 
-        Raises:
-            ValueError: if neither MRN nor health insurance number is provided
-
         Returns:
             the model instance
+
+        Raises:
+            ValueError: if neither MRN nor health insurance number is provided
         """
         if not self.mrns and not self.health_insurance_number:
             raise ValueError('Patient must have at least one medical number (MRN or health insurance number)')
