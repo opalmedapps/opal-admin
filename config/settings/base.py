@@ -150,11 +150,6 @@ if env.bool('DATABASE_USE_SSL', default=False):  # pragma: no cover
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DATABASE_ROUTERS
 DATABASE_ROUTERS = ['opal.core.dbrouters.LegacyDbRouter']
 
-# Default primary key field
-# https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
-# See also: https://docs.djangoproject.com/en/dev/releases/dev/#customizing-type-of-auto-created-primary-keys
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 # URLS
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
@@ -342,9 +337,6 @@ TEMPLATES = [
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#form-renderer
 FORM_RENDERER = 'django.forms.renderers.DjangoTemplates'
-
-# transitional setting in preparation for Django 6
-FORMS_URLFIELD_ASSUME_HTTPS = True
 
 # Crispy forms
 # https://django-crispy-forms.readthedocs.io/en/latest/index.html
