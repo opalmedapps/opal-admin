@@ -45,4 +45,4 @@ While the `patients` app could be well suited, the data will be stored in the `h
 This is to keep the `patients` app specific to providing the main patient data as well as the relationships to caregivers.
 The data to be collected is most likely health data, although it could also be the patient's demographic data.
 However, we assume for now that the demographic data (like the patient's name) is already known in the system.
-The name of the model shall be `PatientReportedData` and have one `JSONField` per resource, e.g., `alcohol_use` or `tobacco_use`.
+The name of the model shall be `PatientReportedData` and have one `JSONField` per group of resources, e.g., `social_history` which contains a list of `Observation` resources for alcohol and tobacco.
