@@ -24,7 +24,7 @@ LOGGER = structlog.get_logger()
 IPS_EXPIRY_HOURS = 1
 
 
-class FTPStoragePlus(FTPStorage):
+class FTPStorageWithModifiedTime(FTPStorage):
     """Subclass of FTPStorage that can check a file's last modified datetime."""
 
     def __init__(self, **settings: Any) -> None:
@@ -126,7 +126,7 @@ class Command(BaseCommand):
         if dry_run:
             LOGGER.info('Running command in dry-run mode; no files will be deleted')
 
-        storage_backend = FTPStoragePlus()
+        storage_backend = FTPStorageWithModifiedTime()
 
         file_list = storage_backend.listdir('../bundles')[1]
         file_list = [name for name in file_list if re.match(r'^.+\.ips$', name)]

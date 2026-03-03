@@ -16,7 +16,7 @@ from structlog.testing import LogCapture
 
 from opal.core.test_utils import CommandTestMixin
 from opal.patients import factories as patient_factories
-from opal.patients.management.commands.expire_ips_bundles import FTPStoragePlus
+from opal.patients.management.commands.expire_ips_bundles import FTPStorageWithModifiedTime
 from opal.patients.models import Patient, Relationship, RelationshipStatus
 
 pytestmark = pytest.mark.django_db(databases=['default'])
@@ -53,7 +53,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         )
 
         mocker.patch.object(
-            FTPStoragePlus,
+            FTPStorageWithModifiedTime,
             '_decode_location',
             return_value={
                 'active': False,
@@ -80,7 +80,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
         basic_date = '20000101000000'
 
-        mocker.patch.object(FTPStoragePlus, 'listdir', return_value=(['.', '..'], ['.htaccess', *files.keys()]))
+        mocker.patch.object(FTPStorageWithModifiedTime, 'listdir', return_value=(['.', '..'], ['.htaccess', *files.keys()]))
 
         info_lines = [
             format_info_line('.', basic_date),
@@ -109,7 +109,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
     def test_no_bundles(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """No effect when there are no bundles."""
         self._mock_files(mocker, {})
-        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
+        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
 
         self._call_command('expire_ips_bundles')
 
@@ -128,7 +128,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101081500',
             },
         )
-        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
+        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
 
         self._call_command('expire_ips_bundles')
 
@@ -144,7 +144,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080001',
             },
         )
-        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
+        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
 
         self._call_command('expire_ips_bundles')
 
@@ -160,7 +160,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101090000',
             },
         )
-        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
+        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
 
         self._call_command('expire_ips_bundles')
 
@@ -176,7 +176,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101090001',
             },
         )
-        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
+        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
 
         self._call_command('expire_ips_bundles')
 
@@ -192,7 +192,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
             },
         )
-        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
+        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
 
         self._call_command('expire_ips_bundles')
 
@@ -208,7 +208,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080000',
             },
         )
-        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
+        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
 
         self._call_command('expire_ips_bundles')
 
@@ -225,7 +225,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 'bd7c9cdc-1605-4839-9473-8109f488c1fd.ips': '20260101081500',
             },
         )
-        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
+        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
 
         self._call_command('expire_ips_bundles')
 
@@ -241,7 +241,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
             },
         )
-        delete_spy = mocker.spy(FTPStoragePlus, 'delete')
+        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
 
         self._call_command('expire_ips_bundles', '--dry-run')
 
@@ -259,7 +259,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         )
         # Overwrite the directory listing with an additional file that isn't included in retrlines
         mocker.patch.object(
-            FTPStoragePlus,
+            FTPStorageWithModifiedTime,
             'listdir',
             return_value=(
                 ['.', '..'],
@@ -286,7 +286,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
             },
         )
         # Throw a PermissionError only for the first file, do nothing for the second
-        mocker.patch.object(FTPStoragePlus, 'delete', side_effect=[PermissionError, None])
+        mocker.patch.object(FTPStorageWithModifiedTime, 'delete', side_effect=[PermissionError, None])
 
         self._call_command('expire_ips_bundles')
 
