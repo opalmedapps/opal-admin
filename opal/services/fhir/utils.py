@@ -127,21 +127,28 @@ def retrieve_patient_summary(
         )
 
         social_history_observations = []
+        social_history_errors: list[ValidationError] = []
         for social_history_item in social_history:
-            observation = validate_observation(social_history_item)
-            observation.subject = Reference(reference=f'Patient/{patient_uuid}', type='Patient')
-            social_history_observations.append(observation)
-
+            try:
+                observation = validate_observation(social_history_item)
+            except ValidationError as exc:
+                social_history_errors.append(exc)
+            else:
+                observation.subject = Reference(reference=f'Patient/{patient_uuid}', type='Patient')
+                social_history_observations.append(observation)
     except (PatientNotFoundError, MultiplePatientsFoundError) as exc:
         LOGGER.exception('Error finding patient with identifier %s', identifier)
         raise FHIRDataRetrievalError(f'Error finding patient with identifier {identifier}') from exc
     except (RequestException, OAuth2Error) as exc:
         LOGGER.exception('Error retrieving data from FHIR server')
         raise FHIRDataRetrievalError('Error retrieving data from FHIR server') from exc
-    except ValidationError as exc:
-        LOGGER.exception('Error validating social history observations')
-        raise FHIRDataRetrievalError('Error validating social history observations') from exc
     else:
+        if social_history_errors:
+            LOGGER.error(
+                'Error validating social history observations', extra={'validation_errors': social_history_errors}
+            )
+            raise FHIRDataRetrievalError('Error validating social history observations')
+
         LOGGER.debug('Building IPS bundle for patient with UUID %s', patient_uuid)
 
         ips_bundle = ips.build_patient_summary(
