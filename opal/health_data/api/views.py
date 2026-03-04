@@ -192,7 +192,7 @@ class PatientRecordedDataView(
     # TODO: change in the future to limit to user with access to the patient
     # TODO: add CaregiverPermissions?
     permission_classes = (IsListener,)
-    queryset = PatientReportedData.objects.all()
+    queryset = PatientReportedData.objects.filter(patient__date_of_death=None)
     lookup_field = 'patient__uuid'
     lookup_url_kwarg = 'uuid'
 
