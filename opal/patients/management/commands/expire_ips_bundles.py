@@ -132,7 +132,10 @@ class Command(BaseCommand):
         file_list = [name for name in file_list if re.match(r'^.+\.ips$', name)]
 
         LOGGER.info(
-            f'Checking {len(file_list)} {"file" if len(file_list) == 1 else "files"} to clean up expired IPS bundles (from storage backend: {settings.IPS_STORAGE_BACKEND})',
+            'Checking %s %s to clean up expired IPS bundles (from storage backend: %s)',
+            len(file_list),
+            'file' if len(file_list) == 1 else 'files',
+            settings.IPS_STORAGE_BACKEND,
         )
 
         for file_name in file_list:
@@ -142,12 +145,16 @@ class Command(BaseCommand):
                 last_modified = storage_backend.get_modified_time(file_name)
             except (FTPStorageException, FileNotFoundError):
                 LOGGER.exception(
-                    f'ERROR - Bundle "{file_name}" last modified information failed to be retrieved from the server'
+                    'ERROR - Bundle "%s" last modified information failed to be retrieved from the server',
+                    file_name,
                 )
                 num_errors += 1
                 continue
             except ValueError:
-                LOGGER.exception(f'ERROR - Bundle "{file_name}" last modified date is not in the expected format')
+                LOGGER.exception(
+                    'ERROR - Bundle "%s" last modified date is not in the expected format',
+                    file_name,
+                )
                 num_errors += 1
                 continue
 
@@ -156,7 +163,11 @@ class Command(BaseCommand):
             expired = delta >= datetime.timedelta(hours=IPS_EXPIRY_HOURS)
 
             LOGGER.debug(
-                f'{"DELETE" if expired else "KEEP"} - Bundle "{file_name}" last modified {delta} ago ({last_modified} UTC)',
+                '%s - Bundle "%s" last modified %s ago (%s UTC)',
+                'DELETE' if expired else 'KEEP',
+                file_name,
+                delta,
+                last_modified,
             )
 
             if expired:
@@ -168,9 +179,15 @@ class Command(BaseCommand):
                 # Bare except: catch any possible error here in order to properly log it and continue
                 except:  # noqa: E722
                     # Example of a one-off error: PermissionError: [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions
-                    LOGGER.exception(f'ERROR - Failed to delete IPS bundle "{file_name}"')
+                    LOGGER.exception('ERROR - Failed to delete IPS bundle "%s"', file_name)
                     num_errors += 1
 
         LOGGER.info(
-            f'{num_deleted} IPS {"bundle" if num_deleted == 1 else "bundles"} out of {len(file_list)} {"would be" if dry_run else "was" if num_deleted == 1 else "were"} deleted ({num_errors} {"error" if num_errors == 1 else "errors"})',
+            '%s IPS %s out of %s %s deleted (%s %s)',
+            num_deleted,
+            'bundle' if num_deleted == 1 else 'bundles',
+            len(file_list),
+            'would be' if dry_run else 'was' if num_deleted == 1 else 'were',
+            num_errors,
+            'error' if num_errors == 1 else 'errors',
         )
