@@ -35,35 +35,36 @@ class FTPStorageWithModifiedTime(FTPStorage):
         # The datetime representation is in UTC
         return datetime.datetime.strptime(datetime_string, '%Y%m%d%H%M%S').replace(tzinfo=datetime.UTC)
 
-    # Function modeled on `_get_dir_details` of the FTPStorage class
-    def _get_dir_last_modified_details(self) -> dict[str, str]:
+    # Function inspired by `_get_dir_details` of the FTPStorage class
+    def _get_dir_last_modified_details(self, file_name: str) -> str:
         # Connection must be open!
         try:
-            # Get metadata from the files in the current directory
-            lines: list[str] = []
-            self._connection.retrlines('MLSD', lines.append)
-            entries = {}
+            # Get metadata for the requested file
+            # For more about MLST, see: https://datatracker.ietf.org/doc/html/rfc3659#section-7
+            response = self._connection.sendcmd(f'MLST {file_name}')
 
-            for line in lines:
-                # Example line: type=file;size=256;modify=20251028155020;UNIX.mode=0644;UNIX.uid=1000;UNIX.gid=1000;unique=123456789ab; file-name.ext
-                # Break the line around 'modify=', then parse the timestamp and file name out of the string that comes after it
-                parts = line.split('modify=')[1].split(';')
-                modify = parts[0]
-                filename = parts[-1].strip()
+            # Example response (note that the middle line starts with one space; this is part of the format):
+            # 250-Begin
+            #  type=file;size=256;modify=20251028155020;UNIX.mode=0644;UNIX.uid=1000;UNIX.gid=1000;unique=123456789ab; file-name.ext
+            # 250 End.
 
-                entries[filename] = modify
+            # Make sure the modify attribute is present
+            if 'modify=' not in response:
+                raise FTPStorageException(
+                    'Output of MLST in this directory is not in the expected format, or does not contain a "modify" attribute'
+                )
 
-        except IndexError as error:
-            raise FTPStorageException('Output of MLSD in this directory is not in the expected format') from error
+            # Extract the timestamp between 'modify=' and the next ';'
+            modify = response.split('modify=')[1].split(';')[0]
 
         except ftplib.all_errors as error:
-            raise FTPStorageException('Error getting directory listing') from error
+            raise FTPStorageException(f'Error getting directory listing for file {file_name}') from error
 
         else:
-            return entries
+            return modify
 
     # Implements `get_modified_time` of the Storage class (from FTPStorage(BaseStorage(Storage)))
-    # Function modeled on `listdir` of the FTPStorage class
+    # Function inspired by `listdir` of the FTPStorage class
     def get_modified_time(self, name: str) -> datetime.datetime:
         """
         Return the last modified time (as a datetime) of the file specified by name.
@@ -73,17 +74,10 @@ class FTPStorageWithModifiedTime(FTPStorage):
 
         Returns:
             The last modified datetime for the given file.
-
-        Raises:
-            FileNotFoundError: if information about the specified file cannot be found on the server.
         """
         self._start_connection()
-
-        entries = self._get_dir_last_modified_details()
-
-        if name in entries:
-            return self._datetime_from_string(entries[name])
-        raise FileNotFoundError()
+        last_modified_string = self._get_dir_last_modified_details(name)
+        return self._datetime_from_string(last_modified_string)
 
 
 class Command(BaseCommand):
@@ -143,7 +137,7 @@ class Command(BaseCommand):
             # Note that last modified is used instead of creation time (not available); it offers the same result, since bundle files aren't updated
             try:
                 last_modified = storage_backend.get_modified_time(file_name)
-            except (FTPStorageException, FileNotFoundError):
+            except FTPStorageException:
                 LOGGER.exception(
                     'ERROR - Bundle "%s" last modified information failed to be retrieved from the server',
                     file_name,
