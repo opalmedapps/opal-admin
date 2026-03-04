@@ -485,16 +485,181 @@ def test_unviewed_health_data_no_duplicates(api_client: APIClient, orms_user: Us
     )
 
 
-def test_patientreporteddata_put_create(admin_api_client: APIClient) -> None:
-    """Ensure first-time PUT creates `PatientReportedData` for the patient."""
+def test_patientreporteddata_get(admin_api_client: APIClient) -> None:
+    """A 404 is returned when no `PatientReportedData` exists for the patient."""
+    response = admin_api_client.get(
+        reverse('api:patients-data-reported', kwargs={'uuid': uuid4()}),
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert PatientReportedData.objects.count() == 0
+
+
+def test_patientreporteddata_post(admin_api_client: APIClient) -> None:
+    """A 405 is returned when attempting to POST to the endpoint."""
+    response = admin_api_client.post(
+        reverse('api:patients-data-reported', kwargs={'uuid': uuid4()}),
+        data={},
+    )
+
+    assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
+
+
+def test_patientreporteddata_put_no_none(admin_api_client: APIClient) -> None:
+    """Social history can not be None."""
     patient = patient_factories.Patient.create()
 
     response = admin_api_client.put(
         reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
-        data={},
+        data={'social_history': None},
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert PatientReportedData.objects.count() == 0
+    assert 'social_history' in response.json()
+
+
+def test_patientreporteddata_put_create(admin_api_client: APIClient) -> None:
+    """PUT creates a new `PatientReportedData` for the patient."""
+    patient = patient_factories.Patient.create()
+
+    response = admin_api_client.put(
+        reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
+        data={'social_history': []},
     )
 
     assert response.status_code == status.HTTP_201_CREATED
     assert PatientReportedData.objects.count() == 1
     data = PatientReportedData.objects.get(patient=patient)
     assert data.social_history == []
+
+
+def test_patientreporteddata_put_update(admin_api_client: APIClient) -> None:
+    """PUT updates an existing `PatientReportedData` for the patient."""
+    patient = patient_factories.Patient.create()
+    PatientReportedData.objects.create(patient=patient, social_history=[{'foo': 'bar'}])
+
+    response = admin_api_client.put(
+        reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
+        data={'social_history': []},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert PatientReportedData.objects.count() == 1
+    data = PatientReportedData.objects.get(patient=patient)
+    assert data.social_history == []
+
+
+def test_patientreporteddata_patch_update(admin_api_client: APIClient) -> None:
+    """PATCH updates an existing `PatientReportedData` for the patient."""
+    patient = patient_factories.Patient.create()
+    PatientReportedData.objects.create(patient=patient, social_history=[{'foo': 'bar'}])
+
+    response = admin_api_client.patch(
+        reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
+        data={'social_history': []},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert PatientReportedData.objects.count() == 1
+    data = PatientReportedData.objects.get(patient=patient)
+    assert data.social_history == []
+
+
+def test_patientreporteddata_elements_validated(admin_api_client: APIClient) -> None:
+    """Elements in social history are validated."""
+    patient = patient_factories.Patient.create()
+
+    response = admin_api_client.put(
+        reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
+        data={'social_history': [None, {'foo': 'baz'}]},
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert PatientReportedData.objects.count() == 0
+    errors = response.json()
+    assert 'social_history' in errors
+    assert len(errors['social_history']) == 2
+    assert errors['social_history']['0'] == ['This field may not be null.']
+
+    for item_error in errors['social_history']['1']:
+        assert {'loc', 'msg', 'type'} == set(item_error.keys())
+
+
+def test_patientreporteddata_valid_observation(admin_api_client: APIClient) -> None:
+    """Valid observation data is accepted."""
+    patient = patient_factories.Patient.create()
+
+    response = admin_api_client.put(
+        reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
+        data={
+            'social_history': [
+                {
+                    'resourceType': 'Observation',
+                    'id': '9ffd3fbb-7a1d-4abc-9c98-710673e99cca',
+                    'meta': {'versionId': '1', 'lastUpdated': '2026-02-20T13:00:00-05:00'},
+                    'status': 'preliminary',
+                    'category': [
+                        {
+                            'coding': [
+                                {
+                                    'system': 'http://terminology.hl7.org/CodeSystem/observation-category',
+                                    'code': 'social-history',
+                                    'display': 'Social History',
+                                }
+                            ]
+                        }
+                    ],
+                    'code': {
+                        'coding': [
+                            {'system': 'http://loinc.org', 'code': '74013-4', 'display': 'Alcoholic drinks per day'}
+                        ]
+                    },
+                    'subject': {'reference': 'Patient/3a9a1eae-efb7-11ef-9c0b-fa163e7f8dbb', 'type': 'Patient'},
+                    'effectiveDateTime': '2026-02-20T13:00:00-05:00',
+                    'valueQuantity': {
+                        'value': 2,
+                        'unit': 'per day',
+                        'system': 'http://unitsofmeasure.org',
+                        'code': '/d',
+                    },
+                },
+                {
+                    'resourceType': 'Observation',
+                    'id': '4786f60b-2f7f-4658-a5d5-d68363a1b3d9',
+                    'meta': {'versionId': '1', 'lastUpdated': '2026-02-20T13:00:00-05:00'},
+                    'status': 'preliminary',
+                    'category': [
+                        {
+                            'coding': [
+                                {
+                                    'system': 'http://terminology.hl7.org/CodeSystem/observation-category',
+                                    'code': 'social-history',
+                                    'display': 'Social History',
+                                }
+                            ]
+                        }
+                    ],
+                    'code': {
+                        'coding': [
+                            {'system': 'http://loinc.org', 'code': '72166-2', 'display': 'Tobacco smoking status'}
+                        ]
+                    },
+                    'subject': {'reference': 'Patient/3a9a1eae-efb7-11ef-9c0b-fa163e7f8dbb', 'type': 'Patient'},
+                    'effectiveDateTime': '2026-02-20T13:00:00-05:00',
+                    'valueCodeableConcept': {
+                        'coding': [{'system': 'http://snomed.info/sct', 'code': '8392000', 'display': 'Non-smoker'}]
+                    },
+                },
+            ]
+        },
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert PatientReportedData.objects.count() == 0
+    errors = response.json()
+    assert 'social_history' in errors
+    assert len(errors['social_history']) == 2
+    for item_errors in errors['social_history'].values():
+        for item_error in item_errors:
+            assert {'loc', 'msg', 'type'} == set(item_error.keys())
