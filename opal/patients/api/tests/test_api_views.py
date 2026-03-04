@@ -1215,7 +1215,5 @@ class TestPatientSummaryView:
 
         response = api_client.get(reverse('api:patient-summary', kwargs={'uuid': patient_uuid}))
 
-        # assert False
-
         assert response.status_code == status.HTTP_400_BAD_REQUEST, response.text
         assert response.json() == ['Error saving IPS bundle to storage backend']
