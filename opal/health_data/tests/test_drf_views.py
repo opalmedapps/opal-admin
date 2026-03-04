@@ -586,8 +586,8 @@ def test_patientreporteddata_elements_validated(admin_api_client: APIClient) -> 
         assert {'loc', 'msg', 'type'} == set(item_error.keys())
 
 
-def test_patientreporteddata_valid_observation(admin_api_client: APIClient) -> None:
-    """Valid observation data is accepted."""
+def test_patientreporteddata_no_subject_in_observation(admin_api_client: APIClient) -> None:
+    """An observation with a subject is rejected."""
     patient = patient_factories.Patient.create()
 
     response = admin_api_client.put(
@@ -623,6 +623,60 @@ def test_patientreporteddata_valid_observation(admin_api_client: APIClient) -> N
                         'system': 'http://unitsofmeasure.org',
                         'code': '/d',
                     },
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert PatientReportedData.objects.count() == 0
+    errors = response.json()
+    assert len(errors['social_history']) == 1, errors
+    assert errors['social_history']['0'] == [
+        {
+            'loc': ['subject'],
+            'msg': 'subject cannot be set manually, it is assigned automatically when building the patient summary',
+            'type': 'subject_forbidden',
+        }
+    ]
+
+
+def test_patientreporteddata_valid_observation(admin_api_client: APIClient) -> None:
+    """Valid observation data is accepted."""
+    patient = patient_factories.Patient.create()
+
+    response = admin_api_client.put(
+        reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
+        data={
+            'social_history': [
+                {
+                    'resourceType': 'Observation',
+                    'id': '9ffd3fbb-7a1d-4abc-9c98-710673e99cca',
+                    'meta': {'versionId': '1', 'lastUpdated': '2026-02-20T13:00:00-05:00'},
+                    'status': 'preliminary',
+                    'category': [
+                        {
+                            'coding': [
+                                {
+                                    'system': 'http://terminology.hl7.org/CodeSystem/observation-category',
+                                    'code': 'social-history',
+                                    'display': 'Social History',
+                                }
+                            ]
+                        }
+                    ],
+                    'code': {
+                        'coding': [
+                            {'system': 'http://loinc.org', 'code': '74013-4', 'display': 'Alcoholic drinks per day'}
+                        ]
+                    },
+                    'effectiveDateTime': '2026-02-20T13:00:00-05:00',
+                    'valueQuantity': {
+                        'value': 2,
+                        'unit': 'per day',
+                        'system': 'http://unitsofmeasure.org',
+                        'code': '/d',
+                    },
                 },
                 {
                     'resourceType': 'Observation',
@@ -645,7 +699,6 @@ def test_patientreporteddata_valid_observation(admin_api_client: APIClient) -> N
                             {'system': 'http://loinc.org', 'code': '72166-2', 'display': 'Tobacco smoking status'}
                         ]
                     },
-                    'subject': {'reference': 'Patient/3a9a1eae-efb7-11ef-9c0b-fa163e7f8dbb', 'type': 'Patient'},
                     'effectiveDateTime': '2026-02-20T13:00:00-05:00',
                     'valueCodeableConcept': {
                         'coding': [{'system': 'http://snomed.info/sct', 'code': '8392000', 'display': 'Non-smoker'}]
@@ -655,11 +708,7 @@ def test_patientreporteddata_valid_observation(admin_api_client: APIClient) -> N
         },
     )
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert PatientReportedData.objects.count() == 0
-    errors = response.json()
-    assert 'social_history' in errors
-    assert len(errors['social_history']) == 2
-    for item_errors in errors['social_history'].values():
-        for item_error in item_errors:
-            assert {'loc', 'msg', 'type'} == set(item_error.keys())
+    assert response.status_code == status.HTTP_201_CREATED
+    assert PatientReportedData.objects.count() == 1
+    data = PatientReportedData.objects.get(patient=patient)
+    assert len(data.social_history) == 2, data.social_history
