@@ -485,6 +485,30 @@ def test_unviewed_health_data_no_duplicates(api_client: APIClient, orms_user: Us
     )
 
 
+def test_patientreporteddata_unauthenticated_unauthorized(
+    api_client: APIClient,
+    user: User,
+    listener_user: User,
+) -> None:
+    """Ensure that the API to create/update patient-reported data requires an authenticated user."""
+    patient = patient_factories.Patient.create()
+    url = reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid})
+
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthenticated request should fail'
+
+    api_client.force_login(user)
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.FORBIDDEN, 'unauthorized request should fail'
+
+    api_client.force_login(listener_user)
+    response = api_client.options(url)
+
+    assert response.status_code == HTTPStatus.OK
+
+
 def test_patientreporteddata_get(admin_api_client: APIClient) -> None:
     """A 404 is returned when no `PatientReportedData` exists for the patient."""
     response = admin_api_client.get(
@@ -534,6 +558,19 @@ def test_patientreporteddata_put_create(admin_api_client: APIClient) -> None:
     assert data.social_history == []
 
 
+def test_patientreporteddata_put_create_deceased_patient(admin_api_client: APIClient) -> None:
+    """PUT cannot create `PatientReportedData` for a deceased patient."""
+    patient = patient_factories.Patient.create(date_of_death=timezone.now())
+
+    response = admin_api_client.put(
+        reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
+        data={'social_history': []},
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert PatientReportedData.objects.count() == 0
+
+
 def test_patientreporteddata_put_update(admin_api_client: APIClient) -> None:
     """PUT updates an existing `PatientReportedData` for the patient."""
     patient = patient_factories.Patient.create()
@@ -550,6 +587,24 @@ def test_patientreporteddata_put_update(admin_api_client: APIClient) -> None:
     assert data.social_history == []
 
 
+def test_patientreporteddata_put_update_deceased_patient(admin_api_client: APIClient) -> None:
+    """PUT cannot update `PatientReportedData` for a deceased patient."""
+    patient = patient_factories.Patient.create()
+    data = PatientReportedData.objects.create(patient=patient, social_history=[{'foo': 'bar'}])
+    patient.date_of_death = timezone.now()
+    patient.save(update_fields=['date_of_death'])
+
+    response = admin_api_client.put(
+        reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
+        data={'social_history': []},
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert PatientReportedData.objects.count() == 1
+    data.refresh_from_db()
+    assert data.social_history == [{'foo': 'bar'}]
+
+
 def test_patientreporteddata_patch_update(admin_api_client: APIClient) -> None:
     """PATCH updates an existing `PatientReportedData` for the patient."""
     patient = patient_factories.Patient.create()
@@ -564,6 +619,37 @@ def test_patientreporteddata_patch_update(admin_api_client: APIClient) -> None:
     assert PatientReportedData.objects.count() == 1
     data = PatientReportedData.objects.get(patient=patient)
     assert data.social_history == []
+
+
+def test_patientreporteddata_patch_missing_returns_404(admin_api_client: APIClient) -> None:
+    """PATCH returns 404 when `PatientReportedData` does not exist for the patient."""
+    patient = patient_factories.Patient.create()
+
+    response = admin_api_client.patch(
+        reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
+        data={'social_history': []},
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert PatientReportedData.objects.count() == 0
+
+
+def test_patientreporteddata_patch_update_deceased_patient(admin_api_client: APIClient) -> None:
+    """PATCH cannot update `PatientReportedData` for a deceased patient."""
+    patient = patient_factories.Patient.create()
+    data = PatientReportedData.objects.create(patient=patient, social_history=[{'foo': 'bar'}])
+    patient.date_of_death = timezone.now()
+    patient.save(update_fields=['date_of_death'])
+
+    response = admin_api_client.patch(
+        reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
+        data={'social_history': []},
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert PatientReportedData.objects.count() == 1
+    data.refresh_from_db()
+    assert data.social_history == [{'foo': 'bar'}]
 
 
 def test_patientreporteddata_elements_validated(admin_api_client: APIClient) -> None:

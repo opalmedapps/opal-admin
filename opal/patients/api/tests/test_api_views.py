@@ -1156,6 +1156,43 @@ class TestPatientSummaryView:
 
         assert data == decrypted_data.decode('utf-8')
 
+    def test_summary_saved_with_patientreporteddata(
+        self,
+        api_client: APIClient,
+        listener_user: User,
+        mocker: MockerFixture,
+        settings: LazySettings,
+    ) -> None:
+        """Ensure patient-reported social history is passed to IPS summary retrieval."""
+        api_client.force_login(listener_user)
+
+        settings.IPS_STORAGE_BACKEND = 'django.core.files.storage.FileSystemStorage'
+        mocker.patch('django.core.files.storage.FileSystemStorage.save', return_value='test.ips')
+        mocker.patch('opal.patients.api.views.jwe_sh_link_encrypt', return_value=('test-key', b'test-encrypted-data'))
+
+        data = 'fake patient summary'
+        ips_uuid = uuid4()
+        mock_retrieve = mocker.patch('opal.patients.api.views.retrieve_patient_summary', return_value=(data, ips_uuid))
+
+        patient_uuid = uuid4()
+        patient = Patient.create(uuid=patient_uuid, ramq='OTES12345678')
+        social_history = [{'alcohol_use': '1/wk'}, {'tobacco_use': '0/d'}]
+        PatientReportedData.objects.create(patient=patient, social_history=social_history)
+
+        response = api_client.get(reverse('api:patient-summary', kwargs={'uuid': patient_uuid}))
+
+        assert response.status_code == status.HTTP_200_OK, response.text
+        mock_retrieve.assert_called_once_with(
+            FHIRConnectionSettings(
+                oauth_url=settings.FHIR_API_OAUTH_URL,
+                fhir_url=settings.FHIR_API_URL,
+                client_id=settings.FHIR_API_CLIENT_ID,
+                private_key=settings.FHIR_API_PRIVATE_KEY,
+            ),
+            patient.ramq,
+            social_history=social_history,
+        )
+
     def test_summary_no_health_identifier(self, api_client: APIClient, listener_user: User) -> None:
         """Ensure the endpoint raises a ValidationError when the patient has no health identification number."""
         api_client.force_login(listener_user)
