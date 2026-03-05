@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import datetime
+import ftplib
 from datetime import date
-from ftplib import FTP, Error
-from itertools import starmap
+from ftplib import FTP
 from typing import Any
 
 from django.conf import LazySettings
@@ -68,36 +68,53 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         mocker.patch.object(FTP, 'connect')
         mocker.patch.object(FTP, 'login')
         mocker.patch.object(FTP, 'pwd')
+        mocker.patch.object(FTPStorageWithModifiedTime, 'delete')
 
-    def _mock_files(self, mocker: MockerFixture, files: dict[str, str], **kwargs: Any) -> None:
+    def _mock_files(self, mocker: MockerFixture, file_timestamps: dict[str, str], **kwargs: Any) -> None:
+        # Can be used to test what happens if the modify attribute is missing
         hide_modify = kwargs.get('hide_modify')
 
+        # Metadata info line for a given file
         def format_info_line(file_name: str, date_str: str) -> str:
             modify_part = '' if hide_modify else f'modify={date_str}'
             return (
-                f'type=test;size=0;{modify_part};UNIX.mode=0000;UNIX.uid=1;UNIX.gid=1;unique=123456789ab; {file_name}'
+                # This line starts with one space on purpose; this is part of the format
+                f' type=test;size=0;{modify_part};UNIX.mode=0000;UNIX.uid=1;UNIX.gid=1;unique=123456789ab; {file_name}'
             )
 
-        basic_date = '20000101000000'
+        # The complete response given when requesting a file's metadata
+        def info_lines(file_name) -> str:
+            return '\n'.join([
+                '250-Begin',
+                format_info_line(file_name, file_timestamps[file_name]) if file_name in file_timestamps else ' ',
+                '250 End.',
+            ])
 
+        # Function used to mock a file metadata command, which extracts the file name from the command and returns the metadata
+        def mock_sendcmd(command) -> str:
+            if 'MLST ' in command:
+                file_name = command.split('MLST ')[1]
+
+                if file_name in file_timestamps:
+                    return info_lines(file_name)
+                raise ftplib.error_perm("550 Can't check for file existence")
+
+            # Treat any other commands as successful
+            return '200'
+
+        # Mock the directory listing
         mocker.patch.object(
-            FTPStorageWithModifiedTime, 'listdir', return_value=(['.', '..'], ['.htaccess', *files.keys()])
+            FTPStorageWithModifiedTime, 'listdir', return_value=(['.', '..'], ['.htaccess', *file_timestamps.keys()])
         )
 
-        info_lines = [
-            format_info_line('.', basic_date),
-            format_info_line('..', basic_date),
-            *list(starmap(format_info_line, files.items())),
-            format_info_line('.htaccess', basic_date),
-        ]
-
-        mocker.patch.object(FTP, 'retrlines', side_effect=lambda command, append: [append(line) for line in info_lines])
+        # Mock the command to request a file's metadata
+        mocker.patch.object(FTP, 'sendcmd', side_effect=mock_sendcmd)
 
     def _get_logs(self, structlog_output: LogCapture) -> list[str]:
         """Gets log data as a list of strings from a structlog LogCapture fixture."""
         return [entry['event'] for entry in structlog_output.entries]
 
-    def test_ftp_storage_only(self, settings: LazySettings) -> None:
+    def test_non_ftp_storage(self, settings: LazySettings) -> None:
         """Raises a NotImplementedError when using a different storage backend than FTPStorage."""
         settings.IPS_STORAGE_BACKEND = 'django.core.files.storage.FileSystemStorage'
 
@@ -259,7 +276,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
             },
         )
-        # Overwrite the directory listing with an additional file that isn't included in retrlines
+        # Overwrite the directory listing with an additional file that doesn't have metadata like a last modified time
         mocker.patch.object(
             FTPStorageWithModifiedTime,
             'listdir',
@@ -324,25 +341,6 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
             },
             hide_modify=True,
         )
-
-        self._call_command('expire_ips_bundles')
-
-        logs = self._get_logs(structlog_output)
-        assert (
-            'ERROR - Bundle "1304efc5-9961-4249-bfa5-68af94cb0982.ips" last modified information failed to be retrieved from the server'
-            in logs
-        )
-        assert '0 IPS bundles out of 1 were deleted (1 error)' in logs
-
-    def test_retrieve_lines_error(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
-        """Log an error if the command to retrieve lines fails."""
-        self._mock_files(
-            mocker,
-            {
-                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101070000',
-            },
-        )
-        mocker.patch.object(FTP, 'retrlines', side_effect=Error)
 
         self._call_command('expire_ips_bundles')
 
