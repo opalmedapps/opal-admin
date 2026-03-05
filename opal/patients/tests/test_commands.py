@@ -83,7 +83,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
             )
 
         # The complete response given when requesting a file's metadata
-        def info_lines(file_name) -> str:
+        def info_lines(file_name: str) -> str:
             return '\n'.join([
                 '250-Begin',
                 format_info_line(file_name, file_timestamps[file_name]) if file_name in file_timestamps else ' ',
@@ -91,7 +91,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
             ])
 
         # Function used to mock a file metadata command, which extracts the file name from the command and returns the metadata
-        def mock_sendcmd(command) -> str:
+        def mock_sendcmd(command: str) -> str:
             if 'MLST ' in command:
                 file_name = command.split('MLST ')[1]
 

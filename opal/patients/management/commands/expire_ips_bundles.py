@@ -55,7 +55,7 @@ class FTPStorageWithModifiedTime(FTPStorage):
                 )
 
             # Extract the timestamp between 'modify=' and the next ';'
-            modify = response.split('modify=')[1].split(';')[0]
+            modify: str = response.split('modify=')[1].split(';')[0]
 
         except ftplib.all_errors as error:
             raise FTPStorageException(f'Error getting directory listing for file {file_name}') from error
