@@ -105,7 +105,7 @@ class ChartService:
 
         figure.update_layout(CHART_LAYOUT)
 
-        return figure.to_html()  # type: ignore[no-any-return]
+        return figure.to_html(include_plotlyjs=False, full_html=False)  # type: ignore[no-any-return]
 
     def generate_line_chart(
         self,
@@ -151,4 +151,4 @@ class ChartService:
 
         figure.update_layout(CHART_LAYOUT)
 
-        return figure.to_html()  # type: ignore[no-any-return]
+        return figure.to_html(include_plotlyjs=False, full_html=False)  # type: ignore[no-any-return]
