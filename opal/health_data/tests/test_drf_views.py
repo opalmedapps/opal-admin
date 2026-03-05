@@ -507,9 +507,10 @@ def test_patientreporteddata_unauthenticated_unauthorized(
     response = api_client.options(url)
 
     assert response.status_code == HTTPStatus.OK
+    assert 'GET, PUT, PATCH' in response.headers['Allow']
 
 
-def test_patientreporteddata_get(admin_api_client: APIClient) -> None:
+def test_patientreporteddata_get_not_found(admin_api_client: APIClient) -> None:
     """A 404 is returned when no `PatientReportedData` exists for the patient."""
     response = admin_api_client.get(
         reverse('api:patients-data-reported', kwargs={'uuid': uuid4()}),
@@ -517,6 +518,20 @@ def test_patientreporteddata_get(admin_api_client: APIClient) -> None:
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert PatientReportedData.objects.count() == 0
+
+
+def test_patientreporteddata_get(admin_api_client: APIClient) -> None:
+    """Existing `PatientReportedData` is returned for the patient."""
+    patient = patient_factories.Patient.create()
+    social_history = [{'foo': 'bar'}, {'bar': 'foo'}]
+    PatientReportedData.objects.create(patient=patient, social_history=social_history)
+
+    response = admin_api_client.get(
+        reverse('api:patients-data-reported', kwargs={'uuid': patient.uuid}),
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {'social_history': social_history}
 
 
 def test_patientreporteddata_post(admin_api_client: APIClient) -> None:
