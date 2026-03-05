@@ -139,12 +139,21 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
             in logs
         )
 
-    def test_keep(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+    @pytest.mark.parametrize(
+        'timestamp',
+        [
+            '20260101081500',  # Average bundle, last modified 45m ago
+            '20260101080001',  # Bundle just about to expire, last updated 59m and 59s ago
+            '20260101090000',  # Bundle created just now, last modified 0s ago
+            '20260101090001',  # Bundle that was modified in the future (in case of clock issues), last modified -1s ago
+        ],
+    )
+    def test_keep(self, mocker: MockerFixture, structlog_output: LogCapture, timestamp: str) -> None:
         """Keep a non-expired bundle."""
         self._mock_files(
             mocker,
             {
-                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101081500',
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': timestamp,
             },
         )
         delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
@@ -155,76 +164,19 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         logs = self._get_logs(structlog_output)
         assert '0 IPS bundles out of 1 were deleted (0 errors)' in logs
 
-    def test_keep_almost_expired(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
-        """Keep a non-expired bundle that is right about to expire."""
-        self._mock_files(
-            mocker,
-            {
-                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080001',
-            },
-        )
-        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
-
-        self._call_command('expire_ips_bundles')
-
-        assert delete_spy.call_count == 0
-        logs = self._get_logs(structlog_output)
-        assert '0 IPS bundles out of 1 were deleted (0 errors)' in logs
-
-    def test_keep_now(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
-        """Keep a bundle that was created just now."""
-        self._mock_files(
-            mocker,
-            {
-                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101090000',
-            },
-        )
-        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
-
-        self._call_command('expire_ips_bundles')
-
-        assert delete_spy.call_count == 0
-        logs = self._get_logs(structlog_output)
-        assert '0 IPS bundles out of 1 were deleted (0 errors)' in logs
-
-    def test_keep_future(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
-        """In case of a clock being out of sync, keep a bundle that is marked as last updated in the future."""
-        self._mock_files(
-            mocker,
-            {
-                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101090001',
-            },
-        )
-        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
-
-        self._call_command('expire_ips_bundles')
-
-        assert delete_spy.call_count == 0
-        logs = self._get_logs(structlog_output)
-        assert '0 IPS bundles out of 1 were deleted (0 errors)' in logs
-
-    def test_delete(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
+    @pytest.mark.parametrize(
+        'timestamp',
+        [
+            '20260101074500',  # Average bundle, last modified 1h 15m ago
+            '20260101080000',  # Bundle just expired, last updated 1h ago
+        ],
+    )
+    def test_delete(self, mocker: MockerFixture, structlog_output: LogCapture, timestamp: str) -> None:
         """Delete an expired bundle."""
         self._mock_files(
             mocker,
             {
-                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
-            },
-        )
-        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
-
-        self._call_command('expire_ips_bundles')
-
-        assert delete_spy.call_count == 1
-        logs = self._get_logs(structlog_output)
-        assert '1 IPS bundle out of 1 was deleted (0 errors)' in logs
-
-    def test_delete_just_expired(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
-        """Delete an expired bundle that has just expired."""
-        self._mock_files(
-            mocker,
-            {
-                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101080000',
+                '1304efc5-9961-4249-bfa5-68af94cb0982.ips': timestamp,
             },
         )
         delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
