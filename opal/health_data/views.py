@@ -7,8 +7,11 @@
 from typing import Any
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.middleware.csp import get_nonce
 from django.shortcuts import get_object_or_404
 from django.views import generic
+
+from plotly.offline import get_plotlyjs
 
 from ..patients.models import Patient
 from .models import QuantitySample
@@ -43,10 +46,18 @@ class HealthDataView(PermissionRequiredMixin, generic.TemplateView):
         patient = get_object_or_404(Patient, uuid=self.kwargs['uuid'])
         graphs = build_all_quantity_sample_charts(patient)
 
+        # add a nonce to all script tags
+        for key, value in graphs.items():
+            if value:
+                nonced = value.replace('<script>', f'<script nonce="{get_nonce(self.request)}">')
+                graphs[key] = nonced
+
         context.update(
             {
                 'patient': patient,
                 'graphs': graphs,
+                # include plotly.js only once
+                'plotlyjs': get_plotlyjs(),
             },
         )
         return context

@@ -10,6 +10,7 @@ from django.urls import reverse
 
 import pytest
 from bs4 import BeautifulSoup
+from plotly.offline import get_plotlyjs_version
 from pytest_django.asserts import assertTemplateUsed
 
 from opal.patients import factories as patient_factories
@@ -82,6 +83,29 @@ def test_health_data_template_plots_detected(admin_client: Client) -> None:
             assert line.string not in MISSING_DATA_WARNINGS
 
     assert response.status_code == HTTPStatus.OK
+
+
+def test_health_data_template_plotly(admin_client: Client) -> None:
+    """Plotly is only included once and all scripts have a nonce."""
+    patient = patient_factories.Patient.create()
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.BODY_MASS)
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.BODY_TEMPERATURE)
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.HEART_RATE)
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.HEART_RATE_VARIABILITY)
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.OXYGEN_SATURATION)
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.BLOOD_PRESSURE_SYSTOLIC)
+    healthdata_factories.QuantitySample.create(patient=patient, type=QuantitySampleType.BLOOD_PRESSURE_DIASTOLIC)
+
+    response = admin_client.get(reverse('health_data:health-data-ui', kwargs={'uuid': patient.uuid}))
+
+    # plotly.js is only included once
+    assert response.text.count(f'* plotly.js v{get_plotlyjs_version()}') == 1
+
+    # all script tags have a nonce
+    soup = BeautifulSoup(response.content, 'html.parser')
+    script_tag_attrs = [tag.attrs for tag in soup.find_all('script')]
+
+    assert all('nonce' in attrs for attrs in script_tag_attrs), script_tag_attrs
 
 
 def test_health_data_generate_plot_empty(admin_client: Client) -> None:
