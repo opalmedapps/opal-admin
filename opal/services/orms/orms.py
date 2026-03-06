@@ -4,12 +4,14 @@
 
 """Module providing business logic for communication with ORMS."""
 
-from typing import Any
-from uuid import UUID
+from typing import TYPE_CHECKING, Any
 
 from ..general.service_error import ServiceErrorHandler
 from .orms_communication import ORMSHTTPCommunicationManager
 from .orms_validation import ORMSValidator
+
+if TYPE_CHECKING:
+    from uuid import UUID
 
 
 class ORMSService:

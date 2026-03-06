@@ -3,13 +3,16 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 import pytest
-from pytest_mock import MockerFixture
 from twilio.base.exceptions import TwilioException, TwilioRestException
 from twilio.rest.api import MessageList
 
 from opal.services.twilio import TwilioService, TwilioServiceError
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
 
 
 class TestTwilioService:

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 from django.contrib.auth.models import Permission
 from django.core.exceptions import PermissionDenied
@@ -14,12 +15,14 @@ import pytest
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertNotContains, assertRedirects, assertTemplateUsed
 
-from opal.users.models import User
-
 from .. import factories
-from ..forms import InstitutionForm
 from ..models import Institution, Site
 from ..views import InstitutionListView, SiteListView
+
+if TYPE_CHECKING:
+    from opal.users.models import User
+
+    from ..forms import InstitutionForm
 
 pytestmark = pytest.mark.django_db
 

@@ -5,18 +5,21 @@
 """This module is used to provide configuration, fixtures, and plugins for pytest within hospital-settings app."""
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms import model_to_dict
-from django.test import Client
 
 import pytest
 
-from opal.users.models import User
-
 from . import factories
 from .forms import InstitutionForm
+
+if TYPE_CHECKING:
+    from django.test import Client
+
+    from opal.users.models import User
 
 
 @pytest.fixture

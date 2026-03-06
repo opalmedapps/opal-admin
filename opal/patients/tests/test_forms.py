@@ -5,7 +5,7 @@
 import json
 from datetime import date
 from http import HTTPStatus
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.core.exceptions import NON_FIELD_ERRORS
 from django.forms import HiddenInput, model_to_dict
@@ -15,7 +15,6 @@ import pytest
 import requests
 from crispy_forms.utils import render_crispy_form
 from dateutil.relativedelta import relativedelta
-from pytest_mock.plugin import MockerFixture
 from requests.exceptions import RequestException
 
 from opal.caregivers.factories import CaregiverProfile as CaregiverProfileFactory
@@ -24,12 +23,16 @@ from opal.services.integration import hospital
 from opal.services.integration.schemas import HospitalNumberSchema, PatientSchema, SexTypeSchema
 from opal.services.twilio import TwilioServiceError
 from opal.users.factories import Caregiver as CaregiverFactory
-from opal.users.models import User
 
 from .. import constants, factories, forms
 from ..filters import ManageCaregiverAccessFilter
 from ..models import PREDEFINED_ROLE_TYPES, Relationship, RelationshipStatus, RelationshipType, RoleType
 from ..tables import ExistingUserTable
+
+if TYPE_CHECKING:
+    from pytest_mock.plugin import MockerFixture
+
+    from opal.users.models import User
 
 pytestmark = pytest.mark.django_db
 

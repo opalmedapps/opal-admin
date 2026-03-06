@@ -7,12 +7,14 @@
 import json
 from http import HTTPStatus
 from io import StringIO
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.core.management import call_command
 
 import requests
-from pytest_mock import MockerFixture, MockType
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture, MockType
 
 
 class CommandTestMixin:

@@ -4,12 +4,11 @@
 
 """Collection of api views used to get and update appointment details."""
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework.exceptions import NotFound
 from rest_framework.generics import UpdateAPIView
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -17,6 +16,9 @@ from opal.core.drf_permissions import IsListener, IsOrmsSystem
 from opal.legacy import models
 
 from ..serializers import LegacyAppointmentCheckinSerializer, LegacyAppointmentDetailedSerializer
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
 
 
 @extend_schema(

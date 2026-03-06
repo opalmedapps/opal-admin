@@ -6,10 +6,12 @@
 
 import logging
 from types import MappingProxyType
-from typing import Final, NamedTuple
+from typing import TYPE_CHECKING, Final, NamedTuple
 
-import pandas as pd
 from plotly import express as px
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 class ChartData(NamedTuple):

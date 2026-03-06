@@ -4,12 +4,15 @@
 
 """Shared functionality for report generation functionality."""
 
-from datetime import date
-from pathlib import Path
-from typing import Literal, NamedTuple
+from typing import TYPE_CHECKING, Literal, NamedTuple
 
-from fpdf import Align
 from typing_extensions import TypedDict
+
+if TYPE_CHECKING:
+    from datetime import date
+    from pathlib import Path
+
+    from fpdf import Align
 
 
 class FPDFCellDictType(TypedDict):

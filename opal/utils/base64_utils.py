@@ -5,7 +5,10 @@
 """Module providing utility functions for base64 encoding operations."""
 
 import base64
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def file_to_base64(path: Path) -> str | None:
@@ -43,5 +46,5 @@ def is_base64(string: str | None) -> bool:
 
     try:
         return base64.b64encode(base64.b64decode(string, validate=True)) == bytes(string, 'ascii')
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return False

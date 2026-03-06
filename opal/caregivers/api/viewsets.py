@@ -4,20 +4,25 @@
 
 """This module provides `ViewSets` for the hospital-specific settings REST API."""
 
-from django.db.models.query import QuerySet
+from typing import TYPE_CHECKING
+
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers as drf_serializers
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
-from rest_framework.request import Request
 from rest_framework.response import Response
 
 from opal.core.drf_permissions import FullDjangoModelPermissions, IsListener
 
 from ..models import SecurityAnswer, SecurityQuestion
 from . import serializers
+
+if TYPE_CHECKING:
+    from django.db.models.query import QuerySet
+
+    from rest_framework.request import Request
 
 
 class SecurityQuestionViewSet(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet[SecurityQuestion]):

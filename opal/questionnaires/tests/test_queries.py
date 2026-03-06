@@ -2,12 +2,16 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from typing import TYPE_CHECKING
+
 from django.conf import settings
 
 import pytest
-from pytest_django import DjangoDbBlocker
 
 from .. import queries
+
+if TYPE_CHECKING:
+    from pytest_django import DjangoDbBlocker
 
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 

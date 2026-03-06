@@ -4,6 +4,7 @@
 
 import secrets
 from datetime import date, datetime
+from typing import TYPE_CHECKING
 
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
@@ -12,7 +13,6 @@ from django.utils import timezone
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
-from pytest_mock import MockerFixture
 from rest_framework.authtoken.models import Token
 
 from opal.caregivers import factories as caregiver_factories
@@ -36,6 +36,9 @@ from opal.patients.models import (
 from opal.test_results.models import GeneralTest, Note, PathologyObservation
 from opal.users import factories as user_factories
 from opal.users.models import Caregiver, ClinicalStaff, User
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
 
 pytestmark = pytest.mark.django_db()
 

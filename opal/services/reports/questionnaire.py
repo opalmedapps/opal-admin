@@ -8,7 +8,6 @@ import io
 import math
 import re
 import types
-from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -17,14 +16,16 @@ from django.utils import timezone
 import pandas as pd
 from fpdf import FPDF, FPDF_VERSION, FontFace, FPDFException
 from fpdf.enums import Align, PageLabelStyle, TableBordersLayout
-from fpdf.outline import OutlineSection
-from fpdf.transitions import Transition
 from plotly import express as px
 
 from .base import FPDFCellDictType, FPDFMultiCellDictType, InstitutionData, PatientData
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from fpdf.fpdf import _Format, _Orientation
+    from fpdf.outline import OutlineSection
+    from fpdf.transitions import Transition
 
 
 class QuestionType(Enum):
@@ -248,8 +249,8 @@ class QuestionnairePDF(FPDF):
 
     def add_page(  # noqa: PLR0913, PLR0917
         self,
-        orientation: '_Orientation' = '',
-        format: '_Format | tuple[float, float]' = '',  # noqa: A002
+        orientation: _Orientation = '',
+        format: _Format | tuple[float, float] = '',  # noqa: A002
         same: bool = False,
         duration: float = 0,
         transition: Transition | None = None,

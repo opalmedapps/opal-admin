@@ -3,12 +3,11 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import datetime as dt
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.utils import timezone
 
 import pytest
-from pytest_mock import MockerFixture
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers import models as caregiver_models
@@ -20,6 +19,9 @@ from opal.usage_statistics import models as stats_models
 from opal.usage_statistics import queries as stats_queries
 
 from ..common import GroupByComponent
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

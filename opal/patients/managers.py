@@ -6,7 +6,7 @@
 
 import operator
 from functools import reduce
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from django.db import models
 from django.db.models.functions import Coalesce
@@ -24,8 +24,8 @@ class RelationshipManager(models.Manager['Relationship']):
     def get_patient_list_for_caregiver(
         self,
         username: str,
-        status: Optional['RelationshipStatus'] = None,
-    ) -> models.QuerySet['Relationship']:
+        status: RelationshipStatus | None = None,
+    ) -> models.QuerySet[Relationship]:
         """
         Query manager to get a list of patients for a given caregiver.
 
@@ -52,7 +52,7 @@ class RelationshipManager(models.Manager['Relationship']):
     def get_list_of_patients_ids_for_caregiver(
         self,
         username: str,
-        status: Optional['RelationshipStatus'] = None,
+        status: RelationshipStatus | None = None,
     ) -> list[int]:
         """
         Get an array of patients' legacy IDs for a given caregiver.
@@ -88,7 +88,7 @@ class RelationshipManager(models.Manager['Relationship']):
 class RelationshipTypeManager(models.Manager['RelationshipType']):
     """Manager class for the `RelationshipType` model."""
 
-    def filter_by_patient_age(self, patient_age: int) -> models.QuerySet['RelationshipType']:
+    def filter_by_patient_age(self, patient_age: int) -> models.QuerySet[RelationshipType]:
         """
         Return a new QuerySet filtered by the patient age between start_age and end_age.
 
@@ -102,7 +102,7 @@ class RelationshipTypeManager(models.Manager['RelationshipType']):
             end_age_number=Coalesce('end_age', constants.RELATIONSHIP_MAX_AGE),
         ).filter(start_age__lte=patient_age, end_age_number__gt=patient_age)
 
-    def self_type(self) -> 'RelationshipType':
+    def self_type(self) -> RelationshipType:
         """
         Return the Self relationship type.
 
@@ -111,7 +111,7 @@ class RelationshipTypeManager(models.Manager['RelationshipType']):
         """
         return self.get(role_type=patient_models.RoleType.SELF)
 
-    def parent_guardian(self) -> 'RelationshipType':
+    def parent_guardian(self) -> RelationshipType:
         """
         Return the Parent/Guardian relationship type.
 
@@ -120,7 +120,7 @@ class RelationshipTypeManager(models.Manager['RelationshipType']):
         """
         return self.get(role_type=patient_models.RoleType.PARENT_GUARDIAN)
 
-    def guardian_caregiver(self) -> 'RelationshipType':
+    def guardian_caregiver(self) -> RelationshipType:
         """
         Return the Guardian-Caregiver relationship type.
 
@@ -129,7 +129,7 @@ class RelationshipTypeManager(models.Manager['RelationshipType']):
         """
         return self.get(role_type=patient_models.RoleType.GUARDIAN_CAREGIVER)
 
-    def mandatary(self) -> 'RelationshipType':
+    def mandatary(self) -> RelationshipType:
         """
         Return the Mandatary relationship type.
 
@@ -145,7 +145,7 @@ class PatientQueryset(models.QuerySet['Patient']):
     def get_patient_by_site_mrn_list(
         self,
         site_mrn_list: list[dict[str, Any]],
-    ) -> 'Patient':
+    ) -> Patient:
         """
         Query manager to get a `Patient` object filtered by a given list of dictionaries with sites and MRNs.
 

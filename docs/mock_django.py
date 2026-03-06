@@ -5,11 +5,13 @@
 
 """Mocks pytkdocs to workaround issues with Django and Django REST framework."""
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock
 
 from pytkdocs.loader import Loader, ObjectNode, split_attr_name
-from pytkdocs.objects import Object
+
+if TYPE_CHECKING:
+    from pytkdocs.objects import Object
 
 # keep original add_fields in order to be able to call it in certain cases when mocking
 original_add_fields = Loader.add_fields
