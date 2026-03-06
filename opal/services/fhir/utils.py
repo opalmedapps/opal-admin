@@ -6,10 +6,17 @@
 
 import logging
 import secrets
+import uuid
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any
 
 import structlog
 from authlib.oauth2 import OAuth2Error
+from fhir.resources.R4B.observation import Observation
+from fhir.resources.R4B.reference import Reference
 from jose import jwe, utils
+from pydantic_core import PydanticCustomError, ValidationError
 from requests import RequestException
 
 from . import ips
@@ -22,6 +29,23 @@ class FHIRDataRetrievalError(Exception):
     """Raised when there is an error retrieving data from the FHIR server."""
 
     pass
+
+
+@dataclass
+class FHIRConnectionSettings:
+    """
+    Settings for connecting to a FHIR server via OAuth2.
+
+    - oauth_url: OAuth2 base URL
+    - fhir_url: FHIR API base URL
+    - client_id: OAuth2 client ID
+    - private_key: Private key in PEM format for PrivateKeyJWT authentication
+    """
+
+    oauth_url: str
+    fhir_url: str
+    client_id: str
+    private_key: str
 
 
 # https://docs.smarthealthit.org/smart-health-links/spec/#encrypting-and-decrypting-files
@@ -46,17 +70,17 @@ def jwe_sh_link_encrypt(data: str) -> tuple[str, bytes]:
 
 
 def retrieve_patient_summary(
-    oauth_url: str, fhir_url: str, client_id: str, private_key: str, identifier: str
+    settings: FHIRConnectionSettings,
+    identifier: str,
+    social_history: Sequence[dict[str, Any]] = (),
 ) -> tuple[str, str]:
     """
     Retrieve patient data and build a patient summary in IPS format for a patient identified by their identifier.
 
     Args:
-        oauth_url: OAuth2 base URL
-        fhir_url: FHIR API base URL
-        client_id: OAuth2 client ID
-        private_key: Private key in PEM format for PrivateKeyJWT authentication
+        settings: the settings to use for connecting to the FHIR server
         identifier: the patient identifier (usually the health insurance number)
+        social_history: optional social history data to include in the IPS bundle, for example, patient-reported alcohol and tobacco use
 
     Returns:
         a tuple of the patient summary in IPS format as a JSON string and the UUID of the IPS bundle
@@ -67,17 +91,17 @@ def retrieve_patient_summary(
     LOGGER.debug(
         'Building patient summary for patient with identifier %s, using OAuth2 URL: %s, FHIR API: %s, client ID: %s',
         identifier,
-        oauth_url,
-        fhir_url,
-        client_id,
+        settings.oauth_url,
+        settings.fhir_url,
+        settings.client_id,
     )
 
     try:
         fhir = FHIRConnector(
-            oauth_url=oauth_url,
-            fhir_url=fhir_url,
-            client_id=client_id,
-            private_key=private_key,
+            oauth_url=settings.oauth_url,
+            fhir_url=settings.fhir_url,
+            client_id=settings.client_id,
+            private_key=settings.private_key,
         )
 
         patient = fhir.find_patient(identifier)
@@ -101,6 +125,17 @@ def retrieve_patient_summary(
             len(observations),
             len(immunizations),
         )
+
+        social_history_observations = []
+        social_history_errors: list[ValidationError] = []
+        for social_history_item in social_history:
+            try:
+                observation = validate_observation(social_history_item)
+            except ValidationError as exc:
+                social_history_errors.append(exc)
+            else:
+                observation.subject = Reference(reference=f'Patient/{patient_uuid}', type='Patient')
+                social_history_observations.append(observation)
     except (PatientNotFoundError, MultiplePatientsFoundError) as exc:
         LOGGER.exception('Error finding patient with identifier %s', identifier)
         raise FHIRDataRetrievalError(f'Error finding patient with identifier {identifier}') from exc
@@ -108,10 +143,22 @@ def retrieve_patient_summary(
         LOGGER.exception('Error retrieving data from FHIR server')
         raise FHIRDataRetrievalError('Error retrieving data from FHIR server') from exc
     else:
+        if social_history_errors:
+            LOGGER.error(
+                'Error validating social history observations', extra={'validation_errors': social_history_errors}
+            )
+            raise FHIRDataRetrievalError('Error validating social history observations')
+
         LOGGER.debug('Building IPS bundle for patient with UUID %s', patient_uuid)
 
         ips_bundle = ips.build_patient_summary(
-            patient, conditions, medication_requests, allergies, observations, immunizations
+            patient,
+            conditions,
+            medication_requests,
+            allergies,
+            observations,
+            immunizations,
+            social_history=social_history_observations,
         )
 
         LOGGER.debug('Successfully built IPS bundle for patient with UUID %s', patient_uuid)
@@ -120,3 +167,43 @@ def retrieve_patient_summary(
         ips_uuid: str = ips_bundle.identifier.value  # type: ignore[assignment,union-attr]
 
         return ips_bundle.model_dump_json(indent=2), ips_uuid
+
+
+def validate_observation(value: dict[str, Any]) -> Observation:
+    """
+    Validate that a dictionary is a valid FHIR `Observation` resource.
+
+    If the observation is missing an `id`, one will be generated and added to the observation.
+
+    Raises a Pydantic `ValidationError` if the value is not a valid `Observation`.
+
+    Args:
+        value: the value to validate
+
+    Returns:
+        the validated observation if it is valid
+
+    Raises:
+        ValidationError: if the value is not a valid `Observation`
+    """  # noqa: DOC501, DOC502
+    observation = Observation.model_validate(value)
+
+    if observation.id is None:
+        observation.id = str(uuid.uuid4())
+
+    if observation.subject is not None:
+        raise ValidationError.from_exception_data(
+            title='Observation',
+            line_errors=[
+                {
+                    'type': PydanticCustomError(
+                        'subject_forbidden',
+                        'subject cannot be set manually, it is assigned automatically when building the patient summary',
+                    ),
+                    'loc': ('subject',),
+                    'input': observation.subject.model_dump(),
+                }
+            ],
+        )
+
+    return observation

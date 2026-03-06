@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: Copyright (C) 2023 Opal Health Informatics Group at the Research Institute of the McGill University Health Centre <john.kildea@mcgill.ca>
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
@@ -12,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-19 16:47-0400\n"
+"POT-Creation-Date: 2026-03-03 09:29-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -111,6 +110,14 @@ msgstr "Échantillon de quantité"
 #: opal/health_data/models.py
 msgid "Quantity Samples"
 msgstr "Échantillons de quantité"
+
+#: opal/health_data/models.py
+msgid "Social History"
+msgstr "Histoire sociale"
+
+#: opal/health_data/models.py
+msgid "Patient Reported Data"
+msgstr "Données rapportées par les patients"
 
 #: opal/health_data/templates/chart_display.html
 msgid "Smart Devices Data"

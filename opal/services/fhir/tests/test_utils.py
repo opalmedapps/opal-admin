@@ -16,10 +16,22 @@ from jose import jwe, utils
 from pytest_mock import MockerFixture
 
 from opal.services.fhir.fhir import FHIRConnector
-from opal.services.fhir.utils import FHIRDataRetrievalError, jwe_sh_link_encrypt, retrieve_patient_summary
+from opal.services.fhir.utils import (
+    FHIRConnectionSettings,
+    FHIRDataRetrievalError,
+    jwe_sh_link_encrypt,
+    retrieve_patient_summary,
+)
 
 if TYPE_CHECKING:
     from unittest.mock import Mock
+
+FHIR_SETTINGS = FHIRConnectionSettings(
+    oauth_url='https://example.com/oauth2',
+    fhir_url='https://example.com/fhir',
+    client_id='test-client-id',
+    private_key='private-key',
+)
 
 
 def test_jwe_sh_link_encrypt() -> None:
@@ -97,15 +109,106 @@ def test_retrieve_patient_summary(mocker: MockerFixture) -> None:
     mocker.patch('opal.services.fhir.utils.FHIRConnector', return_value=mock_fhir_connector)
 
     summary_json, summary_uuid = retrieve_patient_summary(
-        oauth_url='https://example.com/oauth2',
-        fhir_url='https://example.com/fhir',
-        client_id='test-client-id',
-        private_key='private-key',
+        settings=FHIR_SETTINGS,
         identifier='test-identifier',
     )
 
     summary = Bundle.model_validate_json(summary_json)
     assert summary.identifier.value == summary_uuid
+
+
+def test_retrieve_patient_summary_social_history_validated(mocker: MockerFixture) -> None:
+    """The social history observations are validated."""
+    with Path(__file__).parent.joinpath('fixtures').joinpath('patient.json').open(encoding='utf-8') as f:
+        patient = Bundle.model_validate_json(f.read()).entry[0].resource
+
+    with Path(__file__).parent.joinpath('fixtures', 'social_history.json').open() as f:
+        social_history = json.load(f)
+
+    social_history[0]['subject'] = {'type': 'Patient'}
+    social_history[1]['subject'] = {'type': 'Patient'}
+
+    mock_fhir_connector = mocker.Mock(spec=FHIRConnector)
+    mock_fhir_connector.find_patient.return_value = patient
+    mock_fhir_connector.patient_conditions.return_value = []
+    mock_fhir_connector.patient_medication_requests.return_value = []
+    mock_fhir_connector.patient_allergies.return_value = []
+    mock_fhir_connector.patient_observations.return_value = []
+    mock_fhir_connector.patient_immunizations.return_value = []
+    mocker.patch('opal.services.fhir.utils.FHIRConnector', return_value=mock_fhir_connector)
+
+    with pytest.raises(FHIRDataRetrievalError, match='Error validating social history observations'):
+        retrieve_patient_summary(settings=FHIR_SETTINGS, identifier='test-identifier', social_history=social_history)
+
+
+def test_retrieve_patient_summary_social_history_id_generated(mocker: MockerFixture) -> None:
+    """The social history observations get an ID if missing."""
+    with Path(__file__).parent.joinpath('fixtures').joinpath('patient.json').open(encoding='utf-8') as f:
+        patient = Bundle.model_validate_json(f.read()).entry[0].resource
+
+    with Path(__file__).parent.joinpath('fixtures', 'social_history.json').open() as f:
+        social_history = json.load(f)
+
+    social_history[0]['id'] = None
+    social_history[1]['id'] = None
+
+    mock_fhir_connector = mocker.Mock(spec=FHIRConnector)
+    mock_fhir_connector.find_patient.return_value = patient
+    mock_fhir_connector.patient_conditions.return_value = []
+    mock_fhir_connector.patient_medication_requests.return_value = []
+    mock_fhir_connector.patient_allergies.return_value = []
+    mock_fhir_connector.patient_observations.return_value = []
+    mock_fhir_connector.patient_immunizations.return_value = []
+    mocker.patch('opal.services.fhir.utils.FHIRConnector', return_value=mock_fhir_connector)
+
+    summary_json, summary_uuid = retrieve_patient_summary(
+        settings=FHIR_SETTINGS,
+        identifier='test-identifier',
+        social_history=social_history,
+    )
+
+    summary = Bundle.model_validate_json(summary_json)
+    assert summary.identifier.value == summary_uuid
+
+    social_history_1 = summary.entry[-1].resource
+    assert social_history_1.id is not None
+    social_history_2 = summary.entry[-2].resource
+    assert social_history_2.id is not None
+
+
+def test_retrieve_patient_summary_social_history(mocker: MockerFixture) -> None:
+    """The social history observations are validated and get the patient added as a subject."""
+    with Path(__file__).parent.joinpath('fixtures').joinpath('patient.json').open(encoding='utf-8') as f:
+        patient = Bundle.model_validate_json(f.read()).entry[0].resource
+
+    with Path(__file__).parent.joinpath('fixtures', 'social_history.json').open() as f:
+        social_history = json.load(f)
+
+    assert 'subject' not in social_history[0]
+    assert 'subject' not in social_history[1]
+
+    mock_fhir_connector = mocker.Mock(spec=FHIRConnector)
+    mock_fhir_connector.find_patient.return_value = patient
+    mock_fhir_connector.patient_conditions.return_value = []
+    mock_fhir_connector.patient_medication_requests.return_value = []
+    mock_fhir_connector.patient_allergies.return_value = []
+    mock_fhir_connector.patient_observations.return_value = []
+    mock_fhir_connector.patient_immunizations.return_value = []
+    mocker.patch('opal.services.fhir.utils.FHIRConnector', return_value=mock_fhir_connector)
+
+    summary_json, summary_uuid = retrieve_patient_summary(
+        settings=FHIR_SETTINGS, identifier='test-identifier', social_history=social_history
+    )
+
+    summary = Bundle.model_validate_json(summary_json)
+    assert summary.identifier.value == summary_uuid
+
+    social_history_1 = summary.entry[-1].resource
+    assert social_history_1.id == social_history[1]['id']
+    assert social_history_1.subject.reference == f'Patient/{patient.id}'
+    social_history_2 = summary.entry[-2].resource
+    assert social_history_2.id == social_history[0]['id']
+    assert social_history_2.subject.reference == f'Patient/{patient.id}'
 
 
 def test_retrieve_patient_summary_no_patient_error(mocker: MockerFixture) -> None:
@@ -119,10 +222,7 @@ def test_retrieve_patient_summary_no_patient_error(mocker: MockerFixture) -> Non
 
     with pytest.raises(FHIRDataRetrievalError, match='Error finding patient with identifier test-identifier'):
         retrieve_patient_summary(
-            oauth_url='https://example.com/oauth2',
-            fhir_url='https://example.com/fhir',
-            client_id='test-client-id',
-            private_key='private-key',
+            settings=FHIR_SETTINGS,
             identifier='test-identifier',
         )
 
@@ -145,10 +245,7 @@ def test_retrieve_patient_summary_patient_no_id(mocker: MockerFixture) -> None:
 
     with pytest.raises(FHIRDataRetrievalError, match='Patient with identifier test-identifier has no ID'):
         retrieve_patient_summary(
-            oauth_url='https://example.com/oauth2',
-            fhir_url='https://example.com/fhir',
-            client_id='test-client-id',
-            private_key='private-key',
+            settings=FHIR_SETTINGS,
             identifier='test-identifier',
         )
 
@@ -161,9 +258,6 @@ def test_retrieve_patient_summary_oauth2_error(mocker: MockerFixture) -> None:
 
     with pytest.raises(FHIRDataRetrievalError, match='Error retrieving data from FHIR server'):
         retrieve_patient_summary(
-            oauth_url='https://example.com/oauth2',
-            fhir_url='https://example.com/fhir',
-            client_id='test-client-id',
-            private_key='private-key',
+            settings=FHIR_SETTINGS,
             identifier='test-identifier',
         )

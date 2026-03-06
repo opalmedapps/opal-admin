@@ -10,18 +10,19 @@ from django.db import models
 from django.utils import timezone
 
 from drf_spectacular.utils import extend_schema, inline_serializer
-from rest_framework import generics, serializers
+from rest_framework import generics, serializers, status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from opal.core.api.mixins import AllowPUTAsCreateMixin
 from opal.core.api.views import EmptyResponseSerializer
 from opal.core.drf_permissions import IsListener, IsORMSUser
 from opal.patients.api.serializers import PatientUUIDSerializer
 from opal.patients.models import Patient
 
-from ..models import QuantitySample
-from .serializers import QuantitySampleSerializer
+from ..models import PatientReportedData, QuantitySample
+from .serializers import PatientReportedDataSerializer, QuantitySampleSerializer
 
 
 class CreateQuantitySampleView(generics.CreateAPIView[QuantitySample]):
@@ -174,3 +175,52 @@ class MarkQuantitySampleAsViewedView(APIView):
 
         # Return an empty response if patient's quantity samples updated successfully
         return Response()
+
+
+class PatientRecordedDataView(
+    AllowPUTAsCreateMixin[PatientReportedData],
+    generics.RetrieveUpdateAPIView[PatientReportedData],
+):
+    """
+    Create view for `PatientReportedData`.
+
+    Supports the creation of one or more instances at the same time by passing a list of dictionaries.
+    """
+
+    serializer_class = PatientReportedDataSerializer
+    # TODO: change to model permissions?
+    # TODO: change in the future to limit to user with access to the patient
+    # TODO: add CaregiverPermissions?
+    permission_classes = (IsListener,)
+    queryset = PatientReportedData.objects.filter(patient__date_of_death=None)
+    lookup_field = 'patient__uuid'
+    lookup_url_kwarg = 'uuid'
+
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Create or update `PatientReportedData` for the patient specified in the URL.
+
+        Ensures that the patient with the uuid as part of the URL exists.
+        Raises a 404 if the patient does not exist.
+
+        Args:
+            request: the API request
+            args: additional arguments
+            kwargs: additional keyword arguments
+
+        Returns:
+            the response
+        """
+        # handle foreign-key relationship to patient since this use case is not supported by AllowPUTAsCreateMixin
+        if self._get_object_or_none() is None:
+            uuid = self.kwargs['uuid']
+            patient = generics.get_object_or_404(Patient.objects.filter(date_of_death=None), uuid=uuid)
+
+            partial = kwargs.pop('partial', False)
+            serializer = self.get_serializer(data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+
+            serializer.save(patient=patient)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return super().update(request, *args, **kwargs)

@@ -14,7 +14,7 @@ from fhir.resources.R4B.medicationrequest import MedicationRequest
 from fhir.resources.R4B.observation import Observation
 from fhir.resources.R4B.patient import Patient
 
-from opal.services.fhir import ips
+from opal.services.fhir import ips, utils
 
 
 def _load_fixture(filename: str) -> dict[str, Any]:
@@ -23,7 +23,9 @@ def _load_fixture(filename: str) -> dict[str, Any]:
         return data
 
 
-def _prepare_build_patient_summary() -> tuple[
+def _prepare_build_patient_summary(
+    include_social_history: bool = False,
+) -> tuple[
     Bundle,
     Patient,
     list[Condition],
@@ -31,6 +33,8 @@ def _prepare_build_patient_summary() -> tuple[
     list[AllergyIntolerance],
     list[Observation],
     list[Immunization],
+    # social history
+    list[Observation],
 ]:
     patient_data = _load_fixture('patient.json')
     patient = Bundle.model_validate(patient_data).entry[0].resource
@@ -55,6 +59,11 @@ def _prepare_build_patient_summary() -> tuple[
     immunizations_bundle = Bundle.model_validate(immunization_data)
     immunizations = [immunization.resource for immunization in immunizations_bundle.entry]
 
+    social_history = []
+    if include_social_history:
+        social_history_data = _load_fixture('social_history.json')
+        social_history = [utils.validate_observation(observation) for observation in social_history_data]
+
     summary = ips.build_patient_summary(
         patient,
         conditions,
@@ -62,14 +71,15 @@ def _prepare_build_patient_summary() -> tuple[
         allergies,
         observations,
         immunizations,
+        social_history=social_history,
     )
 
-    return (summary, patient, conditions, medication_requests, allergies, observations, immunizations)  # type: ignore[return-value]
+    return (summary, patient, conditions, medication_requests, allergies, observations, immunizations, social_history)  # type: ignore[return-value]
 
 
 def test_build_patient_summary() -> None:
     """A patient summary can be built correctly."""
-    summary, _patient, conditions, medication_requests, allergies, observations, immunizations = (
+    summary, _patient, conditions, medication_requests, allergies, observations, immunizations, _social_history = (
         _prepare_build_patient_summary()
     )
 
@@ -93,7 +103,7 @@ def test_build_patient_summary() -> None:
 
 def test_build_patient_summary_composition() -> None:
     """The Composition resource in the patient summary is built correctly."""
-    summary, _patient, conditions, medication_requests, allergies, observations, immunizations = (
+    summary, _patient, conditions, medication_requests, allergies, observations, immunizations, _social_history = (
         _prepare_build_patient_summary()
     )
 
@@ -103,8 +113,8 @@ def test_build_patient_summary_composition() -> None:
     assert composition.type.coding[0].display == 'Patient summary Document'
     assert composition.type.coding[0].code == '60591-5'
 
-    # Verify all 7 IPS sections
-    assert len(composition.section) == 7
+    # Verify all IPS sections
+    assert len(composition.section) == 8
 
     observations_with_category_value = ips._clean_observations(observations)
 
@@ -129,6 +139,7 @@ def test_build_patient_summary_composition() -> None:
         ('Vital Signs', '8716-3', vital_signs),
         ('Laboratory Results', '30954-2', labs),
         ('Immunizations', '11369-6', immunizations),
+        ('Social History', '29762-2', []),
     ]
 
     for section, (expected_title, expected_code, resources) in zip(composition.section, expected_sections, strict=True):
@@ -153,7 +164,7 @@ def test_build_patient_summary_empty_sections() -> None:
     patient_data = _load_fixture('patient.json')
     patient = Bundle.model_validate(patient_data).entry[0].resource
 
-    summary = ips.build_patient_summary(patient, [], [], [], [], [])
+    summary = ips.build_patient_summary(patient, [], [], [], [], [], [])
 
     composition = summary.entry[0].resource
 
@@ -167,7 +178,7 @@ def test_build_patient_summary_patient() -> None:
     patient_data = _load_fixture('patient.json')
     patient = Bundle.model_validate(patient_data).entry[0].resource
 
-    summary = ips.build_patient_summary(patient, [], [], [], [], [])
+    summary = ips.build_patient_summary(patient, [], [], [], [], [], [])
 
     composition = summary.entry[0].resource
 
@@ -184,7 +195,7 @@ def test_build_patient_summary_generator() -> None:
     patient_data = _load_fixture('patient.json')
     patient = Bundle.model_validate(patient_data).entry[0].resource
 
-    summary = ips.build_patient_summary(patient, [], [], [], [], [])
+    summary = ips.build_patient_summary(patient, [], [], [], [], [], [])
 
     composition = summary.entry[0].resource
     generator = summary.entry[2].resource
@@ -198,9 +209,11 @@ def test_build_patient_summary_generator() -> None:
 
 def test_build_patient_summary_resources_included() -> None:
     """All resources are included in the patient summary Bundle."""
-    summary, _patient, conditions, medication_requests, allergies, observations, immunizations = (
+    summary, _patient, conditions, medication_requests, allergies, observations, immunizations, social_history = (
         _prepare_build_patient_summary()
     )
+
+    assert len(social_history) == 0
 
     # Skip the first three entries (Composition, Patient, Device)
     resource_ids = {entry.resource.id for entry in summary.entry[3:]}
@@ -219,9 +232,33 @@ def test_build_patient_summary_resources_included() -> None:
         assert f'urn:uuid:{entry.resource.id}' == entry.fullUrl
 
 
+def test_build_patient_summary_social_history() -> None:
+    """Social history in the patient summary Bundle."""
+    summary, _patient, conditions, medication_requests, allergies, observations, immunizations, social_history = (
+        _prepare_build_patient_summary(include_social_history=True)
+    )
+
+    # Skip the first three entries (Composition, Patient, Device)
+    resource_ids = {entry.resource.id for entry in summary.entry[3:]}
+
+    expected_ids: set[str] = set()
+    expected_ids.update(condition.id for condition in conditions)  # type: ignore[misc]
+    expected_ids.update(medication_request.id for medication_request in medication_requests)  # type: ignore[misc]
+    expected_ids.update(allergy.id for allergy in allergies)  # type: ignore[misc]
+    expected_ids.update(observation.id for observation in ips._clean_observations(observations))  # type: ignore[misc]
+    expected_ids.update(immunization.id for immunization in immunizations)  # type: ignore[misc]
+    expected_ids.update(observation.id for observation in social_history)  # type: ignore[misc]
+
+    assert resource_ids == expected_ids
+
+    for entry in summary.entry:
+        assert entry.fullUrl.startswith('urn:uuid:')
+        assert f'urn:uuid:{entry.resource.id}' == entry.fullUrl
+
+
 def test_build_patient_summary_resources_observations_without_category() -> None:
     """Observations without a category are not included in the patient summary Bundle."""
-    summary, _patient, _conditions, _medication_requests, _allergies, observations, _immunizations = (
+    summary, _patient, _conditions, _medication_requests, _allergies, observations, _immunizations, _social_history = (
         _prepare_build_patient_summary()
     )
 
@@ -236,7 +273,7 @@ def test_build_patient_summary_resources_observations_without_category() -> None
 
 def test_build_patient_summary_resources_observations_without_data_absent_reason() -> None:
     """Observations with a dataAbsentReason are not included in the patient summary Bundle."""
-    summary, _patient, _conditions, _medication_requests, _allergies, observations, _immunizations = (
+    summary, _patient, _conditions, _medication_requests, _allergies, observations, _immunizations, _social_history = (
         _prepare_build_patient_summary()
     )
 
