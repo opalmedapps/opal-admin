@@ -13,6 +13,8 @@ from django.contrib.auth.models import Group, Permission
 from django.db import connections
 
 import pytest
+from _pytest.config import Config
+from _pytest.main import Session
 from _pytest.python import Function, Module  # noqa: PLC2701
 from rest_framework.test import APIClient
 
@@ -27,8 +29,6 @@ if TYPE_CHECKING:
     from django.db.models import Model
     from django.test import Client
 
-    from _pytest.config import Config
-    from _pytest.main import Session
     from pytest_django import DjangoDbBlocker
     from pytest_mock import MockerFixture
 

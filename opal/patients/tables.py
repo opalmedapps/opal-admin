@@ -5,9 +5,11 @@
 """Table definitions for models of the patient app."""
 
 from datetime import date
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
+from django.db.models import QuerySet
 from django.utils import timezone
+from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 
@@ -17,10 +19,6 @@ from opal.services.integration.schemas import HospitalNumberSchema
 from opal.users.models import User
 
 from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType
-
-if TYPE_CHECKING:
-    from django.db.models import QuerySet
-    from django.utils.safestring import SafeString
 
 
 class RelationshipTypeTable(tables.Table):
