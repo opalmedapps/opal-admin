@@ -246,7 +246,7 @@ class Patient(AbstractLabDelayModel):
         choices=DataAccessType,
         default=DataAccessType.ALL,
     )
-    caregivers: models.ManyToManyField[CaregiverProfile, 'Relationship'] = models.ManyToManyField(
+    caregivers: models.ManyToManyField[CaregiverProfile, Relationship] = models.ManyToManyField(
         verbose_name=_('Caregivers'),
         related_name='patients',
         to=CaregiverProfile,

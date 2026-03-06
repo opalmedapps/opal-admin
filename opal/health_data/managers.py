@@ -32,7 +32,7 @@ class QuantitySampleManager(models.Manager['QuantitySample']):
 
     def fetch_blood_pressure_measurements(
         self,
-        patient: 'Patient',
+        patient: Patient,
     ) -> list[dict[str, BloodPressureMeasurementType]]:
         """
         Fetch the blood pressure measurements for a specific patient.

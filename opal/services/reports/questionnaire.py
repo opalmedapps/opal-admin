@@ -248,8 +248,8 @@ class QuestionnairePDF(FPDF):
 
     def add_page(  # noqa: PLR0913, PLR0917
         self,
-        orientation: '_Orientation' = '',
-        format: '_Format | tuple[float, float]' = '',  # noqa: A002
+        orientation: _Orientation = '',
+        format: _Format | tuple[float, float] = '',  # noqa: A002
         same: bool = False,
         duration: float = 0,
         transition: Transition | None = None,

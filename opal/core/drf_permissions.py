@@ -54,7 +54,7 @@ class IsSuperUser(permissions.IsAuthenticated):
     This is an improvement over DRF's `IsAdminUser` which only checks for the user's `is_staff` field.
     """
 
-    def has_permission(self, request: Request, view: 'APIView') -> bool:
+    def has_permission(self, request: Request, view: APIView) -> bool:
         """
         Check if the user is authenticated and is a superuser.
 
@@ -80,7 +80,7 @@ class _UsernameRequired(permissions.IsAuthenticated):
 
     required_username: str
 
-    def has_permission(self, request: Request, view: 'APIView') -> bool:
+    def has_permission(self, request: Request, view: APIView) -> bool:
         """
         Check if the user is authenticated and has the required username.
 
@@ -137,7 +137,7 @@ class IsOrmsSystem(_UsernameRequired):
 class IsORMSUser(permissions.IsAuthenticated):
     """Allows access only to users belong to the ORMS user group and superusers."""
 
-    def has_permission(self, request: Request, view: 'APIView') -> bool:
+    def has_permission(self, request: Request, view: APIView) -> bool:
         """
         Check if the user is authenticated and has the required username.
 
@@ -162,7 +162,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
         legacy_id (from the view's kwargs): The patient's legacy ID.
     """
 
-    def has_permission(self, request: Request, view: 'APIView') -> bool:
+    def has_permission(self, request: Request, view: APIView) -> bool:
         """
         Permission check that looks for a confirmed relationship between a caregiver and a patient.
 
@@ -209,7 +209,7 @@ class CaregiverPatientPermissions(permissions.BasePermission):
             )
         return caregiver_username
 
-    def _get_patient_legacy_id(self, view: 'APIView') -> int:
+    def _get_patient_legacy_id(self, view: APIView) -> int:
         """
         Validate the existence of a patient's legacy id provided as input, and return it if provided.
 
@@ -318,7 +318,7 @@ class CaregiverSelfPermissions(CaregiverPatientPermissions):
         legacy_id (from the view's kwargs): The patient's legacy ID.
     """
 
-    def has_permission(self, request: Request, view: 'APIView') -> bool:
+    def has_permission(self, request: Request, view: APIView) -> bool:
         """
         Permission check that looks for a confirmed self relationship between a caregiver and a patient.
 

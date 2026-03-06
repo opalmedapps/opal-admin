@@ -34,7 +34,7 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
         patient_sernum: int,
         username: str,
         purpose_id: int,
-    ) -> models.QuerySet['LegacyQuestionnaire']:
+    ) -> models.QuerySet[LegacyQuestionnaire]:
         """
         Get the queryset of new questionnaires for a given user.
 
