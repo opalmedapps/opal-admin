@@ -8,7 +8,7 @@ import logging
 import uuid
 from datetime import date, datetime
 from http import HTTPStatus
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.utils import IntegrityError
@@ -17,8 +17,6 @@ from django.utils import timezone
 import pytest
 import requests
 from pytest_django.asserts import assertRaisesMessage
-from pytest_django.fixtures import SettingsWrapper
-from pytest_mock import MockerFixture
 
 from opal.caregivers import models as caregiver_models
 from opal.caregivers.factories import CaregiverProfile, RegistrationCode
@@ -53,6 +51,10 @@ from opal.users import models as user_models
 from opal.users.factories import Caregiver, User
 
 from .. import utils
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
+    from pytest_django.fixtures import SettingsWrapper
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 

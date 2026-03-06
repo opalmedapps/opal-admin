@@ -4,7 +4,6 @@
 
 """Utility functions for FHIR functionality, including building patient summaries and JWE encryption."""
 
-import logging
 import secrets
 
 import structlog
@@ -14,6 +13,10 @@ from requests import RequestException
 
 from . import ips
 from .fhir import FHIRConnector, MultiplePatientsFoundError, PatientNotFoundError
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import logging
 
 LOGGER: logging.Logger = structlog.get_logger(__name__)
 

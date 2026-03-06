@@ -5,18 +5,20 @@
 import datetime as dt
 import urllib.parse
 from datetime import date, datetime, timedelta
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
-from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
 
 import pytest
-from pytest_mock import MockerFixture
 
 from opal.services.integration.schemas import HospitalNumberSchema, PatientSchema
 
 from .. import constants, factories, models, tables
+
+if TYPE_CHECKING:
+    from django.test import Client
+    from pytest_mock import MockerFixture
 
 pytestmark = pytest.mark.django_db
 

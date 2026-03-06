@@ -6,13 +6,12 @@
 
 import base64
 import logging
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 
 from fpdf import FPDFException
 from rest_framework import exceptions, response, views
-from rest_framework.request import Request
 
 from opal.core.drf_permissions import IsORMSUser
 from opal.legacy.utils import generate_questionnaire_report, get_questionnaire_data
@@ -20,6 +19,9 @@ from opal.patients.models import Patient
 from opal.services.integration import hospital
 
 from ..serializers import QuestionnaireReportRequestSerializer
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
 
 LOGGER = logging.getLogger(__name__)
 

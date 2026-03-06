@@ -5,13 +5,16 @@
 from http import HTTPStatus
 
 from django.contrib.auth.views import LogoutView
-from django.test.client import Client
 from django.urls import resolve, reverse
 
 import pytest
-from pytest_django.fixtures import SettingsWrapper
 
 from opal.core.views import LoginView
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_django.fixtures import SettingsWrapper
+    from django.test.client import Client
 
 
 def assert_path_uses_view(path: str, view_class: type) -> None:

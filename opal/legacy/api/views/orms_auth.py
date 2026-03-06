@@ -11,7 +11,6 @@ from django.conf import settings
 from dj_rest_auth.views import LoginView
 from drf_spectacular.utils import extend_schema
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -19,6 +18,7 @@ from opal.core.drf_permissions import IsORMSUser
 from opal.users.api.serializers import ClinicalStaffDetailSerializer
 
 if TYPE_CHECKING:
+    from rest_framework.request import Request
     from opal.users.models import ClinicalStaff
 
 

@@ -5,11 +5,14 @@
 from http import HTTPStatus
 
 import pytest
-from pytest_mock import MockerFixture
 from twilio.base.exceptions import TwilioException, TwilioRestException
 from twilio.rest.api import MessageList
 
 from opal.services.twilio import TwilioService, TwilioServiceError
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
 
 
 class TestTwilioService:

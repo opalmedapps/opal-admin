@@ -5,13 +5,10 @@
 """App patients util functions."""
 
 import logging
-from datetime import date
-from typing import Final
-from uuid import UUID
+from typing import Final, TYPE_CHECKING
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import QuerySet
 from django.utils import timezone
 
 from opal.caregivers import models as caregiver_models
@@ -25,6 +22,11 @@ from opal.services.orms.orms import ORMSService
 from opal.users.models import Caregiver, User
 
 from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, RelationshipType, RoleType, SexType
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
+    from uuid import UUID
+    from datetime import date
 
 #: The indicator of the female sex within the RAMQ number (added to the month)
 RAMQ_FEMALE_INDICATOR: Final = 50

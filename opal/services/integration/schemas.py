@@ -8,11 +8,13 @@ Module containing Pydantic models that define schemas for APIs that an integrati
 To avoid confusion with the actual models, the Pydantic models are named with a Schema suffix.
 """
 
-from datetime import date, datetime
 from enum import StrEnum, auto
-from typing import Self
+from typing import Self, TYPE_CHECKING
 
 from pydantic import AwareDatetime, Base64Bytes, BaseModel, Field, model_validator
+
+if TYPE_CHECKING:
+    from datetime import date, datetime
 
 
 class ErrorResponseSchema(BaseModel):

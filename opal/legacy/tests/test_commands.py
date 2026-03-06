@@ -13,8 +13,6 @@ from django.utils import timezone
 
 import pytest
 import requests
-from pytest_django import DjangoDbBlocker
-from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers.models import SecurityAnswer, SecurityQuestion
@@ -29,6 +27,11 @@ from opal.users import factories as user_factories
 from opal.users.models import ClinicalStaff
 
 from ..management.commands import migrate_caregivers
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_mock.plugin import MockerFixture
+    from pytest_django import DjangoDbBlocker
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 

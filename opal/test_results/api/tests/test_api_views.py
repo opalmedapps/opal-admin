@@ -5,8 +5,7 @@
 """Test module for the REST API endpoints of the `test_results` app."""
 
 import json
-from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from uuid import uuid4
 
 from django.urls import reverse
@@ -14,10 +13,7 @@ from django.utils import timezone
 
 import pytest
 from pytest_django.asserts import assertContains, assertJSONEqual
-from pytest_django.fixtures import SettingsWrapper
-from pytest_mock import MockerFixture
 from rest_framework import status
-from rest_framework.test import APIClient
 
 from opal.hospital_settings.factories import Institution, Site
 from opal.legacy import models as legacy_models
@@ -26,6 +22,12 @@ from opal.patients import models as patient_models
 from opal.patients.factories import Patient, Relationship
 from opal.test_results import models as test_results_models
 from opal.users.models import User
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
+    from pytest_django.fixtures import SettingsWrapper
+    from rest_framework.test import APIClient
+    from pathlib import Path
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

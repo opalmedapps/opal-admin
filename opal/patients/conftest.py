@@ -5,11 +5,14 @@
 """This module is used to provide configuration, fixtures, and plugins for pytest."""
 
 from django.contrib.auth.models import Permission
-from django.test import Client
 
 import pytest
 
 from opal.users.models import User
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.test import Client
 
 
 @pytest.fixture

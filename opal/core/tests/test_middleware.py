@@ -4,12 +4,15 @@
 
 from http import HTTPStatus
 
-from django.test import Client
 from django.urls import reverse
 
 import pytest
 from pytest_django.asserts import assertRedirects
-from pytest_django.fixtures import SettingsWrapper
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_django.fixtures import SettingsWrapper
+    from django.test import Client
 
 pytestmark = pytest.mark.django_db
 

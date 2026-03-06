@@ -5,7 +5,7 @@
 """Test module for the REST API endpoints of the `databank` app."""
 
 import json
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from uuid import uuid4
 
 from django.urls import reverse
@@ -13,12 +13,14 @@ from django.urls import reverse
 import pytest
 from pytest_django.asserts import assertContains, assertJSONEqual
 from rest_framework import status
-from rest_framework.test import APIClient
 
 from opal.databank.models import DatabankConsent
 from opal.legacy_questionnaires.models import LegacyQuestionnaire, LegacyQuestionnairePatient
 from opal.patients.factories import Patient
 from opal.users.models import User
+
+if TYPE_CHECKING:
+    from rest_framework.test import APIClient
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 

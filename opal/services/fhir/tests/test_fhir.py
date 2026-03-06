@@ -5,17 +5,19 @@
 import json
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
-from unittest.mock import Mock
+from typing import Any, TYPE_CHECKING
 
 import pytest
 import requests
 from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2 import OAuth2Error
 from pydantic import ValidationError
-from pytest_mock import MockerFixture
 
 from opal.services.fhir.fhir import FHIRConnector, MultiplePatientsFoundError, PatientNotFoundError
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
+    from unittest.mock import Mock
 
 
 class TestFHIRConnector:

@@ -4,9 +4,8 @@
 
 """This module provides filters for `patients` app."""
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
-from django.db.models import QuerySet
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
@@ -20,6 +19,9 @@ from ..core.forms.layouts import InlineReset, InlineSubmit
 from . import constants
 from .forms import ManageCaregiverAccessForm
 from .models import Relationship
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
 
 
 class ManageCaregiverAccessFilter(django_filters.FilterSet):

@@ -13,16 +13,19 @@ from django.utils.crypto import get_random_string
 import pytest
 from fpdf import FPDFException
 from pytest_django.asserts import assertRaisesMessage
-from pytest_mock.plugin import MockerFixture
 from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.test import APIClient
 
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.patients import factories as patient_factories
 from opal.services.integration.hospital import NonOKResponseError, PatientNotFoundError
 from opal.services.integration.tests.test_hospital import _MockResponse
 from opal.users.models import User
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rest_framework.test import APIClient
+    from rest_framework.response import Response
+    from pytest_mock.plugin import MockerFixture
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

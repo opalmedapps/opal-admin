@@ -8,15 +8,11 @@ from pathlib import Path
 from uuid import uuid4
 
 from django.core.exceptions import ValidationError
-from django.test.client import Client
 from django.urls.base import reverse
 
 import pytest
 from pytest_django.asserts import assertContains, assertJSONEqual, assertRaisesMessage, assertRedirects
-from pytest_django.fixtures import SettingsWrapper
-from pytest_mock.plugin import MockerFixture
 from rest_framework import status
-from rest_framework.test import APIClient
 
 from opal.core.api.views import EmptyResponseSerializer
 from opal.hospital_settings import factories as hospital_factories
@@ -25,6 +21,13 @@ from opal.patients import factories as patient_factories
 from opal.users.models import User
 
 from .. import views
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rest_framework.test import APIClient
+    from pytest_mock.plugin import MockerFixture
+    from pytest_django.fixtures import SettingsWrapper
+    from django.test.client import Client
 
 pytestmark = pytest.mark.django_db()
 

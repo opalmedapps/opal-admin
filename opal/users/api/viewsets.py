@@ -14,15 +14,18 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
-from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.serializers import ModelSerializer
 
 from config.settings.base import USER_MANAGER_GROUP_NAME
 
 from ...core.drf_permissions import FullDjangoModelPermissions
 from ..models import ClinicalStaff
 from .serializers import UpdateClinicalStaffGroupSerializer, UserClinicalStaffSerializer
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rest_framework.serializers import ModelSerializer
+    from rest_framework.request import Request
 
 
 class UserViewSet(

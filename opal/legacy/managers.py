@@ -16,7 +16,6 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 """
 
 import logging
-from datetime import datetime
 from typing import TYPE_CHECKING, Any, Final, TypeVar
 
 from django.apps import apps
@@ -29,6 +28,7 @@ from opal.patients.models import Relationship, RelationshipStatus
 if TYPE_CHECKING:
     # old version of pyflakes incorrectly detects these as unused
     # can currently not upgrade due to version requirement from wemake-python-styleguide
+    from datetime import datetime
     from opal.legacy.models import (
         LegacyAnnouncement,
         LegacyAppointment,

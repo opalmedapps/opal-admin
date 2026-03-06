@@ -4,16 +4,19 @@
 
 """Test module for the `users` app REST API views endpoints."""
 
-from collections.abc import Callable
 from http import HTTPStatus
 
 from django.urls import reverse
 
 import pytest
-from rest_framework.test import APIClient
 
 from opal.users import factories as user_factories
 from opal.users.models import User
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rest_framework.test import APIClient
+    from collections.abc import Callable
 
 pytestmark = pytest.mark.django_db
 

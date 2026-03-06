@@ -5,11 +5,14 @@
 from datetime import date
 
 import pytest
-from pytest_mock import MockerFixture, MockType
 
 from opal.core.test_utils import CommandTestMixin
 from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, Relationship, RelationshipStatus
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture, MockType
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 

@@ -4,17 +4,19 @@
 
 """Test module for security question api endpoints."""
 
-from collections.abc import Callable
 from http import HTTPStatus
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.urls import reverse
 
 import pytest
-from rest_framework.test import APIClient
 
 from opal.caregivers import factories
 from opal.users.models import User
+
+if TYPE_CHECKING:
+    from rest_framework.test import APIClient
+    from collections.abc import Callable
 
 
 @pytest.mark.parametrize(

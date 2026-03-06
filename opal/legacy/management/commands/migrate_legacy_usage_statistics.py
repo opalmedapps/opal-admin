@@ -7,15 +7,17 @@
 import csv
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandParser
-from django.db.models.manager import Manager
 from django.utils import timezone
 
 from opal.patients.models import Patient, Relationship, RoleType
 from opal.usage_statistics.models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
+
+if TYPE_CHECKING:
+    from django.db.models.manager import Manager
 
 NULL_CHARACTER = r'\N'
 

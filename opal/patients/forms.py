@@ -12,7 +12,6 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
-from django.forms.fields import Field
 from django.utils.translation import gettext, override
 from django.utils.translation import gettext_lazy as _
 
@@ -46,6 +45,7 @@ from .models import Patient, Relationship, RelationshipStatus, RelationshipType,
 from .validators import has_multiple_mrns_with_same_site_code, is_deceased
 
 if TYPE_CHECKING:
+    from django.forms.fields import Field
     from django.db.models import QuerySet
 
 LOGGER = logging.getLogger(__name__)
@@ -775,7 +775,7 @@ class AccessRequestSendSMSForm(forms.Form):
 
             try:
                 twilio.send_sms(phone_number, message)
-            except (TwilioServiceError, RequestException):
+            except TwilioServiceError, RequestException:
                 self.add_error(NON_FIELD_ERRORS, gettext('An error occurred while sending the SMS'))
                 LOGGER.exception(f'Sending SMS failed to {phone_number}')
 

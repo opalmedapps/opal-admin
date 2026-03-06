@@ -9,7 +9,7 @@ import datetime as dt
 from datetime import datetime
 from hashlib import sha512
 from http import HTTPStatus
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
@@ -19,10 +19,7 @@ from django.utils import timezone
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
-from pytest_django.fixtures import SettingsWrapper
-from pytest_mock import MockerFixture
 from rest_framework.exceptions import ErrorDetail
-from rest_framework.test import APIClient
 
 from opal.caregivers import constants
 from opal.caregivers import factories as caregiver_factories
@@ -52,6 +49,11 @@ from opal.patients.factories import Relationship
 from opal.patients.models import RelationshipStatus, RelationshipType
 from opal.users import factories as user_factories
 from opal.users.models import Caregiver, User
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
+    from pytest_django.fixtures import SettingsWrapper
+    from rest_framework.test import APIClient
 
 
 class MockDBError:

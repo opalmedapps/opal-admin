@@ -5,11 +5,14 @@
 """This module provides admin options for hospital-specific settings models."""
 
 from django.contrib import admin
-from django.http import HttpRequest
 
 from modeltranslation.admin import TranslationAdmin
 
 from .models import Institution, Site
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
 
 # need to use modeltranslation's admin

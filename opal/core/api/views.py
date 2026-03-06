@@ -4,19 +4,16 @@
 
 """Module providing reusable views for the whole project."""
 
-import uuid
-from typing import Any, TypeVar
+from typing import Any, TypeVar, TYPE_CHECKING
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Model
-from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status
 from rest_framework.generics import CreateAPIView
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -26,6 +23,11 @@ from opal.hospital_settings.models import Site
 from opal.patients.models import Patient
 
 from .serializers import LanguageSerializer
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
+    from django.http import HttpRequest
+    import uuid
 
 _Model = TypeVar('_Model', bound=Model)
 
@@ -133,7 +135,7 @@ class HL7CreateView(CreateAPIView[_Model]):
                     for mrn, site in valid_pid_mrn_sites
                 ],
             )
-        except (Patient.DoesNotExist, Patient.MultipleObjectsReturned):
+        except Patient.DoesNotExist, Patient.MultipleObjectsReturned:
             raise ValidationError('Patient identified by HL7 PID could not be uniquely found in database.') from None
         return url_uuid == patient.uuid
 

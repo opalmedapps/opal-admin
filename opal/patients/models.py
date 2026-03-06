@@ -5,8 +5,7 @@
 """Module providing models for the patients app."""
 
 from collections import defaultdict
-from datetime import date
-from typing import Any, Final
+from typing import Any, Final, TYPE_CHECKING
 from uuid import uuid4
 
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
@@ -25,6 +24,9 @@ from opal.hospital_settings.models import Institution, Site
 from opal.patients.managers import PatientManager, PatientQueryset, RelationshipManager, RelationshipTypeManager
 
 from . import constants
+
+if TYPE_CHECKING:
+    from datetime import date
 
 
 class RoleType(models.TextChoices):

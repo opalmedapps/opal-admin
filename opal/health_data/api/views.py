@@ -4,14 +4,13 @@
 
 """Module providing API views for the `health_data` app."""
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.db import models
 from django.utils import timezone
 
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import generics, serializers
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -22,6 +21,9 @@ from opal.patients.models import Patient
 
 from ..models import QuantitySample
 from .serializers import QuantitySampleSerializer
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
 
 
 class CreateQuantitySampleView(generics.CreateAPIView[QuantitySample]):

@@ -12,16 +12,16 @@ from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import QuerySet
 
 from rest_framework import exceptions, permissions
-from rest_framework.request import Request
 
 from opal.caregivers.models import CaregiverProfile
 from opal.core import constants
 from opal.patients.models import Patient, Relationship, RelationshipStatus, RoleType
 
 if TYPE_CHECKING:
+    from django.db.models import QuerySet
+    from rest_framework.request import Request
     from rest_framework.views import APIView
 
 

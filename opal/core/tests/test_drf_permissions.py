@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.contrib.auth.models import Group
 from django.core.exceptions import ImproperlyConfigured
@@ -11,7 +11,6 @@ from django.test import RequestFactory
 from django.utils import timezone
 
 import pytest
-from pytest_django.fixtures import SettingsWrapper
 from rest_framework import exceptions, generics
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -23,6 +22,9 @@ from opal.patients.models import RelationshipStatus, RelationshipType
 from opal.users.models import User
 
 from .. import drf_permissions
+
+if TYPE_CHECKING:
+    from pytest_django.fixtures import SettingsWrapper
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 

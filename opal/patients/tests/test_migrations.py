@@ -2,12 +2,15 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from django.db.models import Model
 
 import pytest
-from django_test_migrations.migrator import Migrator
 
 from .. import models
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django_test_migrations.migrator import Migrator
+    from django.db.models import Model
 
 pytestmark = pytest.mark.slow()
 

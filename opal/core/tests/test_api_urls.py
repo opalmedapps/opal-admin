@@ -9,7 +9,10 @@ from uuid import uuid4
 from django.urls import NoReverseMatch, Resolver404, resolve, reverse
 
 import pytest
-from pytest_django.fixtures import SettingsWrapper
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_django.fixtures import SettingsWrapper
 
 
 def test_api_root_debug_only(settings: SettingsWrapper) -> None:

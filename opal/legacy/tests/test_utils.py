@@ -4,14 +4,13 @@
 
 import datetime as dt
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.db import OperationalError
 from django.utils import timezone
 
 import pytest
 from dateutil.relativedelta import relativedelta
-from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers import factories as caregiver_factories
 from opal.hospital_settings import factories as hospital_factories
@@ -23,6 +22,9 @@ from opal.legacy_questionnaires import models as questionnaire_models
 from opal.patients import factories as patient_factories
 from opal.patients.models import RelationshipType
 from opal.services.reports.questionnaire import Question, QuestionnaireData, QuestionType
+
+if TYPE_CHECKING:
+    from pytest_mock.plugin import MockerFixture
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 

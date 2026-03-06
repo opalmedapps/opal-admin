@@ -4,18 +4,21 @@
 
 from http import HTTPStatus
 
-from django.test import Client
 from django.urls.base import reverse
 from django.utils import timezone
 
 import pytest
-from _pytest.logging import LogCaptureFixture
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertNotContains, assertTemplateUsed
 
 from opal.questionnaires.factories import QuestionnaireProfile as QuestionnaireProfileFactory
 from opal.questionnaires.models import QuestionnaireProfile
 from opal.users.models import User
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from _pytest.logging import LogCaptureFixture
+    from django.test import Client
 
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 

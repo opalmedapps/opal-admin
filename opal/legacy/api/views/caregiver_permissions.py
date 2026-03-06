@@ -4,12 +4,15 @@
 
 """Collection of api views used for caregiver-patient permission checks."""
 
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from opal.core.api.views import EmptyResponseSerializer
 from opal.core.drf_permissions import CaregiverPatientPermissions, IsListener
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
 
 
 class CaregiverPermissionsView(APIView):

@@ -4,11 +4,10 @@
 
 """Management command for deleting the caregiver user profile and patient data."""
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.core.management.base import BaseCommand, CommandParser
 from django.core.serializers import serialize
-from django.db.models.query import QuerySet
 
 from opal.caregivers.models import CaregiverProfile, Device, SecurityAnswer
 from opal.patients.models import HospitalPatient, Patient, Relationship, RoleType
@@ -26,6 +25,9 @@ from opal.usage_statistics.models import (
     DailyUserPatientActivity,
 )
 from opal.users.models import User
+
+if TYPE_CHECKING:
+    from django.db.models.query import QuerySet
 
 
 class Command(BaseCommand):

@@ -4,10 +4,8 @@
 
 """Utility functions used by usage statistics app."""
 
-import datetime as dt
 from collections import UserDict
-from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.db import models
 
@@ -18,6 +16,10 @@ from opal.patients.models import Relationship
 from opal.usage_statistics.models import DailyUserPatientActivity
 
 from . import queries
+
+if TYPE_CHECKING:
+    from pathlib import Path
+    import datetime as dt
 
 # Type aliases
 type RowData = dict[str, Any]

@@ -7,13 +7,16 @@ from django.utils import timezone
 
 import pytest
 from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.test import APIClient
 
 from opal.caregivers import factories as caregiver_factories
 from opal.patients import factories as patient_factories
 from opal.patients.models import RelationshipStatus
 from opal.users.models import User
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rest_framework.test import APIClient
+    from rest_framework.response import Response
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

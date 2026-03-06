@@ -7,7 +7,7 @@
 import base64
 from collections import OrderedDict
 from http import HTTPStatus
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -15,7 +15,6 @@ from django.core.exceptions import SuspiciousOperation
 from django.db.models import Model
 from django.forms import Form
 from django.forms.models import ModelForm
-from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -37,6 +36,9 @@ from .filters import ManageCaregiverAccessFilter
 from .forms import ManageCaregiverAccessUserForm, RelationshipAccessForm
 from .models import Patient, Relationship, RelationshipStatus, RelationshipType
 from .utils import create_access_request
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest, HttpResponse
 
 # TODO: consider changing this to a TypedDict
 _StorageValue = int | str | dict[str, Any]

@@ -12,7 +12,6 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models.functions import SHA512
-from django.db.models.query import QuerySet
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext, override
@@ -22,7 +21,6 @@ from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import exceptions, serializers
 from rest_framework import serializers as drf_serializers
 from rest_framework.generics import RetrieveAPIView, RetrieveUpdateAPIView, UpdateAPIView, get_object_or_404
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -50,6 +48,8 @@ from opal.users.models import Caregiver, User
 from .. import constants
 
 if TYPE_CHECKING:
+    from django.db.models.query import QuerySet
+    from rest_framework.request import Request
     from django.db.models.manager import Manager
 
 

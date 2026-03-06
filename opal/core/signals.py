@@ -4,14 +4,16 @@
 
 """Module consisting of signals used throughout the project."""
 
-import logging
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.dispatch import receiver
-from django.http import HttpRequest
 
 import structlog
 from django_structlog import signals
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
+    import logging
 
 
 @receiver(signals.bind_extra_request_metadata)

@@ -8,7 +8,6 @@ import io
 import math
 import re
 import types
-from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -17,13 +16,14 @@ from django.utils import timezone
 import pandas as pd
 from fpdf import FPDF, FPDF_VERSION, FontFace, FPDFException
 from fpdf.enums import Align, PageLabelStyle, TableBordersLayout
-from fpdf.outline import OutlineSection
-from fpdf.transitions import Transition
 from plotly import express as px
 
 from .base import FPDFCellDictType, FPDFMultiCellDictType, InstitutionData, PatientData
 
 if TYPE_CHECKING:
+    from fpdf.transitions import Transition
+    from fpdf.outline import OutlineSection
+    from datetime import datetime
     from fpdf.fpdf import _Format, _Orientation
 
 

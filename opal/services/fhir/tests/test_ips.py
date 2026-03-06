@@ -4,17 +4,19 @@
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
-from fhir.resources.R4B.allergyintolerance import AllergyIntolerance
 from fhir.resources.R4B.bundle import Bundle
-from fhir.resources.R4B.condition import Condition
-from fhir.resources.R4B.immunization import Immunization
-from fhir.resources.R4B.medicationrequest import MedicationRequest
-from fhir.resources.R4B.observation import Observation
-from fhir.resources.R4B.patient import Patient
 
 from opal.services.fhir import ips
+
+if TYPE_CHECKING:
+    from fhir.resources.R4B.condition import Condition
+    from fhir.resources.R4B.allergyintolerance import AllergyIntolerance
+    from fhir.resources.R4B.patient import Patient
+    from fhir.resources.R4B.observation import Observation
+    from fhir.resources.R4B.medicationrequest import MedicationRequest
+    from fhir.resources.R4B.immunization import Immunization
 
 
 def _load_fixture(filename: str) -> dict[str, Any]:

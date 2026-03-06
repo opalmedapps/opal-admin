@@ -12,19 +12,22 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import override
 
-from fhir.resources.R4B.allergyintolerance import AllergyIntolerance
 from fhir.resources.R4B.bundle import Bundle, BundleEntry
 from fhir.resources.R4B.codeableconcept import CodeableConcept
 from fhir.resources.R4B.coding import Coding
 from fhir.resources.R4B.composition import Composition, CompositionSection
-from fhir.resources.R4B.condition import Condition
 from fhir.resources.R4B.device import Device, DeviceDeviceName
-from fhir.resources.R4B.immunization import Immunization
-from fhir.resources.R4B.medicationrequest import MedicationRequest
 from fhir.resources.R4B.narrative import Narrative
-from fhir.resources.R4B.observation import Observation
-from fhir.resources.R4B.patient import Patient
 from fhir.resources.R4B.reference import Reference
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from fhir.resources.R4B.patient import Patient
+    from fhir.resources.R4B.observation import Observation
+    from fhir.resources.R4B.medicationrequest import MedicationRequest
+    from fhir.resources.R4B.immunization import Immunization
+    from fhir.resources.R4B.condition import Condition
+    from fhir.resources.R4B.allergyintolerance import AllergyIntolerance
 
 
 def _clean_observations(observations: list[Observation]) -> list[Observation]:

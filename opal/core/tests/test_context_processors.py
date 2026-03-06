@@ -3,13 +3,16 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from django.http import HttpRequest
-from django.test.client import Client
 from django.urls import reverse
 
 import pytest
-from pytest_django.fixtures import SettingsWrapper
 
 from opal.core import context_processors
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_django.fixtures import SettingsWrapper
+    from django.test.client import Client
 
 
 def test_admin_url_in_context_processor(settings: SettingsWrapper) -> None:

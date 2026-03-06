@@ -6,10 +6,13 @@
 
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 
 from opal.patients.models import Patient
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.db.models.query import QuerySet
 
 
 class TestType(models.TextChoices):

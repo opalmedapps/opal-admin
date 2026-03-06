@@ -4,9 +4,12 @@
 
 import uuid
 
-from django.apps.registry import Apps
 from django.db import migrations, models
-from django.db.backends.base.schema import BaseDatabaseSchemaEditor
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.db.backends.base.schema import BaseDatabaseSchemaEditor
+    from django.apps.registry import Apps
 
 
 def generate_uuid(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:

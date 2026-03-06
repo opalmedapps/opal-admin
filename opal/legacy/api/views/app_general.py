@@ -5,7 +5,6 @@
 """Collection of api views used to display the Opal's General view."""
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -14,6 +13,10 @@ from opal.legacy import models
 from opal.patients.models import Relationship, RelationshipStatus
 
 from ..serializers import AnnouncementUnreadCountSerializer
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
 
 
 @extend_schema(

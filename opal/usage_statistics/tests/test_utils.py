@@ -3,8 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import datetime as dt
-from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from django.db import models
 from django.utils import timezone
@@ -20,6 +19,9 @@ from opal.patients import models as patient_models
 from opal.usage_statistics import factories as stats_factories
 from opal.usage_statistics import models as stats_models
 from opal.usage_statistics import utils as stats_utils
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

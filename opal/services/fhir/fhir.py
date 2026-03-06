@@ -6,20 +6,22 @@
 
 import datetime as dt
 from datetime import datetime
-from typing import Any, cast
+from typing import Any, cast, TYPE_CHECKING
 
 from django.utils import timezone
 
 import structlog
 from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2.rfc7523 import PrivateKeyJWT
-from fhir.resources.R4B.allergyintolerance import AllergyIntolerance
 from fhir.resources.R4B.bundle import Bundle
-from fhir.resources.R4B.condition import Condition
-from fhir.resources.R4B.immunization import Immunization
-from fhir.resources.R4B.medicationrequest import MedicationRequest
-from fhir.resources.R4B.observation import Observation
 from fhir.resources.R4B.patient import Patient
+
+if TYPE_CHECKING:
+    from fhir.resources.R4B.condition import Condition
+    from fhir.resources.R4B.allergyintolerance import AllergyIntolerance
+    from fhir.resources.R4B.immunization import Immunization
+    from fhir.resources.R4B.observation import Observation
+    from fhir.resources.R4B.medicationrequest import MedicationRequest
 
 SCOPES = [
     'system/Patient.read',

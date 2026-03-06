@@ -5,9 +5,12 @@
 from django.conf import settings
 
 import pytest
-from pytest_django import DjangoDbBlocker
 
 from .. import queries
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_django import DjangoDbBlocker
 
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 

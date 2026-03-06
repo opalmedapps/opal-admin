@@ -9,10 +9,13 @@ from pathlib import Path
 from django.utils import timezone
 
 import pytest
-from pytest_django.fixtures import SettingsWrapper
 
 from opal.services.reports.base import InstitutionData, PatientData, SiteData
 from opal.services.reports.pathology import PathologyData, PathologyPDF, generate_pdf
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_django.fixtures import SettingsWrapper
 
 observation_clinical_info = """Left breast mass at 3 o'clock (previously collagenous stroma,
  discordant with imaging).\nRebiopsy under ultrasound was done today."""

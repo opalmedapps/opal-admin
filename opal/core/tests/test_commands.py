@@ -12,7 +12,6 @@ from django.utils import timezone
 
 import pytest
 from pytest_django.asserts import assertRaisesMessage
-from pytest_mock import MockerFixture
 from rest_framework.authtoken.models import Token
 
 from opal.caregivers import factories as caregiver_factories
@@ -36,6 +35,10 @@ from opal.patients.models import (
 from opal.test_results.models import GeneralTest, Note, PathologyObservation
 from opal.users import factories as user_factories
 from opal.users.models import Caregiver, ClinicalStaff, User
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
 
 pytestmark = pytest.mark.django_db()
 

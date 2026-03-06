@@ -7,8 +7,11 @@
 from django.db import connections
 
 import pytest
-from _pytest.fixtures import SubRequest
-from pytest_django import DjangoDbBlocker
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_django import DjangoDbBlocker
+    from _pytest.fixtures import SubRequest
 
 
 @pytest.fixture

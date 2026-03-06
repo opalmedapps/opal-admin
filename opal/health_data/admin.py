@@ -6,9 +6,12 @@
 
 from django.contrib import admin
 from django.contrib.admin.options import BaseModelAdmin
-from django.http import HttpRequest
 
 from .models import AbstractSample, QuantitySample
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
 
 class AbstractSampleAdminMixin(BaseModelAdmin[AbstractSample]):
