@@ -7,7 +7,7 @@ import urllib
 from collections import OrderedDict
 from datetime import date, datetime
 from http import HTTPStatus
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth.models import Permission
 from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied, SuspiciousOperation

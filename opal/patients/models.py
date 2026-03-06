@@ -5,7 +5,7 @@
 """Module providing models for the patients app."""
 
 from collections import defaultdict
-from typing import Any, Final, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Final
 from uuid import uuid4
 
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError

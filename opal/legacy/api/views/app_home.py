@@ -4,6 +4,8 @@
 
 """Collection of api views used to display the Opal's home view."""
 
+from typing import TYPE_CHECKING
+
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework import fields
 from rest_framework.response import Response
@@ -13,7 +15,6 @@ from opal.core.drf_permissions import IsListener
 from opal.legacy import models
 
 from ..serializers import LegacyAppointmentSerializer
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from rest_framework.request import Request

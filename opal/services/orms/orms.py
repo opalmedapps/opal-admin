@@ -4,7 +4,7 @@
 
 """Module providing business logic for communication with ORMS."""
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from ..general.service_error import ServiceErrorHandler
 from .orms_communication import ORMSHTTPCommunicationManager

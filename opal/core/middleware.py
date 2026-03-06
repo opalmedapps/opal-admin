@@ -4,12 +4,13 @@
 
 """Module providing different middlewares for the whole project."""
 
+from typing import TYPE_CHECKING
+
 from django.utils.functional import SimpleLazyObject
 
 from auditlog.cid import set_cid
 from auditlog.context import set_actor
 from auditlog.middleware import AuditlogMiddleware as _AuditlogMiddleware
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from django.http import HttpRequest, HttpResponse

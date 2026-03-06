@@ -6,7 +6,7 @@
 
 import html
 import logging
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.db import connections, transaction
@@ -14,8 +14,8 @@ from django.db.utils import DatabaseError
 from django.utils.translation import gettext_lazy as _
 
 if TYPE_CHECKING:
-    from django.http.request import QueryDict
     from django.db.backends.utils import CursorWrapper
+    from django.http.request import QueryDict
 
 # Logger instance declared at the module level
 logger = logging.getLogger(__name__)

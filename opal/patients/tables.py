@@ -5,7 +5,7 @@
 """Table definitions for models of the patient app."""
 
 from datetime import date
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _

@@ -4,6 +4,7 @@
 
 from datetime import date, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from django.utils import timezone
 
@@ -12,11 +13,11 @@ from fpdf import FPDFException
 
 from opal.services.reports import questionnaire
 from opal.services.reports.base import InstitutionData, PatientData
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pytest_mock.plugin import MockerFixture
     from http import HTTPStatus
+
+    from pytest_mock.plugin import MockerFixture
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

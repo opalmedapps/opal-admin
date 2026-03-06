@@ -19,6 +19,7 @@ from opal.users.api.serializers import ClinicalStaffDetailSerializer
 
 if TYPE_CHECKING:
     from rest_framework.request import Request
+
     from opal.users.models import ClinicalStaff
 
 

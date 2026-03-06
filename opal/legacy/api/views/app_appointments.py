@@ -4,7 +4,7 @@
 
 """Collection of api views used to get and update appointment details."""
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework.exceptions import NotFound

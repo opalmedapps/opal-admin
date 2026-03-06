@@ -6,7 +6,7 @@
 
 import base64
 import logging
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 

@@ -5,7 +5,7 @@
 
 """Mocks pytkdocs to workaround issues with Django and Django REST framework."""
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock
 
 from pytkdocs.loader import Loader, ObjectNode, split_attr_name

@@ -7,7 +7,7 @@
 import json
 from http import HTTPStatus
 from io import StringIO
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.core.management import call_command
 

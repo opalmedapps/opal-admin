@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 from django.urls.base import reverse
 from django.utils import timezone
@@ -13,12 +14,13 @@ from pytest_django.asserts import assertContains, assertNotContains, assertTempl
 
 from opal.questionnaires.factories import QuestionnaireProfile as QuestionnaireProfileFactory
 from opal.questionnaires.models import QuestionnaireProfile
-from opal.users.models import User
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from _pytest.logging import LogCaptureFixture
     from django.test import Client
+
+    from _pytest.logging import LogCaptureFixture
+
+    from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'questionnaire'])
 

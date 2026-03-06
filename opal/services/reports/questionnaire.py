@@ -21,10 +21,11 @@ from plotly import express as px
 from .base import FPDFCellDictType, FPDFMultiCellDictType, InstitutionData, PatientData
 
 if TYPE_CHECKING:
-    from fpdf.transitions import Transition
-    from fpdf.outline import OutlineSection
     from datetime import datetime
+
     from fpdf.fpdf import _Format, _Orientation
+    from fpdf.outline import OutlineSection
+    from fpdf.transitions import Transition
 
 
 class QuestionType(Enum):

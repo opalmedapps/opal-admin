@@ -9,7 +9,7 @@ To avoid confusion with the actual models, the Pydantic models are named with a 
 """
 
 from enum import StrEnum, auto
-from typing import Self, TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 
 from pydantic import AwareDatetime, Base64Bytes, BaseModel, Field, model_validator
 

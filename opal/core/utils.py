@@ -13,7 +13,7 @@ import secrets
 import string
 import uuid
 import zipfile
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.utils.text import Truncator
 

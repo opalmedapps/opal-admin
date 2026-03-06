@@ -4,6 +4,8 @@
 
 """This module provides `ViewSets` for the hospital-specific settings REST API."""
 
+from typing import TYPE_CHECKING
+
 from rest_framework import viewsets
 from rest_framework.response import Response
 
@@ -11,7 +13,6 @@ from opal.core.drf_permissions import FullDjangoModelPermissions
 
 from ..models import Institution, Site
 from .serializers import InstitutionSerializer, SiteSerializer, TermsOfUseSerializer
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from rest_framework.request import Request

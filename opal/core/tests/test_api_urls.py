@@ -4,12 +4,12 @@
 
 import sys
 from importlib import reload
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from django.urls import NoReverseMatch, Resolver404, resolve, reverse
 
 import pytest
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pytest_django.fixtures import SettingsWrapper

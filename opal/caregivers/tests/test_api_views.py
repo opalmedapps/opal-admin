@@ -9,7 +9,7 @@ import datetime as dt
 from datetime import datetime
 from hashlib import sha512
 from http import HTTPStatus
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
@@ -51,8 +51,8 @@ from opal.users import factories as user_factories
 from opal.users.models import Caregiver, User
 
 if TYPE_CHECKING:
-    from pytest_mock import MockerFixture
     from pytest_django.fixtures import SettingsWrapper
+    from pytest_mock import MockerFixture
     from rest_framework.test import APIClient
 
 

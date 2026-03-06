@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 import django.core.files.storage
@@ -29,13 +29,16 @@ from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
 from opal.patients.factories import HospitalPatient, Patient, Relationship, RelationshipType
 from opal.users import factories as caregiver_factories
-from opal.users.models import User
 
 if TYPE_CHECKING:
-    from django.conf import LazySettings
-    from rest_framework.test import APIClient
-    from pytest_mock import MockerFixture
     from collections.abc import Callable
+
+    from django.conf import LazySettings
+
+    from pytest_mock import MockerFixture
+    from rest_framework.test import APIClient
+
+    from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 

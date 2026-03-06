@@ -21,6 +21,7 @@ from opal.patients.models import Patient, Relationship, RelationshipStatus, Role
 
 if TYPE_CHECKING:
     from django.db.models import QuerySet
+
     from rest_framework.request import Request
     from rest_framework.views import APIView
 

@@ -4,7 +4,7 @@
 
 import datetime as dt
 from pathlib import Path
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.db import OperationalError
 from django.utils import timezone

@@ -13,8 +13,9 @@ from typing_extensions import TypedDict
 from . import models as quantity_sample_models
 
 if TYPE_CHECKING:
-    from decimal import Decimal
     import datetime
+    from decimal import Decimal
+
     from opal.health_data.models import QuantitySample
     from opal.patients.models import Patient
 

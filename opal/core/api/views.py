@@ -4,7 +4,7 @@
 
 """Module providing reusable views for the whole project."""
 
-from typing import Any, TypeVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -25,9 +25,11 @@ from opal.patients.models import Patient
 from .serializers import LanguageSerializer
 
 if TYPE_CHECKING:
-    from rest_framework.request import Request
-    from django.http import HttpRequest
     import uuid
+
+    from django.http import HttpRequest
+
+    from rest_framework.request import Request
 
 _Model = TypeVar('_Model', bound=Model)
 

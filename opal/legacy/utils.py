@@ -10,13 +10,12 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.db import OperationalError, connections, models, transaction
 from django.utils import timezone
 
-from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Institution, Site
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire, LegacyQuestionnairePatient
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as QDB_LegacyQuestionnaire
@@ -38,6 +37,9 @@ from .models import (
     LegacyUsers,
     LegacyUserType,
 )
+
+if TYPE_CHECKING:
+    from opal.caregivers.models import CaregiverProfile
 
 #: Mapping from sex type to the corresponding legacy sex type
 SEX_TYPE_MAPPING = MappingProxyType({

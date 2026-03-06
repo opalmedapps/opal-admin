@@ -6,6 +6,7 @@
 
 import datetime as dt
 import uuid
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.utils import timezone
@@ -19,15 +20,14 @@ from fhir.resources.R4B.composition import Composition, CompositionSection
 from fhir.resources.R4B.device import Device, DeviceDeviceName
 from fhir.resources.R4B.narrative import Narrative
 from fhir.resources.R4B.reference import Reference
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from fhir.resources.R4B.patient import Patient
-    from fhir.resources.R4B.observation import Observation
-    from fhir.resources.R4B.medicationrequest import MedicationRequest
-    from fhir.resources.R4B.immunization import Immunization
-    from fhir.resources.R4B.condition import Condition
     from fhir.resources.R4B.allergyintolerance import AllergyIntolerance
+    from fhir.resources.R4B.condition import Condition
+    from fhir.resources.R4B.immunization import Immunization
+    from fhir.resources.R4B.medicationrequest import MedicationRequest
+    from fhir.resources.R4B.observation import Observation
+    from fhir.resources.R4B.patient import Patient
 
 
 def _clean_observations(observations: list[Observation]) -> list[Observation]:

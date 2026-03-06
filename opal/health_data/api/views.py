@@ -4,7 +4,7 @@
 
 """Module providing API views for the `health_data` app."""
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.db import models
 from django.utils import timezone

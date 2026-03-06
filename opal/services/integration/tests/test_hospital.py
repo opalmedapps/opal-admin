@@ -4,7 +4,7 @@
 
 import json
 from http import HTTPStatus
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pytest
 import requests

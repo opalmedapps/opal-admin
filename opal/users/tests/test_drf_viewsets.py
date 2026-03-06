@@ -6,6 +6,7 @@
 
 import secrets
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 from django.urls import reverse
 
@@ -14,11 +15,11 @@ import pytest
 from config.settings.base import USER_MANAGER_GROUP_NAME
 from opal.users import factories as user_factories
 from opal.users.models import ClinicalStaff, User
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from rest_framework.test import APIClient
     from collections.abc import Callable
+
+    from rest_framework.test import APIClient
 
 pytestmark = pytest.mark.django_db
 

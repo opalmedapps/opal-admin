@@ -3,16 +3,17 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 from django.urls import reverse
 
 import pytest
 from pytest_django.asserts import assertRedirects
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pytest_django.fixtures import SettingsWrapper
     from django.test import Client
+
+    from pytest_django.fixtures import SettingsWrapper
 
 pytestmark = pytest.mark.django_db
 

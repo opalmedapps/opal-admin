@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from typing import TYPE_CHECKING
+
 from django.contrib.auth.models import Group
 from django.urls import reverse
 
@@ -9,12 +11,11 @@ import pytest
 from pytest_django.asserts import assertContains
 from rest_framework import status
 
-from opal.users.models import User
-from typing import TYPE_CHECKING
-
 if TYPE_CHECKING:
-    from rest_framework.test import APIClient
     from pytest_django.fixtures import SettingsWrapper
+    from rest_framework.test import APIClient
+
+    from opal.users.models import User
 
 pytestmark = pytest.mark.django_db
 

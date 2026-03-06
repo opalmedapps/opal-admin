@@ -18,8 +18,10 @@ from django.utils import timezone
 from opal.patients.models import RelationshipType
 
 if TYPE_CHECKING:
-    from django.db.backends.utils import CursorWrapper
     from datetime import datetime
+
+    from django.db.backends.utils import CursorWrapper
+
     from .models import LegacyAnswerQuestionnaire, LegacyQuestionnaire
 
 # Logger instance declared at the module level

@@ -7,7 +7,7 @@
 import base64
 import json
 from io import BytesIO
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
@@ -45,8 +45,9 @@ from ..api.serializers import (
 from ..models import Patient, Relationship, RelationshipType
 
 if TYPE_CHECKING:
-    from rest_framework.request import Request
     from django.db.models.query import QuerySet
+
+    from rest_framework.request import Request
 
 LOGGER = structlog.get_logger()
 

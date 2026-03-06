@@ -6,7 +6,7 @@
 
 import datetime as dt
 from datetime import datetime
-from typing import Any, cast, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 from django.utils import timezone
 
@@ -17,11 +17,11 @@ from fhir.resources.R4B.bundle import Bundle
 from fhir.resources.R4B.patient import Patient
 
 if TYPE_CHECKING:
-    from fhir.resources.R4B.condition import Condition
     from fhir.resources.R4B.allergyintolerance import AllergyIntolerance
+    from fhir.resources.R4B.condition import Condition
     from fhir.resources.R4B.immunization import Immunization
-    from fhir.resources.R4B.observation import Observation
     from fhir.resources.R4B.medicationrequest import MedicationRequest
+    from fhir.resources.R4B.observation import Observation
 
 SCOPES = [
     'system/Patient.read',

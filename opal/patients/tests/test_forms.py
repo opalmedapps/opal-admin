@@ -5,7 +5,7 @@
 import json
 from datetime import date
 from http import HTTPStatus
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.core.exceptions import NON_FIELD_ERRORS
 from django.forms import HiddenInput, model_to_dict
@@ -23,7 +23,6 @@ from opal.services.integration import hospital
 from opal.services.integration.schemas import HospitalNumberSchema, PatientSchema, SexTypeSchema
 from opal.services.twilio import TwilioServiceError
 from opal.users.factories import Caregiver as CaregiverFactory
-from opal.users.models import User
 
 from .. import constants, factories, forms
 from ..filters import ManageCaregiverAccessFilter
@@ -32,6 +31,8 @@ from ..tables import ExistingUserTable
 
 if TYPE_CHECKING:
     from pytest_mock.plugin import MockerFixture
+
+    from opal.users.models import User
 
 pytestmark = pytest.mark.django_db
 

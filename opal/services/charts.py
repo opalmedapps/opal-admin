@@ -6,7 +6,7 @@
 
 import logging
 from types import MappingProxyType
-from typing import Final, NamedTuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Final, NamedTuple
 
 from plotly import express as px
 

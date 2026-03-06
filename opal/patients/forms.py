@@ -45,8 +45,8 @@ from .models import Patient, Relationship, RelationshipStatus, RelationshipType,
 from .validators import has_multiple_mrns_with_same_site_code, is_deceased
 
 if TYPE_CHECKING:
-    from django.forms.fields import Field
     from django.db.models import QuerySet
+    from django.forms.fields import Field
 
 LOGGER = logging.getLogger(__name__)
 

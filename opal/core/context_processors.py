@@ -4,7 +4,7 @@
 
 """This module provides custom context processors for this project."""
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.apps import apps
 from django.conf import settings

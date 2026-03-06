@@ -33,9 +33,11 @@ from ..common import GroupByComponent, GroupReportType
 from ..forms import GroupUsageStatisticsForm, IndividualUsageStatisticsForm
 
 if TYPE_CHECKING:
-    from pytest_mock import MockerFixture
-    from django.test import Client
     from collections.abc import Iterator
+
+    from django.test import Client
+
+    from pytest_mock import MockerFixture
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

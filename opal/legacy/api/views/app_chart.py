@@ -4,7 +4,7 @@
 
 """Collection of api views used to display the Opal's Chart view."""
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.response import Response

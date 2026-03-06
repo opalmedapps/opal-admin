@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import uuid
+from typing import TYPE_CHECKING
 
 from requests.exceptions import RequestException
 
@@ -11,7 +12,6 @@ from opal.services.general.service_error import ServiceErrorHandler
 from opal.services.orms.orms import ORMSService
 from opal.services.orms.orms_communication import ORMSHTTPCommunicationManager
 from opal.services.orms.orms_validation import ORMSValidator
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pytest_mock.plugin import MockerFixture

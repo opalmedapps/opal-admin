@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import uuid
-
-from django.db import migrations, models
 from typing import TYPE_CHECKING
 
+from django.db import migrations, models
+
 if TYPE_CHECKING:
-    from django.db.backends.base.schema import BaseDatabaseSchemaEditor
     from django.apps.registry import Apps
+    from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 
 
 def generate_uuid(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:

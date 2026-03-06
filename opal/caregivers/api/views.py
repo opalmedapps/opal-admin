@@ -48,9 +48,10 @@ from opal.users.models import Caregiver, User
 from .. import constants
 
 if TYPE_CHECKING:
-    from django.db.models.query import QuerySet
-    from rest_framework.request import Request
     from django.db.models.manager import Manager
+    from django.db.models.query import QuerySet
+
+    from rest_framework.request import Request
 
 
 class GetRegistrationEncryptionInfoView(RetrieveAPIView[RegistrationCode]):

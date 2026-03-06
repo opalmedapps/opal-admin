@@ -4,14 +4,15 @@
 
 """This module is used to provide configuration, fixtures, and plugins for pytest in the legacy app."""
 
+from typing import TYPE_CHECKING
+
 from django.db import connections
 
 import pytest
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pytest_django import DjangoDbBlocker
     from _pytest.fixtures import SubRequest
+    from pytest_django import DjangoDbBlocker
 
 
 @pytest.fixture

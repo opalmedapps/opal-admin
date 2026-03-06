@@ -5,7 +5,7 @@
 import json
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pytest
 import requests
@@ -16,8 +16,9 @@ from pydantic import ValidationError
 from opal.services.fhir.fhir import FHIRConnector, MultiplePatientsFoundError, PatientNotFoundError
 
 if TYPE_CHECKING:
-    from pytest_mock import MockerFixture
     from unittest.mock import Mock
+
+    from pytest_mock import MockerFixture
 
 
 class TestFHIRConnector:

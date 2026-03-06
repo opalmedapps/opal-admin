@@ -7,7 +7,7 @@
 import csv
 from datetime import datetime
 from pathlib import Path
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandParser

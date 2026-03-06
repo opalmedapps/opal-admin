@@ -4,7 +4,7 @@
 
 """Management command for deleting the caregiver user profile and patient data."""
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.core.management.base import BaseCommand, CommandParser
 from django.core.serializers import serialize

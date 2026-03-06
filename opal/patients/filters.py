@@ -4,7 +4,7 @@
 
 """This module provides filters for `patients` app."""
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _

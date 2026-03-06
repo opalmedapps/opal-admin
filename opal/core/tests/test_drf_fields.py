@@ -9,6 +9,7 @@ from ..drf_fields import Base64FileField
 
 if TYPE_CHECKING:
     from pathlib import Path
+
     from django.db.models.fields.files import FieldFile
 
 

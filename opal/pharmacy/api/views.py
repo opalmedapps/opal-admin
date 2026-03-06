@@ -4,7 +4,7 @@
 
 """Module providing API views for the `pharmacy` app."""
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.db import transaction
 

@@ -2,14 +2,15 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from typing import TYPE_CHECKING
+
 from django.db import migrations, models
 
 from opal.patients.models import RoleType
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from django.db.backends.base.schema import BaseDatabaseSchemaEditor
     from django.apps.registry import Apps
+    from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 
 
 def update_data(apps: Apps, schema_editor: BaseDatabaseSchemaEditor) -> None:

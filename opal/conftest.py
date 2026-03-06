@@ -6,6 +6,7 @@
 
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from django.apps import apps
 from django.contrib.auth.models import Group, Permission
@@ -17,21 +18,23 @@ from rest_framework.test import APIClient
 
 from opal.core import constants
 from opal.legacy import factories as legacy_factories
-from opal.legacy.models import LegacyEducationalMaterialControl
 from opal.legacy_questionnaires import factories
-from opal.legacy_questionnaires.models import LegacyQuestionnaire, LegacyQuestionnairePatient
-from opal.users.models import User
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pytest_mock import MockerFixture
-    from pytest_django import DjangoDbBlocker
-    from _pytest.main import Session
-    from _pytest.config import Config
-    from django.test import Client
-    from django.db.models import Model
-    from django.conf import LazySettings
     from collections.abc import Callable, Generator
+
+    from django.conf import LazySettings
+    from django.db.models import Model
+    from django.test import Client
+
+    from _pytest.config import Config
+    from _pytest.main import Session
+    from pytest_django import DjangoDbBlocker
+    from pytest_mock import MockerFixture
+
+    from opal.legacy.models import LegacyEducationalMaterialControl
+    from opal.legacy_questionnaires.models import LegacyQuestionnaire, LegacyQuestionnairePatient
+    from opal.users.models import User
 
 LEGACY_TEST_PATIENT_ID = 51
 LEGACY_DICTIONARY_CONTENT_ID = 9000000

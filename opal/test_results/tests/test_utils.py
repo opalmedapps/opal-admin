@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from datetime import datetime
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.utils import timezone
 
@@ -21,8 +21,8 @@ from ..utils import (
 )
 
 if TYPE_CHECKING:
-    from pytest_mock.plugin import MockerFixture
     from _pytest.logging import LogCaptureFixture
+    from pytest_mock.plugin import MockerFixture
 
 pytestmark = pytest.mark.django_db
 

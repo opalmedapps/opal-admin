@@ -4,6 +4,7 @@
 
 import json
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 from django.contrib.auth import authenticate
 
@@ -14,11 +15,10 @@ from requests.exceptions import ConnectionError as RequestsConnectionError
 from opal.core.test_utils import RequestMockerTest
 
 from ..auth import AUTHENTICATION_FAILURE, AUTHENTICATION_SUCCESS, FedAuthBackend, UserData, UserModel
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pytest_mock.plugin import MockerFixture
     from pytest_django.fixtures import SettingsWrapper
+    from pytest_mock.plugin import MockerFixture
 
 ENCODING = 'utf-8'
 

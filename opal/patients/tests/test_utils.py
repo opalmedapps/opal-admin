@@ -8,7 +8,7 @@ import logging
 import uuid
 from datetime import date, datetime
 from http import HTTPStatus
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.utils import IntegrityError
@@ -53,8 +53,8 @@ from opal.users.factories import Caregiver, User
 from .. import utils
 
 if TYPE_CHECKING:
-    from pytest_mock import MockerFixture
     from pytest_django.fixtures import SettingsWrapper
+    from pytest_mock import MockerFixture
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 

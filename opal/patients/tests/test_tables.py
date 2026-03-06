@@ -5,7 +5,7 @@
 import datetime as dt
 import urllib.parse
 from datetime import date, datetime, timedelta
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.urls import reverse
 from django.utils import timezone
@@ -18,6 +18,7 @@ from .. import constants, factories, models, tables
 
 if TYPE_CHECKING:
     from django.test import Client
+
     from pytest_mock import MockerFixture
 
 pytestmark = pytest.mark.django_db

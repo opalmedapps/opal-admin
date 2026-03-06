@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from typing import TYPE_CHECKING
+
 from django.urls import reverse
 
 import pytest
@@ -11,11 +13,10 @@ from opal.legacy_questionnaires import factories as questionnaires_factories
 from opal.legacy_questionnaires import models as questionnaires_models
 from opal.patients import factories as patient_factories
 from opal.patients import models as patient_models
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from rest_framework.test import APIClient
     from rest_framework.response import Response
+    from rest_framework.test import APIClient
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 

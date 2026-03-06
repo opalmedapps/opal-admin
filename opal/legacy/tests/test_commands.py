@@ -5,6 +5,7 @@
 import uuid
 from datetime import date, datetime
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.core.management.base import CommandError
@@ -27,11 +28,10 @@ from opal.users import factories as user_factories
 from opal.users.models import ClinicalStaff
 
 from ..management.commands import migrate_caregivers
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pytest_mock.plugin import MockerFixture
     from pytest_django import DjangoDbBlocker
+    from pytest_mock.plugin import MockerFixture
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 
