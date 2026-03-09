@@ -4,11 +4,15 @@
 
 """This module provides admin options for health data models."""
 
+from typing import TYPE_CHECKING
+
 from django.contrib import admin
 from django.contrib.admin.options import BaseModelAdmin
-from django.http import HttpRequest
 
 from .models import AbstractSample, QuantitySample
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
 
 class AbstractSampleAdminMixin(BaseModelAdmin[AbstractSample]):

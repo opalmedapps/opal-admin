@@ -254,6 +254,13 @@ django = ["django"]
 [lint.flake8-self]
 extend-ignore-names = ["_base_manager", "_default_manager",  "_meta"]
 
+# https://docs.astral.sh/ruff/settings/#lintflake8-type-checking
+[lint.flake8-type-checking]
+runtime-evaluated-base-classes = ["pydantic.BaseModel"]
+# Add quotes around type annotations, if doing so would allow
+# an import to be moved into a type-checking block.
+quote-annotations = true
+
 # https://docs.astral.sh/ruff/settings/#format
 [format]
 quote-style = "single"

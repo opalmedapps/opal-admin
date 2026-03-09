@@ -4,12 +4,16 @@
 
 """Module providing models for any type of test result."""
 
+from typing import TYPE_CHECKING
+
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 
 from opal.patients.models import Patient
+
+if TYPE_CHECKING:
+    from django.db.models.query import QuerySet
 
 
 class TestType(models.TextChoices):

@@ -3,13 +3,16 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from datetime import date
+from typing import TYPE_CHECKING
 
 import pytest
-from pytest_mock import MockerFixture, MockType
 
 from opal.core.test_utils import CommandTestMixin
 from opal.patients import factories as patient_factories
 from opal.patients.models import Patient, Relationship, RelationshipStatus
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture, MockType
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 

@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
-from django.test import Client
 from django.urls import reverse
 
 import pytest
@@ -17,6 +17,9 @@ from opal.patients import factories as patient_factories
 
 from .. import factories as healthdata_factories
 from ..models import QuantitySampleType
+
+if TYPE_CHECKING:
+    from django.test import Client
 
 pytestmark = pytest.mark.django_db
 

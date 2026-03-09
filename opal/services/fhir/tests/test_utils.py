@@ -13,13 +13,14 @@ from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2 import OAuth2Error
 from fhir.resources.R4B.bundle import Bundle
 from jose import jwe, utils
-from pytest_mock import MockerFixture
 
 from opal.services.fhir.fhir import FHIRConnector
 from opal.services.fhir.utils import FHIRDataRetrievalError, jwe_sh_link_encrypt, retrieve_patient_summary
 
 if TYPE_CHECKING:
     from unittest.mock import Mock
+
+    from pytest_mock import MockerFixture
 
 
 def test_jwe_sh_link_encrypt() -> None:

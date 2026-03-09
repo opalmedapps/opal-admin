@@ -2,10 +2,14 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from typing import TYPE_CHECKING
+
 import pandas as pd
-from _pytest.logging import LogCaptureFixture
 
 from opal.services.charts import ChartData, ChartService
+
+if TYPE_CHECKING:
+    from _pytest.logging import LogCaptureFixture
 
 chart_service = ChartService()
 

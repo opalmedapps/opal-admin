@@ -5,26 +5,31 @@
 import json
 from http import HTTPStatus
 from pathlib import Path
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from django.core.exceptions import ValidationError
-from django.test.client import Client
 from django.urls.base import reverse
 
 import pytest
 from pytest_django.asserts import assertContains, assertJSONEqual, assertRaisesMessage, assertRedirects
-from pytest_django.fixtures import SettingsWrapper
-from pytest_mock.plugin import MockerFixture
 from rest_framework import status
-from rest_framework.test import APIClient
 
 from opal.core.api.views import EmptyResponseSerializer
 from opal.hospital_settings import factories as hospital_factories
 from opal.hospital_settings.models import Site
 from opal.patients import factories as patient_factories
-from opal.users.models import User
 
 from .. import views
+
+if TYPE_CHECKING:
+    from django.test.client import Client
+
+    from pytest_django.fixtures import SettingsWrapper
+    from pytest_mock.plugin import MockerFixture
+    from rest_framework.test import APIClient
+
+    from opal.users.models import User
 
 pytestmark = pytest.mark.django_db()
 

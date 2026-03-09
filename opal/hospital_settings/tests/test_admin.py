@@ -2,16 +2,19 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from typing import TYPE_CHECKING
+
 from django.contrib.admin.sites import AdminSite
 from django.http import HttpRequest
 
 import pytest
 
-from opal.users.models import User
-
 from .. import factories
 from ..admin import InstitutionAdmin
 from ..models import Institution
+
+if TYPE_CHECKING:
+    from opal.users.models import User
 
 pytestmark = pytest.mark.django_db
 site = AdminSite()

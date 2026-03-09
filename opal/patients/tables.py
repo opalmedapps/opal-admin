@@ -7,9 +7,9 @@
 from datetime import date
 from typing import Any
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet  # noqa: TC002 (required at runtime)
 from django.utils import timezone
-from django.utils.safestring import SafeString
+from django.utils.safestring import SafeString  # noqa: TC002 (required at runtime)
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 

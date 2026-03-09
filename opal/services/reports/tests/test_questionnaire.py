@@ -3,17 +3,21 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from datetime import date, datetime
-from http import HTTPStatus
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from django.utils import timezone
 
 import pytest
 from fpdf import FPDFException
-from pytest_mock.plugin import MockerFixture
 
 from opal.services.reports import questionnaire
 from opal.services.reports.base import InstitutionData, PatientData
+
+if TYPE_CHECKING:
+    from http import HTTPStatus
+
+    from pytest_mock.plugin import MockerFixture
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

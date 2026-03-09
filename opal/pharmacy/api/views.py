@@ -4,12 +4,11 @@
 
 """Module providing API views for the `pharmacy` app."""
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.db import transaction
 
 from rest_framework import status
-from rest_framework.request import Request
 from rest_framework.response import Response
 
 from opal.core.api.views import HL7CreateView
@@ -17,6 +16,9 @@ from opal.core.drf_permissions import IsInterfaceEngine
 
 from ..models import PhysicianPrescriptionOrder
 from .serializers import PhysicianPrescriptionOrderSerializer
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
 
 
 class CreatePrescriptionView(HL7CreateView[PhysicianPrescriptionOrder]):

@@ -5,20 +5,24 @@
 import datetime as dt
 from datetime import datetime
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 from django.urls import reverse
 from django.utils import timezone
 
 import pytest
-from pytest_mock import MockerFixture
-from rest_framework.test import APIClient
 
 from opal.legacy import factories, models
 from opal.patients import factories as patient_factories
 from opal.patients import models as patient_models
-from opal.users.models import User
 
 from ...serializers import LegacyAppointmentDetailedSerializer
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
+    from rest_framework.test import APIClient
+
+    from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

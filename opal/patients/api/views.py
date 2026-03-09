@@ -7,11 +7,10 @@
 import base64
 import json
 from io import BytesIO
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
-from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.module_loading import import_string
 
@@ -20,7 +19,6 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, status
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -45,6 +43,11 @@ from ..api.serializers import (
     RelationshipTypeDescriptionSerializer,
 )
 from ..models import Patient, Relationship, RelationshipType
+
+if TYPE_CHECKING:
+    from django.db.models.query import QuerySet
+
+    from rest_framework.request import Request
 
 LOGGER = structlog.get_logger()
 

@@ -11,12 +11,12 @@ from http import HTTPStatus
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import BaseBackend
-from django.http import HttpRequest
+from django.http import HttpRequest  # noqa: TC002 (required at test runtime)
 
 import requests
 from requests.exceptions import RequestException
 
-from opal.users.models import User
+from opal.users.models import User  # noqa: TC001 (required at test runtime)
 
 UserModel: type[User] = get_user_model()
 UserData = namedtuple('UserData', ['email', 'first_name', 'last_name'])
