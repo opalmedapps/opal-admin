@@ -126,9 +126,9 @@ class Command(BaseCommand):
         file_list = [name for name in file_list if re.match(r'^.+\.ips$', name)]
 
         LOGGER.info(
-            'Checking %s %s to clean up expired IPS bundles (from storage backend: %s)',
+            'Checking %s file%s to clean up expired IPS bundles (from storage backend: %s)',
             len(file_list),
-            'file' if len(file_list) == 1 else 'files',
+            '' if len(file_list) == 1 else 's',
             settings.IPS_STORAGE_BACKEND,
         )
 
@@ -177,13 +177,13 @@ class Command(BaseCommand):
                     num_errors += 1
 
         LOGGER.info(
-            '%s IPS %s out of %s %s deleted (%s %s)',
+            '%s IPS bundle%s out of %s %s deleted (%s error%s)',
             num_deleted,
-            'bundle' if num_deleted == 1 else 'bundles',
+            '' if num_deleted == 1 else 's',
             len(file_list),
             'would be' if dry_run else 'was' if num_deleted == 1 else 'were',
             num_errors,
-            'error' if num_errors == 1 else 'errors',
+            '' if num_errors == 1 else 's',
         )
 
         storage_backend.disconnect()
