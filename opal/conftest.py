@@ -13,8 +13,8 @@ from django.contrib.auth.models import Group, Permission
 from django.db import connections
 
 import pytest
-from _pytest.config import Config
-from _pytest.main import Session
+from _pytest.config import Config  # noqa: TC002 (required at test runtime)
+from _pytest.main import Session  # noqa: TC002 (required at test runtime)
 from _pytest.python import Function, Module  # noqa: PLC2701
 from rest_framework.test import APIClient
 

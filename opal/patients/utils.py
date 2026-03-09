@@ -6,7 +6,6 @@
 
 import logging
 from typing import TYPE_CHECKING, Final
-from uuid import UUID
 
 from django.conf import settings
 from django.db import transaction
@@ -26,6 +25,7 @@ from .models import HospitalPatient, Patient, Relationship, RelationshipStatus, 
 
 if TYPE_CHECKING:
     from datetime import date
+    from uuid import UUID
 
     from django.db.models import QuerySet
 

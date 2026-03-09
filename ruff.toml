@@ -254,6 +254,10 @@ django = ["django"]
 [lint.flake8-self]
 extend-ignore-names = ["_base_manager", "_default_manager",  "_meta"]
 
+# https://docs.astral.sh/ruff/settings/#lint_flake8-type-checking_runtime-evaluated-base-classes
+[lint.flake8-type-checking]
+runtime-evaluated-base-classes = ["pydantic.BaseModel"]
+
 # https://docs.astral.sh/ruff/settings/#format
 [format]
 quote-style = "single"
