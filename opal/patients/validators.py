@@ -38,4 +38,4 @@ def has_multiple_mrns_with_same_site_code(patient_record: PatientSchema) -> bool
     """
     mrns = patient_record.mrns
     key_counts = Counter(hospital_number.site for hospital_number in mrns)
-    return any(count > 1 for (site, count) in key_counts.items())
+    return any(count > 1 for count in key_counts.values())

@@ -29,7 +29,7 @@ In order to add permissions, and allow its use in the Django Admin Site, follow 
 
     ```python
     class Meta:
-        permissions = (('new_perm','New Custom Permission'),)
+        permissions = (('new_perm', 'New Custom Permission'),)
         ordering = ['name']
         verbose_name = _('Site')
         verbose_name_plural = _('Sites')
@@ -71,7 +71,7 @@ By now there should be a new permission available to be used. To restrict the ac
     class SiteListView(PermissionRequiredMixin, SingleTableView):
         model = Site
         # use app_name.codename of the permission
-        required_permissions=('hospital_settings.new_perm',)
+        required_permissions = ('hospital_settings.new_perm',)
         table_class = tables.SiteTable
         template_name = 'hospital_settings/site/site_list.html'
     ```
@@ -100,6 +100,7 @@ from django.test import RequestFactory
 from django.urls import reverse
 from django.contrib.auth.models import Permission
 
+
 # FAIL CASE: to raise permission denied exception when user does not have right privilege
 def test_site_permission_required_fail(user_client: Client, django_user_model: User) -> None:
     """Ensure that `site` permission denied error is raised when not having privilege"""
@@ -111,6 +112,7 @@ def test_site_permission_required_fail(user_client: Client, django_user_model: U
 
     with pytest.raises(PermissionDenied):
         SiteListView.as_view()(request)
+
 
 # PASS CASE: to not raise permission denied exception when user has right privilege
 def test_site_permission_required_success(user_client: Client, django_user_model: User) -> None:
