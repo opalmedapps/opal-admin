@@ -29,9 +29,11 @@ from rest_framework.exceptions import NotFound
 from rest_framework.test import APIClient
 
 from opal.caregivers.factories import CaregiverProfile, Device, RegistrationCode
+from opal.health_data.models import PatientReportedData
 from opal.hospital_settings.factories import Institution, Site
 from opal.patients import models as patient_models
 from opal.patients.factories import HospitalPatient, Patient, Relationship, RelationshipType
+from opal.services.fhir.utils import FHIRConnectionSettings
 from opal.users import factories as caregiver_factories
 from opal.users.models import User
 
@@ -1118,11 +1120,14 @@ class TestPatientSummaryView:
         assert response.status_code == status.HTTP_200_OK, response.text
 
         mock_retrieve.assert_called_once_with(
-            settings.FHIR_API_OAUTH_URL,
-            settings.FHIR_API_URL,
-            settings.FHIR_API_CLIENT_ID,
-            settings.FHIR_API_PRIVATE_KEY,
+            FHIRConnectionSettings(
+                oauth_url=settings.FHIR_API_OAUTH_URL,
+                fhir_url=settings.FHIR_API_URL,
+                client_id=settings.FHIR_API_CLIENT_ID,
+                private_key=settings.FHIR_API_PRIVATE_KEY,
+            ),
             patient.ramq,
+            social_history=[],
         )
 
         payload_base64 = response.json()['payload']
@@ -1150,6 +1155,43 @@ class TestPatientSummaryView:
         decrypted_data = jwe.decrypt(saved_data, key_decoded)
 
         assert data == decrypted_data.decode('utf-8')
+
+    def test_summary_saved_with_patientreporteddata(
+        self,
+        api_client: APIClient,
+        listener_user: User,
+        mocker: MockerFixture,
+        settings: LazySettings,
+    ) -> None:
+        """Ensure patient-reported social history is passed to IPS summary retrieval."""
+        api_client.force_login(listener_user)
+
+        settings.IPS_STORAGE_BACKEND = 'django.core.files.storage.FileSystemStorage'
+        mocker.patch('django.core.files.storage.FileSystemStorage.save', return_value='test.ips')
+        mocker.patch('opal.patients.api.views.jwe_sh_link_encrypt', return_value=('test-key', b'test-encrypted-data'))
+
+        data = 'fake patient summary'
+        ips_uuid = uuid4()
+        mock_retrieve = mocker.patch('opal.patients.api.views.retrieve_patient_summary', return_value=(data, ips_uuid))
+
+        patient_uuid = uuid4()
+        patient = Patient.create(uuid=patient_uuid, ramq='OTES12345678')
+        social_history = [{'alcohol_use': '1/wk'}, {'tobacco_use': '0/d'}]
+        PatientReportedData.objects.create(patient=patient, social_history=social_history)
+
+        response = api_client.get(reverse('api:patient-summary', kwargs={'uuid': patient_uuid}))
+
+        assert response.status_code == status.HTTP_200_OK, response.text
+        mock_retrieve.assert_called_once_with(
+            FHIRConnectionSettings(
+                oauth_url=settings.FHIR_API_OAUTH_URL,
+                fhir_url=settings.FHIR_API_URL,
+                client_id=settings.FHIR_API_CLIENT_ID,
+                private_key=settings.FHIR_API_PRIVATE_KEY,
+            ),
+            patient.ramq,
+            social_history=social_history,
+        )
 
     def test_summary_no_health_identifier(self, api_client: APIClient, listener_user: User) -> None:
         """Ensure the endpoint raises a ValidationError when the patient has no health identification number."""
@@ -1201,7 +1243,12 @@ class TestPatientSummaryView:
         mocker.patch('django.core.files.storage.FileSystemStorage.save', side_effect=OSError('Unable to save file'))
 
         patient_uuid = uuid4()
-        Patient.create(uuid=patient_uuid, ramq='OTES12345678')
+        patient = Patient.create(uuid=patient_uuid, ramq='OTES12345678')
+
+        PatientReportedData.objects.create(
+            patient=patient,
+            social_history=[{'frequency': 'daily', 'quantity': 2}, {'status': 'former', 'quit_date': '2020-01-01'}],
+        )
 
         response = api_client.get(reverse('api:patient-summary', kwargs={'uuid': patient_uuid}))
 

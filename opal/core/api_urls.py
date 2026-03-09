@@ -156,6 +156,11 @@ urlpatterns = [
         name='patients-data-quantity-create',
     ),
     path(
+        'patients/<uuid:uuid>/health-data/patient-reported/',
+        data_views.PatientRecordedDataView.as_view(),
+        name='patients-data-reported',
+    ),
+    path(
         'patients/exists',
         patient_views.PatientExistsView.as_view(),
         name='patient-exists',

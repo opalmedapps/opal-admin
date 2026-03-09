@@ -6,9 +6,12 @@
 
 from typing import Any
 
+from pydantic import ValidationError as PydanticValidationError
 from rest_framework import serializers
 
-from ..models import QuantitySample
+from opal.services.fhir.utils import validate_observation
+
+from ..models import PatientReportedData, QuantitySample
 
 
 class QuantitySampleListSerializer(serializers.ListSerializer[list[QuantitySample]]):
@@ -44,3 +47,44 @@ class QuantitySampleSerializer(serializers.ModelSerializer[QuantitySample]):
         fields = ('type', 'value', 'start_date', 'device', 'source')
         # See: https://www.django-rest-framework.org/api-guide/serializers/#customizing-multiple-create
         list_serializer_class = QuantitySampleListSerializer
+
+
+def _validate_observation(value: dict[str, Any]) -> None:
+    """
+    Validate that the given value is a valid FHIR `Observation` resource.
+
+    Args:
+        value: the value to validate
+
+    Raises:
+        ValidationError: if the value is not a valid `Observation`
+    """
+    try:
+        validate_observation(value).model_dump(mode='json')
+    except PydanticValidationError as exc:
+        errors = [
+            {
+                'loc': error['loc'],
+                'msg': error['msg'],
+                'type': error['type'],
+            }
+            for error in exc.errors()
+        ]
+
+        raise serializers.ValidationError(errors) from exc  # type: ignore[arg-type]
+
+
+class PatientReportedDataSerializer(serializers.ModelSerializer[PatientReportedData]):
+    """Serializer for `PatientReportedData` instances."""
+
+    social_history = serializers.ListField(
+        child=serializers.JSONField(validators=[_validate_observation]),
+        required=False,
+        allow_null=False,
+        default=list,
+        allow_empty=True,
+    )
+
+    class Meta:
+        model = PatientReportedData
+        fields = ('social_history',)
