@@ -16,12 +16,14 @@ from django.db.models import Model
 from django.test import Client
 
 import pytest
+import structlog
 from _pytest.config import Config
 from _pytest.main import Session
 from _pytest.python import Function, Module  # noqa: PLC2701
 from pytest_django import DjangoDbBlocker
 from pytest_mock import MockerFixture
 from rest_framework.test import APIClient
+from structlog.testing import LogCapture
 
 from opal.core import constants
 from opal.legacy import factories as legacy_factories
@@ -611,3 +613,20 @@ def enable_ips(settings: LazySettings) -> None:
 
     settings.IPS_STORAGE_BACKEND = 'django.core.files.storage.FileSystemStorage'
     settings.IPS_PUBLIC_BASE_URL = 'http://localhost:8000/media/'
+
+
+@pytest.fixture
+def structlog_output() -> LogCapture:
+    """
+    Fixture used to capture output from structlog, see: https://www.structlog.org/en/stable/testing.html.
+
+    Returns:
+        An object providing log output via log_output.entries.
+    """
+    log_capture = LogCapture()
+    structlog.configure(
+        processors=[log_capture],
+        # Allows this fixture to be used in multiple subsequent tests without caching issues
+        cache_logger_on_first_use=False,
+    )
+    return log_capture
