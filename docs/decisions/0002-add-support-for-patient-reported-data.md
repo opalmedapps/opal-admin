@@ -37,7 +37,7 @@ While the IPS functionality is currently provided from the `patients` app, it ne
 ### Storage format
 
 We want to store the data as FHIR resources right away.
-I.e., the app (where the data is collected from the patient) needs to do the conversion to FHIR and send the data as FHIR resources to the API endpoint.
+I.e., the mobile app (where the data is collected from the patient) needs to do the conversion to FHIR and send the data as FHIR resources to the API endpoint.
 
 ### Storage location
 
