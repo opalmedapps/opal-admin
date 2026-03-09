@@ -185,3 +185,5 @@ class Command(BaseCommand):
             num_errors,
             'error' if num_errors == 1 else 'errors',
         )
+
+        storage_backend.disconnect()

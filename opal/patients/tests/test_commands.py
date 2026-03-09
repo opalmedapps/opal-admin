@@ -12,6 +12,7 @@ from django.conf import LazySettings
 
 import pytest
 from pytest_mock import MockerFixture, MockType
+from storages.backends.ftp import FTPStorage
 from structlog.testing import LogCapture
 
 from opal.core.test_utils import CommandTestMixin
@@ -68,6 +69,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         mocker.patch.object(FTP, 'connect')
         mocker.patch.object(FTP, 'login')
         mocker.patch.object(FTP, 'pwd')
+        mocker.patch.object(FTP, 'quit')
         mocker.patch.object(FTPStorageWithModifiedTime, 'delete')
 
     def _mock_files(self, mocker: MockerFixture, file_timestamps: dict[str, str], **kwargs: Any) -> None:
@@ -103,8 +105,14 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
             return '200'
 
         # Mock the directory listing
+        all_files = ['.htaccess', *file_timestamps.keys()]
         mocker.patch.object(
-            FTPStorageWithModifiedTime, 'listdir', return_value=(['.', '..'], ['.htaccess', *file_timestamps.keys()])
+            FTPStorage,
+            '_get_dir_details',
+            return_value=((
+                {'.': 0, '..': 0},
+                {**dict.fromkeys(all_files, 0)},
+            )),
         )
 
         # Mock the command to request a file's metadata
