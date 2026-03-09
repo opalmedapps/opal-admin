@@ -7,6 +7,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 {% load static %}
 {% load i18n %}
 
+<!DOCTYPE html>
+<html>
+<head>
+<script async="false" nonce="{{ csp_nonce }}">
+  {{ plotlyjs | safe }}
+</script>
+</head>
+
+<body>
 <h4 style="position: sticky; top: 0; z-index: 999; background-color: white; padding: 5px 10px; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);">
   {% translate "Smart Devices Data" %} <br>
   {% translate "Patient" %}: {{ patient.first_name }} {{ patient.last_name }} (RAMQ: {{ patient.ramq | default:'' }})
@@ -19,3 +28,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
     <h5>{% translate "No data found for" %} {{ label }}</h5>
   {% endif %}
 {% endfor %}
+</body>
+
+</html>

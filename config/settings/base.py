@@ -17,6 +17,7 @@ Inspired by cookiecutter-django: https://cookiecutter-django.readthedocs.io/en/l
 from pathlib import Path
 from typing import Any
 
+from django.utils.csp import CSP
 from django.utils.translation import gettext_lazy as _
 
 import django_stubs_ext
@@ -265,6 +266,7 @@ AUTH_PASSWORD_VALIDATORS: list[dict[str, Any]] = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.csp.ContentSecurityPolicyMiddleware',
     # CorsMiddleware should be placed as high as possible, definitely before CommonMiddleware
     'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -321,6 +323,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.csp',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',
                 'django.template.context_processors.static',
@@ -363,6 +366,14 @@ CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 SECURE_BROWSER_XSS_FILTER = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options
 X_FRAME_OPTIONS = 'DENY'
+# Content Security Policy (CSP)
+# https://docs.djangoproject.com/en/dev/ref/csp/#csp-overview
+# https://docs.djangoproject.com/en/dev/ref/settings/#secure-csp
+SECURE_CSP = {
+    'script-src': [CSP.NONCE, CSP.STRICT_DYNAMIC],
+    'object-src': [CSP.NONE],
+    'base-uri': [CSP.NONE],
+}
 
 # EMAIL
 # ------------------------------------------------------------------------------
