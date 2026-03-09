@@ -13,7 +13,7 @@ To specify a translation string in Python code, use **gettext()** function. For 
 ```python
 from django.utils.translation import gettext as _
 
-test_variable = _("My test translation string.")
+test_variable = _('My test translation string.')
 ```
 
 To specify a translation string in a template code, include `{% load i18n %}` toward the top of the template. This will provide access to the **translate** and **blocktranslate** template tags. For example,
