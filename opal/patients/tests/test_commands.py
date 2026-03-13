@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import datetime
-import ftplib
 from datetime import date
-from ftplib import FTP
+from ftplib import FTP, error_perm
 from typing import Any
 
 from django.conf import LazySettings
+from django.utils.timezone import make_naive
 
 import pytest
 from pytest_mock import MockerFixture, MockType
@@ -17,7 +17,6 @@ from structlog.testing import LogCapture
 
 from opal.core.test_utils import CommandTestMixin
 from opal.patients import factories as patient_factories
-from opal.patients.management.commands.expire_ips_bundles import FTPStorageWithModifiedTime
 from opal.patients.models import Patient, Relationship, RelationshipStatus
 
 pytestmark = pytest.mark.django_db(databases=['default'])
@@ -48,13 +47,14 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         settings.IPS_STORAGE_BACKEND = 'storages.backends.ftp.FTPStorage'
         settings.FTP_STORAGE_LOCATION = ''
 
-        # Fake the current time for consistent results
-        mocker.patch(
-            'django.utils.timezone.now', return_value=datetime.datetime(2026, 1, 1, 9, 0, 0, tzinfo=datetime.UTC)
-        )
+        # Fake the current time and date for consistent results
+        fake_datetime = datetime.datetime(2026, 1, 1, 9, 0, 0, tzinfo=datetime.UTC)
+        if not settings.USE_TZ:
+            fake_datetime = make_naive(fake_datetime)
+        mocker.patch('django.utils.timezone.now', return_value=fake_datetime)
 
         mocker.patch.object(
-            FTPStorageWithModifiedTime,
+            FTPStorage,
             '_decode_location',
             return_value={
                 'active': False,
@@ -70,7 +70,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         mocker.patch.object(FTP, 'login')
         mocker.patch.object(FTP, 'pwd')
         mocker.patch.object(FTP, 'quit')
-        mocker.patch.object(FTPStorageWithModifiedTime, 'delete')
+        mocker.patch.object(FTPStorage, 'delete')
 
     def _mock_files(self, mocker: MockerFixture, file_timestamps: dict[str, str], **kwargs: Any) -> None:
         # Can be used to test what happens if the modify attribute is missing
@@ -99,7 +99,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
                 if file_name in file_timestamps:
                     return info_lines(file_name)
-                raise ftplib.error_perm("550 Can't check for file existence")
+                raise error_perm("550 Can't check for file existence")
 
             # Treat any other commands as successful
             return '200'
@@ -136,7 +136,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
     def test_no_bundles(self, mocker: MockerFixture, structlog_output: LogCapture) -> None:
         """No effect when there are no bundles."""
         self._mock_files(mocker, {})
-        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
+        delete_spy = mocker.spy(FTPStorage, 'delete')
 
         self._call_command('expire_ips_bundles')
 
@@ -164,7 +164,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': timestamp,
             },
         )
-        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
+        delete_spy = mocker.spy(FTPStorage, 'delete')
 
         self._call_command('expire_ips_bundles')
 
@@ -187,7 +187,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': timestamp,
             },
         )
-        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
+        delete_spy = mocker.spy(FTPStorage, 'delete')
 
         self._call_command('expire_ips_bundles')
 
@@ -204,7 +204,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 'bd7c9cdc-1605-4839-9473-8109f488c1fd.ips': '20260101081500',
             },
         )
-        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
+        delete_spy = mocker.spy(FTPStorage, 'delete')
 
         self._call_command('expire_ips_bundles')
 
@@ -220,7 +220,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
                 '1304efc5-9961-4249-bfa5-68af94cb0982.ips': '20260101074500',
             },
         )
-        delete_spy = mocker.spy(FTPStorageWithModifiedTime, 'delete')
+        delete_spy = mocker.spy(FTPStorage, 'delete')
 
         self._call_command('expire_ips_bundles', '--dry-run')
 
@@ -238,7 +238,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
         )
         # Overwrite the directory listing with an additional file that doesn't have metadata like a last modified time
         mocker.patch.object(
-            FTPStorageWithModifiedTime,
+            FTPStorage,
             'listdir',
             return_value=(
                 ['.', '..'],
@@ -265,7 +265,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
             },
         )
         # Throw a PermissionError only for the first file, do nothing for the second
-        mocker.patch.object(FTPStorageWithModifiedTime, 'delete', side_effect=[PermissionError, None])
+        mocker.patch.object(FTPStorage, 'delete', side_effect=[PermissionError, None])
 
         self._call_command('expire_ips_bundles')
 
@@ -287,7 +287,7 @@ class TestExpireIPSBundlesCommand(CommandTestMixin):
 
         logs = self._get_logs(structlog_output)
         assert (
-            'ERROR - Bundle "1304efc5-9961-4249-bfa5-68af94cb0982.ips" last modified date is not in the expected format'
+            'ERROR - Bundle "1304efc5-9961-4249-bfa5-68af94cb0982.ips" last modified information failed to be retrieved from the server'
             in logs
         )
         assert '1 IPS bundle out of 2 was deleted (1 error)' in logs
