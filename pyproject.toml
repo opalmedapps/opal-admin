@@ -69,7 +69,7 @@ dev = [
     "factory-boy==3.3.3",
     "mypy[faster-cache]==1.19.1",
     "pandas-stubs==3.0.0.260204",
-    "prek==0.3.5",
+    "prek==0.3.6",
     "pytest==9.0.2",
     # for proper coverage support with pytest-xdist
     "pytest-cov==7.0.0",
