@@ -54,7 +54,7 @@ dependencies = [
 
 [project.optional-dependencies]
 prod = [
-    "gunicorn==25.1.0",
+    "gunicorn==25.2.0",
 ]
 
 [dependency-groups]
