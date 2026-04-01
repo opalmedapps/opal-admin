@@ -93,3 +93,7 @@ docs = [
     "mkdocs-material==9.7.6",
     "mkdocstrings[python-legacy]==1.0.3",
 ]
+
+[tool.uv]
+add-bounds = "exact"
+exclude-newer = "7 days"
