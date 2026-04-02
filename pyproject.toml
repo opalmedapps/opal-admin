@@ -46,7 +46,7 @@ dependencies = [
     "python-jose[cryptography]==3.5.0",
     "qrcode==8.2",
     "requests==2.33.0",
-    "slippers==0.6.2",
+    "slippers==0.6.3",
     "twilio==9.10.4",
     "unidecode==1.4.0",
     "whitenoise[brotli]==6.12.0",
