@@ -57,7 +57,7 @@ jobs:
           prek-version: "0.3.8"
         env:
           SKIP: ruff,ruff-format,mypy,markdownlint-cli2,reuse-lint-file
-      - uses: opalmedapps/actions/actions/check-thirdparty-notice@main
+      - uses: opalmedapps/actions/actions/check-thirdparty-notice@24350eccf4a071b5ebd14a6dd2b5642a5fb1716d # main
         if: '!cancelled()'
         with:
           pyproject-file: './pyproject.toml'
@@ -194,10 +194,10 @@ jobs:
   markdownlint:
     permissions:
       contents: read
-    uses: opalmedapps/.github/.github/workflows/markdownlint.yaml@main
+    uses: opalmedapps/.github/.github/workflows/markdownlint.yaml@eb87c1f2f2d17a6e389ada0b2c79aa2e6affcce1 # main
 
   run-reuse-workflow:
-    uses: opalmedapps/.github/.github/workflows/reuse.yaml@main
+    uses: opalmedapps/.github/.github/workflows/reuse.yaml@eb87c1f2f2d17a6e389ada0b2c79aa2e6affcce1 # main
 
   build-docs:
     runs-on: ubuntu-latest

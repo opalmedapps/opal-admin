@@ -27,7 +27,7 @@ jobs:
         with:
           persist-credentials: false
           lfs: true
-      - uses: opalmedapps/.github/.github/actions/docker-build@main
+      - uses: opalmedapps/.github/.github/actions/docker-build@eb87c1f2f2d17a6e389ada0b2c79aa2e6affcce1 # main
         id: build-image
         with:
           registry: ${{ env.REGISTRY }}
