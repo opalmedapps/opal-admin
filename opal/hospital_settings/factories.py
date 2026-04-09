@@ -5,9 +5,12 @@
 """Module providing model factories for hospital settings app models."""
 
 import factory
+import faker
 from factory.django import DjangoModelFactory
 
 from . import models
+
+fake = faker.Faker(locale=['en', 'fr'])
 
 
 class Institution(DjangoModelFactory[models.Institution]):
@@ -38,8 +41,8 @@ class Site(DjangoModelFactory[models.Site]):
     class Meta:
         model = models.Site
 
-    name = factory.Faker('company')
-    name_fr = factory.Faker('company', locale='fr')
+    name = factory.Sequence(lambda _: fake.unique.company())
+    name_fr = factory.Sequence(lambda _: fake.unique['fr'].company())
     acronym = factory.lazy_attribute(
         # ensure that spaces in the name don't get used as part of the code
         # spaces are truncated leading to a code with a smaller length
