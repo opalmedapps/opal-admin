@@ -5,7 +5,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "extends": [
     // https://github.com/opalmedapps/.github/blob/main/base.renovate.json5
     "github>opalmedapps/.github//base.renovate.json5",
   ],
@@ -37,4 +36,5 @@
       "matchPackageNames": ["/pytest/"],
       "groupName": "pytest packages"
     },
+  ],
 }
