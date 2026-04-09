@@ -10,7 +10,7 @@ from factory.django import DjangoModelFactory
 
 from . import models
 
-fake = faker.Faker(locale=['en', 'fr'])
+fake = faker.Faker()
 
 
 class Institution(DjangoModelFactory[models.Institution]):
@@ -41,7 +41,7 @@ class Site(DjangoModelFactory[models.Site]):
     class Meta:
         model = models.Site
 
-    name = factory.Faker('company')
+    name = factory.Sequence(lambda _: f'{fake.unique.first_name()} Hospital')
     name_fr = factory.lazy_attribute(lambda site: f'{site.name} FR')
     acronym = factory.lazy_attribute(
         # ensure that spaces in the name don't get used as part of the code
