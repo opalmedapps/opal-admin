@@ -96,4 +96,4 @@ docs = [
 
 [tool.uv]
 add-bounds = "exact"
-exclude-newer = "7 days"
+# exclude-newer = "7 days"

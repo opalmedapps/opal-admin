@@ -7,10 +7,6 @@ resolution-markers = [
     "sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
-[options]
-exclude-newer = "2026-04-02T16:17:25.584443385Z"
-exclude-newer-span = "P7D"
-
 [[package]]
 name = "admin"
 version = "0"
