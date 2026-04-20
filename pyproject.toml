@@ -70,7 +70,7 @@ dev = [
     "mypy[faster-cache]==1.19.1",
     "pandas-stubs==3.0.0.260204",
     "prek==0.3.8",
-    "pytest==9.0.2",
+    "pytest==9.0.3",
     # for proper coverage support with pytest-xdist
     "pytest-cov==7.0.0",
     "pytest-django==4.11.1",
