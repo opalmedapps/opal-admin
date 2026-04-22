@@ -11,13 +11,6 @@ resolution-markers = [
 exclude-newer = "2026-04-15T14:49:23.129528192Z"
 exclude-newer-span = "P7D"
 
-[options.exclude-newer-package]
-types-fpdf2 = false
-types-requests = false
-django = false
-types-python-dateutil = false
-ruff = false
-
 [[package]]
 name = "admin"
 version = "0"

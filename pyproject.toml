@@ -97,5 +97,3 @@ docs = [
 [tool.uv]
 add-bounds = "exact"
 exclude-newer = "7 days"
-# allow packages we already updated
-exclude-newer-package = {django = false, ruff = false, types-fpdf2 = false, types-python-dateutil = false, types-requests = false}
