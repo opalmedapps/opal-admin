@@ -24,6 +24,7 @@ class BloodPressureMeasurementType(TypedDict):
 
     systolic: Decimal
     diastolic: Decimal
+    device: str
     measured_at: datetime.datetime
 
 
@@ -33,7 +34,7 @@ class QuantitySampleManager(models.Manager['QuantitySample']):
     def fetch_blood_pressure_measurements(
         self,
         patient: 'Patient',
-    ) -> list[dict[str, BloodPressureMeasurementType]]:
+    ) -> list[BloodPressureMeasurementType]:
         """
         Fetch the blood pressure measurements for a specific patient.
 

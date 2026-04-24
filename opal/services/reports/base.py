@@ -51,6 +51,13 @@ class FPDFRectDictType(TypedDict):
     style: str | None
 
 
+class PatientSiteAndMRN(TypedDict):
+    """A patient's MRN at a given hospital site."""
+
+    mrn: str
+    site_code: str
+
+
 class InstitutionData(NamedTuple):
     """
     Information about an institution from which a report was received.
@@ -103,4 +110,4 @@ class PatientData(NamedTuple):
     patient_last_name: str
     patient_date_of_birth: date
     patient_ramq: str
-    patient_sites_and_mrns: list[dict[str, str]]
+    patient_sites_and_mrns: list[PatientSiteAndMRN]
