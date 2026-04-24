@@ -17,7 +17,7 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 import logging
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar, cast
 
 from django.apps import apps
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
@@ -191,7 +191,8 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             Appointment data
 
         """
-        return (
+        return cast(
+            'models.QuerySet[LegacyAppointment, dict[str, Any]]',
             self
             .select_related(
                 'aliasexpressionsernum__aliassernum',
@@ -224,7 +225,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
                 'scheduled_start_time',
                 'scheduled_end_time',
                 'last_updated',
-            )
+            ),
         )
 
 
@@ -360,7 +361,8 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
             Demographics data
 
         """
-        return (
+        return cast(
+            'models.QuerySet[LegacyPatient, dict[str, Any]]',
             self
             .filter(
                 patientsernum=patient_ser_num,
@@ -385,7 +387,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
                 'patient_primary_language',
                 'patient_death_date',
                 'last_updated',
-            )
+            ),
         )
 
 
@@ -417,7 +419,8 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         Returns:
             Diagnosis data
         """
-        return (
+        return cast(
+            'models.QuerySet[LegacyDiagnosis, dict[str, Any]]',
             self
             .filter(
                 patient_ser_num=patient_ser_num,
@@ -435,7 +438,7 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
                 'source_system_code',
                 'source_system_code_description',
                 'last_updated',
-            )
+            ),
         )
 
 
@@ -457,7 +460,8 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
         Returns:
             Lab data
         """
-        return (
+        return cast(
+            'models.QuerySet[LegacyPatientTestResult, dict[str, Any]]',
             self
             .select_related(
                 'test_expression_ser_num',
@@ -499,7 +503,7 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
                 'source_system',
                 'last_updated',
             )
-            .order_by('component_result_date', 'test_group_indicator', 'test_component_sequence')
+            .order_by('component_result_date', 'test_group_indicator', 'test_component_sequence'),
         )
 
     def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet['LegacyPatientTestResult']:

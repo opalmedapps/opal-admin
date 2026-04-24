@@ -6,7 +6,7 @@
 
 import datetime as dt
 from collections import Counter
-from typing import Any
+from typing import Any, cast
 
 from django.conf import settings
 from django.db import models
@@ -636,25 +636,28 @@ def fetch_logins_summary_per_user(
         individual login statistics (per user).
     """
     return list(
-        DailyUserAppActivity.objects
-        .filter(
-            action_date__gte=start_date,
-            action_date__lte=end_date,
-        )
-        .values('action_by_user_id')
-        .annotate(
-            user_id=models.F('action_by_user_id'),
-            total_logged_in_days=models.Count('action_by_user_id'),
-            total_logins=models.Sum('count_logins'),
-            avg_logins_per_day=models.F('total_logins') / models.F('total_logged_in_days'),
-        )
-        .values(
-            'user_id',
-            'total_logged_in_days',
-            'total_logins',
-            'avg_logins_per_day',
-        )
-        .order_by('user_id'),
+        cast(
+            'models.QuerySet[DailyUserAppActivity, dict[str, Any]]',
+            DailyUserAppActivity.objects
+            .filter(
+                action_date__gte=start_date,
+                action_date__lte=end_date,
+            )
+            .values('action_by_user_id')
+            .annotate(
+                user_id=models.F('action_by_user_id'),
+                total_logged_in_days=models.Count('action_by_user_id'),
+                total_logins=models.Sum('count_logins'),
+                avg_logins_per_day=models.F('total_logins') / models.F('total_logged_in_days'),
+            )
+            .values(
+                'user_id',
+                'total_logged_in_days',
+                'total_logins',
+                'avg_logins_per_day',
+            )
+            .order_by('user_id'),
+        ),
     )
 
 
@@ -697,7 +700,8 @@ def fetch_patient_demographic_diagnosis_summary(
             flat=True,
         )
     )
-    demographics_and_diagnosis = (
+    demographics_and_diagnosis = cast(
+        'models.QuerySet[legacy_models.LegacyPatientControl, dict[str, Any]]',
         legacy_models.LegacyPatientControl.objects
         .filter(
             models.Q(patient__legacydiagnosis__diagnosis_ser_num__in=latest_diagnosis_sernum_list)
@@ -726,7 +730,7 @@ def fetch_patient_demographic_diagnosis_summary(
             'registration_date_utc',
             'latest_diagnosis_description',
             'latest_diagnosis_date_utc',
-        )
+        ),
     )
 
     return list(demographics_and_diagnosis)
