@@ -211,6 +211,7 @@ class Command(BaseCommand):
         Returns:
             Nested dictionary list
         """
+        # Drop to plain dicts because we mutate keys below
         data: CombinedModuleData = cast('CombinedModuleData', list(queryset))
 
         # Extra nesting requirements for lab data to reduce data repetition among components of a single lab group

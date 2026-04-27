@@ -17,7 +17,6 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 import datetime as dt
 import logging
-from datetime import datetime
 from typing import TYPE_CHECKING, Any, Final, Optional, TypedDict, TypeVar
 
 from django.apps import apps
@@ -38,9 +37,9 @@ class DatabankAppointmentData(TypedDict):
     source_db_alias_description: str
     source_db_appointment_id: int
     alias_name: str
-    scheduled_start_time: datetime
-    scheduled_end_time: datetime
-    last_updated: datetime
+    scheduled_start_time: dt.datetime
+    scheduled_end_time: dt.datetime
+    last_updated: dt.datetime
 
 
 class DatabankPatientData(TypedDict):
@@ -51,8 +50,8 @@ class DatabankPatientData(TypedDict):
     patient_sex: str
     patient_dob: dt.date
     patient_primary_language: str
-    patient_death_date: datetime | None
-    last_updated: datetime
+    patient_death_date: dt.datetime | None
+    last_updated: dt.datetime
 
 
 class DatabankDiagnosisData(TypedDict):
@@ -62,7 +61,7 @@ class DatabankDiagnosisData(TypedDict):
     date_created: dt.date
     source_system_code: str
     source_system_code_description: str
-    last_updated: datetime
+    last_updated: dt.datetime
 
 
 class DatabankLabData(TypedDict):
@@ -81,7 +80,7 @@ class DatabankLabData(TypedDict):
     min_norm_range: float
     abnormal_flag: str
     source_system: str
-    last_updated: datetime
+    last_updated: dt.datetime
 
 
 if TYPE_CHECKING:
@@ -236,7 +235,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
     def get_databank_data_for_patient(
         self,
         patient_ser_num: int,
-        last_synchronized: datetime,
+        last_synchronized: dt.datetime,
     ) -> models.QuerySet['LegacyAppointment', DatabankAppointmentData]:
         """
         Retrieve the latest de-identified appointment data for a consenting DataBank patient.
@@ -293,7 +292,7 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
         self,
         legacy_patient_id: int | None,
         prepared_by: int,
-        received_at: datetime,
+        received_at: dt.datetime,
         report_file_name: str,
     ) -> 'LegacyDocument':
         """
@@ -405,7 +404,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
     def get_databank_data_for_patient(
         self,
         patient_ser_num: int,
-        last_synchronized: datetime,
+        last_synchronized: dt.datetime,
     ) -> models.QuerySet['LegacyPatient', DatabankPatientData]:
         """
         Retrieve the latest de-identified demographics data for a consenting DataBank patient.
@@ -453,7 +452,7 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
     def get_databank_data_for_patient(
         self,
         patient_ser_num: int,
-        last_synchronized: datetime,
+        last_synchronized: dt.datetime,
     ) -> models.QuerySet['LegacyDiagnosis', DatabankDiagnosisData]:
         """
         Retrieve the latest de-identified diagnosis data for a consenting DataBank patient.
@@ -503,7 +502,7 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
     def get_databank_data_for_patient(
         self,
         patient_ser_num: int,
-        last_synchronized: datetime,
+        last_synchronized: dt.datetime,
     ) -> models.QuerySet['LegacyPatientTestResult', DatabankLabData]:
         """
         Retrieve the latest de-identified labs data for a consenting DataBank patient.
@@ -585,8 +584,8 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
 
     def get_aggregated_user_app_activities(
         self,
-        start_datetime_period: datetime,
-        end_datetime_period: datetime,
+        start_datetime_period: dt.datetime,
+        end_datetime_period: dt.datetime,
     ) -> models.QuerySet['LegacyPatientActivityLog', dict[str, Any]]:
         """
         Retrieve aggregated application activity statistics per user for a given time period.
@@ -678,8 +677,8 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
 
     def get_aggregated_patient_app_activities(
         self,
-        start_datetime_period: datetime,
-        end_datetime_period: datetime,
+        start_datetime_period: dt.datetime,
+        end_datetime_period: dt.datetime,
     ) -> models.QuerySet['LegacyPatientActivityLog', dict[str, Any]]:
         """
         Retrieve aggregated application activity statistics per patient for a given time period.

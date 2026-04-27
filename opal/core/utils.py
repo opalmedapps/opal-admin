@@ -13,6 +13,7 @@ import secrets
 import string
 import uuid
 import zipfile
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 from django.utils.text import Truncator
@@ -23,9 +24,9 @@ from openpyxl.worksheet.worksheet import Worksheet
 from qrcode.image import svg
 
 # Type aliases
-type RowData = dict[str, Any]
-type SheetData = list[RowData]
-type WorkbookData = dict[str, SheetData]
+RowData = Mapping[str, Any]
+SheetData = Sequence[RowData]
+WorkbookData = Mapping[str, SheetData]
 
 FORBIDDEN_CHARACTERS = r'[\/\\\?\*\:\[\]]'
 SHEET_TITLE_MAX_LENGTH = 31
@@ -124,7 +125,7 @@ def create_zip(files: dict[str, bytes]) -> bytes:
     return zip_buffer.getvalue()
 
 
-def dict_to_csv(dicts: list[dict[str, Any]]) -> bytes:
+def dict_to_csv(dicts: Sequence[RowData]) -> bytes:
     """
     Convert a list of dictionaries to a CSV in byte format.
 
@@ -220,13 +221,11 @@ def _add_rows_to_worksheet(worksheet: Worksheet, rows: SheetData) -> None:
     worksheet.append(headers)
 
     for row_data in rows:
-        # Convert any datetime objects to naive UTC
+        converted_row: list[Any] = []
         for header in headers:
-            value = row_data.get(header)
-            if isinstance(value, dt.datetime):
-                # Convert any tz-aware datetime to UTC and remove the tzinfo
-                if value.tzinfo is not None:
-                    value = value.astimezone(dt.UTC).replace(tzinfo=None)
-                row_data[header] = value  # if None or empty string, leave as is
-
-        worksheet.append([row_data.get(column_header, '') for column_header in headers])
+            value = row_data.get(header, '')
+            # Convert any tz-aware datetime to naive UTC so Excel handles it properly
+            if isinstance(value, dt.datetime) and value.tzinfo is not None:
+                value = value.astimezone(dt.UTC).replace(tzinfo=None)
+            converted_row.append(value)
+        worksheet.append(converted_row)
