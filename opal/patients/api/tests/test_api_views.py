@@ -21,7 +21,7 @@ from django.utils import timezone
 import pytest
 import requests
 from authlib.integrations.requests_client import OAuth2Session
-from jose import jwe, utils
+from joserfc import jwe, jwk, util
 from pytest_django.asserts import assertContains, assertJSONEqual, assertRaisesMessage
 from pytest_mock import MockerFixture
 from rest_framework import status
@@ -1150,11 +1150,13 @@ class TestPatientSummaryView:
         saved_data = Path(saved_file).read_text(encoding='utf-8')
 
         # base64 URL decode to have 32 bytes of data
-        key_decoded = utils.base64url_decode(encryption_key.encode('utf-8'))
+        raw_key = util.urlsafe_b64decode(encryption_key.encode('utf-8'))
+        key = jwk.OctKey.import_key(raw_key)
 
-        decrypted_data = jwe.decrypt(saved_data, key_decoded)
+        decrypted_data = jwe.decrypt_compact(saved_data, key)
 
-        assert data == decrypted_data.decode('utf-8')
+        assert decrypted_data.plaintext is not None
+        assert data == decrypted_data.plaintext.decode('utf-8')
 
     def test_summary_saved_with_patientreporteddata(
         self,

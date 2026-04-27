@@ -5,7 +5,6 @@
 """Utility functions for FHIR functionality, including building patient summaries and JWE encryption."""
 
 import logging
-import secrets
 import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -15,7 +14,7 @@ import structlog
 from authlib.oauth2 import OAuth2Error
 from fhir.resources.R4B.observation import Observation
 from fhir.resources.R4B.reference import Reference
-from jose import jwe, utils
+from joserfc import jwe, jwk, util
 from pydantic_core import PydanticCustomError, ValidationError
 from requests import RequestException
 
@@ -59,14 +58,13 @@ def jwe_sh_link_encrypt(data: str) -> tuple[str, bytes]:
     Returns:
         a tuple of the encryption key (as a URL-safe base64 string) and the encrypted data (as bytes)
     """
-    # generate key with 32 bytes of randomness
-    key = secrets.token_urlsafe(32)
-    # base64 URL decode to have 32 bytes of data
-    key_decoded = utils.base64url_decode(key.encode('utf-8'))
+    key = jwk.OctKey.generate_key(256)
+    raw_key = util.urlsafe_b64encode(key.raw_value).decode('utf-8')
+    header = {'alg': 'dir', 'enc': 'A256GCM', 'cty': 'application/fhir+json'}
 
-    encrypted = jwe.encrypt(data, key_decoded, algorithm='dir', encryption='A256GCM', cty='application/fhir+json')
+    encrypted = jwe.encrypt_compact(header, data, key)
 
-    return (key, encrypted)
+    return (raw_key, encrypted.encode('utf-8'))
 
 
 def retrieve_patient_summary(
