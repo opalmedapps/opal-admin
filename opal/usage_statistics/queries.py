@@ -635,6 +635,7 @@ def fetch_logins_summary_per_user(
     Returns:
         individual login statistics (per user).
     """
+    # Cast to dict[str, Any] to match RowData in core/utils.py, which is expected by dict_to_csv/dict_to_xlsx that this data is passed to.
     return list(
         cast(
             'models.QuerySet[DailyUserAppActivity, dict[str, Any]]',
@@ -700,6 +701,7 @@ def fetch_patient_demographic_diagnosis_summary(
             flat=True,
         )
     )
+    # Cast to dict[str, Any] to match RowData in core/utils.py, which is expected by dict_to_csv/dict_to_xlsx that this data is passed to.
     demographics_and_diagnosis = cast(
         'models.QuerySet[legacy_models.LegacyPatientControl, dict[str, Any]]',
         legacy_models.LegacyPatientControl.objects
