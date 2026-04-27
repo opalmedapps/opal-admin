@@ -475,7 +475,7 @@ def fetch_databank_control_records(django_patient: Patient) -> DatabankControlRe
 
     # If the questionnaireDB patient population event hasnt run yet, create the patient record
     qdb_patient, _created = LegacyQuestionnairePatient.objects.get_or_create(
-        external_id=django_patient.legacy_id,
+        external_id=django_patient.legacy_id or -1,
         defaults={
             'hospital_id': -1,
             'creation_date': timezone.now(),
