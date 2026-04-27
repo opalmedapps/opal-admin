@@ -1149,6 +1149,7 @@ class TestPatientSummaryView:
 
         saved_data = Path(saved_file).read_text(encoding='utf-8')
 
+        # base64 URL decode to have 32 bytes of data
         raw_key = util.urlsafe_b64decode(encryption_key.encode('utf-8'))
         key = jwk.OctKey.import_key(raw_key)
 
