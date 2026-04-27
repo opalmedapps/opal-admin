@@ -7,16 +7,19 @@
 import logging
 from collections import namedtuple
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import BaseBackend
-from django.http import HttpRequest
 
 import requests
 from requests.exceptions import RequestException
 
-from opal.users.models import User
+if TYPE_CHECKING:
+    from django.http import HttpRequest
+
+    from opal.users.models import User
 
 UserModel: type[User] = get_user_model()
 UserData = namedtuple('UserData', ['email', 'first_name', 'last_name'])

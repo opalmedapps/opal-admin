@@ -4,10 +4,8 @@
 
 """Utility functions used by usage statistics app."""
 
-import datetime as dt
 from collections import UserDict
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.db import models
 
@@ -15,10 +13,15 @@ import pandas as pd
 
 from opal.core.utils import SheetData, WorkbookData
 from opal.legacy import models as legacy_models
-from opal.patients.models import Relationship
 from opal.usage_statistics.models import DailyUserPatientActivity
 
 from . import queries
+
+if TYPE_CHECKING:
+    import datetime as dt
+    from pathlib import Path
+
+    from opal.patients.models import Relationship
 
 # Type aliases (re-exported for backwards compatibility within this app)
 UsageStatisticsData = SheetData

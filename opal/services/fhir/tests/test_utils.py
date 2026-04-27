@@ -13,7 +13,6 @@ from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2 import OAuth2Error
 from fhir.resources.R4B.bundle import Bundle
 from joserfc import jwe, jwk, util
-from pytest_mock import MockerFixture
 
 from opal.services.fhir.fhir import FHIRConnector
 from opal.services.fhir.utils import (
@@ -25,6 +24,8 @@ from opal.services.fhir.utils import (
 
 if TYPE_CHECKING:
     from unittest.mock import Mock
+
+    from pytest_mock import MockerFixture
 
 FHIR_SETTINGS = FHIRConnectionSettings(
     oauth_url='https://example.com/oauth2',

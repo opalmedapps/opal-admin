@@ -3,19 +3,23 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from django.urls import reverse
 from django.utils import timezone
 
 import pytest
 from pytest_django.asserts import assertContains
-from rest_framework.test import APIClient
 
 from opal.legacy import factories, models
 from opal.patients import factories as patient_factories
 from opal.patients import models as patient_models
 from opal.users import factories as user_factories
-from opal.users.models import User
+
+if TYPE_CHECKING:
+    from rest_framework.test import APIClient
+
+    from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

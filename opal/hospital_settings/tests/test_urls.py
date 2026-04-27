@@ -2,13 +2,17 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from typing import TYPE_CHECKING
+
 from django.urls import resolve, reverse
-from django.views.generic.base import View
 
 import pytest
 from pytest_django.asserts import assertURLEqual
 
 from .. import views
+
+if TYPE_CHECKING:
+    from django.views.generic.base import View
 
 TestData = tuple[type, str, str]
 

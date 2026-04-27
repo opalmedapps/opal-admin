@@ -2,7 +2,10 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from pytest_django.fixtures import SettingsWrapper
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pytest_django.fixtures import SettingsWrapper
 
 
 def test_fedauth_backend_disabled(settings: SettingsWrapper) -> None:

@@ -6,19 +6,21 @@ import datetime
 import ftplib
 from datetime import date
 from ftplib import FTP
-from typing import Any
-
-from django.conf import LazySettings
+from typing import TYPE_CHECKING, Any
 
 import pytest
-from pytest_mock import MockerFixture, MockType
 from storages.backends.ftp import FTPStorage
-from structlog.testing import LogCapture
 
 from opal.core.test_utils import CommandTestMixin
 from opal.patients import factories as patient_factories
 from opal.patients.management.commands.expire_ips_bundles import FTPStorageWithModifiedTime
 from opal.patients.models import Patient, Relationship, RelationshipStatus
+
+if TYPE_CHECKING:
+    from django.conf import LazySettings
+
+    from pytest_mock import MockerFixture, MockType
+    from structlog.testing import LogCapture
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 

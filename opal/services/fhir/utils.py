@@ -4,11 +4,9 @@
 
 """Utility functions for FHIR functionality, including building patient summaries and JWE encryption."""
 
-import logging
 import uuid
-from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import structlog
 from authlib.oauth2 import OAuth2Error
@@ -20,6 +18,10 @@ from requests import RequestException
 
 from . import ips
 from .fhir import FHIRConnector, MultiplePatientsFoundError, PatientNotFoundError
+
+if TYPE_CHECKING:
+    import logging
+    from collections.abc import Sequence
 
 LOGGER: logging.Logger = structlog.get_logger(__name__)
 

@@ -4,17 +4,19 @@
 
 """Utility functions used by health data app."""
 
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 from django.conf import settings
 from django.utils.translation import gettext
 
 import pandas as pd
 
-from opal.patients.models import Patient
 from opal.services.charts import ChartData, ChartService
 
 from .models import QuantitySample, QuantitySampleType
+
+if TYPE_CHECKING:
+    from opal.patients.models import Patient
 
 BLOOD_PRESSURE_SAMPLE_TYPES: Final = (
     QuantitySampleType.BLOOD_PRESSURE_SYSTOLIC,

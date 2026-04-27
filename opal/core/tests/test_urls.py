@@ -3,15 +3,19 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 from django.contrib.auth.views import LogoutView
-from django.test.client import Client
 from django.urls import resolve, reverse
 
 import pytest
-from pytest_django.fixtures import SettingsWrapper
 
 from opal.core.views import LoginView
+
+if TYPE_CHECKING:
+    from django.test.client import Client
+
+    from pytest_django.fixtures import SettingsWrapper
 
 
 def assert_path_uses_view(path: str, view_class: type) -> None:

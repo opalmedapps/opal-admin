@@ -7,7 +7,7 @@ import urllib
 from collections import OrderedDict
 from datetime import date, datetime
 from http import HTTPStatus
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth.models import Permission
 from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied, SuspiciousOperation
@@ -19,7 +19,6 @@ from django.utils.html import strip_tags
 import pytest
 from bs4 import BeautifulSoup
 from pytest_django.asserts import assertContains, assertNotContains, assertQuerySetEqual, assertTemplateUsed
-from pytest_mock.plugin import MockerFixture
 
 from opal.caregivers.models import RegistrationCode
 from opal.hospital_settings import factories as hospital_factories
@@ -29,6 +28,9 @@ from opal.users.models import Caregiver, User
 
 from .. import constants, factories, forms, models, tables
 from ..views import AccessRequestView, ManageCaregiverAccessListView, ManageCaregiverAccessUpdateView
+
+if TYPE_CHECKING:
+    from pytest_mock.plugin import MockerFixture
 
 pytestmark = pytest.mark.django_db
 

@@ -3,13 +3,16 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import decimal
+from typing import TYPE_CHECKING
 
 import pytest
 
 from .. import factories
-from ..forms import InstitutionForm
 from ..models import Institution
 from ..views import InstitutionCreateUpdateView, SiteCreateUpdateView
+
+if TYPE_CHECKING:
+    from ..forms import InstitutionForm
 
 pytestmark = pytest.mark.django_db
 

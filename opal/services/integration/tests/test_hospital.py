@@ -4,14 +4,16 @@
 
 import json
 from http import HTTPStatus
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 import requests
 from pydantic import ValidationError
-from pytest_mock import MockFixture
 
 from opal.services.integration import hospital, schemas
+
+if TYPE_CHECKING:
+    from pytest_mock import MockFixture
 
 
 class _MockResponse(requests.Response):

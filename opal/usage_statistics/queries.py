@@ -6,20 +6,22 @@
 
 import datetime as dt
 from collections import Counter
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from django.conf import settings
 from django.db import models
 from django.db.models.functions import Cast, ExtractYear, Trunc, TruncDay, TruncMonth, TruncYear
 
 from opal.caregivers import models as caregivers_models
-from opal.core.utils import RowData
 from opal.legacy import models as legacy_models
 from opal.patients import models as patients_models
 from opal.users import models as users_models
 
 from .common import GroupByComponent
 from .models import DailyPatientDataReceived, DailyUserAppActivity, DailyUserPatientActivity
+
+if TYPE_CHECKING:
+    from opal.core.utils import RowData
 
 # GROUP REPORTING
 

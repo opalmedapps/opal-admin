@@ -4,8 +4,6 @@
 
 """Module providing collection of managers and custom querysets for the health_data app."""
 
-import datetime
-from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -15,6 +13,9 @@ from typing_extensions import TypedDict
 from . import models as quantity_sample_models
 
 if TYPE_CHECKING:
+    import datetime
+    from decimal import Decimal
+
     from opal.health_data.models import QuantitySample
     from opal.patients.models import Patient
 
@@ -33,7 +34,7 @@ class QuantitySampleManager(models.Manager['QuantitySample']):
 
     def fetch_blood_pressure_measurements(
         self,
-        patient: 'Patient',
+        patient: Patient,
     ) -> list[BloodPressureMeasurementType]:
         """
         Fetch the blood pressure measurements for a specific patient.

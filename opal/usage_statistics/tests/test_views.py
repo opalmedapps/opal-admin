@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, cast
 
 from django.http import FileResponse
 from django.http.response import HttpResponseBadRequest
-from django.test import Client
 from django.urls.base import reverse
 from django.utils import timezone
 from django.utils.text import Truncator
@@ -19,7 +18,6 @@ from django.utils.text import Truncator
 import pytest
 from openpyxl import load_workbook
 from pytest_django.asserts import assertContains, assertTemplateUsed
-from pytest_mock import MockerFixture
 
 from opal.caregivers import factories as caregiver_factories
 from opal.caregivers import models as caregiver_models
@@ -36,6 +34,10 @@ from ..forms import GroupUsageStatisticsForm, IndividualUsageStatisticsForm
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+    from django.test import Client
+
+    from pytest_mock import MockerFixture
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy'])
 

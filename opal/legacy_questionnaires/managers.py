@@ -9,17 +9,19 @@ Each manager in this module should be prefixed with `Legacy`
 """
 
 import logging
-from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from django.db import connections, models, transaction
-from django.db.backends.utils import CursorWrapper
 from django.utils import timezone
 
 from opal.patients.models import RelationshipType
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
+    from django.db.backends.utils import CursorWrapper
+
     from .models import LegacyAnswerQuestionnaire, LegacyQuestionnaire
 
 # Logger instance declared at the module level
@@ -34,7 +36,7 @@ class LegacyQuestionnaireManager(models.Manager['LegacyQuestionnaire']):
         patient_sernum: int,
         username: str,
         purpose_id: int,
-    ) -> models.QuerySet['LegacyQuestionnaire']:
+    ) -> models.QuerySet[LegacyQuestionnaire]:
         """
         Get the queryset of new questionnaires for a given user.
 
