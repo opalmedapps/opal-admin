@@ -65,7 +65,7 @@ class TestFHIRConnector:
 
     def test_init_invalid_private_key(self) -> None:
         """FHIRConnector initialization fails when an invalid private key is provided."""
-        with pytest.raises(ValueError, match='Unable to load PEM file'):
+        with pytest.raises(ValueError, match='Could not deserialize key data\\. '):
             FHIRConnector(
                 oauth_url='https://example.com/oauth',
                 fhir_url='https://example.com/fhir',
