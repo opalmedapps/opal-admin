@@ -12,7 +12,7 @@ import requests
 from authlib.integrations.requests_client import OAuth2Session
 from authlib.oauth2 import OAuth2Error
 from fhir.resources.R4B.bundle import Bundle
-from jose import jwe, utils
+from joserfc import jwe, jwk, util
 from pytest_mock import MockerFixture
 
 from opal.services.fhir.fhir import FHIRConnector
@@ -37,26 +37,32 @@ FHIR_SETTINGS = FHIRConnectionSettings(
 def test_jwe_sh_link_encrypt() -> None:
     """The encrypted data can be decrypted correctly."""
     data = 'secret data'
-    key, encrypted = jwe_sh_link_encrypt(data)
+    raw_key, encrypted = jwe_sh_link_encrypt(data)
 
     # Key should be exactly 43 characters (32 bytes of randomness -> base64 encoded without padding)
-    assert len(key) == 43, f'Key length is {len(key)}, expected 43 characters'
+    assert len(raw_key) == 43, f'Key length is {len(raw_key)}, expected 43 characters'
 
-    key_decoded = utils.base64url_decode(key.encode('utf-8'))
-    decrypted = jwe.decrypt(encrypted, key_decoded).decode('utf-8')
+    key_decoded = util.urlsafe_b64decode(raw_key.encode('utf-8'))
+    key = jwk.OctKey.import_key(key_decoded)
 
-    assert decrypted == data
+    decrypted = jwe.decrypt_compact(encrypted, key).plaintext
+
+    assert decrypted is not None
+    assert decrypted.decode('utf-8') == data
 
 
 def test_jwe_sh_link_encrypt_empty() -> None:
     """Empty encrypted data can be encrypted and decrypted correctly."""
     data = ''
-    key, encrypted = jwe_sh_link_encrypt(data)
+    raw_key, encrypted = jwe_sh_link_encrypt(data)
 
-    key_decoded = utils.base64url_decode(key.encode('utf-8'))
-    decrypted = jwe.decrypt(encrypted, key_decoded).decode('utf-8')
+    key_decoded = util.urlsafe_b64decode(raw_key.encode('utf-8'))
+    key = jwk.OctKey.import_key(key_decoded)
 
-    assert decrypted == data
+    decrypted = jwe.decrypt_compact(encrypted, key).plaintext
+
+    assert decrypted is not None
+    assert decrypted.decode('utf-8') == data
 
 
 def test_jwe_sh_link_encrypt_different() -> None:
