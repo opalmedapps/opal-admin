@@ -15,16 +15,15 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
 
+import datetime as dt
 import logging
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Final, Optional, TypedDict, TypeVar
 
 from django.apps import apps
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db import DatabaseError, models
 from django.utils import timezone
-
-from typing_extensions import TypedDict
 
 from opal.patients.models import Relationship, RelationshipStatus
 
@@ -32,14 +31,14 @@ from opal.patients.models import Relationship, RelationshipStatus
 class DatabankAppointmentData(TypedDict):
     """De-identified appointment data for a consenting databank patient."""
 
-    appointment_id: Any
-    date_created: Any
-    source_db_name: Any
-    source_db_alias_code: Any
-    source_db_alias_description: Any
-    source_db_appointment_id: Any
-    alias_name: Any
-    scheduled_start_time: Any
+    appointment_id: int
+    date_created: dt.date
+    source_db_name: str
+    source_db_alias_code: str
+    source_db_alias_description: str
+    source_db_appointment_id: int
+    alias_name: str
+    scheduled_start_time: datetime
     scheduled_end_time: datetime
     last_updated: datetime
 
@@ -47,41 +46,41 @@ class DatabankAppointmentData(TypedDict):
 class DatabankPatientData(TypedDict):
     """De-identified demographics data for a consenting databank patient."""
 
-    patient_id: Any
-    opal_registration_date: Any
-    patient_sex: Any
-    patient_dob: Any
-    patient_primary_language: Any
-    patient_death_date: Any
+    patient_id: int
+    opal_registration_date: dt.date
+    patient_sex: str
+    patient_dob: dt.date
+    patient_primary_language: str
+    patient_death_date: datetime | None
     last_updated: datetime
 
 
 class DatabankDiagnosisData(TypedDict):
     """De-identified diagnosis data for a consenting databank patient."""
 
-    diagnosis_id: Any
-    date_created: Any
-    source_system_code: Any
-    source_system_code_description: Any
+    diagnosis_id: int
+    date_created: dt.date
+    source_system_code: str
+    source_system_code_description: str
     last_updated: datetime
 
 
 class DatabankLabData(TypedDict):
     """De-identified labs data for a consenting databank patient."""
 
-    test_result_id: Any
-    specimen_collected_date: Any
-    component_result_date: Any
-    test_group_name: Any
-    test_group_indicator: Any
-    test_component_sequence: Any
-    test_component_name: Any
-    test_value: Any
-    test_units: Any
-    max_norm_range: Any
-    min_norm_range: Any
+    test_result_id: str
+    specimen_collected_date: dt.date
+    component_result_date: dt.date
+    test_group_name: str
+    test_group_indicator: str
+    test_component_sequence: int
+    test_component_name: str
+    test_value: float
+    test_units: str
+    max_norm_range: float
+    min_norm_range: float
     abnormal_flag: str
-    source_system: Any
+    source_system: str
     last_updated: datetime
 
 

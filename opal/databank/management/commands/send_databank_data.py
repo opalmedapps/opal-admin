@@ -7,7 +7,7 @@
 import json
 from collections import defaultdict
 from http import HTTPStatus
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
@@ -211,7 +211,7 @@ class Command(BaseCommand):
         Returns:
             Nested dictionary list
         """
-        data: CombinedModuleData = [dict(row) for row in queryset]
+        data: CombinedModuleData = cast('CombinedModuleData', list(queryset))
 
         # Extra nesting requirements for lab data to reduce data repetition among components of a single lab group
         if nesting_key == 'LABS':
