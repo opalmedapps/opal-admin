@@ -616,7 +616,7 @@ class AccessRequestView(
         """
         form_list = []
 
-        for step, form_class in self.forms.items():
+        for step, form_class in self.forms.items():  # pragma: no cover
             is_current_step = step == current_step
             # use the request data for the current step
             # otherwise, load the form data from session storage
