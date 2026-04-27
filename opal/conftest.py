@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from django.apps import apps
+from django.conf import LazySettings  # noqa: TC002
 from django.contrib.auth.models import Group, Permission
 from django.db import connections
 
@@ -27,7 +28,6 @@ from opal.legacy_questionnaires import factories
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
 
-    from django.conf import LazySettings
     from django.db.models import Model
     from django.test import Client
 
