@@ -15,7 +15,7 @@ import structlog
 from authlib.oauth2 import OAuth2Error
 from fhir.resources.R4B.observation import Observation
 from fhir.resources.R4B.reference import Reference
-from jose import jwe, utils
+from joserfc import jwe, jwk
 from pydantic_core import PydanticCustomError, ValidationError
 from requests import RequestException
 
@@ -59,14 +59,13 @@ def jwe_sh_link_encrypt(data: str) -> tuple[str, bytes]:
     Returns:
         a tuple of the encryption key (as a URL-safe base64 string) and the encrypted data (as bytes)
     """
-    # generate key with 32 bytes of randomness
-    key = secrets.token_urlsafe(32)
-    # base64 URL decode to have 32 bytes of data
-    key_decoded = utils.base64url_decode(key.encode('utf-8'))
+    # generate key with 256 bits
+    raw_key = secrets.token_urlsafe(24)
+    key = jwk.import_key(raw_key)
 
-    encrypted = jwe.encrypt(data, key_decoded, algorithm='dir', encryption='A256GCM', cty='application/fhir+json')
+    encrypted = jwe.encrypt_compact({'alg': 'dir', 'enc': 'A256GCM'}, data, key)
 
-    return (key, encrypted)
+    return (raw_key, encrypted.encode('utf-8'))
 
 
 def retrieve_patient_summary(
