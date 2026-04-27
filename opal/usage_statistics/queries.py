@@ -6,7 +6,7 @@
 
 import datetime as dt
 from collections import Counter
-from typing import Any
+from typing import Any, cast
 
 from django.conf import settings
 from django.db import models
@@ -801,16 +801,17 @@ def _annotate_queryset_with_grouping_field[ModelType: models.Model](
     datetime_expr = Cast(field_name, output_field=models.DateTimeField())
 
     if group_by == GroupByComponent.YEAR:
-        annotated_queryset: models.QuerySet[ModelType] = queryset.annotate(
+        annotated = queryset.annotate(
             year=TruncYear(datetime_expr, tzinfo=dt.UTC, output_field=models.DateField()),
         )
     elif group_by == GroupByComponent.MONTH:
-        annotated_queryset = queryset.annotate(
+        annotated = queryset.annotate(
             month=TruncMonth(datetime_expr, tzinfo=dt.UTC, output_field=models.DateField()),
         )
     else:
-        annotated_queryset = queryset.annotate(
+        annotated = queryset.annotate(
             day=TruncDay(datetime_expr, tzinfo=dt.UTC, output_field=models.DateField()),
         )
 
-    return annotated_queryset
+    # Cast back to QuerySet[ModelType], the mypy plugin looses the specific type after annotation.
+    return cast('models.QuerySet[ModelType]', annotated)
