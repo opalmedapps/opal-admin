@@ -13,6 +13,7 @@ from django.db import models
 from django.db.models.functions import Cast, ExtractYear, Trunc, TruncDay, TruncMonth, TruncYear
 
 from opal.caregivers import models as caregivers_models
+from opal.core.utils import RowData
 from opal.legacy import models as legacy_models
 from opal.patients import models as patients_models
 from opal.users import models as users_models
@@ -622,7 +623,7 @@ def fetch_labs_summary_per_patient(
 def fetch_logins_summary_per_user(
     start_date: dt.date,
     end_date: dt.date,
-) -> list[dict[str, Any]]:
+) -> list[RowData]:
     """
     Fetch individual user login statistics from the `DailyUserAppActivity` model.
 
@@ -661,7 +662,7 @@ def fetch_logins_summary_per_user(
 def fetch_patient_demographic_diagnosis_summary(
     start_date: dt.date,
     end_date: dt.date,
-) -> list[dict[str, Any]]:
+) -> list[RowData]:
     """
     Fetch demographic statistics and the latest diagnosis for each individual patient.
 

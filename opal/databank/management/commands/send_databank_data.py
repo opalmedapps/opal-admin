@@ -7,7 +7,7 @@
 import json
 from collections import defaultdict
 from http import HTTPStatus
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
@@ -18,6 +18,12 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from opal.databank.models import DatabankConsent, DataModuleType, SharedData
+from opal.legacy.managers import (
+    DatabankAppointmentData,
+    DatabankDiagnosisData,
+    DatabankLabData,
+    DatabankPatientData,
+)
 from opal.legacy.models import LegacyAppointment, LegacyDiagnosis, LegacyPatient, LegacyPatientTestResult
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire
 
@@ -25,7 +31,14 @@ if TYPE_CHECKING:
     from datetime import datetime
 
 type CombinedModuleData = list[dict[str, Any]]
-type DatabankQuerySet = QuerySet[Model, dict[str, Any]] | CombinedModuleData
+type DatabankQuerySet = (
+    QuerySet[Model, dict[str, Any]]
+    | QuerySet[LegacyAppointment, DatabankAppointmentData]
+    | QuerySet[LegacyPatient, DatabankPatientData]
+    | QuerySet[LegacyDiagnosis, DatabankDiagnosisData]
+    | QuerySet[LegacyPatientTestResult, DatabankLabData]
+    | CombinedModuleData
+)
 
 
 class Command(BaseCommand):
@@ -198,7 +211,8 @@ class Command(BaseCommand):
         Returns:
             Nested dictionary list
         """
-        data = list(queryset)
+        # Drop to plain dicts because we mutate keys below
+        data: CombinedModuleData = cast('CombinedModuleData', list(queryset))
 
         # Extra nesting requirements for lab data to reduce data repetition among components of a single lab group
         if nesting_key == 'LABS':

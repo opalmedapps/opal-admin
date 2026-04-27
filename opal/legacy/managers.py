@@ -15,9 +15,9 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
 
+import datetime as dt
 import logging
-from datetime import datetime
-from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Final, Optional, TypedDict, TypeVar
 
 from django.apps import apps
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
@@ -25,6 +25,63 @@ from django.db import DatabaseError, models
 from django.utils import timezone
 
 from opal.patients.models import Relationship, RelationshipStatus
+
+
+class DatabankAppointmentData(TypedDict):
+    """De-identified appointment data for a consenting databank patient."""
+
+    appointment_id: int
+    date_created: dt.date
+    source_db_name: str
+    source_db_alias_code: str
+    source_db_alias_description: str
+    source_db_appointment_id: int
+    alias_name: str
+    scheduled_start_time: dt.datetime
+    scheduled_end_time: dt.datetime
+    last_updated: dt.datetime
+
+
+class DatabankPatientData(TypedDict):
+    """De-identified demographics data for a consenting databank patient."""
+
+    patient_id: int
+    opal_registration_date: dt.date
+    patient_sex: str
+    patient_dob: dt.date
+    patient_primary_language: str
+    patient_death_date: dt.datetime | None
+    last_updated: dt.datetime
+
+
+class DatabankDiagnosisData(TypedDict):
+    """De-identified diagnosis data for a consenting databank patient."""
+
+    diagnosis_id: int
+    date_created: dt.date
+    source_system_code: str
+    source_system_code_description: str
+    last_updated: dt.datetime
+
+
+class DatabankLabData(TypedDict):
+    """De-identified labs data for a consenting databank patient."""
+
+    test_result_id: str
+    specimen_collected_date: dt.date
+    component_result_date: dt.date
+    test_group_name: str
+    test_group_indicator: str
+    test_component_sequence: int
+    test_component_name: str
+    test_value: float
+    test_units: str
+    max_norm_range: float
+    min_norm_range: float
+    abnormal_flag: str
+    source_system: str
+    last_updated: dt.datetime
+
 
 if TYPE_CHECKING:
     # old version of pyflakes incorrectly detects these as unused
@@ -178,8 +235,8 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
     def get_databank_data_for_patient(
         self,
         patient_ser_num: int,
-        last_synchronized: datetime,
-    ) -> models.QuerySet['LegacyAppointment', dict[str, Any]]:
+        last_synchronized: dt.datetime,
+    ) -> models.QuerySet['LegacyAppointment', DatabankAppointmentData]:
         """
         Retrieve the latest de-identified appointment data for a consenting DataBank patient.
 
@@ -235,7 +292,7 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
         self,
         legacy_patient_id: int | None,
         prepared_by: int,
-        received_at: datetime,
+        received_at: dt.datetime,
         report_file_name: str,
     ) -> 'LegacyDocument':
         """
@@ -347,8 +404,8 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
     def get_databank_data_for_patient(
         self,
         patient_ser_num: int,
-        last_synchronized: datetime,
-    ) -> models.QuerySet['LegacyPatient', dict[str, Any]]:
+        last_synchronized: dt.datetime,
+    ) -> models.QuerySet['LegacyPatient', DatabankPatientData]:
         """
         Retrieve the latest de-identified demographics data for a consenting DataBank patient.
 
@@ -395,8 +452,8 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
     def get_databank_data_for_patient(
         self,
         patient_ser_num: int,
-        last_synchronized: datetime,
-    ) -> models.QuerySet['LegacyDiagnosis', dict[str, Any]]:
+        last_synchronized: dt.datetime,
+    ) -> models.QuerySet['LegacyDiagnosis', DatabankDiagnosisData]:
         """
         Retrieve the latest de-identified diagnosis data for a consenting DataBank patient.
 
@@ -445,8 +502,8 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
     def get_databank_data_for_patient(
         self,
         patient_ser_num: int,
-        last_synchronized: datetime,
-    ) -> models.QuerySet['LegacyPatientTestResult', dict[str, Any]]:
+        last_synchronized: dt.datetime,
+    ) -> models.QuerySet['LegacyPatientTestResult', DatabankLabData]:
         """
         Retrieve the latest de-identified labs data for a consenting DataBank patient.
 
@@ -527,8 +584,8 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
 
     def get_aggregated_user_app_activities(
         self,
-        start_datetime_period: datetime,
-        end_datetime_period: datetime,
+        start_datetime_period: dt.datetime,
+        end_datetime_period: dt.datetime,
     ) -> models.QuerySet['LegacyPatientActivityLog', dict[str, Any]]:
         """
         Retrieve aggregated application activity statistics per user for a given time period.
@@ -620,8 +677,8 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
 
     def get_aggregated_patient_app_activities(
         self,
-        start_datetime_period: datetime,
-        end_datetime_period: datetime,
+        start_datetime_period: dt.datetime,
+        end_datetime_period: dt.datetime,
     ) -> models.QuerySet['LegacyPatientActivityLog', dict[str, Any]]:
         """
         Retrieve aggregated application activity statistics per patient for a given time period.

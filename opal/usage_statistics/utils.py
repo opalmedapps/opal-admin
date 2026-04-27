@@ -13,16 +13,16 @@ from django.db import models
 
 import pandas as pd
 
+from opal.core.utils import SheetData, WorkbookData
 from opal.legacy import models as legacy_models
 from opal.patients.models import Relationship
 from opal.usage_statistics.models import DailyUserPatientActivity
 
 from . import queries
 
-# Type aliases
-type RowData = dict[str, Any]
-type UsageStatisticsData = list[RowData]
-type ReportData = dict[str, UsageStatisticsData]
+# Type aliases (re-exported for backwards compatibility within this app)
+UsageStatisticsData = SheetData
+ReportData = WorkbookData
 
 
 class RelationshipMapping(UserDict[str, Any]):
