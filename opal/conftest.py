@@ -14,6 +14,8 @@ from django.db import connections
 
 import pytest
 import structlog
+from _pytest.config import Config  # noqa: TC002
+from _pytest.main import Session  # noqa: TC002
 from _pytest.python import Function, Module  # noqa: PLC2701
 from rest_framework.test import APIClient
 from structlog.testing import LogCapture
@@ -29,8 +31,6 @@ if TYPE_CHECKING:
     from django.db.models import Model
     from django.test import Client
 
-    from _pytest.config import Config
-    from _pytest.main import Session
     from pytest_django import DjangoDbBlocker
     from pytest_mock import MockerFixture
 
