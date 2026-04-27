@@ -132,7 +132,7 @@ requires-dist = [
     { name = "python-jose", extras = ["cryptography"], specifier = "==3.5.0" },
     { name = "qrcode", specifier = "==8.2" },
     { name = "requests", specifier = "==2.33.1" },
-    { name = "slippers", specifier = "==0.6.3" },
+    { name = "slippers", specifier = "==0.7.0" },
     { name = "twilio", specifier = "==9.10.4" },
     { name = "unidecode", specifier = "==1.4.0" },
     { name = "whitenoise", extras = ["brotli"], specifier = "==6.12.0" },
@@ -2134,7 +2134,7 @@ wheels = [
 
 [[package]]
 name = "slippers"
-version = "0.6.3"
+version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
@@ -2142,9 +2142,9 @@ dependencies = [
     { name = "typeguard" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c3/3c/979ab01ee6515fb3d6f10cfc10ef2e6219817828b972c54d49f6ddd9ddd2/slippers-0.6.3.tar.gz", hash = "sha256:8602f462da79b707d25ec050fb51b6cbe5fb225b3c7faf40d1f02876d970e9f0", size = 59793, upload-time = "2026-03-30T04:51:59.436Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5f/96/95bc00d151c2bcc2a669b6313e6a9cb902c6638258f2109e1cba3b625a0d/slippers-0.7.0.tar.gz", hash = "sha256:35059d4025845a46e252633a16a04136f21b28469dee7c4a2a361e00aee5335e", size = 11014, upload-time = "2026-04-04T13:51:38.841Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9c/b9/76c4b0535d26089d0d01f5c9cb3529b121babd1abf605e6c7e12acedb09b/slippers-0.6.3-py3-none-any.whl", hash = "sha256:cddd92cb998fb48472f863a811566f5a187b392f65ae4b0df81008b56dff214c", size = 62528, upload-time = "2026-03-30T04:51:58.227Z" },
+    { url = "https://files.pythonhosted.org/packages/f8/63/a5d1c88e297b57152ec6e166ea2d7a31c0fcf0858a2a65490b91141610e2/slippers-0.7.0-py3-none-any.whl", hash = "sha256:49c67577939cf310283904199f405db481a08d6c43406ab5df01871b50a5758a", size = 13336, upload-time = "2026-04-04T13:51:37.596Z" },
 ]
 
 [[package]]

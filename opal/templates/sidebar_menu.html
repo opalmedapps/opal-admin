@@ -7,22 +7,22 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 {% load i18n %}
 
 <ul class="list-unstyled ps-0 mb-auto">
-  {% #menu_group group_id="home" title=_("Home") request=request %}
-    {% #menu_item url_name="start" request=request %}
+  {% #menu_group group_id="home" title=_("Home") %}
+    {% #menu_item url_name="start" %}
       {% translate "Home Page" %}
     {% /menu_item %}
   {% /menu_group %}
 
   {# Hospital Settings #}
   {% if perms.hospital_settings.can_manage_institutions or perms.hospital_settings.can_manage_sites %}
-    {% #menu_group app_name="hospital-settings" group_id="settings" title=_("Hospital Settings") request=request %}
+    {% #menu_group app_name="hospital-settings" group_id="settings" title=_("Hospital Settings") %}
       {% if perms.hospital_settings.can_manage_institutions %}
-        {% #menu_item url_name="hospital-settings:institution-list" request=request %}
+        {% #menu_item url_name="hospital-settings:institution-list" %}
           {% translate "Institutions" %}
         {% /menu_item %}
       {% endif %}
       {% if perms.hospital_settings.can_manage_sites %}
-        {% #menu_item url_name="hospital-settings:site-list" request=request %}
+        {% #menu_item url_name="hospital-settings:site-list" %}
           {% translate "Sites" %}
         {% /menu_item %}
       {% endif %}
@@ -30,19 +30,19 @@ SPDX-License-Identifier: AGPL-3.0-or-later
   {% endif %}
 
   {# Patients #}
-  {% #menu_group app_name="patients" group_id="patients" title=_("Patients") request=request %}
+  {% #menu_group app_name="patients" group_id="patients" title=_("Patients") %}
     {% if perms.patients.can_manage_relationshiptypes %}
-      {% #menu_item url_name="patients:relationshiptype-list" request=request %}
+      {% #menu_item url_name="patients:relationshiptype-list" %}
         {% translate "Relationship Types" %}
       {% /menu_item %}
     {% endif %}
     {% if perms.patients.can_perform_registration %}
-      {% #menu_item url_name="patients:access-request" request=request %}
+      {% #menu_item url_name="patients:access-request" %}
         {% translate "Opal Registration" %}
       {% /menu_item %}
     {% endif %}
     {% if perms.patients.can_manage_relationships %}
-      {% #menu_item url_name="patients:relationships-list" request=request %}
+      {% #menu_item url_name="patients:relationships-list" %}
         {% translate "Manage Caregiver Access" %}
       {% /menu_item %}
     {% endif %}
@@ -50,8 +50,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
   {# Questionnaires #}
   {% if perms.questionnaires.export_report %}
-    {% #menu_group app_name="questionnaires" group_id="questionnaires" title=_("Questionnaires") request=request %}
-      {% #menu_item url_name="questionnaires:reports" request=request %}
+    {% #menu_group app_name="questionnaires" group_id="questionnaires" title=_("Questionnaires") %}
+      {% #menu_item url_name="questionnaires:reports" %}
         {% translate "Export Reports" %}
       {% /menu_item %}
     {% /menu_group %}
@@ -59,11 +59,11 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
   {# Usage Statistics #}
   {% if request.user.is_superuser %}
-    {% #menu_group app_name="usage-statistics" group_id="statistics" title=_("Usage Statistics") request=request %}
-      {% #menu_item url_name="usage-statistics:reports-group-export" request=request %}
+    {% #menu_group app_name="usage-statistics" group_id="statistics" title=_("Usage Statistics") %}
+      {% #menu_item url_name="usage-statistics:reports-group-export" %}
         {% translate "Group Reports" %}
       {% /menu_item %}
-      {% #menu_item url_name="usage-statistics:reports-individual-export" request=request %}
+      {% #menu_item url_name="usage-statistics:reports-individual-export" %}
         {% translate "Individual Reports" %}
       {% /menu_item %}
     {% /menu_group %}
