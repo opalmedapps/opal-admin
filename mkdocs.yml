@@ -90,10 +90,13 @@ plugins:
             - django.setup()
             # mock pytkdocs to workaround Django and Django REST framework issues
             - import docs.mock_django
+          options:
+            # filter out Pydantic internal attributes
+            filters: ['!^__']
           import:
             # import Sphinx objects inventories to support referencing other elements in docs
-            - https://docs.python.org/3.12/objects.inv
-            - https://docs.djangoproject.com/en/4.2/_objects/
+            - https://docs.python.org/3/objects.inv
+            - https://docs.djangoproject.com/en/dev/_objects/
             - https://django-modeltranslation.readthedocs.io/en/latest/objects.inv
             - https://docs.pydantic.dev/latest/objects.inv
 
