@@ -17,14 +17,73 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 import logging
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Final, Optional, TypeVar
 
 from django.apps import apps
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db import DatabaseError, models
 from django.utils import timezone
 
+from typing_extensions import TypedDict
+
 from opal.patients.models import Relationship, RelationshipStatus
+
+
+class DatabankAppointmentData(TypedDict):
+    """De-identified appointment data for a consenting databank patient."""
+
+    appointment_id: Any
+    date_created: Any
+    source_db_name: Any
+    source_db_alias_code: Any
+    source_db_alias_description: Any
+    source_db_appointment_id: Any
+    alias_name: Any
+    scheduled_start_time: Any
+    scheduled_end_time: datetime
+    last_updated: datetime
+
+
+class DatabankPatientData(TypedDict):
+    """De-identified demographics data for a consenting databank patient."""
+
+    patient_id: Any
+    opal_registration_date: Any
+    patient_sex: Any
+    patient_dob: Any
+    patient_primary_language: Any
+    patient_death_date: Any
+    last_updated: datetime
+
+
+class DatabankDiagnosisData(TypedDict):
+    """De-identified diagnosis data for a consenting databank patient."""
+
+    diagnosis_id: Any
+    date_created: Any
+    source_system_code: Any
+    source_system_code_description: Any
+    last_updated: datetime
+
+
+class DatabankLabData(TypedDict):
+    """De-identified labs data for a consenting databank patient."""
+
+    test_result_id: Any
+    specimen_collected_date: Any
+    component_result_date: Any
+    test_group_name: Any
+    test_group_indicator: Any
+    test_component_sequence: Any
+    test_component_name: Any
+    test_value: Any
+    test_units: Any
+    max_norm_range: Any
+    min_norm_range: Any
+    abnormal_flag: str
+    source_system: Any
+    last_updated: datetime
+
 
 if TYPE_CHECKING:
     # old version of pyflakes incorrectly detects these as unused
@@ -179,7 +238,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> models.QuerySet['LegacyAppointment', dict[str, Any]]:
+    ) -> models.QuerySet['LegacyAppointment', DatabankAppointmentData]:
         """
         Retrieve the latest de-identified appointment data for a consenting DataBank patient.
 
@@ -191,8 +250,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             Appointment data
 
         """
-        return cast(
-            'models.QuerySet[LegacyAppointment, dict[str, Any]]',
+        return (
             self
             .select_related(
                 'aliasexpressionsernum__aliassernum',
@@ -225,7 +283,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
                 'scheduled_start_time',
                 'scheduled_end_time',
                 'last_updated',
-            ),
+            )
         )
 
 
@@ -349,7 +407,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> models.QuerySet['LegacyPatient', dict[str, Any]]:
+    ) -> models.QuerySet['LegacyPatient', DatabankPatientData]:
         """
         Retrieve the latest de-identified demographics data for a consenting DataBank patient.
 
@@ -361,8 +419,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
             Demographics data
 
         """
-        return cast(
-            'models.QuerySet[LegacyPatient, dict[str, Any]]',
+        return (
             self
             .filter(
                 patientsernum=patient_ser_num,
@@ -387,7 +444,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
                 'patient_primary_language',
                 'patient_death_date',
                 'last_updated',
-            ),
+            )
         )
 
 
@@ -398,7 +455,7 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> models.QuerySet['LegacyDiagnosis', dict[str, Any]]:
+    ) -> models.QuerySet['LegacyDiagnosis', DatabankDiagnosisData]:
         """
         Retrieve the latest de-identified diagnosis data for a consenting DataBank patient.
 
@@ -419,8 +476,7 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         Returns:
             Diagnosis data
         """
-        return cast(
-            'models.QuerySet[LegacyDiagnosis, dict[str, Any]]',
+        return (
             self
             .filter(
                 patient_ser_num=patient_ser_num,
@@ -438,7 +494,7 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
                 'source_system_code',
                 'source_system_code_description',
                 'last_updated',
-            ),
+            )
         )
 
 
@@ -449,7 +505,7 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
         self,
         patient_ser_num: int,
         last_synchronized: datetime,
-    ) -> models.QuerySet['LegacyPatientTestResult', dict[str, Any]]:
+    ) -> models.QuerySet['LegacyPatientTestResult', DatabankLabData]:
         """
         Retrieve the latest de-identified labs data for a consenting DataBank patient.
 
@@ -460,8 +516,7 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
         Returns:
             Lab data
         """
-        return cast(
-            'models.QuerySet[LegacyPatientTestResult, dict[str, Any]]',
+        return (
             self
             .select_related(
                 'test_expression_ser_num',
@@ -503,7 +558,7 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
                 'source_system',
                 'last_updated',
             )
-            .order_by('component_result_date', 'test_group_indicator', 'test_component_sequence'),
+            .order_by('component_result_date', 'test_group_indicator', 'test_component_sequence')
         )
 
     def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet['LegacyPatientTestResult']:
