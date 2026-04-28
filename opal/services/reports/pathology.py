@@ -6,9 +6,7 @@
 
 import math
 import textwrap
-from datetime import datetime
-from pathlib import Path
-from typing import Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 from django.conf import settings
 from django.utils import timezone
@@ -24,6 +22,10 @@ from opal.services.reports.base import (
     PatientData,
     SiteData,
 )
+
+if TYPE_CHECKING:
+    from datetime import datetime
+    from pathlib import Path
 
 
 class PathologyData(NamedTuple):

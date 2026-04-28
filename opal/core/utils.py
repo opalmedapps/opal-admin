@@ -14,14 +14,16 @@ import string
 import uuid
 import zipfile
 from collections.abc import Mapping, Sequence
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.utils.text import Truncator
 
 import qrcode
 from openpyxl import Workbook
-from openpyxl.worksheet.worksheet import Worksheet
 from qrcode.image import svg
+
+if TYPE_CHECKING:
+    from openpyxl.worksheet.worksheet import Worksheet
 
 # Type aliases
 RowData = Mapping[str, Any]

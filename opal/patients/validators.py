@@ -5,9 +5,11 @@
 """Module for common validators for `patients` app."""
 
 from collections import Counter
+from typing import TYPE_CHECKING
 
-from opal.patients.models import Patient
-from opal.services.integration.schemas import PatientSchema
+if TYPE_CHECKING:
+    from opal.patients.models import Patient
+    from opal.services.integration.schemas import PatientSchema
 
 
 # Patients Validators

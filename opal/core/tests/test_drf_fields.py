@@ -3,12 +3,13 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import base64
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from ..drf_fields import Base64FileField
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from django.db.models.fields.files import FieldFile
 
 

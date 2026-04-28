@@ -3,13 +3,11 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.utils import timezone
 
 import pytest
-from _pytest.logging import LogCaptureFixture
-from pytest_mock.plugin import MockerFixture
 
 from opal.hospital_settings import factories as hospital_settings_factories
 from opal.hospital_settings.models import Site
@@ -21,6 +19,10 @@ from ..utils import (
     _parse_notes,
     _parse_observations,
 )
+
+if TYPE_CHECKING:
+    from _pytest.logging import LogCaptureFixture
+    from pytest_mock.plugin import MockerFixture
 
 pytestmark = pytest.mark.django_db
 

@@ -10,9 +10,9 @@ from django.contrib import admin
 
 if TYPE_CHECKING:
     from django.contrib.admin.options import _FieldOpts  # noqa: PLC2701
+    from django.http import HttpRequest
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import User as DjangoUser
-from django.http import HttpRequest
 from django.utils.translation import gettext_lazy as _
 
 from django_stubs_ext import StrPromise

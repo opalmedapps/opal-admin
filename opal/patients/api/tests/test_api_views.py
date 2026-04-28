@@ -6,15 +6,13 @@
 
 import base64
 import json
-from collections.abc import Callable
 from datetime import datetime
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 import django.core.files.storage
-from django.conf import LazySettings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -23,10 +21,8 @@ import requests
 from authlib.integrations.requests_client import OAuth2Session
 from joserfc import jwe, jwk, util
 from pytest_django.asserts import assertContains, assertJSONEqual, assertRaisesMessage
-from pytest_mock import MockerFixture
 from rest_framework import status
 from rest_framework.exceptions import NotFound
-from rest_framework.test import APIClient
 
 from opal.caregivers.factories import CaregiverProfile, Device, RegistrationCode
 from opal.health_data.models import PatientReportedData
@@ -35,7 +31,16 @@ from opal.patients import models as patient_models
 from opal.patients.factories import HospitalPatient, Patient, Relationship, RelationshipType
 from opal.services.fhir.utils import FHIRConnectionSettings
 from opal.users import factories as caregiver_factories
-from opal.users.models import User
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from django.conf import LazySettings
+
+    from pytest_mock import MockerFixture
+    from rest_framework.test import APIClient
+
+    from opal.users.models import User
 
 pytestmark = pytest.mark.django_db(databases=['default'])
 

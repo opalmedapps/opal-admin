@@ -4,11 +4,13 @@
 
 """This module provides custom context processors for this project."""
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.apps import apps
 from django.conf import settings
-from django.http import HttpRequest
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
 
 def opal_global_settings(request: HttpRequest) -> dict[str, Any]:

@@ -4,14 +4,13 @@
 
 from datetime import datetime, timedelta
 from http import HTTPStatus
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.utils import timezone
 
 import pytest
 import requests
 from pytest_django.asserts import assertRaisesMessage
-from pytest_mock.plugin import MockerFixture
 
 from opal.core.test_utils import CommandTestMixin, RequestMockerTest
 from opal.databank import factories as databank_factories
@@ -22,6 +21,9 @@ from opal.legacy_questionnaires import factories as legacy_questionnaire_factori
 from opal.patients import factories as patient_factories
 
 from ..management.commands import send_databank_data
+
+if TYPE_CHECKING:
+    from pytest_mock.plugin import MockerFixture
 
 pytestmark = pytest.mark.django_db(databases=['default', 'legacy', 'questionnaire'])
 

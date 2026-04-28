@@ -8,16 +8,18 @@ import logging
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
 from opal.hospital_settings.models import Institution, Site
-from opal.patients.models import Patient
 from opal.services.reports.base import InstitutionData, PatientData, SiteData
 from opal.services.reports.pathology import PathologyData, generate_pdf
+
+if TYPE_CHECKING:
+    from opal.patients.models import Patient
 
 LOGGER = logging.getLogger(__name__)
 

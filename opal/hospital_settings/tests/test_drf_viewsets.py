@@ -2,17 +2,21 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from collections.abc import Callable
 from http import HTTPStatus
+from typing import TYPE_CHECKING
 
 from django.urls.base import reverse
 
 import pytest
-from rest_framework.test import APIClient
-
-from opal.users.models import User
 
 from .. import factories
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from rest_framework.test import APIClient
+
+    from opal.users.models import User
 
 pytestmark = pytest.mark.django_db
 

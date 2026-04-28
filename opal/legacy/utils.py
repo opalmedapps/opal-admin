@@ -10,13 +10,12 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.db import OperationalError, connections, models, transaction
 from django.utils import timezone
 
-from opal.caregivers.models import CaregiverProfile
 from opal.hospital_settings.models import Institution, Site
 from opal.legacy_questionnaires.models import LegacyAnswerQuestionnaire, LegacyQuestionnairePatient
 from opal.legacy_questionnaires.models import LegacyQuestionnaire as QDB_LegacyQuestionnaire
@@ -38,6 +37,9 @@ from .models import (
     LegacyUsers,
     LegacyUserType,
 )
+
+if TYPE_CHECKING:
+    from opal.caregivers.models import CaregiverProfile
 
 #: Mapping from sex type to the corresponding legacy sex type
 SEX_TYPE_MAPPING = MappingProxyType({
@@ -437,7 +439,7 @@ def create_databank_patient_consent_data(django_patient: Patient) -> bool:
             readstatus=0,
             date_added=timezone.now(),
         )
-    except (LegacyPatient.DoesNotExist, OperationalError):
+    except LegacyPatient.DoesNotExist, OperationalError:
         LOGGER.exception(f'Error while creating databank consent for patient {django_patient.uuid}')
         # Rollback and return empty without raising to avoid affecting registration completion
         transaction.set_rollback(True)

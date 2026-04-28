@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from typing import TYPE_CHECKING
+
 from django.contrib.admin.sites import AdminSite
 from django.http import HttpRequest
 from django.test import RequestFactory
@@ -10,9 +12,11 @@ from django.urls import reverse
 import pytest
 
 from opal.patients.admin import RelationshipTypeAdmin
-from opal.users.models import User
 
 from .. import factories, models
+
+if TYPE_CHECKING:
+    from opal.users.models import User
 
 pytestmark = pytest.mark.django_db
 

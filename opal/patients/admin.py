@@ -4,12 +4,16 @@
 
 """This module provides admin options for patient models."""
 
+from typing import TYPE_CHECKING
+
 from django.contrib import admin
-from django.http import HttpRequest
 
 from modeltranslation.admin import TranslationAdmin
 
 from . import models
+
+if TYPE_CHECKING:
+    from django.http import HttpRequest
 
 
 @admin.register(models.HospitalPatient)

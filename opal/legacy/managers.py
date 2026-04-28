@@ -15,9 +15,8 @@ See tutorial: https://www.pythontutorial.net/python-oop/python-mixin/
 
 """
 
-import datetime as dt
 import logging
-from typing import TYPE_CHECKING, Any, Final, Optional, TypedDict, TypeVar
+from typing import TYPE_CHECKING, Any, Final, TypedDict, TypeVar
 
 from django.apps import apps
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
@@ -25,6 +24,9 @@ from django.db import DatabaseError, models
 from django.utils import timezone
 
 from opal.patients.models import Relationship, RelationshipStatus
+
+if TYPE_CHECKING:
+    import datetime as dt
 
 
 class DatabankAppointmentData(TypedDict):
@@ -147,7 +149,7 @@ class LegacyNotificationManager(UnreadQuerySetMixin['LegacyNotification'], model
 class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
     """LegacyAppointment manager."""
 
-    def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet['LegacyAppointment']:
+    def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet[LegacyAppointment]:
         """
         Get the queryset of unread appointments for a given user.
 
@@ -166,7 +168,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             readby__contains=username,
         )
 
-    def get_daily_appointments(self, username: str) -> models.QuerySet['LegacyAppointment']:
+    def get_daily_appointments(self, username: str) -> models.QuerySet[LegacyAppointment]:
         """
         Get all appointments for the current day for caregiver related patient(s).
 
@@ -202,7 +204,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
             )
         )
 
-    def get_closest_appointment(self, username: str) -> Optional['LegacyAppointment']:
+    def get_closest_appointment(self, username: str) -> LegacyAppointment | None:
         """
         Get the closest next appointment in time for any of the patients in the user's care.
 
@@ -236,7 +238,7 @@ class LegacyAppointmentManager(models.Manager['LegacyAppointment']):
         self,
         patient_ser_num: int,
         last_synchronized: dt.datetime,
-    ) -> models.QuerySet['LegacyAppointment', DatabankAppointmentData]:
+    ) -> models.QuerySet[LegacyAppointment, DatabankAppointmentData]:
         """
         Retrieve the latest de-identified appointment data for a consenting DataBank patient.
 
@@ -294,7 +296,7 @@ class LegacyDocumentManager(UnreadQuerySetMixin['LegacyDocument'], models.Manage
         prepared_by: int,
         received_at: dt.datetime,
         report_file_name: str,
-    ) -> 'LegacyDocument':
+    ) -> LegacyDocument:
         """
         Insert a new pathology PDF document record to the OpalDB.Document table.
 
@@ -405,7 +407,7 @@ class LegacyPatientManager(models.Manager['LegacyPatient']):
         self,
         patient_ser_num: int,
         last_synchronized: dt.datetime,
-    ) -> models.QuerySet['LegacyPatient', DatabankPatientData]:
+    ) -> models.QuerySet[LegacyPatient, DatabankPatientData]:
         """
         Retrieve the latest de-identified demographics data for a consenting DataBank patient.
 
@@ -453,7 +455,7 @@ class LegacyDiagnosisManager(models.Manager['LegacyDiagnosis']):
         self,
         patient_ser_num: int,
         last_synchronized: dt.datetime,
-    ) -> models.QuerySet['LegacyDiagnosis', DatabankDiagnosisData]:
+    ) -> models.QuerySet[LegacyDiagnosis, DatabankDiagnosisData]:
         """
         Retrieve the latest de-identified diagnosis data for a consenting DataBank patient.
 
@@ -503,7 +505,7 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
         self,
         patient_ser_num: int,
         last_synchronized: dt.datetime,
-    ) -> models.QuerySet['LegacyPatientTestResult', DatabankLabData]:
+    ) -> models.QuerySet[LegacyPatientTestResult, DatabankLabData]:
         """
         Retrieve the latest de-identified labs data for a consenting DataBank patient.
 
@@ -559,7 +561,7 @@ class LegacyPatientTestResultManager(models.Manager['LegacyPatientTestResult']):
             .order_by('component_result_date', 'test_group_indicator', 'test_component_sequence')
         )
 
-    def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet['LegacyPatientTestResult']:
+    def get_unread_queryset(self, patient_sernum: int, username: str) -> models.QuerySet[LegacyPatientTestResult]:
         """
         Get the queryset of unread lab results for a given patient.
 
@@ -586,7 +588,7 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
         self,
         start_datetime_period: dt.datetime,
         end_datetime_period: dt.datetime,
-    ) -> models.QuerySet['LegacyPatientActivityLog', dict[str, Any]]:
+    ) -> models.QuerySet[LegacyPatientActivityLog, dict[str, Any]]:
         """
         Retrieve aggregated application activity statistics per user for a given time period.
 
@@ -679,7 +681,7 @@ class LegacyPatientActivityLogManager(models.Manager['LegacyPatientActivityLog']
         self,
         start_datetime_period: dt.datetime,
         end_datetime_period: dt.datetime,
-    ) -> models.QuerySet['LegacyPatientActivityLog', dict[str, Any]]:
+    ) -> models.QuerySet[LegacyPatientActivityLog, dict[str, Any]]:
         """
         Retrieve aggregated application activity statistics per patient for a given time period.
 
