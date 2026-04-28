@@ -20,23 +20,30 @@ CODE_ROOT = 'opal'
 nav = mkdocs_gen_files.Nav()  # type: ignore[no-untyped-call]
 
 for path in sorted(Path(CODE_ROOT).glob('**/*.py')):
+    module_path = path.relative_to('.').with_suffix('')
     doc_path = Path('reference', path.relative_to('.')).with_suffix('.md')
+
+    parts = tuple(module_path.parts)
+
+    if parts[-1] == '__init__':
+        parts = parts[:-1]
+        doc_path = doc_path.with_name('index.md')
+
     # fully qualified name
-    ident = '.'.join(path.relative_to('.').with_suffix('').parts)
+    ident = '.'.join(parts)
 
     # skip database migrations
-    if '.migrations' in ident:
+    if 'migrations' in parts:
         continue
 
     # add mapping from Python file name to generated Markdown page
     # the path needs to be relative to the SUMMARY.md file
     # i.e., without "reference/" prefix if the index is in the same directory
-    parts = tuple(path.parts)
-    nav[parts] = str(path.relative_to('.').with_suffix('.md'))
+    nav[parts] = doc_path.relative_to('reference').as_posix()
 
     # write Markdown file for module
     with mkdocs_gen_files.open(doc_path, 'w') as fd:
-        print(f'::: {ident}', file=fd)
+        fd.write(f'::: {ident}\n')
 
     mkdocs_gen_files.set_edit_path(doc_path, Path('..', path))
 
