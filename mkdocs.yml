@@ -76,24 +76,13 @@ plugins:
   - gen-files:
       scripts:
         - docs/gen_reference_nav.py
-  # # auto-generate navigation structure for code reference
+  # auto-generate navigation structure for code reference
   - literate-nav:
       nav_file: SUMMARY.md
   - mkdocstrings:
-      default_handler: python
       handlers:
         python:
-          setup_commands:
-            - import os
-            - os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
-            - import django
-            - django.setup()
-            # mock pytkdocs to workaround Django and Django REST framework issues
-            - import docs.mock_django
-          options:
-            # filter out Pydantic internal attributes
-            filters: ['!^__']
-          import:
+          inventories:
             # import Sphinx objects inventories to support referencing other elements in docs
             - https://docs.python.org/3/objects.inv
             - https://docs.djangoproject.com/en/dev/_objects/
