@@ -7,6 +7,9 @@
     See: https://getbootstrap.com/docs/5.3/components/tooltips/#enable-tooltips
 */
 
+// https://unpoly.com/script-security
+up.script.config.scriptElementPolicy = 'block'
+
 up.compiler('[data-bs-toggle="tooltip"]', (element) => {
     let tooltip = new bootstrap.Tooltip(element)
 

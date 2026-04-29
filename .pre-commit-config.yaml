@@ -2,15 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-exclude: |
-  (?x)(
-    ^(
-      \.vscode/launch\.json
-      |manage\.py
-      |opal/static/thirdparty/.*/.*
-    )
-  )
-
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v6.0.0
@@ -19,6 +10,9 @@ repos:
   - id: check-merge-conflict
   - id: check-shebang-scripts-are-executable
   - id: check-json
+    exclude:
+      glob:
+        - .vscode/launch.json
   - id: check-toml
   - id: check-yaml
     args: ['--unsafe']
@@ -26,6 +20,9 @@ repos:
     args: ['--django']
   - id: double-quote-string-fixer
   - id: end-of-file-fixer
+    exclude:
+        glob:
+          - opal/static/thirdparty/**/*
   - id: trailing-whitespace
 
 - repo: https://github.com/abravalheri/validate-pyproject
@@ -77,6 +74,9 @@ repos:
   rev: v1.45.1
   hooks:
     - id: typos
+      exclude:
+        glob:
+          - opal/static/thirdparty/**/*
 
 # use local virtual env for flake8 and mypy to reuse the same configuration (and dependencies)
 - repo: local

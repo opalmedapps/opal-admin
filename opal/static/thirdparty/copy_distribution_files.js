@@ -22,8 +22,10 @@ dependencies.set('@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2', 'f
 dependencies.set('@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2', 'fontawesomefree/webfonts/fa-regular-400.woff2')
 // Unpoly
 dependencies.set('unpoly/unpoly.min.css', 'unpoly/css/unpoly.min.css')
+dependencies.set('unpoly/unpoly.min.css.map', 'unpoly/css/unpoly.min.css.map')
 dependencies.set('unpoly/unpoly-bootstrap5.min.css', 'unpoly/css/unpoly-bootstrap5.min.css')
 dependencies.set('unpoly/unpoly.min.js', 'unpoly/js/unpoly.min.js')
+dependencies.set('unpoly/unpoly.min.js.map', 'unpoly/js/unpoly.min.js.map')
 dependencies.set('unpoly/unpoly-bootstrap5.min.js', 'unpoly/js/unpoly-bootstrap5.min.js')
 
 const modules_directory = path.join(process.cwd(), 'node_modules')
