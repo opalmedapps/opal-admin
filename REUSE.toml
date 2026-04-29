@@ -101,8 +101,10 @@ SPDX-License-Identifier = "MIT"
 path = [
     "opal/static/thirdparty/unpoly/css/unpoly-bootstrap5.min.css",
     "opal/static/thirdparty/unpoly/css/unpoly.min.css",
+    "opal/static/thirdparty/unpoly/css/unpoly.min.css.map",
     "opal/static/thirdparty/unpoly/js/unpoly-bootstrap5.min.js",
     "opal/static/thirdparty/unpoly/js/unpoly.min.js",
+    "opal/static/thirdparty/unpoly/js/unpoly.min.js.map",
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "Copyright (c) 2014-2021 Henning Koch"
