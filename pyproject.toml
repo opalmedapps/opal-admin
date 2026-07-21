@@ -41,7 +41,7 @@ dependencies = [
     "openpyxl==3.1.5",
     "pandas==3.0.2",
     # required for ImageFields
-    "pillow==12.2.0",
+    "pillow==12.3.0",
     "plotly==6.7.0",
     "pydantic==2.13.3",
     "qrcode==8.2",
